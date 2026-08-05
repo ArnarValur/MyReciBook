@@ -41,14 +41,16 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   Arnar: 6 honest screenshots (~20 min).
 
 ## 2026-08-06 (design drop) — Arnar's 8 screens land · link door decided
-- Arnar delivered the full skin spec early, mid-festival: import sheet, batch
+- Arnar delivered the full skin spec early, in the pre-festival all-nighter push
+  (festival starts 12 Aug): import sheet, batch
   queue, review, cookbook, detail, cook mode, paywall, storage → docs/design/.
   Four screens solved open engine questions (pairing toggle, flagged-only review,
   provenance flip, cap-on-the-wall paywall).
 - Decided together (T3 D9): link import = post-alpha bonus, blogs-only via
   JSON-LD, no AI cost; social links get "screenshot the caption" honesty —
   report §6.5's droppable-bonus, which Arnar's own annotation re-derived.
-- Next: unchanged — engine tests in Code; Arnar: screenshots, festival first.
+- Next: unchanged — engine tests in Code; Arnar: screenshots THIS week (all-nighter
+  window before the 12th) — arm B this week could pull Gate 1 ~3 weeks early.
 - Honest note: f05d8c5 ALSO carries the live Code session's engine slice (bare UI
   ×3 screens, 4 test suites, spike fixtures) — a Cowork `add -A` swept it in.
   Nothing lost; graduated as technical rule 5. Code session: `flutter test`

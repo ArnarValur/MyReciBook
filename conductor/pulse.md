@@ -10,7 +10,8 @@
   S21. 15-agent workflow: 3-lens adversarial review, 11 findings → 7 confirmed
   → all fixed (stuck spinner, transport retries, path confinement, ½-mojibake,
   FAB double-tap, notes-save errors, test gaps).
-- Design set arrived EARLY (mid-festival bonus): 8 screens → docs/design/*.png =
+- Design set arrived EARLY (pre-festival push — festival starts 12 Aug, guest
+  arrives Sat 15; this week = Arnar's all-nighter window): 8 screens → docs/design/*.png =
   the skin spec; D9: link door = blogs-only JSON-LD, post-alpha; social → honest
   screenshot redirect. "Handwriting welcome" promise UNTESTED (D9 flag).
 - Division of labor: Arnar owns skin (spec now in docs/design), agent owns
