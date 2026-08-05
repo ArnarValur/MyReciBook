@@ -49,3 +49,7 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   JSON-LD, no AI cost; social links get "screenshot the caption" honesty —
   report §6.5's droppable-bonus, which Arnar's own annotation re-derived.
 - Next: unchanged — engine tests in Code; Arnar: screenshots, festival first.
+- Honest note: f05d8c5 ALSO carries the live Code session's engine slice (bare UI
+  ×3 screens, 4 test suites, spike fixtures) — a Cowork `add -A` swept it in.
+  Nothing lost; graduated as technical rule 5. Code session: `flutter test`
+  before building further — its work is committed but unverified-run here.

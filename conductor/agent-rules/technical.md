@@ -15,3 +15,9 @@
 4. Free-tier Gemini 503s ("high demand") are transient — retry with ~45 s backoff
    succeeded on the first retry (2026-08-06). Build retry-with-backoff into any
    free-tier caller; don't debug a 503.
+5. Cowork and Claude Code sessions can be LIVE on the same working tree at once
+   (f05d8c5, 2026-08-06: a Cowork `git add -A` swept the Code session's entire
+   in-flight engine slice into an unrelated design commit). Before staging
+   anything: `git status --short` and READ it — foreign changes mean a sibling
+   session is active. Stage explicit paths only; never `add -A`, never
+   reset/rebase/amend while a sibling may hold the index.

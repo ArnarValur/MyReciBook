@@ -17,8 +17,10 @@
 - T1 smoke PASSED 2026-08-06: 2 real recipes (2 screenshots each, ads, dark
   mode) → clean JSON, arm A, gemini-3.6-flash, free tier. No hallucinated steps.
 - Schema v1: source.original_images is an ARRAY; extraction.mode enum image|ocr_text.
-- app/ scaffold live: com.merkurialstudio.myrecibook (locked, Play-permanent).
-  Domain + data layers written, `flutter analyze` clean. No tests/UI yet.
+- app/ engine slice LEAPT AHEAD (live Code session, 2026-08-06, committed in
+  f05d8c5): domain + data + bare UI (list / import-review / detail) + 4 test
+  suites + spike fixtures (P7 realized). UNVERIFIED here — no Flutter in the
+  Cowork sandbox; Code session must `flutter test` + analyze before more building.
 - Design set arrived EARLY 2026-08-06 (mid-festival bonus): 8 screens →
   docs/design/*.png = the skin spec; several solved open UX questions (pairing
   toggle, flagged-only review, provenance flip). D9: link door = blogs-only
@@ -40,9 +42,9 @@
   Cowork's delete permission (rule 12 updated). No cleanup one-liner needed.
 
 ## 📋 Next queue
-1. Engine slice remainder (Claude Code session): tests — round-trip semantic
-   equality vs spike fixtures + validator cases · bare UI (list /
-   import→review-edit / detail+delete) · device run on S21 with dev key.
+1. Verify the engine slice (Claude Code session): `flutter test` + analyze —
+   tests/UI/fixtures are already written (f05d8c5). Then device run on S21
+   with dev key (--dart-define): first real end-to-end import.
 2. Arnar (~20 min): 6 more honest screenshots → spike/screenshots/, pairs as
    name-1/name-2 — completes the Gate-1 test set.
 3. Arm B on S21: install spike/out/ocr_dump.apk, OCR the set, adb pull dumps,
