@@ -7,3 +7,8 @@ build/
 # local-only
 .claude/settings.local.json
 .DS_Store
+.env
+
+# spike — private inputs/outputs stay out of git
+spike/screenshots/
+spike/out/

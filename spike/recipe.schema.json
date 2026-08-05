@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "MyReciBook recipe file v1 DRAFT (T1 decision D1). One file per recipe, living in the user's own storage — hardest thing to change later. Graduates to ADR 0001 on Gate-1 pass.",
+  "type": "object",
+  "required": ["schema_version", "id", "title", "source", "ingredients", "steps"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "description": "uuid v4, also the filename stem" },
+    "title": { "type": "string", "description": "the dish, not the app or username" },
+    "lang": { "type": ["string", "null"], "description": "BCP-47 of the source text, e.g. 'is', 'en'" },
+    "source": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["screenshot"] },
+        "imported_at": { "type": ["string", "null"], "description": "ISO 8601" },
+        "original_image": { "type": ["string", "null"], "description": "relative path, e.g. images/<id>.jpg — image and JSON travel together" },
+        "app_hint": { "type": ["string", "null"], "description": "guessed origin (instagram, pinterest…), display only" }
+      }
+    },
+    "servings": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount": { "type": ["number", "null"] },
+        "raw": { "type": ["string", "null"] }
+      }
+    },
+    "times": {
+      "type": ["object", "null"],
+      "properties": {
+        "prep_min": { "type": ["number", "null"] },
+        "cook_min": { "type": ["number", "null"] },
+        "total_min": { "type": ["number", "null"] },
+        "raw": { "type": ["string", "null"] }
+      }
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["raw"],
+        "properties": {
+          "raw": { "type": "string", "description": "the original line, verbatim — never destroyed" },
+          "qty": { "type": ["number", "null"], "description": "ranges: lower bound; full range stays in raw/note" },
+          "unit": { "type": ["string", "null"] },
+          "item": { "type": ["string", "null"], "description": "what goes on a grocery list" },
+          "note": { "type": ["string", "null"], "description": "'finely chopped', '2–3', 'optional'…" },
+          "group": { "type": ["string", "null"], "description": "section header like 'For the sauce'" },
+          "confidence": { "type": ["number", "null"], "description": "0–1; <0.8 highlights in review screen" }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["raw"],
+        "properties": {
+          "raw": { "type": "string" },
+          "confidence": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "notes": { "type": ["string", "null"], "description": "user's own notes, never touched by extraction" },
+    "extraction": {
+      "type": ["object", "null"],
+      "properties": {
+        "model": { "type": ["string", "null"] },
+        "mode": { "type": ["string", "null"], "description": "image | ocr_text" },
+        "extracted_at": { "type": ["string", "null"] },
+        "overall_confidence": { "type": ["number", "null"] },
+        "needs_review": { "type": "array", "items": { "type": "string" }, "description": "JSON paths the review screen should highlight" }
+      }
+    }
+  }
+}

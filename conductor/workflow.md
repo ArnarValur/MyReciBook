@@ -4,8 +4,8 @@
 1. **One fact, one home.** Live truth → pulse. A session's story → ONE relay entry.
    Lessons → rules files (graduated at checkpoint). Decisions → ADR or track-plan
    D-numbers. Project truth → context.md. Never retell — point.
-2. **A ruling binds only when it lands in a repo file.** Agent memory and chat are a
-   cache. If Arnar rules something and it isn't written here, it doesn't exist.
+2. **An agreement binds only when it lands in a repo file.** Agent memory and chat are
+   a cache. If we agree on something and it isn't written here, it doesn't exist.
 
 ## Memory temperature
 - HOT — every boot, budget 300–400 lines total: pulse.md · relay.md last entry ·

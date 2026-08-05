@@ -1,5 +1,5 @@
 # Context — MyReciBook
-*Project truth. Changes only by Arnar's ruling. Cite this file, don't retell it.*
+*Project truth. Changes only by agreement with Arnar. Cite this file, don't retell it.*
 *Strategy detail: recipe-app-feasibility-report.md — cite sections (§6.5, §8).*
 
 ## The bet — do not re-litigate without new evidence
@@ -36,7 +36,9 @@ Project starts 2026-08-20; anything done before is bonus and pulls Gate 1 earlie
 Restate the relevant gate whenever scope beyond v1 is proposed.
 
 ## Schedule
-- before 2026-08-12 .... Play Console account registered (calendar time, not work time)
+- 2026-08-20 ........... Play Console account registered — moved from 12 Aug, agreed
+                         2026-08-05 (festival budget). Verification slack is spent:
+                         register the morning of the 20th, first thing.
 - w/e 2026-08-22/23 .... extraction spike (2 days)
 - 2026-09-02 ........... landing page live
 - 2026-09-21 → 11-15 ... MVP build, 8 weeks of nights

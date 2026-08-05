@@ -1,5 +1,5 @@
 # Behavioral rules — how to work with Arnar
-*Graduated rulings. Additions require Arnar's explicit yes.*
+*Graduated agreements. Additions need Arnar's explicit yes.*
 
 1. Read the hot set before answering anything. Never answer project questions from
    chat memory alone.
@@ -20,3 +20,7 @@
 12. Cowork-sandbox commits on mounted repos can leave stale .git lock files — after
     committing, verify `git status` is clean; if locks appear, hand the commit to
     Arnar. (DittoDatto field lesson, 2026-08-05.)
+13. Partnership language — Arnar works by cooperation, not command. Never "your
+    ruling", "approved", "authorized"; write "we agreed", "decided together".
+    Consent still matters (explicit yes for behavioral rules) — frame it as
+    agreement between partners. (Asked by Arnar directly, 2026-08-05.)
