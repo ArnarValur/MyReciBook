@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parent
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 # Model names drift -- override with --model if these 404.
-DEFAULTS = {"gemini": "gemini-2.5-flash", "openai": "gpt-4o-mini"}
+DEFAULTS = {"gemini": "gemini-3.6-flash", "openai": "gpt-4o-mini"}
 
 
 def b64(path: Path) -> tuple[str, str]:
@@ -36,9 +36,9 @@ def b64(path: Path) -> tuple[str, str]:
     return mime, base64.b64encode(path.read_bytes()).decode()
 
 
-def call_gemini(key: str, model: str, prompt: str, image: Path | None) -> str:
+def call_gemini(key: str, model: str, prompt: str, images: list[Path]) -> str:
     parts: list[dict] = [{"text": prompt}]
-    if image is not None:
+    for image in images:
         mime, data = b64(image)
         parts.append({"inline_data": {"mime_type": mime, "data": data}})
     body = {
@@ -55,9 +55,9 @@ def call_gemini(key: str, model: str, prompt: str, image: Path | None) -> str:
     return out["candidates"][0]["content"]["parts"][0]["text"]
 
 
-def call_openai(key: str, model: str, prompt: str, image: Path | None) -> str:
+def call_openai(key: str, model: str, prompt: str, images: list[Path]) -> str:
     content: list[dict] = [{"type": "text", "text": prompt}]
-    if image is not None:
+    for image in images:
         mime, data = b64(image)
         content.append({"type": "image_url", "image_url": {"url": f"data:{mime};base64,{data}"}})
     body = {
@@ -132,40 +132,63 @@ def main() -> None:
     if not images:
         sys.exit(f"No screenshots found in {args.dir}/ (README step 1).")
 
+    # Multi-screenshot recipes: name-1.png + name-2.png share the recipe "name".
+    groups: dict[str, list[Path]] = {}
+    for img in images:
+        base = re.sub(r"[-_]\d+$", "", img.stem)
+        groups.setdefault(base, []).append(img)
+
     outdir = ROOT / "out"
     outdir.mkdir(exist_ok=True)
     call = call_gemini if args.provider == "gemini" else call_openai
     rows = []
 
-    for img in images:
-        prompt = prompt_base + "\n\nTARGET JSON SCHEMA:\n" + json.dumps(schema, indent=1)
-        image_arg: Path | None = img
+    for base, imgs in groups.items():
+        label = base if len(imgs) == 1 else f"{base} ({len(imgs)} imgs)"
+        prompt = prompt_base
+        if len(imgs) > 1:
+            prompt += ("\n\nNOTE: the images are consecutive screenshots of ONE recipe, "
+                       "in order. Combine them into a single recipe.")
+        prompt += "\n\nTARGET JSON SCHEMA:\n" + json.dumps(schema, indent=1)
+        image_arg = imgs
         if args.mode == "text":
-            dump = img.parent / (img.name + ".txt")
-            if not dump.exists():
-                print(f"SKIP  {img.name}: no OCR dump {dump.name} (build ocr_dump first)")
+            dumps = []
+            for img in imgs:
+                dump = img.parent / (img.name + ".txt")
+                if not dump.exists():
+                    print(f"SKIP  {img.name}: no OCR dump {dump.name} (build ocr_dump first)")
+                    dumps = None
+                    break
+                dumps.append(dump.read_text(encoding="utf-8"))
+            if dumps is None:
                 continue
-            prompt += "\n\nOCR TEXT (on-device ML Kit):\n" + dump.read_text(encoding="utf-8")
-            image_arg = None
+            prompt += "\n\nOCR TEXT (on-device ML Kit):\n" + "\n\n--- next screenshot ---\n\n".join(dumps)
+            image_arg = []
 
         t0 = time.time()
         try:
             raw = call(key, model, prompt, image_arg)
             recipe = parse_json(raw)
+            # The LLM invents these — stamp ground truth ourselves.
+            recipe.setdefault("extraction", {})
+            recipe["extraction"].update({
+                "model": model, "mode": "image" if args.mode == "image" else "ocr_text",
+                "extracted_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            })
             problems = auto_checks(recipe, schema)
         except urllib.error.HTTPError as e:
-            print(f"FAIL  {img.name}: HTTP {e.code} {e.read()[:300]!r}")
+            print(f"FAIL  {label}: HTTP {e.code} {e.read()[:300]!r}")
             continue
         except Exception as e:  # noqa: BLE001 -- spike tool, show everything
-            print(f"FAIL  {img.name}: {type(e).__name__}: {e}")
+            print(f"FAIL  {label}: {type(e).__name__}: {e}")
             continue
 
         dt = time.time() - t0
-        (outdir / f"{img.stem}.json").write_text(
+        (outdir / f"{base}.json").write_text(
             json.dumps(recipe, indent=2, ensure_ascii=False), encoding="utf-8")
         status = "auto-OK" if not problems else "; ".join(problems)
-        rows.append((img.name, f"{dt:.1f}s", status))
-        print(f"OK    {img.name:35} {dt:5.1f}s  {status}")
+        rows.append((label, f"{dt:.1f}s", status))
+        print(f"OK    {label:35} {dt:5.1f}s  {status}")
 
     stamp = time.strftime("%Y-%m-%d %H:%M")
     md = [

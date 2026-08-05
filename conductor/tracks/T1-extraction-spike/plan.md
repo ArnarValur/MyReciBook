@@ -18,16 +18,25 @@ verdict: made together on spike/out/results.md evidence — 9 of 10 "y" or stop
     B. mlkit-text (spike weekend, S21) — the real v1 pipeline
   If B ≈ A → ship B with image-retry fallback on low confidence (cheapest).
   If B ≪ A → ship image-direct and accept the cost (still pennies, report §4).
+- D4 incomplete captures (agreed 2026-08-05, smoke-test finding) — when steps/fields
+  are missing, the import screen detects it (`needs_review` + auto-checks) and asks
+  the user to add another screenshot. The model must NOT deduce or invent missing
+  content — faking mormor's steps breaks the "rescue YOUR recipe" promise. AI
+  fill-in is post-alpha scope at best, its own decision if ever.
 
 ## Steps
 1. Any evening pre-festival (~30 min, phone + laptop): 10 honest screenshots →
-   spike/screenshots/ (cropped ones, one handwritten, one Icelandic if real) ·
+   spike/screenshots/ — from where recipes actually live: Instagram posts/stories,
+   random recipe sites, social media; multi-screenshot recipes as name-1/name-2
+   (agreed 2026-08-06: no Icelandic framing — sources are English web/social) ·
    free Gemini key from aistudio.google.com · smoke-run harness on 1 image.
+   → Partially done 2026-08-05: key set, 4 screenshots (2 recipes), smoke PASSED.
 2. Any evening (~1 h, optional bonus — pulls Gate 1 earlier): full arm-A run,
    skim out/*.json, tune structure_prompt.md, rerun.
 3. Sat 22 Aug (~4 h, Claude Code on the Flutter-enabled host, S21 via USB):
-   build ocr_dump from spike/ocr_dump_main.dart, OCR the 10 screenshots on-device,
-   adb pull the dumps, run arm B (--mode text).
+   OCR the 10 screenshots on-device, adb pull the dumps, run arm B (--mode text).
+   → APK prebuilt 2026-08-06: spike/out/ocr_dump.apk (gitignored, on disk) —
+   step is now install + run, ~1 h.
 4. Sun 23 Aug (~3 h): pick the winning arm, fix worst prompt failures, final run,
    fill the y/n column in out/results.md.
 5. By Sun 30 Aug: Gate-1 verdict into pulse + relay (a scheduled session convenes
