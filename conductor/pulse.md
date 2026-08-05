@@ -19,6 +19,10 @@
 - Schema v1: source.original_images is an ARRAY; extraction.mode enum image|ocr_text.
 - app/ scaffold live: com.merkurialstudio.myrecibook (locked, Play-permanent).
   Domain + data layers written, `flutter analyze` clean. No tests/UI yet.
+- Design set arrived EARLY 2026-08-06 (mid-festival bonus): 8 screens →
+  docs/design/*.png = the skin spec; several solved open UX questions (pairing
+  toggle, flagged-only review, provenance flip). D9: link door = blogs-only
+  JSON-LD, post-alpha; social links → honest screenshot redirect.
 - Gemini free-tier key in .env (gitignored); dev key via --dart-define (T3 D2).
 - ocr_dump APK built → spike/out/ocr_dump.apk (gitignored, on disk) — arm B ready
   for S21 whenever USB is convenient.
@@ -46,9 +50,12 @@
 4. 20 Aug 09:00 (scheduled): kickoff — Play Console registration + spike status.
 
 ## 📌 Parked
-- Post-alpha scope: paywall · sync connectors · grocery engine · inbox strip (D5) ·
-  full editing (D6) · proxy build (D2, MUST land before 11 Dec) · camera-roll
-  auto-scan (Arnar's idea 2026-08-06 — feeds the same share/pick door) · polish.
+- Post-alpha scope (designs ready for most, T3 plan §design): paywall 1e · sync
+  connectors 1f · grocery engine + serving-rescale · inbox/batch queue (D5, 2b) ·
+  full editing (D6) · proxy build (D2, MUST land before 11 Dec) · link door
+  (D9, blogs-only) · cook mode 1d · camera-roll auto-scan + cleanup nudge · polish.
+- Snap-a-page "handwriting welcome": UNTESTED promise — spike-test grandma's card
+  before any listing copy (D9 flag).
 - ADR 0001 (schema v1) — graduates on Gate-1 pass; fold the constraint-3
   amendment story in when it does.
 - T2 landing page (live 2 Sep target).

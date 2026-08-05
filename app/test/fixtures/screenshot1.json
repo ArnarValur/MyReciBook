@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "id": "c9a8f4e2-6b31-4a12-8231-1e9f0d7b2a89",
+  "title": "Chicken Breasts with Creamed Spinach",
+  "lang": "en",
+  "source": {
+    "type": "screenshot",
+    "imported_at": null,
+    "original_image": null,
+    "app_hint": null
+  },
+  "servings": null,
+  "times": null,
+  "ingredients": [
+    {
+      "raw": "4 boneless, skinless chicken breasts, about 1-pound",
+      "qty": 4,
+      "unit": null,
+      "item": "boneless, skinless chicken breasts",
+      "note": "about 1-pound",
+      "group": "FOR THE CHICKEN BREASTS",
+      "confidence": 1.0
+    },
+    {
+      "raw": "1 tablespoon olive oil, plus more for drizzling",
+      "qty": 1,
+      "unit": "tablespoon",
+      "item": "olive oil",
+      "note": "plus more for drizzling",
+      "group": "FOR THE CHICKEN BREASTS",
+      "confidence": 1.0
+    },
+    {
+      "raw": "salt and freshly ground black pepper, to taste",
+      "qty": null,
+      "unit": null,
+      "item": "salt and freshly ground black pepper",
+      "note": "to taste",
+      "group": "FOR THE CHICKEN BREASTS",
+      "confidence": 1.0
+    },
+    {
+      "raw": "½ teaspoon smoked or sweet paprika",
+      "qty": 0.5,
+      "unit": "teaspoon",
+      "item": "smoked or sweet paprika",
+      "note": null,
+      "group": "FOR THE CHICKEN BREASTS",
+      "confidence": 1.0
+    },
+    {
+      "raw": "½ teaspoon garlic powder",
+      "qty": 0.5,
+      "unit": "teaspoon",
+      "item": "garlic powder",
+      "note": null,
+      "group": "FOR THE CHICKEN BREASTS",
+      "confidence": 1.0
+    },
+    {
+      "raw": "½ teaspoon dried basil",
+      "qty": 0.5,
+      "unit": "teaspoon",
+      "item": "dried basil",
+      "note": null,
+      "group": "FOR THE CHICKEN BREASTS",
+      "confidence": 1.0
+    },
+    {
+      "raw": "½ teaspoon dried rosemary",
+      "qty": 0.5,
+      "unit": "teaspoon",
+      "item": "dried rosemary",
+      "note": null,
+      "group": "FOR THE CHICKEN BREASTS",
+      "confidence": 1.0
+    },
+    {
+      "raw": "1 tablespoon olive oil",
+      "qty": 1,
+      "unit": "tablespoon",
+      "item": "olive oil",
+      "note": null,
+      "group": "FOR THE CREAMED SPINACH",
+      "confidence": 1.0
+    },
+    {
+      "raw": "1 small yellow onion, finely diced",
+      "qty": 1,
+      "unit": null,
+      "item": "small yellow onion",
+      "note": "finely diced",
+      "group": "FOR THE CREAMED SPINACH",
+      "confidence": 1.0
+    },
+    {
+      "raw": "3 cloves garlic, minced",
+      "qty": 3,
+      "unit": "cloves",
+      "item": "garlic",
+      "note": "minced",
+      "group": "FOR THE CREAMED SPINACH",
+      "confidence": 1.0
+    },
+    {
+      "raw": "¾ cups low sodium chicken broth",
+      "qty": 0.75,
+      "unit": "cups",
+      "item": "low sodium chicken broth",
+      "note": null,
+      "group": "FOR THE CREAMED SPINACH",
+      "confidence": 1.0
+    },
+    {
+      "raw": "1 cup heavy cream",
+      "qty": 1,
+      "unit": "cup",
+      "item": "heavy cream",
+      "note": null,
+      "group": "FOR THE CREAMED SPINACH",
+      "confidence": 1.0
+    },
+    {
+      "raw": "10 ounces baby spinach",
+      "qty": 10,
+      "unit": "ounces",
+      "item": "baby spinach",
+      "note": null,
+      "group": "FOR THE CREAMED SPINACH",
+      "confidence": 1.0
+    },
+    {
+      "raw": "½ cup freshly grated parmesan cheese",
+      "qty": 0.5,
+      "unit": "cup",
+      "item": "parmesan cheese",
+      "note": "freshly grated",
+      "group": "FOR THE CREAMED SPINACH",
+      "confidence": 1.0
+    }
+  ],
+  "steps": [
+    {
+      "raw": "Season the chicken. Rub the chicken breasts with a drizzle of olive oil and season with salt, pepper, paprika garlic powder, basil, and rosemary.",
+      "confidence": 1.0
+    },
+    {
+      "raw": "Sear the chicken. Heat 1 tablespoon olive oil in a skillet set over medium heat. Place chicken breasts in the skillet and cook for 8 minutes, or until chicken is easy to move and edges are opaque.",
+      "confidence": 1.0
+    },
+    {
+      "raw": "Cook. Flip over; cover the pan, and lower heat to medium-low. Continue to cook for 10 minutes. Remove chicken from skillet, keep covered, and set aside.",
+      "confidence": 1.0
+    },
+    {
+      "raw": "Sauté the onions and garlic. In the same skillet, heat 1 tablespoon olive oil. Add diced onions and cook over medium heat for 3 minutes, or until softened. Stir in the garlic and cook for 30 seconds or until fragrant.",
+      "confidence": 1.0
+    }
+  ],
+  "tags": [],
+  "notes": null,
+  "extraction": {
+    "model": "gpt-4o",
+    "mode": "image",
+    "extracted_at": "2025-02-21T23:42:00Z",
+    "overall_confidence": 0.85,
+    "needs_review": [
+      "title",
+      "steps"
+    ]
+  }
+}

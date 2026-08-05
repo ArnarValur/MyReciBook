@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "3f2a8c1e-7b4d-4e2a-9c6f-example00001",
+  "title": "Ömmupönnukökur",
+  "lang": "is",
+  "source": {
+    "type": "screenshot",
+    "imported_at": "2026-08-05T21:00:00Z",
+    "original_image": "images/3f2a8c1e-7b4d-4e2a-9c6f-example00001.jpg",
+    "app_hint": null
+  },
+  "servings": { "amount": 12, "raw": "ca. 12 pönnukökur" },
+  "times": { "prep_min": 10, "cook_min": 20, "total_min": null, "raw": "10 mín + 20 mín á pönnu" },
+  "ingredients": [
+    { "raw": "250 g hveiti", "qty": 250, "unit": "g", "item": "hveiti", "note": null, "group": null, "confidence": 0.99 },
+    { "raw": "2–3 msk sykur", "qty": 2, "unit": "msk", "item": "sykur", "note": "2–3", "group": null, "confidence": 0.95 },
+    { "raw": "smjör á pönnuna", "qty": null, "unit": null, "item": "smjör", "note": "á pönnuna", "group": "Til steikingar", "confidence": 0.85 }
+  ],
+  "steps": [
+    { "raw": "Hrærið saman þurrefnin.", "confidence": 1.0 },
+    { "raw": "Bætið mjólk og eggjum við og hrærið þar til slétt.", "confidence": 1.0 }
+  ],
+  "tags": ["dessert"],
+  "notes": null,
+  "extraction": {
+    "model": "example",
+    "mode": "image",
+    "extracted_at": "2026-08-05T21:00:05Z",
+    "overall_confidence": 0.93,
+    "needs_review": ["ingredients[2].qty"]
+  }
+}

@@ -39,3 +39,13 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   his camera-roll auto-scan idea is parked post-v1, enters the same door.
 - Next: engine remainder in Claude Code (tests → bare UI → device run);
   Arnar: 6 honest screenshots (~20 min).
+
+## 2026-08-06 (design drop) — Arnar's 8 screens land · link door decided
+- Arnar delivered the full skin spec early, mid-festival: import sheet, batch
+  queue, review, cookbook, detail, cook mode, paywall, storage → docs/design/.
+  Four screens solved open engine questions (pairing toggle, flagged-only review,
+  provenance flip, cap-on-the-wall paywall).
+- Decided together (T3 D9): link import = post-alpha bonus, blogs-only via
+  JSON-LD, no AI cost; social links get "screenshot the caption" honesty —
+  report §6.5's droppable-bonus, which Arnar's own annotation re-derived.
+- Next: unchanged — engine tests in Code; Arnar: screenshots, festival first.

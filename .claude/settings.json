@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /home/solmundur/Projects/MyReciBook status --short --branch)",
+      "Bash(git -C /home/solmundur/Projects/MyReciBook log --oneline -5)"
+    ]
+  }
+}

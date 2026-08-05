@@ -4,6 +4,7 @@
 // Key comes from --dart-define=GEMINI_API_KEY (P5: dev key behind a compile
 // flag for the closed track; swaps to the thin proxy with ~1 h of client work).
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -18,9 +19,14 @@ class GeminiExtractor implements Extractor {
 
   final String model;
   final String apiKey;
+  final Duration timeout;
   final http.Client _client;
 
-  GeminiExtractor({this.model = _defaultModel, String? apiKey, http.Client? client})
+  GeminiExtractor(
+      {this.model = _defaultModel,
+      String? apiKey,
+      this.timeout = const Duration(seconds: 120),
+      http.Client? client})
       : apiKey = apiKey ?? _apiKey,
         _client = client ?? http.Client();
 
@@ -72,16 +78,29 @@ class GeminiExtractor implements Extractor {
                   'temperature': 0.1,
                 },
               }))
-          .timeout(const Duration(seconds: 120));
+          .timeout(timeout);
     } on SocketException catch (e) {
       throw ExtractionException('offline: ${e.message}');
+    } on TimeoutException {
+      throw ExtractionException('no response after ${timeout.inSeconds} s');
+    } on http.ClientException catch (e) {
+      throw ExtractionException('offline: ${e.message}');
+    } on IOException catch (e) {
+      // e.g. HandshakeException on captive-portal WiFi — the extractor
+      // contract (extractor.dart) is ExtractionException on any transport
+      // failure, so the review screen's failed→retry (D5) always triggers.
+      throw ExtractionException('offline: $e');
     }
     if (resp.statusCode != 200) {
       throw ExtractionException(resp.body, httpStatus: resp.statusCode);
     }
 
     try {
-      final body = jsonDecode(resp.body) as Map<String, dynamic>;
+      // bodyBytes + utf8: package:http falls back to latin1 when the response
+      // omits a charset, which mojibakes ½/⅓/é — common in recipe text.
+      // allowMalformed keeps truly foreign bytes from crashing the parse.
+      final body = jsonDecode(utf8.decode(resp.bodyBytes, allowMalformed: true))
+          as Map<String, dynamic>;
       var text = (((body['candidates'] as List).first as Map)['content']
           as Map)['parts'][0]['text'] as String;
       text = text

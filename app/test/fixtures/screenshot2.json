@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "id": "e22d9c4f-6d04-4b53-a5e2-628f89e4719c",
+  "title": "Slow Cooker Beef and Broccoli",
+  "lang": "en",
+  "source": {
+    "type": "screenshot",
+    "imported_at": null,
+    "original_image": null,
+    "app_hint": null
+  },
+  "servings": null,
+  "times": null,
+  "ingredients": [
+    {
+      "raw": "1 1/2 lb. thinly sliced sirloin or round steak (about 1/4-inch-thick pieces)",
+      "qty": 1.5,
+      "unit": "lb.",
+      "item": "sirloin or round steak",
+      "note": "thinly sliced (about 1/4-inch-thick pieces)",
+      "group": null,
+      "confidence": 0.95
+    },
+    {
+      "raw": "1/2 cup soy sauce",
+      "qty": 0.5,
+      "unit": "cup",
+      "item": "soy sauce",
+      "note": null,
+      "group": null,
+      "confidence": 0.98
+    },
+    {
+      "raw": "1/3 cup packed light brown sugar",
+      "qty": 0.33,
+      "unit": "cup",
+      "item": "light brown sugar",
+      "note": "packed",
+      "group": null,
+      "confidence": 0.98
+    },
+    {
+      "raw": "2 Tbsp. toasted sesame oil",
+      "qty": 2.0,
+      "unit": "Tbsp.",
+      "item": "toasted sesame oil",
+      "note": null,
+      "group": null,
+      "confidence": 0.98
+    },
+    {
+      "raw": "1 Tbsp. rice vinegar",
+      "qty": 1.0,
+      "unit": "Tbsp.",
+      "item": "rice vinegar",
+      "note": null,
+      "group": null,
+      "confidence": 0.98
+    },
+    {
+      "raw": "1 tsp. grated fresh ginger",
+      "qty": 1.0,
+      "unit": "tsp.",
+      "item": "fresh ginger",
+      "note": "grated",
+      "group": null,
+      "confidence": 0.98
+    },
+    {
+      "raw": "1 garlic clove, grated",
+      "qty": 1.0,
+      "unit": "clove",
+      "item": "garlic",
+      "note": "grated",
+      "group": null,
+      "confidence": 0.98
+    },
+    {
+      "raw": "1/4 tsp. black pepper",
+      "qty": 0.25,
+      "unit": "tsp.",
+      "item": "black pepper",
+      "note": null,
+      "group": null,
+      "confidence": 0.98
+    },
+    {
+      "raw": "1 Tbsp. cornstarch",
+      "qty": 1.0,
+      "unit": "Tbsp.",
+      "item": "cornstarch",
+      "note": null,
+      "group": null,
+      "confidence": 0.98
+    },
+    {
+      "raw": "1 12-ounce package broccoli florets, halved if large (about 4 cups)",
+      "qty": 1.0,
+      "unit": "12-ounce package",
+      "item": "broccoli florets",
+      "note": "halved if large (about 4 cups)",
+      "group": null,
+      "confidence": 0.95
+    },
+    {
+      "raw": "Cooked white rice, for serving",
+      "qty": null,
+      "unit": null,
+      "item": "white rice",
+      "note": "cooked, for serving",
+      "group": null,
+      "confidence": 0.95
+    },
+    {
+      "raw": "Sliced scallions, toasted sesame seeds and/or sriracha, for topping",
+      "qty": null,
+      "unit": null,
+      "item": "scallions, toasted sesame seeds, sriracha",
+      "note": "sliced, for topping",
+      "group": null,
+      "confidence": 0.9
+    }
+  ],
+  "steps": [],
+  "tags": [],
+  "notes": null,
+  "extraction": {
+    "model": "gemini-2.5-flash",
+    "mode": "image",
+    "extracted_at": null,
+    "overall_confidence": 0.75,
+    "needs_review": [
+      "steps"
+    ]
+  }
+}

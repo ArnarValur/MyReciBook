@@ -6,6 +6,11 @@ opened: pulled forward 2026-08-06 (originally 21 Sep) · status: engine slice st
 division: Arnar owns UI/design (sketches after festival); agent owns the engine.
           Skins replace widgets and colors, never flows (editable review, delete,
           reorder are load-bearing — architecture review 2026-08-06).
+design:   skin spec = docs/design/*.png (Arnar, 2026-08-06 — arrived early).
+          Alpha skin targets: 1a review · 1b cookbook · 1c detail · 2a
+          single-recipe import path. Post-alpha with designs READY: batch queue
+          2b · cook mode 1d · paywall 1e · storage setup 1f · camera-roll cleanup
+          nudge · serving-rescale→grocery.
 architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork session):
               all 8 proposals agreed → D2–D8 below. Draft §9 maps P# → D#.
 
@@ -35,6 +40,13 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   Play Integrity only if real abuse appears.
 - D8 (telemetry, 2026-08-06) none in alpha — no crash/analytics SDK. Play vitals +
   12 named testers cover the closed test. Revisit at production as its own decision.
+- D9 (2026-08-06, decided on Arnar's mockups) link-import door = post-alpha BONUS,
+  blogs only: read the schema.org/Recipe JSON-LD food blogs already publish; a
+  clean parse costs NO AI rescue (never touches the cap). Social links (TikTok/IG)
+  are NOT fetched — honest redirect: "screenshot the caption — that always works"
+  (report §6.5 droppable-bonus framing; §5 treadmill 1 avoided). ~2–3 nights when
+  its turn comes. Flag: "handwriting welcome" (Snap-a-page) is an UNTESTED promise
+  — must pass a spike test before it appears in any listing copy.
 
 ## State (2026-08-06 checkpoint)
 - app/ scaffold (Flutter 3.44, Android-only) · deps: http, image_picker, uuid,
@@ -49,7 +61,7 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
    §3 + T1 plan updated.
 2. Tests: round-trip semantic equality (fixture from spike example), validator cases.
 3. Bare UI: list / import→review(editable) / detail(+delete, notes). Flows only —
-   skin comes from Arnar's post-festival sketches.
+   skin spec: docs/design/*.png (arrived 2026-08-06, ahead of schedule).
 4. Device run on S21 with dev key (--dart-define): first real end-to-end import.
 5. Then per grill verdicts: share-sheet plumbing, SAF store (arch §8 budgets).
 

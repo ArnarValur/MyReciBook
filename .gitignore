@@ -12,3 +12,4 @@ build/
 # spike — private inputs/outputs stay out of git
 spike/screenshots/
 spike/out/
+app/dev.env

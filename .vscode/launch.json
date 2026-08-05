@@ -1,0 +1,31 @@
+{
+  // Debug configs — S21 shows up as "SM G998B". Key comes from app/dev.env
+  // (gitignored; regenerate with: sed -E 's/^export //' .env > app/dev.env).
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "MyReciBook (S21, dev key)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "app",
+      "program": "lib/main.dart",
+      "args": ["--dart-define-from-file=dev.env"]
+    },
+    {
+      "name": "MyReciBook (no key — UI only)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "app",
+      "program": "lib/main.dart"
+    },
+    {
+      "name": "MyReciBook (profile)",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "app",
+      "program": "lib/main.dart",
+      "flutterMode": "profile",
+      "args": ["--dart-define-from-file=dev.env"]
+    }
+  ]
+}

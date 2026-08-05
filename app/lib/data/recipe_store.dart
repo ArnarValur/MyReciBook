@@ -36,6 +36,18 @@ class LocalFolderStore implements RecipeStore {
 
   Directory get _imagesDir => Directory('${root.path}/images');
 
+  // Arch §7 hostile-folder safety: a foreign JSON's id/original_images must
+  // never resolve outside root. Ids are uuid filename stems; images stay
+  // under images/.
+  static bool _safeId(String id) =>
+      id.isNotEmpty &&
+      !id.contains('/') &&
+      !id.contains('\\') &&
+      !id.contains('..');
+
+  static bool _safeImagePath(String rel) =>
+      rel.startsWith('images/') && _safeId(rel.substring('images/'.length));
+
   @override
   Future<StoreResult> listAll() async {
     if (!await root.exists()) return const StoreResult([], 0);
@@ -60,14 +72,21 @@ class LocalFolderStore implements RecipeStore {
 
   @override
   Future<Recipe?> load(String id) async {
+    if (!_safeId(id)) return null;
     final file = File('${root.path}/$id.json');
     if (!await file.exists()) return null;
-    return Recipe.fromJson(jsonDecode(await file.readAsString()) as Map<String, dynamic>);
+    try {
+      return Recipe.fromJson(
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>);
+    } catch (_) {
+      return null; // corrupt file: same never-fatal stance as listAll (§7)
+    }
   }
 
   @override
   Future<Recipe> save(Recipe recipe, List<File> cachedImages) async {
     final blocking = fileProblems(recipe.toJson()).where(isSaveBlocking).toList();
+    if (!_safeId(recipe.id)) blocking.add('unsafe id "${recipe.id}"');
     if (blocking.isNotEmpty) {
       throw StateError('refusing to save invalid recipe: ${blocking.join('; ')}');
     }
@@ -100,6 +119,7 @@ class LocalFolderStore implements RecipeStore {
 
   @override
   Future<void> delete(String id) async {
+    if (!_safeId(id)) return;
     final file = File('${root.path}/$id.json');
     List<String>? images;
     if (await file.exists()) {
@@ -112,6 +132,7 @@ class LocalFolderStore implements RecipeStore {
       await file.delete();
     }
     for (final rel in images ?? const <String>[]) {
+      if (!_safeImagePath(rel)) continue;
       final img = File('${root.path}/$rel');
       if (await img.exists()) await img.delete();
     }
