@@ -64,4 +64,5 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   screenshots, watch it extract → edit → save. Debug config you asked for is
   live: Run and Debug → "MyReciBook (S21, dev key)".
 - Watch-out: the design-drop session's commit swept this work in early (f05d8c5)
-  — harmless solo; graduated to technical rule 7. Next: queue 1–3 in pulse.
+  — harmless solo; both sessions graduated the same lesson, merged as technical
+  rule 5 (dev.env = 6, utf8 = 7). Next: queue 1–3 in pulse.
