@@ -21,3 +21,16 @@
    anything: `git status --short` and READ it — foreign changes mean a sibling
    session is active. Stage explicit paths only; never `add -A`, never
    reset/rebase/amend while a sibling may hold the index.
+5. `--dart-define-from-file` cannot parse shell-style `export KEY=...` (root
+   .env is shell-sourced by the spike harness). Device/IDE builds read the
+   gitignored mirror app/dev.env — regenerate on key rotation with:
+   `sed -E 's/^export //' .env > app/dev.env` (2026-08-06).
+6. package:http decodes `resp.body` as latin1 when the response omits a charset
+   → ½/⅓/é mojibake in recipe text. Always
+   `utf8.decode(resp.bodyBytes, allowMalformed: true)`; pinned by extractor
+   test. Applies to the future proxy client too (2026-08-06).
+7. Parallel agent sessions on this repo are real: the design-drop session
+   committed mid-engine-build (f05d8c5) and swept uncommitted work into its
+   message. At checkpoint: check `git log` since session start BEFORE writing
+   conductor files; stage explicit paths, never `git add -A`; reconcile the
+   other session's pulse/relay edits, never clobber (2026-08-06).

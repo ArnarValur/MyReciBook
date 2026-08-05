@@ -4,52 +4,46 @@
 ## 📍 Now
 - Phase: pre-project (kickoff 2026-08-20); constraint 4 amended — building
   unblocked, gates decide ship/stop (context.md §4).
-- Architecture SETTLED 2026-08-06: /grill closed all 8 proposals in a cowork
-  session (~40 min, three recommend-first rounds, all agreed as recommended)
-  → T3 D2–D8 · T1 graduation gains fixtures · constraint 3 amended ("stateless
-  except the cap counter", context.md §3). Draft §9 is the P#→D# map.
-  Engine now builds on settled ground.
-- Division of labor: Arnar owns UI/design (sketches after festival ~mid-Aug);
-  agent owns the engine. Skins replace widgets, never flows.
-- Teach-while-building GRADUATED to behavioral rule 14 (explicit yes 2026-08-06):
-  plain-words explainers before jargon, visual maps for decisions. Two-folders
-  model (Gallery = input; SAF recipe folder = owned output) cleared real confusion.
-- T1 smoke PASSED 2026-08-06: 2 real recipes (2 screenshots each, ads, dark
-  mode) → clean JSON, arm A, gemini-3.6-flash, free tier. No hallucinated steps.
-- Schema v1: source.original_images is an ARRAY; extraction.mode enum image|ocr_text.
-- app/ engine slice LEAPT AHEAD (live Code session, 2026-08-06, committed in
-  f05d8c5): domain + data + bare UI (list / import-review / detail) + 4 test
-  suites + spike fixtures (P7 realized). UNVERIFIED here — no Flutter in the
-  Cowork sandbox; Code session must `flutter test` + analyze before more building.
-- Design set arrived EARLY 2026-08-06 (mid-festival bonus): 8 screens →
-  docs/design/*.png = the skin spec; several solved open UX questions (pairing
-  toggle, flagged-only review, provenance flip). D9: link door = blogs-only
-  JSON-LD, post-alpha; social links → honest screenshot redirect.
-- Gemini free-tier key in .env (gitignored); dev key via --dart-define (T3 D2).
-- ocr_dump APK built → spike/out/ocr_dump.apk (gitignored, on disk) — arm B ready
-  for S21 whenever USB is convenient.
+- Engine slice BUILT + ON DEVICE 2026-08-06 night: 77 tests green (spike outputs
+  = golden fixtures, P7) + bare UI (list / import→review-edit / detail+notes+
+  delete, D3–D6) + debug APK with dev key installed and launched clean on the
+  S21. 15-agent workflow: 3-lens adversarial review, 11 findings → 7 confirmed
+  → all fixed (stuck spinner, transport retries, path confinement, ½-mojibake,
+  FAB double-tap, notes-save errors, test gaps).
+- Design set arrived EARLY (mid-festival bonus): 8 screens → docs/design/*.png =
+  the skin spec; D9: link door = blogs-only JSON-LD, post-alpha; social → honest
+  screenshot redirect. "Handwriting welcome" promise UNTESTED (D9 flag).
+- Division of labor: Arnar owns skin (spec now in docs/design), agent owns
+  engine. Skins replace widgets, never flows.
+- Schema v1: original_images ARRAY; extraction.mode enum image|ocr_text.
+  Known-accepted alpha edges: re-save orphans old images; copyWith can't null
+  notes; 0-ingredient captures save (symmetric with no-steps retake flow).
+- VS Code debug live: .vscode/launch.json → "MyReciBook (S21, dev key)"; key
+  mirrors .env → gitignored app/dev.env (technical rule 5 has the regen line).
+- Gemini free-tier key in .env; ocr_dump APK on disk (arm B ready).
+- T1 smoke PASSED (arm A, gemini-3.6-flash): 2 multi-image recipes → clean JSON.
 
 ## 🚀 Active tracks
 - T1 extraction-spike — smoke passed; needs 6 more honest screenshots (English
   web/social — NO Icelandic framing) + arm B run. Plan: conductor/tracks/T1-…/plan.md
-- T3 mvp-build — grilled; engine slice continues (tests are next).
+- T3 mvp-build — engine slice done through bare UI, app running on the S21;
+  next: Arnar's real import, then share-sheet + SAF store (arch §8).
   Plan: conductor/tracks/T3-mvp-build/plan.md
 
 ## ⚠️ Blockers
 - Play Console fee: Arnar pays AFTER the festival (next week); registration still
   20 Aug morning. Any review snag hits the 19 Oct alpha chain.
-- ~~Sandbox git locks~~ RESOLVED 2026-08-06: the sandbox can now self-clean via
-  Cowork's delete permission (rule 12 updated). No cleanup one-liner needed.
 
 ## 📋 Next queue
-1. Verify the engine slice (Claude Code session): `flutter test` + analyze —
-   tests/UI/fixtures are already written (f05d8c5). Then device run on S21
-   with dev key (--dart-define): first real end-to-end import.
+1. Arnar (~10 min, app already on the phone): MyReciBook → + → pick the two
+   smoke screenshots → watch extract → edit → save. First real end-to-end import.
 2. Arnar (~20 min): 6 more honest screenshots → spike/screenshots/, pairs as
    name-1/name-2 — completes the Gate-1 test set.
 3. Arm B on S21: install spike/out/ocr_dump.apk, OCR the set, adb pull dumps,
    harness --mode text → fill results.md y/n → Gate 1 verdict (due 30 Aug).
-4. 20 Aug 09:00 (scheduled): kickoff — Play Console registration + spike status.
+4. Agent next session: share-sheet plumbing + SAF store (arch §8 budgets), then
+   alpha skin per docs/design (1a review · 1b cookbook · 1c detail · 2a import).
+5. 20 Aug 09:00 (scheduled): kickoff — Play Console registration + spike status.
 
 ## 📌 Parked
 - Post-alpha scope (designs ready for most, T3 plan §design): paywall 1e · sync
@@ -61,4 +55,3 @@
 - ADR 0001 (schema v1) — graduates on Gate-1 pass; fold the constraint-3
   amendment story in when it does.
 - T2 landing page (live 2 Sep target).
-- SAF store impl + share-sheet plumbing (arch §8 budgets; build wk 1–2).

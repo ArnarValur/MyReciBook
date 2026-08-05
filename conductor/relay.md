@@ -53,3 +53,15 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   ×3 screens, 4 test suites, spike fixtures) — a Cowork `add -A` swept it in.
   Nothing lost; graduated as technical rule 5. Code session: `flutter test`
   before building further — its work is committed but unverified-run here.
+
+## 2026-08-06 (night) — engine slice done: 77 tests + bare UI, running on the S21
+- What happened: a 15-agent workflow built the slice in one night — engine tests
+  (spike fixtures as goldens) + bare UI in parallel, then a 3-lens adversarial
+  review: 11 findings, 7 survived the skeptics, all fixed (stuck import spinner,
+  unreachable retry on timeouts, hostile-path confinement, ½-mojibake, FAB
+  double-tap, silent notes-save loss). Debug APK installed + launched clean on S21.
+- For Arnar: the app is ON YOUR PHONE — open it, hit +, pick the two smoke
+  screenshots, watch it extract → edit → save. Debug config you asked for is
+  live: Run and Debug → "MyReciBook (S21, dev key)".
+- Watch-out: the design-drop session's commit swept this work in early (f05d8c5)
+  — harmless solo; graduated to technical rule 7. Next: queue 1–3 in pulse.
