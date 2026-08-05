@@ -11,9 +11,9 @@
   Engine now builds on settled ground.
 - Division of labor: Arnar owns UI/design (sketches after festival ~mid-Aug);
   agent owns the engine. Skins replace widgets, never flows.
-- Arnar wants to LEARN while we build (asked 2026-08-06): explain production
-  concepts in plain words as they arise — the two-folders model cleared real
-  confusion (Gallery = input via share/pick; SAF recipe folder = owned output).
+- Teach-while-building GRADUATED to behavioral rule 14 (explicit yes 2026-08-06):
+  plain-words explainers before jargon, visual maps for decisions. Two-folders
+  model (Gallery = input; SAF recipe folder = owned output) cleared real confusion.
 - T1 smoke PASSED 2026-08-06: 2 real recipes (2 screenshots each, ads, dark
   mode) → clean JSON, arm A, gemini-3.6-flash, free tier. No hallucinated steps.
 - Schema v1: source.original_images is an ARRAY; extraction.mode enum image|ocr_text.
@@ -32,6 +32,8 @@
 ## ⚠️ Blockers
 - Play Console fee: Arnar pays AFTER the festival (next week); registration still
   20 Aug morning. Any review snag hits the 19 Oct alpha chain.
+- ~~Sandbox git locks~~ RESOLVED 2026-08-06: the sandbox can now self-clean via
+  Cowork's delete permission (rule 12 updated). No cleanup one-liner needed.
 
 ## 📋 Next queue
 1. Engine slice remainder (Claude Code session): tests — round-trip semantic
