@@ -1,0 +1,9 @@
+# Flutter/Dart (build phase starts 2026-09-21)
+build/
+.dart_tool/
+.idea/
+*.iml
+
+# local-only
+.claude/settings.local.json
+.DS_Store
