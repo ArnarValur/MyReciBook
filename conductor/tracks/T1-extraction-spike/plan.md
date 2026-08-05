@@ -43,5 +43,7 @@ verdict: made together on spike/out/results.md evidence — 9 of 10 "y" or stop
    this if it hasn't happened).
 
 ## Rollback / cleanup
-spike/ is throwaway validation tooling — the app never imports it. On pass: schema +
-prompt graduate (ADR 0001, app assets). On stop: archive per context.md §Gates.
+spike/ is throwaway validation tooling — the app never imports it. On pass, THREE
+artifacts graduate: schema + prompt (ADR 0001, app assets) + out/*.json as golden
+test fixtures (P7 grilled 2026-08-06 — real model output becomes the app's
+regression test data). On stop: archive per context.md §Gates.

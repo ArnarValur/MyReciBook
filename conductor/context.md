@@ -18,6 +18,9 @@ Crouton, Mela and Pestle, and none can follow quickly.
 2. Pay-once, hard paywall, stated fair-use AI cap in the listing from day one.
    Never "unlimited forever" — it can't be clawed back.
 3. No backend beyond a thin extraction proxy. One JSON file per recipe, user's storage.
+   (Amended 2026-08-06 at the P2 grill, agreed with Arnar: the proxy is stateless
+   EXCEPT the per-install fair-use cap counter — constraint 2's stated cap is
+   unenforceable without counting. The proxy never stores recipe content.)
 4. Validation gates decide shipping and continuation, not building. (Amended
    2026-08-06 at Arnar's direction: agent-hours made building cheap, so building
    ahead is allowed — but Gate 1/2 verdicts still decide whether anything ships

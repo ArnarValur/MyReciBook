@@ -1,10 +1,10 @@
 # MyReciBook — architecture draft
 
 *DRAFT v2, 2026-08-06 — rewritten after a 3-lens adversarial review (constraints ·
-build-realism · consistency; 22 findings folded in). For /grill — nothing here is
-settled until grilled. Decided facts cite context.md / T1 plan; proposals are
-marked **P#** and are the grill targets. This doc must never re-litigate the bet
-or pull post-alpha scope forward (context.md §The bet, §Gates).*
+build-realism · consistency; 22 findings folded in). GRILLED 2026-08-06: every P#
+below is settled — §9 maps each to its decision home. P# prose stays as the record
+of why. This doc must never re-litigate the bet or pull post-alpha scope forward
+(context.md §The bet, §Gates).*
 
 *Team = Arnar + agents. The scarce resource is Arnar's human hours, not headcount.*
 
@@ -145,18 +145,15 @@ lib/ui       import · review (edit) · list · detail (+ delete, notes)
 | SAF lifecycle (persistable grant, re-pick, scan strategy) | build wk 1–2 | 2–3 |
 | Play closed-track admin: signing, privacy policy URL (host on the 2 Sep landing page), Data Safety form (declares images-to-server — draft when P5 lands), content rating, target API, 12 testers | build wk 3, NOT wk 4 | 1–2 |
 
-## 9. Open questions → /grill
+## 9. Grilled 2026-08-06 — all 8 agreed as recommended (cowork session)
 
-1. **P1** index: rescan-only until ~100 recipes — agree the threshold?
-2. **P2** cap: static secret + install_id, Play Integrity only on abuse — agree?
-3. **P3** state: Provider enough?
-4. **P4** cut inbox from alpha, plain retry on cached copy — agree?
-5. **P5** proxy deferred to post-alpha, dev key behind flag for the closed track —
-   acceptable risk?
-6. **P6** review-screen editing minimum (title + raw lines); post-save editing =
-   notes only in v1, full edit post-alpha — agree?
-7. **P7** spike out/*.json graduate as fixtures (amend T1 plan)?
-8. Telemetry: **recommendation = none in alpha.** A Sentry-class SDK is a second
-   backend under constraint 3 and muddies the Data Safety form; Play vitals +
-   12 named testers cover the closed test. Revisit at production as its own
-   decision.
+*Verdicts live as decisions, one fact one home; this table is the map.*
+
+1. **P1** → T3 D4 — rescan-only; cache at ~100 recipes, from measured scan times
+2. **P2** → T3 D7 + context.md §3 amendment — cap counter is tolerated proxy state
+3. **P3** → T3 D3 — ChangeNotifier + Provider, revisit only on real pain
+4. **P4** → T3 D5 — inbox cut from alpha; plain retry on the cached copy
+5. **P5** → T3 D2 — proxy post-alpha; restricted capped dev key in the closed track
+6. **P6** → T3 D6 — pre-save: title + raw lines; post-save: notes only in v1
+7. **P7** → T1 plan graduation — spike out/*.json become golden test fixtures
+8. Telemetry → T3 D8 — none in alpha; revisit at production as its own decision

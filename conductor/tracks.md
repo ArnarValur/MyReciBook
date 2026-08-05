@@ -6,7 +6,7 @@
 |---|---|---|---|
 | T1 | extraction-spike | groundwork ready — spike w/e 22–23 Aug | toolkit done 5 Aug (spike/); Gate 1 verdict by 30 Aug |
 | T2 | landing-page | planned — live 2 Sep | "Rescue your camera roll" page → Gate 2: 200 signups by 20 Sep |
-| T3 | mvp-build | pulled forward 2026-08-06 — engine build started | Arnar: UI/design after festival; agent builds under-the-skin. extract → save → list → open; alpha 19 Oct |
+| T3 | mvp-build | architecture grilled 2026-08-06 — engine build continues | 8/8 verdicts → plan D2–D8; extract → save → list → open; alpha 19 Oct; Arnar skins after festival |
 | T4 | launch | planned — 16 Nov→11 Dec | listing, ASO, launch content → production 2026-12-11 |
 
 Errands (not tracks): Play Console registration — before 12 Aug; lives in pulse ⚠️.
