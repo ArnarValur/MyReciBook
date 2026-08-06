@@ -66,6 +66,35 @@ void main() {
     expect((await AppSettings.load(file())).activeConnector, isNull);
   });
 
+  test('themeMode round-trips; unknown value reads as system', () async {
+    final s = await AppSettings.load(file());
+    expect(s.themeMode, 'system'); // missing → default
+
+    await s.setThemeMode('dark');
+    expect(s.themeMode, 'dark');
+    expect((await AppSettings.load(file())).themeMode, 'dark');
+
+    await s.setThemeMode('light');
+    expect((await AppSettings.load(file())).themeMode, 'light');
+
+    await s.setThemeMode('system');
+    expect((await AppSettings.load(file())).themeMode, 'system');
+
+    // A corrupt/foreign entry is the default, never a crash.
+    await file().writeAsString(jsonEncode({'theme_mode': 'sepia'}));
+    expect((await AppSettings.load(file())).themeMode, 'system');
+  });
+
+  test('corrupt file still recovers themeMode default and stays writable',
+      () async {
+    await file().create(recursive: true);
+    await file().writeAsString('{broken');
+    final s = await AppSettings.load(file());
+    expect(s.themeMode, 'system');
+    await s.setThemeMode('dark'); // writable after recovery
+    expect((await AppSettings.load(file())).themeMode, 'dark');
+  });
+
   test('corrupt file still recovers activeConnector default', () async {
     await file().create(recursive: true);
     await file().writeAsString('{broken');

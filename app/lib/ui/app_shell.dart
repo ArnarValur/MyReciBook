@@ -213,7 +213,11 @@ class _AppShellState extends State<AppShell> {
           ),
           _built[1] ? const GroceryTab() : const SizedBox.shrink(),
           _built[2] ? const PlanTab() : const SizedBox.shrink(),
-          _built[3] ? const SettingsTab() : const SizedBox.shrink(),
+          // Settings reuses the drawer Storage row's exact destination wiring.
+          _built[3]
+              ? SettingsTab(
+                  folderName: widget.folderName, onOpenStorage: _openStorage)
+              : const SizedBox.shrink(),
         ],
       ),
       bottomNavigationBar:

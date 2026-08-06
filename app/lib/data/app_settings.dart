@@ -34,7 +34,16 @@ class AppSettings {
     return v == 'drive' || v == 'dropbox' ? v as String : null;
   }
 
+  /// Theme preference ('system' / 'light' / 'dark'); default system.
+  /// Unknown values read as 'system' — a corrupt entry is a default, not a crash.
+  String get themeMode {
+    final v = _data['theme_mode'];
+    return v == 'light' || v == 'dark' ? v as String : 'system';
+  }
+
   Future<void> setTreeUri(String? uri) => _write('tree_uri', uri);
+
+  Future<void> setThemeMode(String mode) => _write('theme_mode', mode);
 
   Future<void> setActiveConnector(String? provider) =>
       _write('active_connector', provider);

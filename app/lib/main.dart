@@ -27,6 +27,7 @@ import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
 import 'ui/storage_model.dart';
 import 'ui/theme.dart';
+import 'ui/theme_model.dart';
 
 typedef ImagePick = Future<List<File>> Function();
 
@@ -91,6 +92,10 @@ Future<void> main() async {
   final share = ShareEntry(takePending: intake.takePending);
   intake.onShared = share.push;
 
+  // App-lifetime like storage: outlives BootGate re-entries, so buildApp
+  // providers it with .value and never disposes it.
+  final themeModel = ThemeModel(settings: settings);
+
   final picker = ImagePicker();
   final extractor = GeminiExtractor();
   Future<List<File>> pickImages() async =>
@@ -115,6 +120,7 @@ Future<void> main() async {
         share: share,
         grocery: grocery,
         storage: storage,
+        themeModel: themeModel,
         onGrantLost: onGrantLost,
         onChangeFolder: onChangeFolder,
         folderName: folderDisplayName(settings.treeUri),
@@ -137,6 +143,7 @@ Widget buildApp({
   ShareEntry? share,
   GroceryStore? grocery,
   StorageModel? storage,
+  ThemeModel? themeModel,
   VoidCallback? onGrantLost,
   VoidCallback? onChangeFolder,
   String? folderName,
@@ -149,6 +156,12 @@ Widget buildApp({
           ChangeNotifierProvider<StorageModel>.value(value: storage)
         else
           ChangeNotifierProvider<StorageModel>(create: (_) => StorageModel()),
+        // Same .value rule; the inert default is stuck on ThemeMode.system —
+        // the exact pre-settings behavior, so the test seam stays unchanged.
+        if (themeModel != null)
+          ChangeNotifierProvider<ThemeModel>.value(value: themeModel)
+        else
+          ChangeNotifierProvider<ThemeModel>(create: (_) => ThemeModel()),
         ChangeNotifierProvider(
             create: (ctx) => LibraryModel(store,
                 onGrantLost: onGrantLost,
@@ -167,17 +180,22 @@ Widget buildApp({
                 save: (recipe, images) =>
                     ctx.read<LibraryModel>().saveImported(recipe, images))),
       ],
-      child: MaterialApp(
-        title: 'MyReciBook',
-        theme: rbLightTheme(),
-        darkTheme: rbDarkTheme(),
-        home: AppShell(
-          extractor: extractor,
-          picker: picker,
-          camera: camera,
-          share: share,
-          folderName: folderName,
-          onChangeFolder: onChangeFolder,
+      // Consumer, not a plain read: MaterialApp.themeMode must react live
+      // when the settings tab changes the preference.
+      child: Consumer<ThemeModel>(
+        builder: (_, themeModel, child) => MaterialApp(
+          title: 'MyReciBook',
+          theme: rbLightTheme(),
+          darkTheme: rbDarkTheme(),
+          themeMode: themeModel.mode,
+          home: AppShell(
+            extractor: extractor,
+            picker: picker,
+            camera: camera,
+            share: share,
+            folderName: folderName,
+            onChangeFolder: onChangeFolder,
+          ),
         ),
       ),
     );

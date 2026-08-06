@@ -16,6 +16,7 @@ import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/app_shell.dart';
 import 'package:myrecibook/ui/folder_gate.dart';
 import 'package:myrecibook/ui/grocery_tab.dart';
+import 'package:myrecibook/version.dart';
 
 import '../data/fake_saf_channel.dart';
 
@@ -105,7 +106,7 @@ void main() {
     await tester.tap(find.text('Settings'));
     await tester.pump();
     expect(stackIndex(tester), 3);
-    expect(find.text('Settings land post-alpha.'), findsOneWidget);
+    expect(find.text('APPEARANCE'), findsOneWidget); // real settings surface
 
     await tester.tap(find.text('Cookbook'));
     await tester.pump();
@@ -126,7 +127,8 @@ void main() {
     expect(find.text('Your copy'), findsOneWidget);
     expect(find.text('Storage'), findsOneWidget);
     expect(find.text('Help & feedback'), findsOneWidget);
-    expect(find.text('MyReciBook 1.0 · you own this copy'), findsOneWidget);
+    expect(find.text('MyReciBook $kAppVersion · you own this copy'),
+        findsOneWidget);
     // Honest state: local-only alpha never claims sync; no fake queue badge.
     expect(find.textContaining('synced'), findsNothing);
     expect(find.text('This phone'), findsOneWidget);

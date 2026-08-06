@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../version.dart';
 import 'theme.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -191,7 +192,10 @@ class AppDrawer extends StatelessWidget {
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Text('MyReciBook 1.0 · you own this copy',
+                // kAppVersion so this and the settings About footer can't
+                // drift apart (5c mock shows "1.0"; the pubspec truth is
+                // 1.0.0 — honesty over mock-verbatim here).
+                child: Text('MyReciBook $kAppVersion · you own this copy',
                     style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 11, color: scheme.onSurfaceVariant)),
               ),
