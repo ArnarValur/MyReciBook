@@ -110,3 +110,15 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   hyperfocus etiquette (no clock talk, banked stays banked) — behavioral
   candidate, needs his explicit yes next session.
 - Next: Code night 1 = SAF (firing); fee Fri if strong; Gate 1 target: w/e.
+
+## 2026-08-06 (day, cowork) — T2 channel research (deep-research + verify)
+- Where MyReciBook gets seen: full playbook → docs/marketing-channels.md.
+  Gate-2 five: r/SideProject · r/alphaandbetausers · FB answer-posting
+  (Declutter 365 / Grandma's Secret Recipes / Instant Pot) · r/Cooking
+  comments · XDA beta post. BetaList $39 optional; $100 ads = skip (noise).
+- Verification killed: r/androidapps (bans ALL self-promo + tester asks),
+  r/ADHD, Product-Hunt-as-install-driver. Beckman = 616K subs, Dec series real.
+- Launch pitches: Beckman → Android Police (Jon Gilbert; ReciMe screenshot
+  import reported broken May 2026 = the angle) → AA Walker → Show HN local-first.
+- Bet scope: "can't follow me" = Crouton/Mela/Pestle only; ReciMe wedge =
+  pay-once + working screenshot import + owned files (doc §7).

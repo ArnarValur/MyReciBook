@@ -33,6 +33,10 @@
 - T3 mvp-build — tonight-max sequence in queue below.
   Plan: conductor/tracks/T3-mvp-build/plan.md
 - T2 landing-page — startable off-repo anytime; external date: live 2 Sep.
+  Channel research DONE (2026-08-06) → docs/marketing-channels.md: 5 Gate-2
+  venues, tester pipeline, launch pitch list. r/androidapps is DEAD for us
+  (bans all self-promo incl. tester asks). Ambient entry fee: account history
+  in FB groups + r/Cooking before any posting.
 
 ## ⚠️ Blockers
 - Storage connect 3h needs creds Arnar creates in console: Dropbox app-folder
@@ -49,7 +53,9 @@
    Arnar's creds activate it the moment they land.
 2. Arnar, now, parallel: console creds for 3h (Dropbox app + Drive OAuth
    client, ~30 min) — only him-task blocking a Code item.
-3. Arnar, off-repo: T2 landing design.
+3. Arnar, off-repo: T2 landing design + pick his 5 Gate-2 venues
+   (docs/marketing-channels.md §1) + join the FB groups / comment in
+   r/Cooking so accounts have history when posting starts.
 4. Arnar's call: Play fee $25 when build meets his bar → billing 3g joins.
 5. External: festival 12–16 Aug (QR, 12 testers) · 20 Aug 09:00 kickoff
    (scheduled).
