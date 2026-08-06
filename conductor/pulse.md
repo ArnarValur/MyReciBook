@@ -44,7 +44,8 @@
 1. Arnar: hands-on pass on the S21 (all 6 items live) → strong-build verdict
    → fee $25 if met → Code wires billing 3g (D10 shape, license testers).
 2. Arnar, parallel: console creds → two dev.env lines → storage goes live.
-3. Arnar, Claude Design: DEVIATION sweep + settings screen + turn-5 handoff.
+3. Arnar, Claude Design: paste docs/design-handoff-turn6.md (all 18 flags
+   packaged, settings screen = headline ask) → ratify/redraw → turn 6.
 4. Arnar, off-repo: T2 landing design + pick 5 Gate-2 venues
    (docs/marketing-channels.md §1) + seed FB/r/Cooking account history.
 5. External: festival 12–16 Aug (QR, 12 testers) · 20 Aug 09:00 kickoff.
