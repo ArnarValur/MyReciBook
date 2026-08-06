@@ -4,58 +4,53 @@
 ## 📍 Now
 - Phase: pre-project (kickoff 2026-08-20); constraint 4 amended — building
   unblocked, gates decide ship/stop (context.md §4).
-- Engine + ALL 12 hi-fi screens LIVE on the S21 (2026-08-06): 77 tests green,
-  analyze clean; 7 screens alpha-wired, 5 as dev-gallery previews (long-press
-  wordmark). As-built detail → docs/design/skin-implementation-map.md.
+- NOW-MODE (explicit yes 2026-08-06): the queue is a SEQUENCE, not a schedule.
+  Never calendar-frame Arnar's tasks; dates only for external deadlines.
+  All-nighters normal. Items Arnar removes STAY removed → behavioral.md 15–16.
+- GATE 1 (extraction): PASSED — Arnar's in-app judgment on his own screenshots,
+  recorded 2026-08-06 on his report; results ritual waived. T1 CLOSED. Arm B
+  (ocr_dump) parked: tuning fallback only. DO NOT resurrect recipe-set tasks.
+- Tier-3 daily quota cap + billing alert: DONE (Arnar) — D2 baked-key fuse set.
+- Engine + ALL 12 hi-fi screens LIVE on the S21: 77 tests green, analyze clean;
+  7 alpha-wired, 5 dev-gallery. As-built → docs/design/skin-implementation-map.md.
 - Schema v1: original_images ARRAY · extraction.mode enum · optional favorite
-  bool (emitted only when true — old files round-trip byte-identical).
-- Arnar owns design; agent owns engine + skin. Skins replace widgets, never flows.
+  bool. Arnar owns design; agent owns engine + skin. Skins replace widgets,
+  never flows.
 - T3 D10 monetization: 3 LIFETIME free imports → hard wall → one-time unlock,
-  ~$25 anchor (§6.2 Crouton precedent; final price = T4); price stated ON the
-  landing page so Gate 2 is price-aware.
-- BLITZ (agreed 2026-08-06): 4 Code nights before 12 Aug — share-sheet+SAF →
-  grocery 4a → batch 3b + manual entry → settings + D9. Billing 3g JOINS if
-  the Play fee lands Fri (Arnar's offer on a strong build); Fri target =
-  closed-test-complete. Out this week: proxy/cap (P5) · sync (constraint 6).
-- T1: arm A judged IN-APP (D5); smoke passed. Dev-key project NOW TIER 3
-  POSTPAY (quota-cap task queued); ocr_dump APK on disk (arm B ready).
-- Proxy home direction: Cloud Run beside Gemini (service-identity auth, no
-  storable key); Firebase BaaS = no. Play account = PERSONAL (trade name only)
-  → 12-tester/14-day closed test stands; festival QR recruiting required.
-- Arnar's stake (2026-08-06): 150 paid users (≈$3.2k net ≈ ~30k NOK) funds a
-  formal org registration — his company milestone ≈ the shape of a passed Gate 3.
+  ~$25 anchor (§6.2); price stated ON the landing page (Gate 2 price-aware).
+- BLITZ = sequence, not nights: share-sheet+SAF (in flight, live Code session)
+  → grocery 4a → batch 3b + manual entry → settings + D9 → billing 3g once the
+  fee is paid. Out until alpha: proxy/cap (P5) · sync (constraint 6).
+- Proxy home: Cloud Run beside Gemini (service identity, no storable key);
+  Firebase no. Play account PERSONAL (trade name) → 12-tester/14-day closed
+  test stands; festival QR recruiting.
+- Arnar's stake: 150 paid users (≈$3.2k net ≈ ~30k NOK) funds formal org
+  registration — his company milestone ≈ the shape of a passed Gate 3.
 
 ## 🚀 Active tracks
-- T1 extraction-spike — arm A in-app (D5); 8 more honest recipes needed
-  (unit = recipes/rows, 10 total) + arm B run (this w/e possible).
-  Plan: conductor/tracks/T1-…/plan.md
-- T3 mvp-build — engine + skin done, on device; blitz nights 1–4 queued
-  (SAF first). Plan: conductor/tracks/T3-mvp-build/plan.md
+- T3 mvp-build — blitz sequence above; SAF in flight now.
+  Plan: conductor/tracks/T3-mvp-build/plan.md
+- T2 landing-page — design startable now (off-repo, Claude Design); email
+  capture only, price on page. External date: live 2 Sep.
 
 ## ⚠️ Blockers
-- Play fee: Fri if the build is strong, else 20 Aug morning — any review snag
-  hits the (now pulled-forward) alpha chain. NO login/account page ever.
+- Play fee $25: on Arnar's call (his condition was a strong build — he's
+  called it working). Google verification + closed track + tester QR + billing
+  3g all queue behind payment. NO login/account page ever.
 
-## 📋 Next queue
-1. Code night 1 (firing now): share-sheet + SAF store (arch §8) — then grocery
-   4a → batch 3b + manual entry → settings + D9, one per night.
-2. Arnar (~25 + ~40 min, banked): 8-recipe honest set → in-app arm A y/n
-   (T1 D5) — judge at review BEFORE edits; skin notes as you go.
-3. Arnar (~10 min, console): daily request cap (~1,000/day) + billing alert
-   (~$10) on the Tier-3 project — the fuse for D2's baked-key risk.
-4. Fri, if build strong: Play fee ($25, personal) → verification → billing
-   night + internal track. Festival 12–16 Aug: QR opt-in, recruit 12 testers.
-5. W/e (~1 h 10): set → spike/screenshots/ (name-1/name-2), arm B run →
-   results.md → early Gate 1 verdict.
-6. Festival-adjacent: T2 landing design in Claude Design — email capture only,
-   price on the page; live 2 Sep.
-7. 20 Aug 09:00 (scheduled): kickoff — registration IF not already done Fri.
+## 📋 Next queue (sequence — start anything now)
+1. Code (running): land SAF + share-sheet → grocery 4a → batch 3b + manual →
+   settings + D9 → billing 3g (post-fee).
+2. Arnar: Play fee $25 (personal) whenever he calls it → verification →
+   internal track → tester QR asset.
+3. Arnar, off-repo: T2 landing design.
+4. External: festival 12–16 Aug — QR opt-in, recruit 12 testers.
+5. Scheduled: 20 Aug 09:00 kickoff — registration IF fee still unpaid then.
 
 ## 📌 Parked
-- Post-alpha: paywall+billing 3g (unless Fri unlock) · storage connectors 3h ·
-  cap counter 4d ($2.99 top-up UNCONFIRMED) · camera-roll auto-scan (post-v1).
+- Arm B ocr_dump — tuning fallback only (Gate 1 passed; no deadline, no queue
+  slot).
+- Post-alpha: storage connectors 3h · cap counter 4d ($2.99 top-up UNCONFIRMED)
+  · camera-roll auto-scan (post-v1).
 - Cover-crop tier 2 spike-gated · handwriting promise UNTESTED (spike before
-  listing copy, D9) · ADR 0001 graduates on Gate-1 pass.
-- Behavioral candidate for next session's explicit yes: hyperfocus etiquette
-  (no clock talk · banked topics stay banked).
-- T2 landing page build (live 2 Sep target).
+  listing copy, D9) · ADR 0001 graduation now due (Gate-1 passed) — next close.

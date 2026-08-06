@@ -32,3 +32,12 @@
     a cue to explain anyway, then bank the agreement — trust without
     understanding is a rubber-stamp, and he doesn't want those. (Asked by Arnar
     2026-08-06, grill session; explicit yes same day.)
+15. Now-mode — Arnar works in long now-blocks; all-nighters are normal. Never
+    calendar-frame his tasks ("tomorrow night", "Friday", "this weekend"): the
+    queue is a SEQUENCE with effort sizes, not a schedule. Dates only for true
+    external deadlines (store review, festival, launch). No clock talk; banked
+    topics stay banked. (Explicit yes 2026-08-06, all-nighter session.)
+16. Removed stays removed — when Arnar strikes an item or declares work he owns
+    done, record his verdict and wipe the item from pulse + plans in the SAME
+    session. Never re-queue it from stale files or chat memory; his done is
+    final for work he owns — don't demand re-proof. (Explicit yes 2026-08-06.)

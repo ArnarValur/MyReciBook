@@ -1,8 +1,8 @@
 # T1 — extraction-spike
 goal: prove screenshot → usable recipe JSON at Gate-1 quality
 gate: GATE 1 (context.md) — verdict due Sun 2026-08-30
-deadline: spike w/e 2026-08-22/23 (pullable to 8–9 Aug) · budget: ~2 days · status: arm A in-app (D5, 2026-08-06)
-verdict: made together on spike/out/results.md evidence — 9 of 10 "y" or stop
+status: CLOSED 2026-08-06 — GATE 1 PASSED on Arnar's in-app judgment (his screenshots, his call, per D5); results ritual waived by Arnar. Arm B parked: tuning fallback only, no deadline.
+verdict: PASSED, recorded on Arnar's report (stated across sessions). Do not re-queue recipe-collection or judging tasks — removed by Arnar 2026-08-06, for good.
 
 ## Decisions
 - D1 recipe schema v1 — DRAFT at spike/recipe.schema.json. Design: `raw` always kept
