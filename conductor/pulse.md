@@ -31,9 +31,9 @@
 ## 🚀 Active tracks
 - T3 mvp-build — alpha surface + turn 6 done; next: Arnar hands-on → fee →
   billing 3g. Plan: conductor/tracks/T3-mvp-build/plan.md
-- T2 landing-page — startable off-repo anytime; live 2 Sep. Channels
-  researched → docs/marketing-channels.md (5 Gate-2 venues, tester
-  pipeline; r/androidapps DEAD; seed FB/r/Cooking account history first).
+- T2 landing-page — myrecibook.com REGISTERED 2026-08-06 (Namecheap, WHOIS
+  privacy, renews 2027-08; receipt in docs/); live 2 Sep. Channels →
+  docs/marketing-channels.md (5 venues; r/androidapps DEAD; seed accounts).
 
 ## ⚠️ Blockers
 - Storage activation ← Arnar's console pass NEXT SESSION, ~35 min —
