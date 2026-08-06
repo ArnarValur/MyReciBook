@@ -400,25 +400,53 @@ GroceryUpdateResult updateRecipeOnList({
     return at >= 0 ? list[at].qtyLabel : null;
   }
 
-  final touched = <String>{
+  final oldByKey = {for (final i in items) i.key: i};
+  final fedKeys = <String>{
     for (final i in items)
       if (i.recipeParts.containsKey(recipe.id)) i.key
   };
+  final touched = Set.of(fedKeys);
+
+  // An update refreshes rows in place — it is not a remove-then-add from the
+  // user's view. Rows this recipe already feeds take the new amounts even when
+  // checked (un-check for the re-add, restore after): the receipt banner is
+  // the change notice, and losing bought-state or a recipe's contribution to
+  // the checked-row exclusion would read as silent data loss. New keys the
+  // edit introduces still get the normal add rules (checked exclusion,
+  // staples dim).
+  var stripped = removeRecipeFromList(items, recipe.id);
+  stripped = [
+    for (final i in stripped)
+      i.checked && fedKeys.contains(i.key) ? i.copyWith(checked: false) : i
+  ];
   final result = addRecipeToList(
-    items: removeRecipeFromList(items, recipe.id),
+    items: stripped,
     recipe: recipe,
     scale: scale,
     categoryOverrides: categoryOverrides,
     mergeAliases: mergeAliases,
   );
-  for (final i in result.items) {
+  final restored = <GroceryItem>[
+    for (final i in result.items) _restoreUpdateState(i, oldByKey[i.key], fedKeys)
+  ];
+  for (final i in restored) {
     if (i.recipeParts.containsKey(recipe.id)) touched.add(i.key);
   }
   var changed = 0;
   for (final key in touched) {
-    if (labelOf(items, key) != labelOf(result.items, key)) changed++;
+    if (labelOf(items, key) != labelOf(restored, key)) changed++;
   }
-  return GroceryUpdateResult(result.items, changed);
+  return GroceryUpdateResult(restored, changed);
+}
+
+GroceryItem _restoreUpdateState(
+    GroceryItem item, GroceryItem? old, Set<String> fedKeys) {
+  if (old == null || !fedKeys.contains(item.key)) return item;
+  var out = item;
+  if (old.checked && !item.checked) out = out.copyWith(checked: true);
+  // A staple the user activated must not re-dim on update.
+  if (!old.staple && item.staple) out = out.copyWith(staple: false);
+  return out;
 }
 
 /// Manual add (undesigned on 4a — engine support only). Same-key lines fold

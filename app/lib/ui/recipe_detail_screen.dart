@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../domain/recipe.dart';
 import 'cook_mode_screen.dart';
 import 'grocery_model.dart';
+import 'import_review_screen.dart';
 import 'library_model.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
@@ -101,6 +102,21 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  // D6 as amended: the saved recipe reopens in the review screen and saves
+  // back. If the recipe feeds the grocery list, its contributions re-sync
+  // (the list is a view, never a snapshot — §6.3); the receipt banner on the
+  // grocery tab carries the change notice.
+  Future<void> _edit() async {
+    final saved = await Navigator.of(context).push<Recipe>(MaterialPageRoute(
+      builder: (_) =>
+          ImportReviewScreen.edit(recipe: _recipe, originals: _originals),
+    ));
+    if (saved == null || !mounted) return;
+    setState(() => _recipe = saved);
+    final grocery = context.read<GroceryModel>();
+    if (grocery.isOnList(saved.id)) await grocery.syncRecipe(saved);
   }
 
   Future<void> _delete() async {
@@ -304,6 +320,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             right: 16,
             child: Row(
               children: [
+                GlassCircle(
+                  key: const Key('edit-button'),
+                  icon: Icons.edit_rounded,
+                  onTap: _edit,
+                ),
+                const SizedBox(width: 8),
                 GlassCircle(
                   key: const Key('favorite-button'),
                   icon: _recipe.favorite

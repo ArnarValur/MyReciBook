@@ -356,4 +356,73 @@ void main() {
     items = setItemCategory(items, items.single.id, 'Asian Pantry');
     expect(items.single.category, 'Asian Pantry');
   });
+
+  // Edit re-sync (D6 amended): an update refreshes rows in place — it must
+  // never destroy bought-state or drop a contribution to checked-exclusion.
+  group('updateRecipeOnList preserves user state', () {
+    test('solo checked row: amount updates, checked survives, change counted',
+        () {
+      var items = addRecipeToList(
+          items: const [],
+          recipe:
+              recipe('r1', [ing('2 lemons', qty: 2, item: 'lemons')])).items;
+      items = toggleChecked(items, items.single.id);
+      final res = updateRecipeOnList(
+          items: items,
+          recipe: recipe('r1', [ing('4 lemons', qty: 4, item: 'lemons')]));
+      expect(res.items.single.checked, isTrue);
+      expect(res.items.single.qtyLabel, '4');
+      expect(res.changedCount, 1);
+    });
+
+    test('shared checked row keeps the recipe contribution (no exclusion)',
+        () {
+      var items = addRecipeToList(
+          items: const [],
+          recipe:
+              recipe('r1', [ing('2 lemons', qty: 2, item: 'lemons')])).items;
+      items = addRecipeToList(
+              items: items,
+              recipe: recipe('r2', [ing('1 lemon', qty: 1, item: 'lemons')]))
+          .items;
+      items = toggleChecked(items, items.single.id);
+      final res = updateRecipeOnList(
+          items: items,
+          recipe: recipe('r1', [ing('5 lemons', qty: 5, item: 'lemons')]));
+      expect(res.items.single.checked, isTrue);
+      expect(res.items.single.qtyLabel, '6');
+      expect(res.items.single.recipeParts.containsKey('r1'), isTrue);
+    });
+
+    test('activated staple never re-dims on update', () {
+      var items = addRecipeToList(
+          items: const [],
+          recipe: recipe('r1', [
+            ing('salt', item: 'salt'),
+            ing('2 eggs', qty: 2, item: 'eggs'),
+          ])).items;
+      items = activateStaple(
+          items, items.firstWhere((i) => i.key == 'salt').id);
+      final res = updateRecipeOnList(
+          items: items,
+          recipe: recipe('r1', [
+            ing('salt', item: 'salt'),
+            ing('4 eggs', qty: 4, item: 'eggs'),
+          ]));
+      expect(res.items.firstWhere((i) => i.key == 'salt').staple, isFalse);
+    });
+
+    test('ingredient the edit removed: its solo row leaves the list', () {
+      final items = addRecipeToList(
+          items: const [],
+          recipe: recipe('r1', [
+            ing('2 lemons', qty: 2, item: 'lemons'),
+            ing('2 eggs', qty: 2, item: 'eggs'),
+          ])).items;
+      final res = updateRecipeOnList(
+          items: items,
+          recipe: recipe('r1', [ing('2 eggs', qty: 2, item: 'eggs')]));
+      expect([for (final i in res.items) i.key], ['eggs']);
+    });
+  });
 }

@@ -26,13 +26,28 @@ class ImportReviewScreen extends StatefulWidget {
   const ImportReviewScreen({
     super.key,
     required this.images,
-    required this.extractor,
-    required this.pickMore,
-  });
+    required Extractor this.extractor,
+    required Future<List<File>> Function() this.pickMore,
+  }) : editing = null;
+
+  /// Post-save edit (D6 as amended 2026-08-06): the saved recipe reopens in
+  /// this screen and saves back over the same file. Text-level only — no
+  /// re-extraction, no image changes — so the envelope (source images,
+  /// extraction stamps, notes, favorite) survives untouched. [originals] are
+  /// the hydrated stored images, display-only. Pops with the saved Recipe.
+  const ImportReviewScreen.edit({
+    super.key,
+    required Recipe recipe,
+    required List<File> originals,
+  })  : editing = recipe,
+        images = originals,
+        extractor = null,
+        pickMore = null;
 
   final List<File> images;
-  final Extractor extractor;
-  final Future<List<File>> Function() pickMore;
+  final Extractor? extractor;
+  final Future<List<File>> Function()? pickMore;
+  final Recipe? editing;
 
   @override
   State<ImportReviewScreen> createState() => _ImportReviewScreenState();
@@ -60,10 +75,27 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     super.dispose();
   }
 
+  bool get _isEdit => widget.editing != null;
+
   @override
   void initState() {
     super.initState();
-    _extract();
+    final editing = widget.editing;
+    if (editing == null) {
+      _extract();
+      return;
+    }
+    // Edit mode: seed straight from the saved file — no extraction call.
+    // toJson() builds fresh maps, so the write-back in _save mutates copies.
+    _content = editing.toJson();
+    _title.text = editing.title;
+    _ingredientCtrls = [
+      for (final i in editing.ingredients) TextEditingController(text: i.raw)
+    ];
+    _stepCtrls = [
+      for (final s in editing.steps) TextEditingController(text: s.raw)
+    ];
+    _phase = _Phase.review;
   }
 
   void _disposeLineCtrls() {
@@ -114,7 +146,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   Future<void> _extract() async {
     setState(() => _phase = _Phase.extracting);
     try {
-      final content = await widget.extractor.extractContent(_images);
+      final content = await widget.extractor!.extractContent(_images);
       if (!mounted) return;
       setState(() {
         _content = content;
@@ -149,7 +181,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   }
 
   Future<void> _addImages() async {
-    final more = await widget.pickMore();
+    final more = await widget.pickMore!();
     if (more.isEmpty || !mounted) return;
     _images.addAll(more);
     // Re-extract over the full list; edits are lost (accepted v1, arch §3.4).
@@ -157,24 +189,49 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   }
 
   Future<void> _save() async {
-    _content['title'] = _title.text.trim();
-    final ings = _content['ingredients'] as List? ?? const [];
-    for (var i = 0; i < _ingredientCtrls.length && i < ings.length; i++) {
-      (ings[i] as Map)['raw'] = _ingredientCtrls[i].text;
-    }
-    final steps = _content['steps'] as List? ?? const [];
-    for (var i = 0; i < _stepCtrls.length && i < steps.length; i++) {
-      (steps[i] as Map)['raw'] = _stepCtrls[i].text;
-    }
+    final Recipe recipe;
+    final editing = widget.editing;
+    if (editing != null) {
+      // Text-level save-back: copyWith keeps the envelope — id, source images,
+      // extraction stamps (rule 2: no extraction happened, nothing re-stamps),
+      // notes, favorite.
+      recipe = editing.copyWith(
+        title: _title.text.trim(),
+        ingredients: [
+          for (var i = 0; i < editing.ingredients.length; i++)
+            editing.ingredients[i].copyWith(
+                raw: i < _ingredientCtrls.length
+                    ? _ingredientCtrls[i].text
+                    : editing.ingredients[i].raw)
+        ],
+        steps: [
+          for (var i = 0; i < editing.steps.length; i++)
+            editing.steps[i].copyWith(
+                raw: i < _stepCtrls.length
+                    ? _stepCtrls[i].text
+                    : editing.steps[i].raw)
+        ],
+      );
+    } else {
+      _content['title'] = _title.text.trim();
+      final ings = _content['ingredients'] as List? ?? const [];
+      for (var i = 0; i < _ingredientCtrls.length && i < ings.length; i++) {
+        (ings[i] as Map)['raw'] = _ingredientCtrls[i].text;
+      }
+      final steps = _content['steps'] as List? ?? const [];
+      for (var i = 0; i < _stepCtrls.length && i < steps.length; i++) {
+        (steps[i] as Map)['raw'] = _stepCtrls[i].text;
+      }
 
-    final recipe = Recipe.assemble(
-      id: const Uuid().v4(),
-      content: _content,
-      originalImages: [for (final f in _images) f.path],
-      importedAt: DateTime.now(),
-      extractorModel: widget.extractor.modelName,
-      extractorMode: widget.extractor.mode,
-    );
+      recipe = Recipe.assemble(
+        id: const Uuid().v4(),
+        content: _content,
+        originalImages: [for (final f in _images) f.path],
+        importedAt: DateTime.now(),
+        extractorModel: widget.extractor!.modelName,
+        extractorMode: widget.extractor!.mode,
+      );
+    }
     final blocking =
         fileProblems(recipe.toJson()).where(isSaveBlocking).toList();
     if (blocking.isNotEmpty) {
@@ -184,8 +241,13 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     }
 
     setState(() => _saving = true);
+    final Recipe saved;
     try {
-      await context.read<LibraryModel>().saveImported(recipe, _images);
+      // Edit mode: empty cachedImages keeps original_images intact (store
+      // contract) — the same seam notes/favorite edits already ride.
+      saved = await context
+          .read<LibraryModel>()
+          .saveImported(recipe, _isEdit ? const [] : _images);
     } on GrantLostException {
       // Review stays mounted — edits and extraction survive; re-pick happens
       // from the list, not by tearing down in-flight work (§7).
@@ -202,7 +264,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
           .showSnackBar(SnackBar(content: Text('Save failed: $e')));
       return;
     }
-    if (mounted) Navigator.of(context).pop();
+    if (mounted) Navigator.of(context).pop(_isEdit ? saved : null);
   }
 
   bool _flagTitle() => _needsReview.contains('title');
@@ -251,9 +313,17 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         Expanded(
           child: Row(
             children: [
-              Text(rescued ? 'Recipe rescued' : 'Rescue',
+              // DEVIATION: edit-mode copy undesigned (D6 amendment predates a
+              // mockup for it) — 'Edit recipe' / 'Save changes' for Arnar to
+              // ratify or redraw.
+              Text(
+                  _isEdit
+                      ? 'Edit recipe'
+                      : rescued
+                          ? 'Recipe rescued'
+                          : 'Rescue',
                   style: theme.textTheme.titleLarge),
-              if (rescued) ...[
+              if (rescued && !_isEdit) ...[
                 const SizedBox(width: 6),
                 const Icon(Icons.check_circle_rounded,
                     size: 19, color: RbColors.success),
@@ -261,7 +331,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
             ],
           ),
         ),
-        if (rescued)
+        if (rescued && !_isEdit)
           TextButton(onPressed: _extract, child: const Text('Retry')),
       ],
     );
@@ -442,7 +512,9 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         ),
       ],
       const SizedBox(height: 14),
-      if (_steps.isEmpty) ...[
+      // Edit mode is text-level (D6 amendment): re-extraction over the saved
+      // recipe would clobber it from stale screenshots, so no add-screenshot.
+      if (_steps.isEmpty && !_isEdit) ...[
         // D4: incomplete capture — ask for another screenshot, never invent.
         TokenCard(
           borderColor: RbColors.warning.withValues(alpha: 0.55),
@@ -479,7 +551,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
       const SizedBox(height: 20),
       FilledButton(
         onPressed: _saving ? null : _save,
-        child: const Text('Save to cookbook'),
+        child: Text(_isEdit ? 'Save changes' : 'Save to cookbook'),
       ),
       const SizedBox(height: 8),
     ];
