@@ -91,3 +91,5 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   skin verified rendering with Arnar's real recipe. Review-note catches all in.
 - For Arnar: open the app — it looks like your mockups now. Long-press the
   wordmark for the post-alpha previews. Next session: share-sheet + SAF.
+- Deep doc: docs/design/skin-implementation-map.md — every deviation + why,
+  where each screen lives, test-contract changes, post-alpha wiring points.

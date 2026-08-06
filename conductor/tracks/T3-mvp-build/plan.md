@@ -9,7 +9,8 @@ division: Arnar owns UI/design (sketches after festival); agent owns the engine.
           reorder are load-bearing — architecture review 2026-08-06).
 design:   skin spec = docs/design/handoff.md (full token→Flutter spec, imported
           2026-08-06 from Arnar's Claude Design project) + docs/design/*.png +
-          review-notes.md catches. Alpha skin BUILT 2026-08-06: 3a import sheet ·
+          review-notes.md catches. As-built map with all deviations:
+          docs/design/skin-implementation-map.md. Alpha skin BUILT 2026-08-06: 3a import sheet ·
           3c review · 3d cookbook · 3e detail (+4b empty, 4c failed) + cook mode
           3f (pure view, wired). Post-alpha screens ALSO BUILT as previews behind
           the debug dev gallery (long-press wordmark): batch 3b · paywall 3g ·
