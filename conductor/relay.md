@@ -145,3 +145,18 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - Checkpoint rule hardened after Arnar's correction: commit EVERYTHING,
   always (behavioral 18) — this checkpoint stages the full tree.
 - Next: Arnar hands-on → fee verdict; storage creds arrive next session.
+
+## 2026-08-06 (Code) — storage creds wired: Drive + Dropbox out of placeholder
+- Arnar ran the console pass from the runbook and handed over both public
+  identifiers. Drive Android client (project gen-lang-client-0166122901) and
+  Dropbox Scoped/App-folder app key are now in .env, mirrored to app/dev.env.
+  Gating is per-connector, so both connectors wake in the same build.
+- His Dropbox settings check out from the screenshot: App folder "MyReciBook",
+  redirect URI byte-exact, public clients ALLOW (PKCE needs that).
+- He asked whether the SHA-1 I printed meant something was wrong — it did not;
+  it was a cross-check against his debug keystore, and it matches.
+- His downloaded client JSON landed in conductor/, which checkpoint commits
+  wholesale — moved to repo root and gitignored (technical rule 10).
+- Status: storage is wired but UNPROVEN — nothing has connected on the phone
+  yet. Next: the runbook's Part C smoke test on the S21, then his hands-on
+  pass and the Play-fee verdict.

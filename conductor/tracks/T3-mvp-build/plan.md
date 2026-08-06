@@ -118,8 +118,13 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   storage manage 6e (supersedes 3h post-setup; remotes restructured to make
   MyReciBook/recipes true) · 6f canonical destructive confirm (shared widget,
   recipe delete migrated). Ratified DEVIATION flags retired. 313 tests.
+- CREDS WIRED (2026-08-06, Arnar's console pass): DRIVE_CLIENT_ID +
+  DROPBOX_APP_KEY in .env → app/dev.env (technical rule 6 sed mirror). Both
+  connectors leave the `placeholder-*` branch together; Dropbox app is Scoped/
+  App-folder with PKCE public clients ALLOW, Drive is an Android client on the
+  debug SHA-1 (values in pulse). UNPROVEN on device — no connect/sync run yet.
 - NOT done: billing 3g (behind fee) · D9 empty-state link caption ·
-  storage activation (creds next session, docs/storage-creds-runbook.md).
+  on-device storage smoke (runbook Part C, docs/storage-creds-runbook.md).
 
 ## Steps
 1. ✔ 2026-08-06 — /grill done (cowork): 8/8 agreed → D2–D8; draft §9 + context.md

@@ -47,3 +47,10 @@
    first (python3, json-style \" \n replacement), then text-search screen ids
    in chunks. Screen annotations and exact copy live in those payloads
    (2026-08-06 night).
+10. OAuth console downloads: an Android client's `client_secret_*.json` holds
+    NO secret (client id + project id only — Android clients authenticate by
+    package name + SHA-1, and PKCE covers the rest). Harmless, but never park
+    console downloads in conductor/ — checkpoint commits that directory
+    wholesale (behavioral 18). Gitignored as `client_secret_*.json`; the live
+    values belong in .env → app/dev.env via the rule-6 sed mirror
+    (2026-08-06).
