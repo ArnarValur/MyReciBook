@@ -1,7 +1,7 @@
 # T1 — extraction-spike
 goal: prove screenshot → usable recipe JSON at Gate-1 quality
 gate: GATE 1 (context.md) — verdict due Sun 2026-08-30
-deadline: spike w/e 2026-08-22/23 · budget: ~2 days · status: groundwork ready (2026-08-05)
+deadline: spike w/e 2026-08-22/23 (pullable to 8–9 Aug) · budget: ~2 days · status: arm A in-app (D5, 2026-08-06)
 verdict: made together on spike/out/results.md evidence — 9 of 10 "y" or stop
 
 ## Decisions
@@ -26,22 +26,28 @@ verdict: made together on spike/out/results.md evidence — 9 of 10 "y" or stop
   the user to add another screenshot. The model must NOT deduce or invent missing
   content — faking mormor's steps breaks the "rescue YOUR recipe" promise. AI
   fill-in is post-alpha scope at best, its own decision if ever.
+- D5 gate instrument (agreed 2026-08-06 eve) — arm A is judged THROUGH THE APP
+  on the S21: the review screen makes the gate's wording ("usable without
+  editing") concrete — judge y/n BEFORE touching an edit field. App-saved JSONs
+  are the arm-A artifacts (pulled → spike/out/ next Code session). The desktop
+  harness --mode image is demoted to prompt-tuning fallback, used only if the
+  score lands under 9. Arm B unchanged — it tests the cheap pipeline the app
+  deliberately doesn't carry yet. Unit fixed: recipes/rows, not screenshots.
 
 ## Steps
-1. Any evening pre-festival (~30 min, phone + laptop): 10 honest screenshots →
-   spike/screenshots/ — from where recipes actually live: Instagram posts/stories,
-   random recipe sites, social media; multi-screenshot recipes as name-1/name-2
-   (agreed 2026-08-06: no Icelandic framing — sources are English web/social) ·
-   free Gemini key from aistudio.google.com · smoke-run harness on 1 image.
-   → Partially done 2026-08-05: key set, 4 screenshots (2 recipes), smoke PASSED.
-2. Any evening (~1 h, optional bonus — pulls Gate 1 earlier): full arm-A run,
-   skim out/*.json, tune structure_prompt.md, rerun.
-3. Sat 22 Aug (~4 h, Claude Code on the Flutter-enabled host, S21 via USB):
-   OCR the 10 screenshots on-device, adb pull the dumps, run arm B (--mode text).
-   → APK prebuilt 2026-08-06: spike/out/ocr_dump.apk (gitignored, on disk) —
-   step is now install + run, ~1 h.
-4. Sun 23 Aug (~3 h): pick the winning arm, fix worst prompt failures, final run,
-   fill the y/n column in out/results.md.
+1. TONIGHT (~25 min, phone only): 8 more honest RECIPES from where recipes
+   actually live — Instagram posts/stories, recipe sites, social media; English
+   web/social framing; ugly ones welcome, no curating; pairs fine → 10 rows
+   total. (Key set, 2 recipes + smoke already done 2026-08-05.)
+2. TONIGHT (~40 min, phone only): arm A through the app (D5) — import each
+   recipe via +, judge y/n at the review screen BEFORE editing, keep the tally.
+   JSONs pulled into spike/out/ next Code session.
+3. This w/e 8–9 Aug if the blitz holds (else Sat 22 Aug), ~1 h 10: copy the set
+   → spike/screenshots/ as name-1/name-2 (~10 min — the harness pairs by
+   filename), install spike/out/ocr_dump.apk (prebuilt, gitignored, on disk),
+   OCR on-device, adb pull dumps, run arm B (--mode text).
+4. Same weekend (~1–2 h): compare arms in out/results.md (app y/n column + arm
+   B column), pick the winner per D3; tune worst prompt failures only if <9.
 5. By Sun 30 Aug: Gate-1 verdict into pulse + relay (a scheduled session convenes
    this if it hasn't happened).
 

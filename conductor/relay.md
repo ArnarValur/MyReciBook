@@ -93,3 +93,15 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   wordmark for the post-alpha previews. Next session: share-sheet + SAF.
 - Deep doc: docs/design/skin-implementation-map.md — every deviation + why,
   where each screen lives, test-contract changes, post-alpha wiring points.
+
+## 2026-08-06 (eve, cowork) — Gate-1 arm A moves into the app · blitz agreed
+- Arnar challenged the spike protocol — he was right: it predated the working
+  app. Decided together (T1 D5): arm A judged in-app on the S21 (y/n at review
+  BEFORE edits); desktop harness demoted to tuning fallback; arm B unchanged.
+  Unit fixed: recipes/rows, not screenshots — 8 more recipes → 10 rows.
+- Pre-festival blitz (constraint 4 as amended): 4 Code nights — share-sheet+SAF
+  → grocery 4a → batch 3b + manual entry → settings + D9. Named out, one reason
+  each: billing (Play acct 20 Aug) · proxy/cap (P5) · sync (constraint 6).
+  Login/account: never, re-affirmed; "signup page" = T2 landing email capture
+  (Arnar designs it festival-adjacent; page live 2 Sep).
+- Next: Arnar's 25-min set + 40-min in-app y/n tonight; Code night 1 = SAF.
