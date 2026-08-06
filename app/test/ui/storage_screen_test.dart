@@ -345,10 +345,12 @@ void main() {
     expect(find.text('Disconnect'), findsOneWidget); // the way out still exists
   });
 
-  testWidgets('drawer storage row tells the truth per state', (tester) async {
+  // The drawer is gone (2026-08-06) — the truthful per-state summary now
+  // surfaces on the Settings storage row (6a), asserted here end-to-end.
+  testWidgets('Settings storage row tells the truth per state', (tester) async {
     final store = LocalFolderStore(Directory('${tmp.path}/recipes'));
 
-    // Connected + a real synced pass → 'Drive · synced just now'.
+    // Connected + a real synced pass → '… · synced just now'.
     final model = await makeModel(tester, connected: true);
     addTearDown(model.dispose);
     await tester.runAsync(model.restore); // empty remote: legitimate pass
@@ -361,14 +363,13 @@ void main() {
     ));
     await settle(tester);
 
-    await tester.tap(find.byKey(const Key('drawer-button')));
+    await tester.tap(find.text('Settings'));
     await settle(tester, rounds: 4);
-    expect(find.text('Drive · synced just now'), findsOneWidget);
-    expect(find.byIcon(Icons.cloud_done_rounded), findsOneWidget);
-    expect(find.textContaining('This phone ·'), findsNothing);
+    expect(find.text('This phone + Google Drive · synced just now'),
+        findsOneWidget);
   });
 
-  testWidgets('drawer storage row shows reconnect when auth is dead',
+  testWidgets('Settings storage row shows reconnect when auth is dead',
       (tester) async {
     final store = LocalFolderStore(Directory('${tmp.path}/recipes'));
     final model =
@@ -383,9 +384,9 @@ void main() {
     ));
     await settle(tester);
 
-    await tester.tap(find.byKey(const Key('drawer-button')));
+    await tester.tap(find.text('Settings'));
     await settle(tester, rounds: 4);
-    expect(find.text('Drive · reconnect'), findsOneWidget);
+    expect(find.text('This phone + Google Drive · reconnect'), findsOneWidget);
     expect(find.textContaining('synced'), findsNothing);
   });
 }

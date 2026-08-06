@@ -48,7 +48,42 @@ class _GroceryTabState extends State<GroceryTab> {
             .showSnackBar(const SnackBar(content: Text('List copied')));
       case 'clear':
         model.clearCompleted();
+      case 'clearAll':
+        _clearAll(model);
     }
+  }
+
+  /// Undo snackbar shared by row-swipe and clear-all: a destructive slip
+  /// mid-shop must cost one tap, not a re-plan.
+  void _undoBar(String label, List<GroceryItem> snapshot) {
+    final model = context.read<GroceryModel>();
+    // removeCurrent (instant), not hideCurrent (animated): the undo bar must
+    // not wait in queue behind a stale toast's exit animation.
+    ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(label),
+        action: SnackBarAction(
+            label: 'Undo', onPressed: () => model.restore(snapshot)),
+      ));
+  }
+
+  Future<void> _clearAll(GroceryModel model) async {
+    // 6f shape — body says what SURVIVES before what stops.
+    final ok = await showDestructiveConfirm(
+      context,
+      title: 'Clear the whole list?',
+      body: 'Your aisle corrections and merge choices are remembered — '
+          'they apply again next time. Every item on the list right now '
+          'is removed.',
+      verb: 'Clear list',
+    );
+    if (!ok || !mounted) return;
+    // Snapshot first, then fire-and-forget: the undo bar must not wait on
+    // the persist (D3: pure op → notify → best-effort persist).
+    final snapshot = model.items;
+    model.clearAll();
+    _undoBar('List cleared', snapshot);
   }
 
   // Simplest recategorize gesture (the per-store aisle switcher is left
@@ -121,6 +156,7 @@ class _GroceryTabState extends State<GroceryTab> {
         itemBuilder: (_) => const [
           PopupMenuItem(value: 'copy', child: Text('Copy list')),
           PopupMenuItem(value: 'clear', child: Text('Clear checked')),
+          PopupMenuItem(value: 'clearAll', child: Text('Clear all…')),
         ],
         child: Container(
           width: 36,
@@ -396,16 +432,35 @@ class _GroceryTabState extends State<GroceryTab> {
         ),
     ]);
 
-    return InkWell(
-      onTap: () => model.toggleItem(item.id),
-      onLongPress: () => _moveSheet(item),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: last
-            ? null
-            : BoxDecoration(
-                border: Border(bottom: BorderSide(color: context.rb.separator))),
-        child: item.staple ? Opacity(opacity: 0.55, child: line) : line,
+    // Swipe left removes ONE row (undo in the snackbar) — the affordance
+    // missing from Arnar's first shop-through, 2026-08-06.
+    return Dismissible(
+      key: ValueKey('grocery-${item.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 8),
+        child: Icon(Icons.delete_rounded, size: 20, color: scheme.error),
+      ),
+      onDismissed: (_) {
+        // Snapshot before the removal notifies; undo bar shows immediately,
+        // never gated on the persist.
+        final snapshot = model.items;
+        model.removeItem(item.id);
+        _undoBar('Removed ${item.name}', snapshot);
+      },
+      child: InkWell(
+        onTap: () => model.toggleItem(item.id),
+        onLongPress: () => _moveSheet(item),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: last
+              ? null
+              : BoxDecoration(
+                  border:
+                      Border(bottom: BorderSide(color: context.rb.separator))),
+          child: item.staple ? Opacity(opacity: 0.55, child: line) : line,
+        ),
       ),
     );
   }

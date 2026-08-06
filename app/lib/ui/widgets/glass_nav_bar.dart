@@ -10,7 +10,12 @@ import '../theme.dart';
 import 'skin.dart';
 
 class GlassNavBar extends StatelessWidget {
-  const GlassNavBar({super.key, required this.active, this.onTab, this.onFab});
+  const GlassNavBar(
+      {super.key,
+      required this.active,
+      this.onTab,
+      this.onFab,
+      this.queueBadge = 0});
 
   final int active;
   final ValueChanged<int>? onTab;
@@ -18,20 +23,32 @@ class GlassNavBar extends StatelessWidget {
   /// Center gradient FAB — the import door (3a) from every tab.
   final VoidCallback? onFab;
 
+  /// Imports needing attention — the drawer badge's count, now on the Queue
+  /// tab (slot 2 since the 2026-08-06 reshape). 0 hides the dot.
+  final int queueBadge;
+
   @override
   Widget build(BuildContext context) {
     final scheme = context.scheme;
     final rb = context.rb;
 
-    Widget item(int i, IconData icon, String label) {
+    Widget item(int i, IconData icon, String label, {int badge = 0}) {
       final selected = i == active;
       final color = selected ? scheme.primary : scheme.onSurfaceVariant;
+      Widget ic = Icon(icon, size: 22, fill: selected ? 1 : 0, color: color);
+      if (badge > 0) {
+        ic = Badge.count(
+            count: badge,
+            backgroundColor: scheme.primary,
+            textColor: scheme.onPrimary,
+            child: ic);
+      }
       return Expanded(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onTab == null ? null : () => onTab!(i),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(icon, size: 22, fill: selected ? 1 : 0, color: color),
+            ic,
             const SizedBox(height: 2),
             Text(label,
                 style: Theme.of(context)
@@ -66,7 +83,11 @@ class GlassNavBar extends StatelessWidget {
                       item(0, Icons.menu_book_rounded, 'Cookbook'),
                       item(1, Icons.checklist_rounded, 'Grocery'),
                       const SizedBox(width: 60),
-                      item(2, Icons.calendar_month_rounded, 'Plan'),
+                      // Slot 2 was Meal plan (hidden behind kMealPlanEnabled
+                      // until an engine exists) — Import queue promoted here,
+                      // Arnar's hands-on pass 2026-08-06.
+                      item(2, Icons.download_rounded, 'Queue',
+                          badge: queueBadge),
                       item(3, Icons.settings_rounded, 'Settings'),
                     ]),
                   ),

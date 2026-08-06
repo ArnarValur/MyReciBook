@@ -3,11 +3,15 @@
 // Inert (no settings — the buildApp test seam's default) it stays
 // ThemeMode.system forever: exactly the pre-settings behavior.
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 
 import '../data/app_settings.dart';
 
-class ThemeModel extends ChangeNotifier {
+/// ValueListenable so BootGate's own MaterialApp (which lives OUTSIDE the
+/// provider tree) can follow the preference too — the gate showed system-dark
+/// over an in-app light choice without it (Arnar's S21 pass, 2026-08-06).
+class ThemeModel extends ChangeNotifier implements ValueListenable<ThemeMode> {
   ThemeModel({AppSettings? settings})
       : _settings = settings,
         _mode = parse(settings?.themeMode);
@@ -16,6 +20,9 @@ class ThemeModel extends ChangeNotifier {
   ThemeMode _mode;
 
   ThemeMode get mode => _mode;
+
+  @override
+  ThemeMode get value => _mode;
 
   /// 'light' / 'dark' → the mode; anything else (null, corrupt) → system.
   static ThemeMode parse(String? v) => switch (v) {

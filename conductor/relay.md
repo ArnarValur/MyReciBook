@@ -2,73 +2,6 @@
 *One entry per session, newest last, ≤10 lines, plain language.
 Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-{date}.md.*
 
-## 2026-08-05 — v3.1 initialized · T1 groundwork · partnership language
-- What happened: emitted the v3.1 conductor into a fresh repo (7cc39dd), then built the
-  whole T1 spike toolkit — schema v1 draft, structuring prompt, zero-dep harness
-  (compile-verified), ocr_dump source. The 22–23 Aug spike is now "run it".
-- For Arnar: ~30 min of phone/laptop time (screenshots + free key) is all that's left
-  before the festival; everything else waits for you, armed.
-- Agreed: Play Console moves to 20 Aug (festival budget; slack spent) · cooperative
-  language everywhere, never authority framing (behavioral rule 13) · STATE.md stays a
-  thin pointer.
-- Scheduled: 20 Aug 09:00 kickoff session · 30 Aug 18:00 Gate-1 verdict session.
-- Next: queue item 1 in pulse (screenshots + key + smoke-run, ~30 min).
-
-## 2026-08-06 — smoke PASSED · constraint 4 amended · engine build began
-- What happened: arm A smoke test on 4 real screenshots (2 multi-image recipes, ads,
-  dark mode) extracted cleanly — no invented steps. Architecture draft written, then
-  3-lens adversarial review (22 findings) → v2; unanimous blocker fixed: schema
-  original_images is now an array. All-nighter: app/ scaffolded
-  (com.merkurialstudio.myrecibook), domain + data layers written, analyze clean;
-  ocr_dump APK built for arm B. Session cut short by an IDE reload — checkpointed.
-- Decided together: constraint 4 amended — gates judge ship/stop, not building
-  (agent-hours changed the cost math) · Arnar owns skin, agent owns engine ·
-  no Icelandic test framing (sources are English web/social) · Play fee after
-  festival · /grill on P1–P7 before building further.
-- Next: grill session, then engine remainder; Arnar: 6 screenshots.
-
-## 2026-08-06 (later) — grill complete: 8/8 settled · taught while deciding
-- What happened: the full /grill ran in a cowork session — visual decision map,
-  then three recommend-first rounds. All 8 agreed as recommended: P1 rescan-only ·
-  P2 cap machinery + constraint-3 amendment · P3 Provider · P4 inbox cut ·
-  P5 proxy post-alpha (restricted dev key in the closed track) · P6 editing
-  minimum · P7 spike outputs = golden fixtures · telemetry none in alpha.
-  Folded same-session: T3 D2–D8 · T1 graduation · context.md §3 · draft §9 · tracks.
-- Learned: Arnar wants concepts taught in plain words as we build — the
-  two-folders model (Gallery input vs owned SAF folder) cleared real confusion;
-  his camera-roll auto-scan idea is parked post-v1, enters the same door.
-- Next: engine remainder in Claude Code (tests → bare UI → device run);
-  Arnar: 6 honest screenshots (~20 min).
-
-## 2026-08-06 (design drop) — Arnar's 8 screens land · link door decided
-- Arnar delivered the full skin spec early, in the pre-festival all-nighter push
-  (festival starts 12 Aug): import sheet, batch
-  queue, review, cookbook, detail, cook mode, paywall, storage → docs/design/.
-  Four screens solved open engine questions (pairing toggle, flagged-only review,
-  provenance flip, cap-on-the-wall paywall).
-- Decided together (T3 D9): link import = post-alpha bonus, blogs-only via
-  JSON-LD, no AI cost; social links get "screenshot the caption" honesty —
-  report §6.5's droppable-bonus, which Arnar's own annotation re-derived.
-- Next: unchanged — engine tests in Code; Arnar: screenshots THIS week (all-nighter
-  window before the 12th) — arm B this week could pull Gate 1 ~3 weeks early.
-- Honest note: f05d8c5 ALSO carries the live Code session's engine slice (bare UI
-  ×3 screens, 4 test suites, spike fixtures) — a Cowork `add -A` swept it in.
-  Nothing lost; graduated as technical rule 5. Code session: `flutter test`
-  before building further — its work is committed but unverified-run here.
-
-## 2026-08-06 (night) — engine slice done: 77 tests + bare UI, running on the S21
-- What happened: a 15-agent workflow built the slice in one night — engine tests
-  (spike fixtures as goldens) + bare UI in parallel, then a 3-lens adversarial
-  review: 11 findings, 7 survived the skeptics, all fixed (stuck import spinner,
-  unreachable retry on timeouts, hostile-path confinement, ½-mojibake, FAB
-  double-tap, silent notes-save loss). Debug APK installed + launched clean on S21.
-- For Arnar: the app is ON YOUR PHONE — open it, hit +, pick the two smoke
-  screenshots, watch it extract → edit → save. Debug config you asked for is
-  live: Run and Debug → "MyReciBook (S21, dev key)".
-- Watch-out: the design-drop session's commit swept this work in early (f05d8c5)
-  — harmless solo; both sessions graduated the same lesson, merged as technical
-  rule 5 (dev.env = 6, utf8 = 7). Next: queue 1–3 in pulse.
-
 ## 2026-08-06 (late) — first REAL import passed on the S21 · cover idea parked
 - Arnar ran the app for real: extract → edit → save worked, and add-screenshot
   pulled the method in — "comes out pretty well for the bare ui". T3 step 4 ✔.
@@ -160,3 +93,19 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - Status: storage is wired but UNPROVEN — nothing has connected on the phone
   yet. Next: the runbook's Part C smoke test on the S21, then his hands-on
   pass and the Play-fee verdict.
+
+## 2026-08-06 (Code, cont.) — Arnar's first hands-on: 7 findings → the app got honest
+- Arnar poked the creds-live build and found 7 issues; all but one landed in
+  code the same session: status-bar icons stranded after the image viewer ·
+  folder screens ignoring his theme · grocery rows now swipe-delete with Undo
+  + Clear all behind the 6f confirm · Quick/Sweet chips hidden (Favorites
+  only) · Meal plan hidden behind a flag (NOT cut — the bet's hook keeps it).
+- Two founder decisions made as partners, against my first defense of the
+  mockups: the 5c DRAWER IS REMOVED (after hiding its dead rows it only
+  duplicated the bar/Settings) and change-folder goes STRAIGHT to the system
+  picker. Cutting the detour exposed a real latent bug: the app subtree now
+  remounts keyed by folder, on purpose instead of by accident.
+- Detail screen: collapsing hero — the cover scrolls away, reading wins.
+- His cover-image wedge (own photo / pick from screenshots) → turn-7 frame;
+  AI-generated covers parked. 315 tests green. Latest APK BUILT, NOT
+  installed — the S21 was unplugged; he's back with the phone after a workout.

@@ -29,10 +29,19 @@ import 'widgets/skin.dart';
 
 class BatchQueueScreen extends StatelessWidget {
   const BatchQueueScreen(
-      {super.key, required this.extractor, required this.pickMore});
+      {super.key,
+      required this.extractor,
+      required this.pickMore,
+      this.embedded = false});
 
   final Extractor extractor;
   final Future<List<File>> Function() pickMore;
+
+  /// True when the screen IS a nav-bar tab (promoted 2026-08-06) rather than a
+  /// pushed route: no Scaffold of its own, and the Hide/Done buttons drop —
+  /// a tab has nothing to pop back to. The pushed form is unchanged, so the
+  /// import flow ("keep them separate") still opens it over the shell.
+  final bool embedded;
 
   Future<void> _reviewNow(
       BuildContext context, BatchModel model, BatchItem item) async {
@@ -90,10 +99,12 @@ class BatchQueueScreen extends StatelessWidget {
       caption = _summary(model);
     }
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+    final content = SafeArea(
+      bottom: !embedded,
+      child: Padding(
+          // Embedded sits under the glass bar (shell sets extendBody), so the
+          // list needs the bar's height as bottom padding instead of 24.
+          padding: EdgeInsets.fromLTRB(20, 12, 20, embedded ? 110 : 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -104,9 +115,10 @@ class BatchQueueScreen extends StatelessWidget {
                         style: theme.textTheme.headlineSmall
                             ?.copyWith(fontSize: 22)),
                   ),
-                  TextButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      child: const Text('Hide')),
+                  if (!embedded)
+                    TextButton(
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        child: const Text('Hide')),
                 ],
               ),
               Text(caption,
@@ -140,30 +152,33 @@ class BatchQueueScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  if (flagged.isNotEmpty) ...[
-                    Expanded(
-                      child: OutlinedButton(
-                          onPressed: () =>
-                              _reviewNow(context, model, flagged.first),
-                          child: Text('Review flagged · ${flagged.length}')),
-                    ),
-                    const SizedBox(width: 10),
+              if (!embedded || flagged.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    if (flagged.isNotEmpty) ...[
+                      Expanded(
+                        child: OutlinedButton(
+                            onPressed: () =>
+                                _reviewNow(context, model, flagged.first),
+                            child: Text('Review flagged · ${flagged.length}')),
+                      ),
+                      if (!embedded) const SizedBox(width: 10),
+                    ],
+                    if (!embedded)
+                      Expanded(
+                        child: FilledButton(
+                            onPressed: () => Navigator.of(context).maybePop(),
+                            child: const Text('Done')),
+                      ),
                   ],
-                  Expanded(
-                    child: FilledButton(
-                        onPressed: () => Navigator.of(context).maybePop(),
-                        child: const Text('Done')),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ],
           ),
-        ),
-      ),
-    );
+        ));
+
+    return embedded ? content : Scaffold(body: content);
   }
 }
 

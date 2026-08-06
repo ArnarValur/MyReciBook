@@ -105,22 +105,28 @@ void main() {
   Future<AppSettings> loadSettings(WidgetTester tester) async =>
       (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
 
-  Widget boot(AppSettings settings, {ShareEntry? share, Extractor? extractor}) =>
-      BootGate(
-        settings: settings,
-        localStore: localStore,
-        imageCache: Directory('${tmp.path}/saf_images'),
-        safChannel: fake.channel,
-        appBuilder: (store, onGrantLost, onChangeFolder) => buildApp(
-          store: store,
-          extractor: extractor ?? FakeExtractor([canned()]),
-          picker: () async => [pick],
-          share: share,
-          onGrantLost: onGrantLost,
-          onChangeFolder: onChangeFolder,
-          folderName: folderDisplayName(settings.treeUri),
-        ),
-      );
+  Widget boot(AppSettings settings, {ShareEntry? share, Extractor? extractor}) {
+    // The app's own navigator key, handed to the gate for ready-phase
+    // dialogs (change-folder confirm), as main.dart wires it.
+    final nav = GlobalKey<NavigatorState>();
+    return BootGate(
+      settings: settings,
+      localStore: localStore,
+      imageCache: Directory('${tmp.path}/saf_images'),
+      safChannel: fake.channel,
+      appNavigatorKey: nav,
+      appBuilder: (store, onGrantLost, onChangeFolder) => buildApp(
+        store: store,
+        extractor: extractor ?? FakeExtractor([canned()]),
+        picker: () async => [pick],
+        share: share,
+        onGrantLost: onGrantLost,
+        onChangeFolder: onChangeFolder,
+        folderName: folderDisplayName(settings.treeUri),
+        navigatorKey: nav,
+      ),
+    );
+  }
 
   void seedSafRecipe(String id, String title) {
     fake.seedFile(
@@ -221,7 +227,7 @@ void main() {
     expect(find.text('Pancakes'), findsOneWidget); // saved on retry
   });
 
-  testWidgets('change folder: cancel or keep-button returns to the running app',
+  testWidgets('change folder: backing out of the picker returns to the app',
       (tester) async {
     await tester.runAsync(() => settingsFile.writeAsString(jsonEncode(
         {'tree_uri': fake.treeUri, 'migration_done': true})));
@@ -232,22 +238,13 @@ void main() {
     await settle(tester);
     expect(find.text('Soup'), findsOneWidget);
 
-    // Deliberate change (the drawer Storage row's plumbing).
-    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
-    await settle(tester, rounds: 4);
-    expect(find.text('Where should your recipes live?'), findsOneWidget);
-
-    // The explicit way back — no picker involved.
-    await tester.tap(find.byKey(const Key('keep-folder-button')));
-    await settle(tester);
-    expect(find.text('Soup'), findsOneWidget);
-
-    // Backing out of the picker also returns instead of stranding.
-    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
-    await settle(tester, rounds: 4);
+    // Deliberate change (Storage screen plumbing) goes STRAIGHT to the
+    // system picker — no gate interstitial (Arnar's UX call, 2026-08-06).
+    // Backing out of the picker is the "keep current folder" path now.
     fake.cancelNextPick = true;
-    await tester.tap(find.byKey(const Key('choose-folder-button')));
-    await settle(tester);
+    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
+    await settle(tester, rounds: 4);
+    expect(find.text('Where should your recipes live?'), findsNothing);
     expect(find.text('Soup'), findsOneWidget);
   });
 
@@ -265,12 +262,13 @@ void main() {
     await settle(tester);
     expect(find.text('Soup'), findsOneWidget);
 
+    // Picker opens directly off the change call; the confirm dialog rises
+    // over the RUNNING app (shared navigator key — no gate behind it).
+    fake.nextPickUri = otherUri;
     tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
     await settle(tester, rounds: 4);
-    fake.nextPickUri = otherUri;
-    await tester.tap(find.byKey(const Key('choose-folder-button')));
-    await settle(tester, rounds: 4);
     expect(find.text('Switch to this folder?'), findsOneWidget);
+    expect(find.text('Soup'), findsOneWidget); // app still up behind it
 
     await tester.tap(find.text('Cancel'));
     await settle(tester);
@@ -278,10 +276,8 @@ void main() {
     expect(settings.treeUri, fake.treeUri);
 
     // Confirmed switch enters the new (empty) folder.
-    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
-    await settle(tester, rounds: 4);
     fake.nextPickUri = otherUri;
-    await tester.tap(find.byKey(const Key('choose-folder-button')));
+    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
     await settle(tester, rounds: 4);
     await tester.tap(find.text('Switch folder'));
     await settle(tester);

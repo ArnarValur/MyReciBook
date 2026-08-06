@@ -206,10 +206,11 @@ void main() {
 
     await tester.tap(find.text('Soup'));
     await settle(tester);
-    // The notes card sits below the fold of the detail list (3e hero + cards);
-    // lazy children must be scrolled into existence before enterText can find
-    // them. `.last` = the top route's ListView (detail, not the cookbook grid).
-    await tester.drag(find.byType(ListView).last, const Offset(0, -600));
+    // The notes card sits below the fold of the detail scroll (collapsing
+    // hero + cards); lazy children must be scrolled into existence before
+    // enterText can find them. Detail is a CustomScrollView since the
+    // 2026-08-06 collapsing-hero change.
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -600));
     await settle(tester);
     await tester.enterText(
         find.byKey(const Key('notes-field')), 'less salt next time');

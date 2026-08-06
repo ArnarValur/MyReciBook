@@ -98,10 +98,14 @@ void main() {
     expect(stackIndex(tester), 1);
     expect(find.byType(GroceryTab), findsOneWidget);
 
-    await tester.tap(find.text('Plan'));
+    // Slot 2 is Import queue since the 2026-08-06 reshape (Plan is behind
+    // kMealPlanEnabled); embedded form has no Hide/Done buttons.
+    await tester.tap(find.text('Queue'));
     await tester.pump();
     expect(stackIndex(tester), 2);
-    expect(find.text('Meal planning lands post-alpha.'), findsOneWidget);
+    expect(find.textContaining('line up here'), findsOneWidget);
+    expect(find.text('Hide'), findsNothing);
+    expect(find.text('Done'), findsNothing);
 
     await tester.tap(find.text('Settings'));
     await tester.pump();
@@ -114,37 +118,37 @@ void main() {
     expect(find.textContaining('Your book is empty'), findsOneWidget);
   });
 
-  testWidgets('drawer: designed rows, honest state, row switches tab',
+  testWidgets('no drawer: bar + Settings carry everything, honestly',
       (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
 
-    await tester.tap(find.byKey(const Key('drawer-button')));
-    await settle(tester, rounds: 4);
+    // The drawer was REMOVED 2026-08-06 (founder decision): after the
+    // dead-end rule hid its engine-less rows, everything left duplicated the
+    // bar or Settings. No menu button, no drawer widget.
+    expect(find.byIcon(Icons.menu_rounded), findsNothing);
+    expect(find.byType(Drawer), findsNothing);
 
-    expect(find.text('Meal plan'), findsOneWidget);
-    expect(find.text('Import queue'), findsOneWidget);
-    expect(find.text('Your copy'), findsOneWidget);
-    expect(find.text('Storage'), findsOneWidget);
-    expect(find.text('Help & feedback'), findsOneWidget);
+    // Settings owns utility now: truthful storage row + version footer.
+    await tester.tap(find.text('Settings'));
+    await settle(tester, rounds: 4);
+    expect(find.text('Where your recipes live'), findsOneWidget);
     // 6a footer rule: version only — no ownership claim without a receipt.
     expect(find.text('MyReciBook $kAppVersion'), findsOneWidget);
     expect(find.textContaining('you own this copy'), findsNothing);
-    // Honest state: local-only alpha never claims sync; no fake queue badge.
+    // Honest state: local-only alpha never claims sync.
     expect(find.textContaining('synced'), findsNothing);
     expect(find.text('This phone'), findsOneWidget);
-
-    await tester.tap(find.text('Meal plan'));
-    await settle(tester, rounds: 4);
-    expect(stackIndex(tester), 2);
-    expect(find.text('Import queue'), findsNothing); // drawer closed
+    // Hidden engines stay hidden (dead-end rule).
+    expect(find.text('Meal plan'), findsNothing);
+    expect(find.text('Your copy'), findsNothing);
   });
 
   testWidgets('FAB opens the import sheet from any tab', (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
 
-    await tester.tap(find.text('Plan'));
+    await tester.tap(find.text('Queue'));
     await tester.pump();
     await tester.tap(find.byType(FloatingActionButton));
     await settle(tester, rounds: 4);
@@ -166,7 +170,7 @@ void main() {
   });
 
   testWidgets(
-      'drawer storage row shows the real folder and reaches re-pick '
+      'Settings storage row shows the real folder and reaches re-pick '
       'through the storage screen', (tester) async {
     final fake = FakeSafChannel()..install();
     addTearDown(fake.uninstall);
@@ -193,27 +197,25 @@ void main() {
     await settle(tester);
     expect(find.textContaining('Your book is empty'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('drawer-button')));
+    await tester.tap(find.text('Settings'));
     await settle(tester, rounds: 4);
-    expect(find.text('This phone · root-id'), findsOneWidget);
+    expect(find.text('This phone'), findsOneWidget);
 
     // The row routes to the 6e storage screen, not straight to the picker.
-    await tester.tap(find.text('Storage'));
+    await tester.tap(find.text('Where your recipes live'));
     await settle(tester, rounds: 6);
     expect(find.text('Plain files, one per recipe. Yours.'), findsOneWidget);
     // Current folder + real library count on the This-phone card.
     expect(find.text('root-id · 0 recipes'), findsOneWidget);
 
-    // 'Change folder' reaches the existing re-pick flow:
-    // first-run copy, never the "lost" copy.
+    // 'Change folder' opens the system picker DIRECTLY — no gate screen in
+    // between (Arnar's UX call, 2026-08-06). Re-picking the SAME folder
+    // keeps the user right where they were: still on Storage, no gate flash.
     await tester.tap(find.text('Change folder'));
     await settle(tester, rounds: 6);
-    expect(find.byKey(const Key('choose-folder-button')), findsOneWidget);
+    expect(find.text('Where should your recipes live?'), findsNothing);
     expect(find.textContaining('access was lost'), findsNothing);
-
-    // Picking again returns to the app intact.
-    await tester.tap(find.byKey(const Key('choose-folder-button')));
     await settle(tester);
-    expect(find.textContaining('Your book is empty'), findsOneWidget);
+    expect(find.text('Plain files, one per recipe. Yours.'), findsOneWidget);
   });
 }

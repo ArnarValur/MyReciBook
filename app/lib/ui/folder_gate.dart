@@ -5,6 +5,7 @@
 
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -23,10 +24,28 @@ class BootGate extends StatefulWidget {
     required this.localStore,
     required this.imageCache,
     required this.appBuilder,
+    this.themeMode,
+    this.appNavigatorKey,
     this.safChannel = const MethodChannel('com.merkurialstudio.myrecibook/saf'),
   });
 
+  /// The READY-phase app's navigator key (main passes the same key into
+  /// buildApp). The change-folder confirm and picker-failure snackbar need a
+  /// navigator while the app is up — a deliberate change no longer passes
+  /// through the gate. Never used as the gate MaterialApp's own key: sharing
+  /// one GlobalKey across the two MaterialApps makes the swap reparent the
+  /// Navigator element and the handoff wedges. Null (tests): ready-phase
+  /// confirm degrades to switch-without-asking.
+  final GlobalKey<NavigatorState>? appNavigatorKey;
+
   final AppSettings settings;
+
+  /// The user's saved theme preference. The gate builds its OWN MaterialApp
+  /// (it lives before the real app's), and without this it defaulted to
+  /// ThemeMode.system — dark gate over a light in-app choice (Arnar's S21
+  /// pass, 2026-08-06). Listenable so a settings change reaches a later
+  /// re-entry (change-folder) without a restart; null keeps system (tests).
+  final ValueListenable<ThemeMode>? themeMode;
 
   /// Pre-gate app-private store — the one-shot migration source.
   final LocalFolderStore localStore;
@@ -34,7 +53,7 @@ class BootGate extends StatefulWidget {
 
   /// Builds the real app once a store exists. The first callback re-enters
   /// the gate on a lost grant; the second is the deliberate change-folder
-  /// door (drawer Storage row) — same gate, first-run copy, nothing "lost".
+  /// door (Storage screen) — straight to the system picker, no gate screen.
   final Widget Function(SafFolderStore store, VoidCallback onGrantLost,
       VoidCallback onChangeFolder) appBuilder;
   final MethodChannel safChannel;
@@ -45,6 +64,13 @@ class BootGate extends StatefulWidget {
 
 class _BootGateState extends State<BootGate> {
   final _nav = GlobalKey<NavigatorState>();
+
+  /// Dialog/snackbar host for the current phase: the running app's navigator
+  /// when ready (deliberate change-folder skips the gate), the gate's own
+  /// otherwise.
+  BuildContext? get _dialogContext => _phase == _Boot.ready
+      ? widget.appNavigatorKey?.currentContext
+      : _nav.currentContext;
   _Boot _phase = _Boot.checking;
   bool _lost = false;
   bool _picking = false;
@@ -107,8 +133,9 @@ class _BootGateState extends State<BootGate> {
       _changing = false;
       await _enter(uri);
     } on PlatformException {
-      // Picker failed to launch (SAF_IO): stay on the gate.
-      final ctx = _nav.currentContext;
+      // Picker failed to launch (SAF_IO): stay where we are (gate, or the
+      // running app on a deliberate change).
+      final ctx = _dialogContext;
       if (ctx != null && ctx.mounted) {
         ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
             content: Text("Couldn't open the folder picker — try again")));
@@ -121,7 +148,7 @@ class _BootGateState extends State<BootGate> {
   /// Switching to a DIFFERENT folder silently shows whatever it holds — an
   /// empty one reads as data loss. Confirm first. Copy undesigned — flagged.
   Future<bool> _confirmSwitch() async {
-    final ctx = _nav.currentContext;
+    final ctx = _dialogContext;
     if (ctx == null) return true;
     final ok = await showDialog<bool>(
       context: ctx,
@@ -193,36 +220,54 @@ class _BootGateState extends State<BootGate> {
     });
   }
 
+  /// Deliberate change (Storage → "Change folder"): straight to the system
+  /// picker — no gate interstitial. The gate screen's only jobs are first run
+  /// and lost grant, where no app exists behind it; here the app itself is the
+  /// "keep current folder" state, so backing out of the picker just returns
+  /// (Arnar's UX call, asked twice, 2026-08-06). The app stays visible under
+  /// the picker overlay; _changing keeps _store so every cancel path resumes.
   void _changeFolder() {
     if (!mounted || _phase != _Boot.ready) return;
-    setState(() {
-      _lost = false;
-      _changing = true; // keep _store: cancelling returns to the app
-      _phase = _Boot.gate;
-    });
+    _lost = false;
+    _changing = true; // keep _store: cancelling returns to the app
+    _pick();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_phase == _Boot.ready) {
-      return widget.appBuilder(_store!, _onGrantLost, _changeFolder);
+      // Keyed by folder: switching to a DIFFERENT folder must remount the
+      // whole app subtree so every provider rebinds to the new store — the
+      // old gate detour did that by accident (the subtree unmounted during
+      // the gate phase); the direct picker path keeps the tree alive, so the
+      // key does it on purpose. Same-folder re-pick keeps state and stays on
+      // the screen the user was on.
+      return KeyedSubtree(
+        key: ValueKey(widget.settings.treeUri),
+        child: widget.appBuilder(_store!, _onGrantLost, _changeFolder),
+      );
     }
-    return MaterialApp(
-      title: 'MyReciBook',
-      navigatorKey: _nav,
-      theme: rbLightTheme(),
-      darkTheme: rbDarkTheme(),
-      home: switch (_phase) {
-        _Boot.gate => FolderGate(
-            lost: _lost,
-            onPick: _pick,
-            onCancel:
-                _changing && _store != null ? _resumeCurrent : null,
-          ),
-        _ => _Busy(
-            label: _phase == _Boot.migrating ? 'Moving your recipes in…' : null),
-      },
-    );
+    final gateHome = switch (_phase) {
+      _Boot.gate => FolderGate(
+          lost: _lost,
+          onPick: _pick,
+          onCancel: _changing && _store != null ? _resumeCurrent : null,
+        ),
+      _ => _Busy(
+          label: _phase == _Boot.migrating ? 'Moving your recipes in…' : null),
+    };
+    MaterialApp app(ThemeMode mode) => MaterialApp(
+          title: 'MyReciBook',
+          navigatorKey: _nav,
+          theme: rbLightTheme(),
+          darkTheme: rbDarkTheme(),
+          themeMode: mode,
+          home: gateHome,
+        );
+    final pref = widget.themeMode;
+    if (pref == null) return app(ThemeMode.system);
+    return ValueListenableBuilder<ThemeMode>(
+        valueListenable: pref, builder: (_, mode, _) => app(mode));
   }
 }
 

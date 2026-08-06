@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../domain/recipe.dart';
+import '../features.dart';
 import 'library_model.dart';
 import 'postalpha/dev_gallery.dart';
 import 'recipe_detail_screen.dart';
@@ -21,14 +22,10 @@ class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({
     super.key,
     required this.onImport,
-    this.onOpenDrawer,
   });
 
   /// The shell's import flow (3a sheet → review) — empty-state button target.
   final VoidCallback onImport;
-
-  /// Opens the shell's drawer (5c) — the header menu button target.
-  final VoidCallback? onOpenDrawer;
 
   @override
   State<RecipeListScreen> createState() => _RecipeListScreenState();
@@ -177,21 +174,8 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
             ),
           ),
         ),
-        // Turn-5 header: the menu button replaces the Synced badge — sync
-        // status now lives in the drawer's Storage row.
-        InkWell(
-          key: const Key('drawer-button'),
-          customBorder: const CircleBorder(),
-          onTap: widget.onOpenDrawer,
-          child: Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-                color: scheme.surfaceContainerHigh, shape: BoxShape.circle),
-            child: Icon(Icons.menu_rounded,
-                size: 18, color: scheme.onSurfaceVariant),
-          ),
-        ),
+        // Wordmark only — the drawer (and its menu button) was removed
+        // 2026-08-06; sync status lives on the Settings storage row (6a).
       ],
     );
   }
@@ -278,8 +262,14 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
       child: Row(children: [
         chip(_Filter.all, 'All'),
         chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
-        chip(_Filter.quick, 'Quick', Icons.bolt_rounded),
-        chip(_Filter.sweet, 'Sweet', Icons.cake_rounded),
+        // Quick/Sweet are drawn in 3d but nothing lets a recipe EARN the tag —
+        // dead filters on real libraries (Arnar's pass, 2026-08-06). Hidden
+        // behind kRecipeTagsEnabled until a tagging design exists; the
+        // predicates above stay live for the flip.
+        if (kRecipeTagsEnabled) ...[
+          chip(_Filter.quick, 'Quick', Icons.bolt_rounded),
+          chip(_Filter.sweet, 'Sweet', Icons.cake_rounded),
+        ],
       ]),
     );
   }

@@ -187,7 +187,6 @@ void main() {
     await put('$idA.json', '{"x":1}');
     final model = await makeModel();
     expect(model.active, isNull);
-    expect(model.drawerSummary(folderName: 'recipes'), 'This phone · recipes');
     expect(model.settingsSummary(), 'This phone'); // 6a: alone when local
 
     await completeConnect(model.connect(StorageModel.drive));
@@ -203,7 +202,6 @@ void main() {
     expect(remote.files.keys, ['$idA.json']);
     expect(model.status.state, SyncState.synced);
     expect(model.remoteFileCount, 1);
-    expect(model.drawerSummary(), 'Drive · synced just now');
     expect(model.statusLine(StorageModel.drive),
         'MyReciBook/recipes · 1 file · synced just now');
     expect(model.settingsSummary(),
@@ -226,7 +224,7 @@ void main() {
     expect(model.notConfigured, 'drive');
     expect(model.active, isNull);
     expect(launched, isEmpty);
-    expect(model.drawerSummary(), 'This phone'); // still honestly local
+    expect(model.settingsSummary(), 'This phone'); // still honestly local
     expect((await AppSettings.load(settingsFile)).activeConnector, isNull);
     model.dispose();
   });
@@ -252,7 +250,6 @@ void main() {
     final model = await makeModel();
     expect(model.active, 'drive');
     expect(model.status.state, SyncState.idle);
-    expect(model.drawerSummary(), 'Drive'); // nothing synced yet: say nothing
     expect(model.statusLine(StorageModel.drive),
         'MyReciBook/recipes · connected');
     expect(model.settingsSummary(), 'This phone + Google Drive'); // no claim
@@ -266,7 +263,8 @@ void main() {
     final model = await makeModel();
     expect(model.active, 'drive');
     expect(model.status.state, SyncState.authRevoked);
-    expect(model.drawerSummary(), 'Drive · reconnect');
+    expect(model.settingsSummary(),
+        'This phone + Google Drive · reconnect');
     model.dispose();
   });
 
@@ -278,7 +276,7 @@ void main() {
     await model.disconnect();
 
     expect(model.active, isNull);
-    expect(model.drawerSummary(), 'This phone');
+    expect(model.settingsSummary(), 'This phone');
     expect((await AppSettings.load(settingsFile)).activeConnector, isNull);
     expect((await TokenStore.load(tokensFile)).tokens('drive'), isNull);
     expect(remote.files.keys, ['$idA.json']); // the user's copy — untouched
@@ -340,7 +338,6 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
     expect(model.status.state, SyncState.authRevoked);
-    expect(model.drawerSummary(), 'Drive · reconnect');
     expect(model.statusLine(StorageModel.drive),
         'MyReciBook/recipes · reconnect needed');
     expect(model.settingsSummary(), 'This phone + Google Drive · reconnect');
@@ -357,7 +354,8 @@ void main() {
     model.syncSoon();
     await Future<void>.delayed(const Duration(milliseconds: 200));
     expect(model.status.state, SyncState.offline);
-    expect(model.drawerSummary(), 'Drive · offline');
+    expect(model.settingsSummary(),
+        'This phone + Google Drive · offline');
     model.dispose();
   });
 

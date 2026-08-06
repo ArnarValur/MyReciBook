@@ -105,10 +105,20 @@ Future<void> main() async {
     return x == null ? const <File>[] : [File(x.path)];
   }
 
+  // One navigator key across the gate's and the app's MaterialApps (never
+  // mounted together): the change-folder confirm dialog needs a navigator
+  // while the app is still up, now that a deliberate change skips the gate.
+  final nav = GlobalKey<NavigatorState>();
+
   runApp(BootGate(
     settings: settings,
     localStore: LocalFolderStore(Directory('${docs.path}/recipes')),
     imageCache: Directory('${cache.path}/saf_images'),
+    // The gate's own MaterialApp follows the saved preference — without this
+    // it sat on ThemeMode.system and change-folder opened dark over a light
+    // app (Arnar's S21 pass, 2026-08-06).
+    themeMode: themeModel,
+    appNavigatorKey: nav,
     appBuilder: (store, onGrantLost, onChangeFolder) {
       // A lost grant mid-sync joins the same re-pick flow as store ops.
       storage.onGrantLost = onGrantLost;
@@ -124,6 +134,7 @@ Future<void> main() async {
         onGrantLost: onGrantLost,
         onChangeFolder: onChangeFolder,
         folderName: folderDisplayName(settings.treeUri),
+        navigatorKey: nav,
       );
     },
   ));
@@ -147,6 +158,7 @@ Widget buildApp({
   VoidCallback? onGrantLost,
   VoidCallback? onChangeFolder,
   String? folderName,
+  GlobalKey<NavigatorState>? navigatorKey,
 }) =>
     MultiProvider(
       providers: [
@@ -185,6 +197,7 @@ Widget buildApp({
       child: Consumer<ThemeModel>(
         builder: (_, themeModel, child) => MaterialApp(
           title: 'MyReciBook',
+          navigatorKey: navigatorKey,
           theme: rbLightTheme(),
           darkTheme: rbDarkTheme(),
           themeMode: themeModel.mode,

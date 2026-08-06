@@ -123,8 +123,21 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   connectors leave the `placeholder-*` branch together; Dropbox app is Scoped/
   App-folder with PKCE public clients ALLOW, Drive is an Android client on the
   debug SHA-1 (values in pulse). UNPROVEN on device — no connect/sync run yet.
+- HANDS-ON ROUND 1 (2026-08-06, Arnar on the creds-live build): 7 findings →
+  fixed same session. Founder decisions with Arnar: 5c drawer REMOVED
+  (app_drawer.dart deleted; utility → Settings rows) · bar slot 3 = Import
+  queue (embedded BatchQueueScreen; Plan behind kMealPlanEnabled) ·
+  change-folder → system picker directly (BootGate: appNavigatorKey for
+  ready-phase dialogs, KeyedSubtree(treeUri) remount — technical rules 11–12) ·
+  collapsing hero on detail · grocery swipe-delete + Clear all (6f, snapshot
+  undo — technical rule 13) · Favorites-only chips · flags home =
+  app/lib/features.dart (behavioral 19). 315 tests. Latest APK built,
+  NOT installed (S21 unplugged).
+- Turn-7 design queue: cover-image picker (own photo / pick from originals) ·
+  ratify drawer removal + bar reshape + collapsing hero · manual entry ·
+  edit copy · batch edges.
 - NOT done: billing 3g (behind fee) · D9 empty-state link caption ·
-  on-device storage smoke (runbook Part C, docs/storage-creds-runbook.md).
+  on-device storage smoke (runbook Part C) · latest-APK install.
 
 ## Steps
 1. ✔ 2026-08-06 — /grill done (cowork): 8/8 agreed → D2–D8; draft §9 + context.md

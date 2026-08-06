@@ -118,6 +118,21 @@ class GroceryModel extends ChangeNotifier {
 
   Future<void> clearCompleted() => _commit(clearChecked(_items));
 
+  /// Swipe-to-delete a single row. The caller snapshots [items] first for the
+  /// undo bar — a mis-swipe mid-shop must cost nothing.
+  Future<void> removeItem(String id) => _commit([
+        for (final i in _items)
+          if (i.id != id) i
+      ]);
+
+  /// Empty the list. Aisle corrections and merge aliases deliberately SURVIVE
+  /// (they live in their own files) — the memory is the product, the list is
+  /// the errand.
+  Future<void> clearAll() => _commit(const []);
+
+  /// Undo door for the two destructive ops above.
+  Future<void> restore(List<GroceryItem> snapshot) => _commit(snapshot);
+
   /// Typed entries parse a leading qty/unit ("2 lemons") so the merge key
   /// stays the bare name — qty in the key would defeat the merge engine.
   Future<void> addManual(String name) {

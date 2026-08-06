@@ -128,23 +128,6 @@ class StorageModel extends ChangeNotifier {
     return '${d.inDays} day${d.inDays == 1 ? '' : 's'} ago';
   }
 
-  /// Drawer Storage row trailing — only states that are true (turn-5 5c).
-  String drawerSummary({String? folderName}) {
-    final active = _active;
-    if (active == null) {
-      return folderName == null ? 'This phone' : 'This phone · $folderName';
-    }
-    final name = shortName(active);
-    return switch (_status.state) {
-      SyncState.syncing => '$name · syncing…',
-      SyncState.synced when _status.syncedAt != null =>
-        '$name · synced ${relative(_status.syncedAt!)}',
-      SyncState.offline => '$name · offline',
-      SyncState.authRevoked => '$name · reconnect',
-      _ => name,
-    };
-  }
-
   /// True remote path label (6e, turn 6): Drive mirrors into the app-visible
   /// 'MyReciBook/recipes' folder; Dropbox's app folder makes the honest full
   /// path 'Apps/MyReciBook/recipes'.

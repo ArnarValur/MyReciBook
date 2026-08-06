@@ -140,14 +140,22 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final originals = _originals;
 
     return Scaffold(
+      // Collapsing hero (Arnar's S21 pass, 2026-08-06): the cover must NOT
+      // stay pinned while reading — it scrolls away and only the slim action
+      // bar stays, giving the height back to the ingredient list. The
+      // grocery/cook footer keeps its fixed 3e position below the scroll.
       body: SafeArea(
+        top: false, // the SliverAppBar owns the status-bar inset
         child: Column(
           children: [
-            _hero(scheme, originals),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                children: [
+              child: CustomScrollView(
+                slivers: [
+                  _heroSliver(scheme, originals),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    sliver: SliverList.list(
+                      children: [
                   Text(_recipe.title, style: theme.textTheme.headlineSmall),
                   const SizedBox(height: 12),
                   Wrap(
@@ -236,6 +244,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       ],
                     ),
                   ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -280,70 +291,77 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         label: const Text('Grocery'),
       );
 
-  Widget _hero(ColorScheme scheme, List<File> originals) {
+  /// Collapsing hero: expanded it is the 210px cover (tap → originals
+  /// viewer, swap pill bottom-right); scrolled, the image parallaxes away and
+  /// only the pinned toolbar with back/edit/favorite/delete remains.
+  Widget _heroSliver(ColorScheme scheme, List<File> originals) {
     final cover = originals.firstOrNull;
-    return SizedBox(
-      height: 210,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          GestureDetector(
-            onTap: originals.isEmpty
-                ? null
-                : () => Navigator.of(context).push(MaterialPageRoute<void>(
-                    builder: (_) => OriginalsViewer(images: originals))),
-            child: _showOriginal
-                ? ColoredBox(
-                    color: scheme.surfaceContainerLow,
-                    child: CoverImage(cover, fit: BoxFit.contain))
-                : CoverImage(cover),
+    return SliverAppBar(
+      pinned: true,
+      expandedHeight: 210,
+      backgroundColor: scheme.surface,
+      surfaceTintColor: Colors.transparent,
+      automaticallyImplyLeading: false,
+      leadingWidth: 16 + 36 + 8,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 16),
+        child: Center(
+          child: GlassCircle(
+            icon: Icons.arrow_back_rounded,
+            onTap: () => Navigator.of(context).maybePop(),
           ),
-          Positioned(
-            top: 16,
-            left: 16,
-            child: GlassCircle(
-              icon: Icons.arrow_back_rounded,
-              onTap: () => Navigator.of(context).maybePop(),
+        ),
+      ),
+      actions: [
+        GlassCircle(
+          key: const Key('edit-button'),
+          icon: Icons.edit_rounded,
+          onTap: _edit,
+        ),
+        const SizedBox(width: 8),
+        GlassCircle(
+          key: const Key('favorite-button'),
+          icon: _recipe.favorite
+              ? Icons.favorite_rounded
+              : Icons.favorite_outline_rounded,
+          filled: _recipe.favorite,
+          iconColor: _recipe.favorite
+              ? scheme.tertiaryContainer
+              : scheme.onSurface,
+          onTap: _toggleFavorite,
+        ),
+        const SizedBox(width: 8),
+        GlassCircle(icon: Icons.delete_rounded, onTap: _delete),
+        const SizedBox(width: 16),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            GestureDetector(
+              onTap: originals.isEmpty
+                  ? null
+                  : () => Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (_) => OriginalsViewer(images: originals))),
+              child: _showOriginal
+                  ? ColoredBox(
+                      color: scheme.surfaceContainerLow,
+                      child: CoverImage(cover, fit: BoxFit.contain))
+                  : CoverImage(cover),
             ),
-          ),
-          Positioned(
-            top: 16,
-            right: 16,
-            child: Row(
-              children: [
-                GlassCircle(
-                  key: const Key('edit-button'),
-                  icon: Icons.edit_rounded,
-                  onTap: _edit,
+            if (originals.isNotEmpty)
+              Positioned(
+                bottom: 12,
+                right: 12,
+                child: GlassPill(
+                  icon: Icons.swap_horiz_rounded,
+                  label: _showOriginal ? 'cover' : 'original',
+                  onTap: () => setState(() => _showOriginal = !_showOriginal),
                 ),
-                const SizedBox(width: 8),
-                GlassCircle(
-                  key: const Key('favorite-button'),
-                  icon: _recipe.favorite
-                      ? Icons.favorite_rounded
-                      : Icons.favorite_outline_rounded,
-                  filled: _recipe.favorite,
-                  iconColor: _recipe.favorite
-                      ? scheme.tertiaryContainer
-                      : scheme.onSurface,
-                  onTap: _toggleFavorite,
-                ),
-                const SizedBox(width: 8),
-                GlassCircle(icon: Icons.delete_rounded, onTap: _delete),
-              ],
-            ),
-          ),
-          if (originals.isNotEmpty)
-            Positioned(
-              bottom: 12,
-              right: 12,
-              child: GlassPill(
-                icon: Icons.swap_horiz_rounded,
-                label: _showOriginal ? 'cover' : 'original',
-                onTap: () => setState(() => _showOriginal = !_showOriginal),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

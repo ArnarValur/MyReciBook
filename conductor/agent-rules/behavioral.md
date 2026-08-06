@@ -45,7 +45,8 @@
     before any design question; never ask him to choose what a mockup already
     resolves (the nav question was answered by 5c before it was asked). Newest
     turn wins over older turns AND the handoff README. Say "the mockups" /
-    "your design" — internal design-system codenames confuse when surfaced.
+    "our design" (his correction 2026-08-06: it's a collaboration, not his
+    orders) — internal design-system codenames confuse when surfaced.
     (Arnar's direct instruction, 2026-08-06 night: "Claude Design has
     everything… just follow the design that has been made for us.")
 18. Checkpoint commits EVERYTHING — `git add -A`, whole tree, docs/ included;
@@ -53,3 +54,9 @@
     sibling caution (technical rule 5) never applies at checkpoint: checkpoint
     IS the reconcile point. (Arnar's direct instruction, 2026-08-06 dawn,
     after two checkpoints left his design exports uncommitted.)
+19. No dead-end surfaces, ever — a reachable screen/row/chip with no engine
+    behind it gets HIDDEN behind a flag in app/lib/features.dart (hide, never
+    delete; one-line flip when the engine lands). If hiding empties a
+    container of everything it alone owns, remove the container itself — the
+    drawer went this way 2026-08-06. (Arnar's direct instruction, "hide dead
+    ends please", 2026-08-06.)

@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 
 import '../theme.dart';
 
@@ -393,6 +394,12 @@ class OriginalsViewer extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
+        // Without this the AppBar's own dark background sets LIGHT status-bar
+        // icons, and popping back leaves them light over the cream theme —
+        // the clock and battery go invisible (Arnar's S21 pass, 2026-08-06).
+        // Declared here AND re-asserted by the shell, so every pop lands on a
+        // route that owns its overlay style.
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text('Original · ${images.length}',
             style: Theme.of(context)

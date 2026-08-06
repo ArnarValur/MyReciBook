@@ -240,7 +240,7 @@ void main() {
   });
 
   testWidgets(
-      'drawer badge counts attention items live; row opens the batch screen',
+      'Queue tab badge counts attention items live; tab shows the batch screen',
       (tester) async {
     await tester.pumpWidget(app(
         FakeExtractor([
@@ -256,16 +256,15 @@ void main() {
     await tester.tap(find.byKey(const Key('import-rescue-cta')));
     await settle(tester, rounds: 48);
 
-    // Leave the queue, open the drawer: badge = needsReview + failed = 2.
+    // Leave the pushed queue: badge on the bar's Queue tab (2026-08-06
+    // reshape — the count moved from the drawer row) = needsReview+failed = 2.
     await tester.tap(find.text('Hide'));
     await settle(tester, rounds: 6);
-    await tester.tap(find.byKey(const Key('drawer-button')));
-    await settle(tester, rounds: 4);
-    expect(find.text('Import queue'), findsOneWidget);
+    expect(find.text('Queue'), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
 
-    // The row opens the live batch screen, not a dead row.
-    await tester.tap(find.text('Import queue'));
+    // The tab shows the live batch screen, not a dead surface.
+    await tester.tap(find.text('Queue'));
     await settle(tester, rounds: 6);
     expect(find.text('Review flagged · 1'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);

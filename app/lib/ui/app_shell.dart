@@ -1,17 +1,28 @@
-// App shell — the promoted turn-4 nav, confirmed by turn 5: glass pill bar
-// over the four daily surfaces with the gradient FAB as the import door, plus
-// the 5c drawer. Lives only inside BootGate's ready phase; gate and migration
-// stay shell-less. The shell owns the ShareEntry attach point and the import
-// flow so shares land in review from any tab; pushed routes cover the bar.
+// App shell — the promoted turn-4 nav: glass pill bar with the gradient FAB
+// as the import door. Lives only inside BootGate's ready phase; gate and
+// migration stay shell-less. The shell owns the ShareEntry attach point and
+// the import flow so shares land in review from any tab; pushed routes cover
+// the bar.
+//
+// DEVIATION (Arnar's hands-on pass, 2026-08-06 — for Design to ratify in
+// turn 7): slot 3 of the bar was Meal plan; it is now Import queue (Meal plan
+// had no engine; the queue is the batch-rescue surface the pitch is built
+// on). The 5c DRAWER IS REMOVED ENTIRELY — after the dead-end rule hid its
+// engine-less rows (Your copy, Help & feedback) everything left duplicated
+// the bar or Settings, and a founder-decision (Arnar + Code agreeing) cut
+// the maintenance surface. Its future rows (Your copy at billing 3g, Help)
+// land as Settings rows instead.
 
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:provider/provider.dart';
+
+import '../features.dart';
 
 import '../data/share_entry.dart';
 import '../domain/extractor.dart';
-import 'app_drawer.dart';
 import 'batch_model.dart';
 import 'batch_queue_screen.dart';
 import 'grocery_tab.dart';
@@ -22,7 +33,6 @@ import 'library_model.dart';
 import 'plan_tab.dart';
 import 'recipe_list_screen.dart';
 import 'settings_tab.dart';
-import 'storage_model.dart';
 import 'storage_screen.dart';
 import 'widgets/glass_nav_bar.dart';
 
@@ -66,11 +76,11 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _tab = 0;
 
   // Lazy tabs: a surface is built on first visit and then kept alive, so
   // finders and IO stay quiet until a tester actually goes there.
+  // Index 2 is Import queue (was Meal plan — see the DEVIATION note above).
   final List<bool> _built = [true, false, false, false];
 
   bool _importBusy = false;
@@ -187,41 +197,47 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final storage = context.watch<StorageModel>();
     final batch = context.watch<BatchModel>();
-    return Scaffold(
-      key: _scaffoldKey,
-      extendBody: true,
-      drawerScrimColor: const Color(0x730B0D16),
-      drawer: AppDrawer(
-        activeTab: _tab,
-        // Live truth: batch items needing eyes (flagged/failed) + shares
-        // queued behind an open import.
-        queuedImports: batch.attention + _queuedShares.length,
-        storageLabel: storage.drawerSummary(folderName: widget.folderName),
-        storageCloud: storage.active != null,
-        onSelectTab: _select,
-        onOpenStorage: _openStorage,
-        onOpenImportQueue: _openImportQueue,
+    // The shell asserts its own status-bar style so returning from a route
+    // that set its own (the black OriginalsViewer) can never leave light icons
+    // stranded on the cream theme — Arnar's S21 pass, 2026-08-06.
+    final overlay = Theme.of(context).brightness == Brightness.dark
+        ? SystemUiOverlayStyle.light
+        : SystemUiOverlayStyle.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlay,
+      child: Scaffold(
+        extendBody: true,
+        body: IndexedStack(
+          index: _tab,
+          children: [
+            RecipeListScreen(onImport: _import),
+            _built[1] ? const GroceryTab() : const SizedBox.shrink(),
+            // Import queue as a tab: same screen, embedded (no Hide/Done —
+            // a tab has nothing to pop back to).
+            _built[2]
+                ? BatchQueueScreen(
+                    extractor: widget.extractor,
+                    pickMore: widget.picker,
+                    embedded: true,
+                  )
+                : const SizedBox.shrink(),
+            // Settings reuses the drawer Storage row's exact destination wiring.
+            _built[3]
+                ? SettingsTab(
+                    folderName: widget.folderName, onOpenStorage: _openStorage)
+                : const SizedBox.shrink(),
+            // Built, unreachable while kMealPlanEnabled is false — the tab
+            // exists so the switch is one line when the engine lands.
+            if (kMealPlanEnabled) const PlanTab(),
+          ],
+        ),
+        bottomNavigationBar: GlassNavBar(
+            active: _tab,
+            onTab: _select,
+            onFab: _import,
+            queueBadge: batch.attention + _queuedShares.length),
       ),
-      body: IndexedStack(
-        index: _tab,
-        children: [
-          RecipeListScreen(
-            onImport: _import,
-            onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
-          _built[1] ? const GroceryTab() : const SizedBox.shrink(),
-          _built[2] ? const PlanTab() : const SizedBox.shrink(),
-          // Settings reuses the drawer Storage row's exact destination wiring.
-          _built[3]
-              ? SettingsTab(
-                  folderName: widget.folderName, onOpenStorage: _openStorage)
-              : const SizedBox.shrink(),
-        ],
-      ),
-      bottomNavigationBar:
-          GlassNavBar(active: _tab, onTab: _select, onFab: _import),
     );
   }
 }

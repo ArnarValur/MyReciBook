@@ -346,6 +346,61 @@ void main() {
     expect(find.text('PANTRY · 2'), findsOneWidget);
   });
 
+  testWidgets('swipe removes one row; snackbar Undo restores it',
+      (tester) async {
+    await seed(tester, 'pasta', 'Pasta', pastaIngs());
+    await tester.pumpWidget(app());
+    await settle(tester);
+
+    await addFromDetail(tester, 'Pasta');
+    await goGrocery(tester);
+
+    await tester.drag(find.textContaining('lemons', findRichText: true),
+        const Offset(-400, 0));
+    // SHORT settle (rule 8), but enough rounds for the dismiss slide AND
+    // resize (~500ms) to finish and the undo bar to get entrance frames.
+    await settle(tester, rounds: 10);
+    // The ROW ('2 lemons' with qty) is gone; the undo bar says so.
+    expect(find.text('2 lemons', findRichText: true), findsNothing);
+    expect(find.text('Removed lemons'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await settle(tester, rounds: 4);
+    expect(find.text('2 lemons', findRichText: true), findsOneWidget);
+    expect(find.text('PRODUCE · 1'), findsOneWidget);
+  });
+
+  testWidgets(
+      'Clear all: 6f confirm empties the list, Cancel keeps it, '
+      'aisle memory survives', (tester) async {
+    await seed(tester, 'pasta', 'Pasta', pastaIngs());
+    await tester.pumpWidget(app());
+    await settle(tester);
+
+    await addFromDetail(tester, 'Pasta');
+    await goGrocery(tester);
+
+    // Cancel path first: nothing is destroyed without explicit confirm.
+    await tester.tap(find.byKey(const Key('grocery-share-button')));
+    await settle(tester, rounds: 4);
+    await tester.tap(find.text('Clear all…'));
+    await settle(tester, rounds: 4);
+    expect(find.textContaining('remembered'), findsOneWidget); // 6f: survives first
+    await tester.tap(find.text('Cancel'));
+    await settle(tester, rounds: 4);
+    expect(find.textContaining('lemons', findRichText: true), findsOneWidget);
+
+    // Confirm path: list empties back to the honest zero state.
+    await tester.tap(find.byKey(const Key('grocery-share-button')));
+    await settle(tester, rounds: 4);
+    await tester.tap(find.text('Clear all…'));
+    await settle(tester, rounds: 4);
+    await tester.tap(find.text('Clear list'));
+    await settle(tester, rounds: 4);
+    expect(find.textContaining('lemons', findRichText: true), findsNothing);
+    expect(find.byKey(const Key('grocery-add-field')), findsOneWidget);
+  });
+
   testWidgets('receipt banner: re-sync raises it, close dismisses',
       (tester) async {
     await seed(tester, 'salmon', 'Salmon',

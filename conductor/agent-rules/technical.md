@@ -54,3 +54,18 @@
     wholesale (behavioral 18). Gitignored as `client_secret_*.json`; the live
     values belong in .env → app/dev.env via the rule-6 sed mirror
     (2026-08-06).
+11. Never share one GlobalKey<NavigatorState> between BootGate's gate
+    MaterialApp and the ready-phase app's — the swap reparents the Navigator
+    element and wedges the handoff. Keep two keys; BootGate takes the app's
+    key as appNavigatorKey purely for phase-aware dialog context
+    (_dialogContext) (2026-08-06).
+12. Providers capture their store at create — any path that swaps the
+    SafFolderStore without unmounting the app subtree MUST remount it
+    (KeyedSubtree keyed by treeUri in BootGate.build). The old gate detour
+    did this by accident; the direct-picker path does it on purpose. Regression
+    shape: library shows the OLD folder after a switch (2026-08-06).
+13. Undo snackbars: snapshot state first, fire the mutation without awaiting,
+    show the bar with removeCurrentSnackBar (instant) — never await the
+    persist and never queue behind a stale toast's exit animation. In widget
+    tests, a Dismissible's slide+resize needs ~10 settle rounds before the
+    bar is assertable (2026-08-06).
