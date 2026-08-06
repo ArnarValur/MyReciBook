@@ -7,9 +7,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'data/app_settings.dart';
 import 'data/gemini_extractor.dart';
 import 'data/recipe_store.dart';
+import 'data/share_entry.dart';
+import 'data/share_intake.dart';
 import 'domain/extractor.dart';
+import 'ui/folder_gate.dart';
 import 'ui/library_model.dart';
 import 'ui/recipe_list_screen.dart';
 import 'ui/theme.dart';
@@ -26,16 +30,37 @@ Future<void> main() async {
     }
   });
   final docs = await getApplicationDocumentsDirectory();
+  final support = await getApplicationSupportDirectory();
+  final cache = await getApplicationCacheDirectory();
+  final settings = await AppSettings.load(File('${support.path}/settings.json'));
+
+  // Constructed once, before takePending; warm shares buffer in the entry
+  // until the gate resolves (bridge contract + arch §3.1).
+  final intake = ShareIntake();
+  final share = ShareEntry(takePending: intake.takePending);
+  intake.onShared = share.push;
+
   final picker = ImagePicker();
-  runApp(buildApp(
-    store: LocalFolderStore(Directory('${docs.path}/recipes')),
-    extractor: GeminiExtractor(),
-    picker: () async =>
-        [for (final x in await picker.pickMultiImage()) File(x.path)],
-    camera: () async {
-      final x = await picker.pickImage(source: ImageSource.camera);
-      return x == null ? const <File>[] : [File(x.path)];
-    },
+  final extractor = GeminiExtractor();
+  Future<List<File>> pickImages() async =>
+      [for (final x in await picker.pickMultiImage()) File(x.path)];
+  Future<List<File>> snapPage() async {
+    final x = await picker.pickImage(source: ImageSource.camera);
+    return x == null ? const <File>[] : [File(x.path)];
+  }
+
+  runApp(BootGate(
+    settings: settings,
+    localStore: LocalFolderStore(Directory('${docs.path}/recipes')),
+    imageCache: Directory('${cache.path}/saf_images'),
+    appBuilder: (store, onGrantLost) => buildApp(
+      store: store,
+      extractor: extractor,
+      picker: pickImages,
+      camera: snapPage,
+      share: share,
+      onGrantLost: onGrantLost,
+    ),
   ));
 }
 
@@ -45,14 +70,16 @@ Widget buildApp({
   required Extractor extractor,
   required ImagePick picker,
   ImagePick? camera,
+  ShareEntry? share,
+  VoidCallback? onGrantLost,
 }) =>
     ChangeNotifierProvider(
-      create: (_) => LibraryModel(store),
+      create: (_) => LibraryModel(store, onGrantLost: onGrantLost),
       child: MaterialApp(
         title: 'MyReciBook',
         theme: rbLightTheme(),
         darkTheme: rbDarkTheme(),
         home: RecipeListScreen(
-            extractor: extractor, picker: picker, camera: camera),
+            extractor: extractor, picker: picker, camera: camera, share: share),
       ),
     );

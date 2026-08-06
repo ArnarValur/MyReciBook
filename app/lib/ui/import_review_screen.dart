@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../data/saf_store.dart';
 import '../domain/extractor.dart';
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
@@ -185,6 +186,15 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     setState(() => _saving = true);
     try {
       await context.read<LibraryModel>().saveImported(recipe, _images);
+    } on GrantLostException {
+      // Review stays mounted — edits and extraction survive; re-pick happens
+      // from the list, not by tearing down in-flight work (§7).
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Folder access was lost — your edits are kept. '
+              'Try again, or go back and re-pick your folder.')));
+      return;
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);

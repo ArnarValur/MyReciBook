@@ -30,7 +30,19 @@ abstract class RecipeStore {
 
   /// Resolves a stored `images/…` reference (or a pre-save absolute path) to a
   /// readable file; null when the reference is unsafe (§7 confinement).
-  File? resolveImage(String ref);
+  Future<File?> imageFile(String ref);
+
+  // Arch §7 hostile-folder safety: a foreign JSON's id/original_images must
+  // never resolve outside the store. Ids are uuid filename stems; images stay
+  // under images/. Shared by every RecipeStore impl.
+  static bool safeId(String id) =>
+      id.isNotEmpty &&
+      !id.contains('/') &&
+      !id.contains('\\') &&
+      !id.contains('..');
+
+  static bool safeImageRef(String rel) =>
+      rel.startsWith('images/') && safeId(rel.substring('images/'.length));
 }
 
 class LocalFolderStore implements RecipeStore {
@@ -40,17 +52,9 @@ class LocalFolderStore implements RecipeStore {
 
   Directory get _imagesDir => Directory('${root.path}/images');
 
-  // Arch §7 hostile-folder safety: a foreign JSON's id/original_images must
-  // never resolve outside root. Ids are uuid filename stems; images stay
-  // under images/.
-  static bool _safeId(String id) =>
-      id.isNotEmpty &&
-      !id.contains('/') &&
-      !id.contains('\\') &&
-      !id.contains('..');
+  static bool _safeId(String id) => RecipeStore.safeId(id);
 
-  static bool _safeImagePath(String rel) =>
-      rel.startsWith('images/') && _safeId(rel.substring('images/'.length));
+  static bool _safeImagePath(String rel) => RecipeStore.safeImageRef(rel);
 
   @override
   Future<StoreResult> listAll() async {
@@ -122,7 +126,7 @@ class LocalFolderStore implements RecipeStore {
   }
 
   @override
-  File? resolveImage(String ref) {
+  Future<File?> imageFile(String ref) async {
     if (_safeImagePath(ref)) return File('${root.path}/$ref');
     final f = File(ref);
     return f.isAbsolute ? f : null;

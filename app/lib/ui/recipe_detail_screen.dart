@@ -29,6 +29,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       TextEditingController(text: widget.recipe.notes ?? '');
   final Set<int> _checked = {}; // kitchen-session state, not persisted
   bool _showOriginal = false;
+  List<File> _originals = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOriginals();
+  }
 
   @override
   void dispose() {
@@ -36,12 +43,16 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     super.dispose();
   }
 
-  List<File> get _originals {
+  Future<void> _loadOriginals() async {
     final model = context.read<LibraryModel>();
-    return [
-      for (final ref in _recipe.source.originalImages ?? const <String>[])
-        if (model.imageFor(ref) != null) model.imageFor(ref)!
-    ];
+    final files = <File>[];
+    for (final ref in _recipe.source.originalImages ?? const <String>[]) {
+      try {
+        final f = await model.imageFor(ref);
+        if (f != null) files.add(f);
+      } catch (_) {} // lost grant: detail still renders, list owns re-pick (§7)
+    }
+    if (mounted) setState(() => _originals = files);
   }
 
   Future<void> _persist(Recipe next, {String? confirmation}) async {

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:provider/provider.dart';
 
+import '../data/share_entry.dart';
 import '../domain/extractor.dart';
 import '../domain/recipe.dart';
 import 'import_review_screen.dart';
@@ -27,6 +28,7 @@ class RecipeListScreen extends StatefulWidget {
     required this.extractor,
     required this.picker,
     this.camera,
+    this.share,
   });
 
   final Extractor extractor;
@@ -35,49 +37,98 @@ class RecipeListScreen extends StatefulWidget {
   /// Optional "Snap a page" source; the sheet hides the row when absent.
   final Future<List<File>> Function()? camera;
 
+  /// Share-sheet arrivals enter the same review flow as picked images.
+  final ShareEntry? share;
+
   @override
   State<RecipeListScreen> createState() => _RecipeListScreenState();
 }
 
 class _RecipeListScreenState extends State<RecipeListScreen> {
-  bool _picking = false;
+  bool _importBusy = false;
   String _query = '';
   _Filter _filter = _Filter.all;
+
+  // Shares arriving while an import is open wait here — hijacking an open
+  // review would lose the user's edits.
+  final List<File> _queuedShares = [];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<LibraryModel>().rescan();
+      if (!mounted) return;
+      context.read<LibraryModel>().rescan();
+      widget.share?.attach(_onShared);
     });
   }
 
-  Future<void> _import() async {
-    if (_picking) return;
-    final source = await showImportSheet(context,
-        withCamera: widget.camera != null);
-    if (source == null || !mounted) return;
-
-    _picking = true;
-    final List<File> picks;
-    try {
-      picks = await (source == ImportSource.camera
-          ? widget.camera!()
-          : widget.picker());
-    } on PlatformException {
-      return; // double-tap races the native picker ('already_active')
-    } finally {
-      _picking = false;
-    }
-    if (picks.isEmpty || !mounted) return;
-    await Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => ImportReviewScreen(
-        images: picks,
-        extractor: widget.extractor,
-        pickMore: widget.picker,
-      ),
-    ));
+  @override
+  void dispose() {
+    widget.share?.detach();
+    super.dispose();
   }
+
+  Future<void> _import() async {
+    if (_importBusy) return;
+    _importBusy = true;
+    try {
+      final source = await showImportSheet(context,
+          withCamera: widget.camera != null);
+      if (source == null || !mounted) return;
+
+      final List<File> picks;
+      try {
+        picks = await (source == ImportSource.camera
+            ? widget.camera!()
+            : widget.picker());
+      } on PlatformException {
+        return; // double-tap races the native picker ('already_active')
+      }
+      if (picks.isEmpty || !mounted) return;
+      await _pushReview(picks);
+    } finally {
+      _importBusy = false;
+      _drainQueuedShares();
+    }
+  }
+
+  void _onShared(List<File> images) {
+    if (!mounted || images.isEmpty) return;
+    if (_importBusy) {
+      _queuedShares.addAll(images);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Screenshot saved for your next import')));
+      return;
+    }
+    _openShared(images);
+  }
+
+  Future<void> _openShared(List<File> images) async {
+    _importBusy = true;
+    try {
+      await _pushReview(images);
+    } finally {
+      _importBusy = false;
+      _drainQueuedShares();
+    }
+  }
+
+  void _drainQueuedShares() {
+    if (!mounted || _queuedShares.isEmpty) return;
+    final next = [..._queuedShares];
+    _queuedShares.clear();
+    _openShared(next);
+  }
+
+  Future<void> _pushReview(List<File> images) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => ImportReviewScreen(
+          images: images,
+          extractor: widget.extractor,
+          pickMore: widget.picker,
+        ),
+      ));
 
   static bool _isSweet(Recipe r) {
     const sweet = {'sweet', 'dessert', 'cake', 'baking', 'cookies'};
@@ -366,7 +417,7 @@ class _RecipeCard extends StatelessWidget {
     final theme = Theme.of(context);
     final rb = context.rb;
     final meta = metaLine(recipe);
-    final cover = context.read<LibraryModel>().coverFor(recipe);
+    final model = context.read<LibraryModel>();
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
@@ -385,7 +436,13 @@ class _RecipeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                  height: 106, width: double.infinity, child: CoverImage(cover)),
+                height: 106,
+                width: double.infinity,
+                child: FutureBuilder<File?>(
+                  future: model.coverFor(recipe),
+                  builder: (_, snap) => CoverImage(snap.data),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(11, 9, 11, 11),
                 child: Column(
