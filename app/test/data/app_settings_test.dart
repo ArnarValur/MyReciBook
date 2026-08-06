@@ -1,5 +1,6 @@
 // AppSettings: read-once, write-through JSON file; missing/corrupt → defaults.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -44,5 +45,33 @@ void main() {
 
     await reloaded.setTreeUri(null); // re-pick flow clears the grant
     expect((await AppSettings.load(file())).treeUri, isNull);
+  });
+
+  test('activeConnector round-trips; unknown value reads as null', () async {
+    final s = await AppSettings.load(file());
+    expect(s.activeConnector, isNull);
+
+    await s.setActiveConnector('drive');
+    expect(s.activeConnector, 'drive');
+    expect((await AppSettings.load(file())).activeConnector, 'drive');
+
+    await s.setActiveConnector('dropbox');
+    expect((await AppSettings.load(file())).activeConnector, 'dropbox');
+
+    await s.setActiveConnector(null); // disconnect
+    expect((await AppSettings.load(file())).activeConnector, isNull);
+
+    // A corrupt/foreign entry is a disconnect, never a crash.
+    await file().writeAsString(jsonEncode({'active_connector': 'icloud'}));
+    expect((await AppSettings.load(file())).activeConnector, isNull);
+  });
+
+  test('corrupt file still recovers activeConnector default', () async {
+    await file().create(recursive: true);
+    await file().writeAsString('{broken');
+    final s = await AppSettings.load(file());
+    expect(s.activeConnector, isNull);
+    await s.setActiveConnector('drive'); // writable after recovery
+    expect((await AppSettings.load(file())).activeConnector, 'drive');
   });
 }

@@ -162,8 +162,9 @@ void main() {
     expect(find.text('Recipe rescued'), findsOneWidget);
   });
 
-  testWidgets('drawer storage row shows the real folder and reaches re-pick',
-      (tester) async {
+  testWidgets(
+      'drawer storage row shows the real folder and reaches re-pick '
+      'through the storage screen', (tester) async {
     final fake = FakeSafChannel()..install();
     addTearDown(fake.uninstall);
     final settingsFile = File('${tmp.path}/settings.json');
@@ -193,10 +194,17 @@ void main() {
     await settle(tester, rounds: 4);
     expect(find.text('This phone · root-id'), findsOneWidget);
 
+    // The row routes to the 3h storage screen, not straight to the picker.
     await tester.tap(find.text('Storage'));
-    await settle(tester);
-    // Deliberate change-folder: first-run copy, never the "lost" copy.
-    expect(find.text('Where should your recipes live?'), findsOneWidget);
+    await settle(tester, rounds: 6);
+    expect(find.text('Plain files, one per recipe. Yours.'), findsOneWidget);
+    expect(find.text('root-id'), findsOneWidget); // current folder on the card
+
+    // 'Change folder' reaches the existing re-pick flow:
+    // first-run copy, never the "lost" copy.
+    await tester.tap(find.text('Change folder'));
+    await settle(tester, rounds: 6);
+    expect(find.byKey(const Key('choose-folder-button')), findsOneWidget);
     expect(find.textContaining('access was lost'), findsNothing);
 
     // Picking again returns to the app intact.

@@ -9,12 +9,17 @@ import '../data/saf_store.dart';
 import '../domain/recipe.dart';
 
 class LibraryModel extends ChangeNotifier {
-  LibraryModel(this._store, {this.onGrantLost});
+  LibraryModel(this._store, {this.onGrantLost, this.onChanged});
 
   final RecipeStore _store;
 
   /// Grant lost during a store op → the boot gate swaps to re-pick (§7).
   final VoidCallback? onGrantLost;
+
+  /// Fired after a mutation lands in the folder (save / delete succeeded).
+  /// Main-level glue points it at StorageModel.syncSoon — the library never
+  /// depends on the storage layer.
+  final VoidCallback? onChanged;
 
   List<Recipe> _recipes = const [];
   int _skipped = 0;
@@ -51,6 +56,7 @@ class LibraryModel extends ChangeNotifier {
   Future<void> delete(String id) async {
     try {
       await _store.delete(id);
+      onChanged?.call();
     } on GrantLostException {
       onGrantLost?.call();
       return;
@@ -69,6 +75,7 @@ class LibraryModel extends ChangeNotifier {
   /// the next list-level op (rescan/delete) re-enters the gate.
   Future<Recipe> saveImported(Recipe recipe, List<File> cachedImages) async {
     final saved = await _store.save(recipe, cachedImages);
+    onChanged?.call();
     for (final rel in saved.source.originalImages ?? const <String>[]) {
       _images.remove(rel); // new bytes must not resolve to a stale future
     }

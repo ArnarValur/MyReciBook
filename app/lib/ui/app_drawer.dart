@@ -2,7 +2,9 @@
 // surfaces; the drawer holds data + utility — nothing lives only here except
 // Help. Engine-less rows (Import queue, Your copy, Help & feedback) render the
 // designed row but perform no action; trailing state only ever shows what is
-// true — the alpha is SAF-local, so Storage says "This phone", never "synced".
+// true — the Storage trailing comes from StorageModel.drawerSummary, so it
+// says "This phone" locally and "Drive · synced X ago" only when that
+// actually happened (turn-5 5c honesty).
 
 import 'package:flutter/material.dart';
 
@@ -14,8 +16,9 @@ class AppDrawer extends StatelessWidget {
     required this.activeTab,
     required this.onSelectTab,
     this.queuedImports = 0,
-    this.folderName,
-    this.onChangeFolder,
+    this.storageLabel = 'This phone',
+    this.storageCloud = false,
+    this.onOpenStorage,
   });
 
   final int activeTab;
@@ -24,11 +27,14 @@ class AppDrawer extends StatelessWidget {
   /// Real count of shares queued behind an open import; 0 hides the badge.
   final int queuedImports;
 
-  /// Display name of the picked recipes folder (Storage row trailing).
-  final String? folderName;
+  /// Truthful Storage row trailing (StorageModel.drawerSummary).
+  final String storageLabel;
 
-  /// Deliberate folder change — the existing BootGate re-pick flow.
-  final VoidCallback? onChangeFolder;
+  /// Connector active → the 5c cloud_done glyph; otherwise the phone.
+  final bool storageCloud;
+
+  /// Routes to the storage screen (3h).
+  final VoidCallback? onOpenStorage;
 
   @override
   Widget build(BuildContext context) {
@@ -161,12 +167,12 @@ class AppDrawer extends StatelessWidget {
               row(icon: Icons.verified_rounded, label: 'Your copy'),
               gap,
               row(
-                  icon: Icons.smartphone_rounded,
+                  icon: storageCloud
+                      ? Icons.cloud_done_rounded
+                      : Icons.smartphone_rounded,
                   label: 'Storage',
-                  trailing: small(folderName == null
-                      ? 'This phone'
-                      : 'This phone · $folderName'),
-                  onTap: onChangeFolder),
+                  trailing: small(storageLabel),
+                  onTap: onOpenStorage),
               gap,
               row(
                   icon: Icons.settings_rounded,

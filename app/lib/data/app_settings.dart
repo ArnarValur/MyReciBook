@@ -27,7 +27,17 @@ class AppSettings {
   /// One-shot local→SAF migration already ran.
   bool get migrationDone => _data['migration_done'] as bool? ?? false;
 
+  /// Active storage connector ('drive' / 'dropbox'); null = this phone only.
+  /// Unknown values read as null — a corrupt entry is a disconnect, not a crash.
+  String? get activeConnector {
+    final v = _data['active_connector'];
+    return v == 'drive' || v == 'dropbox' ? v as String : null;
+  }
+
   Future<void> setTreeUri(String? uri) => _write('tree_uri', uri);
+
+  Future<void> setActiveConnector(String? provider) =>
+      _write('active_connector', provider);
 
   Future<void> setMigrationDone(bool done) => _write('migration_done', done);
 

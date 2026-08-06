@@ -1,3 +1,4 @@
+import 'dart:convert' show utf8;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show LicenseRegistry, LicenseEntryWithLineBreaks;
@@ -10,17 +11,32 @@ import 'package:provider/provider.dart';
 import 'data/app_settings.dart';
 import 'data/gemini_extractor.dart';
 import 'data/grocery_store.dart';
+import 'data/oauth.dart';
 import 'data/recipe_store.dart';
+import 'data/sha256.dart';
 import 'data/share_entry.dart';
 import 'data/share_intake.dart';
+import 'data/sync_engine.dart';
+import 'data/sync_source.dart';
+import 'data/token_store.dart';
 import 'domain/extractor.dart';
 import 'ui/app_shell.dart';
 import 'ui/folder_gate.dart';
 import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
+import 'ui/storage_model.dart';
 import 'ui/theme.dart';
 
 typedef ImagePick = Future<List<File>> Function();
+
+// Storage connector credentials (rule 6): device builds read the gitignored
+// app/dev.env via --dart-define-from-file — it gains DRIVE_CLIENT_ID=... and
+// DROPBOX_APP_KEY=... when Arnar's Google/Dropbox registrations land. Until
+// then the placeholders keep the connectors in the honest unconfigured state.
+const _driveClientId =
+    String.fromEnvironment('DRIVE_CLIENT_ID', defaultValue: 'placeholder-drive');
+const _dropboxAppKey = String.fromEnvironment('DROPBOX_APP_KEY',
+    defaultValue: 'placeholder-dropbox');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +55,34 @@ Future<void> main() async {
   final grocery = await GroceryStore.load(
       listFile: File('${support.path}/grocery_list.json'),
       overridesFile: File('${support.path}/grocery_overrides.json'));
+
+  final tokenStore = await TokenStore.load(File('${support.path}/tokens.json'));
+  // THE one OAuthFlow app-wide — its constructor claims the auth channel
+  // handler; a second instance would silently steal redirects.
+  final oauthFlow = OAuthFlow();
+  final storage = StorageModel(
+    settings: settings,
+    tokenStore: tokenStore,
+    flow: oauthFlow,
+    driveClientId: _driveClientId,
+    dropboxAppKey: _dropboxAppKey,
+    engineFactory: (remote, onStatus) {
+      // Reads the live treeUri per pass so a re-picked folder is mirrored
+      // through a fresh source, never a stale one.
+      final uri = settings.treeUri;
+      if (uri == null) return null; // no folder picked — nothing to mirror
+      // Manifest per folder: a switched folder must not inherit the old
+      // folder's landed names (they'd read as vanished → remote deletes).
+      final key = _hexPrefix(sha256(utf8.encode(uri)));
+      return SyncEngine(
+        source: SafFolderSource(treeUri: uri),
+        remote: remote,
+        manifestFile: File('${support.path}/sync_manifest_$key.json'),
+        onStatus: onStatus,
+      );
+    },
+  );
+  storage.syncSoon(); // boot pass when a connector is already active
 
   // Constructed once, before takePending; warm shares buffer in the entry
   // until the gate resolves (bridge contract + arch §3.1).
@@ -59,21 +103,31 @@ Future<void> main() async {
     settings: settings,
     localStore: LocalFolderStore(Directory('${docs.path}/recipes')),
     imageCache: Directory('${cache.path}/saf_images'),
-    appBuilder: (store, onGrantLost, onChangeFolder) => buildApp(
-      store: store,
-      extractor: extractor,
-      picker: pickImages,
-      camera: snapPage,
-      share: share,
-      grocery: grocery,
-      onGrantLost: onGrantLost,
-      onChangeFolder: onChangeFolder,
-      folderName: folderDisplayName(settings.treeUri),
-    ),
+    appBuilder: (store, onGrantLost, onChangeFolder) {
+      // A lost grant mid-sync joins the same re-pick flow as store ops.
+      storage.onGrantLost = onGrantLost;
+      return buildApp(
+        store: store,
+        extractor: extractor,
+        picker: pickImages,
+        camera: snapPage,
+        share: share,
+        grocery: grocery,
+        storage: storage,
+        onGrantLost: onGrantLost,
+        onChangeFolder: onChangeFolder,
+        folderName: folderDisplayName(settings.treeUri),
+      );
+    },
   ));
 }
 
-/// Widget-test seam: everything platform-bound is injected.
+String _hexPrefix(List<int> bytes) =>
+    [for (final b in bytes.take(8)) b.toRadixString(16).padLeft(2, '0')].join();
+
+/// Widget-test seam: everything platform-bound is injected. [storage] is the
+/// app-lifetime connector model; omitted (tests) it defaults to an inert
+/// instance — old behavior, honest 'This phone' states, no sync.
 Widget buildApp({
   required RecipeStore store,
   required Extractor extractor,
@@ -81,14 +135,26 @@ Widget buildApp({
   ImagePick? camera,
   ShareEntry? share,
   GroceryStore? grocery,
+  StorageModel? storage,
   VoidCallback? onGrantLost,
   VoidCallback? onChangeFolder,
   String? folderName,
 }) =>
     MultiProvider(
       providers: [
+        // .value for the injected instance: it outlives gate re-entries
+        // (BootGate rebuilds this subtree), so the provider must not dispose it.
+        if (storage != null)
+          ChangeNotifierProvider<StorageModel>.value(value: storage)
+        else
+          ChangeNotifierProvider<StorageModel>(create: (_) => StorageModel()),
         ChangeNotifierProvider(
-            create: (_) => LibraryModel(store, onGrantLost: onGrantLost)),
+            create: (ctx) => LibraryModel(store,
+                onGrantLost: onGrantLost,
+                // Main-level glue: library mutations schedule the debounced
+                // connector sync; LibraryModel never sees StorageModel.
+                onChanged:
+                    Provider.of<StorageModel>(ctx, listen: false).syncSoon)),
         // Shell AND pushed routes (detail's grocery button) share this scope.
         ChangeNotifierProvider(create: (_) => GroceryModel(grocery)),
       ],

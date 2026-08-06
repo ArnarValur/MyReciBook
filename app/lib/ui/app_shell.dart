@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;
+import 'package:provider/provider.dart';
 
 import '../data/share_entry.dart';
 import '../domain/extractor.dart';
@@ -15,9 +16,12 @@ import 'app_drawer.dart';
 import 'grocery_tab.dart';
 import 'import_review_screen.dart';
 import 'import_sheet.dart';
+import 'library_model.dart';
 import 'plan_tab.dart';
 import 'recipe_list_screen.dart';
 import 'settings_tab.dart';
+import 'storage_model.dart';
+import 'storage_screen.dart';
 import 'widgets/glass_nav_bar.dart';
 
 /// Display form of a SAF tree uri — the folder name the user picked.
@@ -154,8 +158,21 @@ class _AppShellState extends State<AppShell> {
         ),
       ));
 
+  // The drawer Storage row's destination: the 3h screen. Restore refreshes
+  // the library through this context — the pushed route shares the scope.
+  void _openStorage() {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => StorageScreen(
+        folderName: widget.folderName,
+        onChangeFolder: widget.onChangeFolder,
+        onRestored: () => context.read<LibraryModel>().rescan(),
+      ),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final storage = context.watch<StorageModel>();
     return Scaffold(
       key: _scaffoldKey,
       extendBody: true,
@@ -163,9 +180,10 @@ class _AppShellState extends State<AppShell> {
       drawer: AppDrawer(
         activeTab: _tab,
         queuedImports: _queuedShares.length,
-        folderName: widget.folderName,
+        storageLabel: storage.drawerSummary(folderName: widget.folderName),
+        storageCloud: storage.active != null,
         onSelectTab: _select,
-        onChangeFolder: widget.onChangeFolder,
+        onOpenStorage: _openStorage,
       ),
       body: IndexedStack(
         index: _tab,
