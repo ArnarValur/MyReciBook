@@ -107,4 +107,9 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   price-aware). Dashboard = Play Console, nothing to host · proxy NOT GCP ·
   Friday = closed-test-complete (Google's 12-tester/14-day rule) · festival =
   tester-QR recruiting. Login/account never; "signup" = T2 email capture.
+- Infra: hosting rec = Cloudflare-class for both our boxes (Vercel hobby tier
+  bans commercial use → $20/mo trap); no BaaS ever — it holds exactly what we
+  refuse to own. Gemini project now TIER 3 POSTPAY (bill paid; Aug-5 dev key
+  inherited it — no key swap). ACTION queued: daily quota cap + billing alert,
+  ~10 min — D2's leaked-APK risk is real money now.
 - Next: set + in-app y/n tonight; Code night 1 = SAF; fee Fri if strong.

@@ -26,7 +26,9 @@
   before the w/e on a strong Fri build). Fri target = closed-test-complete.
 - T1: arm A judged IN-APP now (D5, 2026-08-06). Smoke PASSED (arm A,
   gemini-3.6-flash, 2 recipes → clean JSON). Gemini free-tier key in
-  app/dev.env; ocr_dump APK on disk (arm B ready).
+  app/dev.env — project NOW TIER 3 POSTPAY; ocr_dump APK on disk (arm B ready).
+- Hosting rec: Cloudflare-class (Pages = T2 · Workers/KV = proxy); Vercel
+  hobby tier bans commercial use. Not GCP, per Arnar.
 
 ## 🚀 Active tracks
 - T1 extraction-spike — arm A in-app (D5); needs 8 more honest recipes
@@ -46,14 +48,17 @@
    judge y/n on review BEFORE editing, tally + skin notes as you go.
 3. Code night 1 (tonight): share-sheet + SAF store (arch §8) — then grocery
    4a → batch 3b + manual entry → settings + D9, one per night.
-4. Fri, if the build is strong: Arnar pays Play fee ($25, ~30 min) → identity
+4. Arnar (~10 min, console): Gemini project is TIER 3 POSTPAY now (Aug-5 key
+   inherited it) → set daily request cap (~1,000/day) + billing alert (~$10) —
+   the fuse for D2's baked-key risk, which is real money post-upgrade.
+5. Fri, if the build is strong: Arnar pays Play fee ($25, ~30 min) → identity
    verification starts → billing night + internal track unlock. Festival:
    QR to the closed-test opt-in link — recruit the 12 required testers.
-5. This w/e (~1 h 10): copy set → spike/screenshots/ (pairs name-1/name-2),
+6. This w/e (~1 h 10): copy set → spike/screenshots/ (pairs name-1/name-2),
    arm B: ocr_dump + harness --mode text → results.md → early Gate 1 verdict.
-6. Arnar, festival-adjacent: T2 signup/landing page design in Claude Design —
+7. Arnar, festival-adjacent: T2 signup/landing page design in Claude Design —
    email capture only, NO accounts, price on the page; live 2 Sep.
-7. 20 Aug 09:00 (scheduled): kickoff — registration IF not already done Fri.
+8. 20 Aug 09:00 (scheduled): kickoff — registration IF not already done Fri.
 
 ## 📌 Parked
 - Post-alpha engines still pending after blitz: paywall + billing 3g · storage
