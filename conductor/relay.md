@@ -112,4 +112,9 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   refuse to own. Gemini project now TIER 3 POSTPAY (bill paid; Aug-5 dev key
   inherited it — no key swap). ACTION queued: daily quota cap + billing alert,
   ~10 min — D2's leaked-APK risk is real money now.
+- Infra 2: Firebase-the-BaaS = no (bundles what we refuse to own). Proxy home
+  = Cloud Run in the Gemini project (service identity kills the storable key)
+  — supersedes the Cloudflare rec; CF at most = T2 static. Merkurial Studio =
+  trade name, NO org nr → Play account PERSONAL, 12-tester/14-day stands,
+  festival QR required. Set/y-n topic banked — stop re-mentioning (Arnar).
 - Next: set + in-app y/n tonight; Code night 1 = SAF; fee Fri if strong.

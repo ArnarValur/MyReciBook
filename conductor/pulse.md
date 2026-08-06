@@ -27,8 +27,11 @@
 - T1: arm A judged IN-APP now (D5, 2026-08-06). Smoke PASSED (arm A,
   gemini-3.6-flash, 2 recipes → clean JSON). Gemini free-tier key in
   app/dev.env — project NOW TIER 3 POSTPAY; ocr_dump APK on disk (arm B ready).
-- Hosting rec: Cloudflare-class (Pages = T2 · Workers/KV = proxy); Vercel
-  hobby tier bans commercial use. Not GCP, per Arnar.
+- Proxy home (direction 2026-08-06; Arnar dissolved his no-GCP): Cloud Run
+  inside the Gemini project — service-identity auth, NO storable API key,
+  same-console quota fence. T2 static host: open (tiny call, decide at T2).
+  Play account: PERSONAL confirmed (Merkurial Studio = trade name, no org nr)
+  → 12-tester/14-day closed test STANDS; festival QR recruiting required.
 
 ## 🚀 Active tracks
 - T1 extraction-spike — arm A in-app (D5); needs 8 more honest recipes
@@ -63,8 +66,7 @@
 ## 📌 Parked
 - Post-alpha engines still pending after blitz: paywall + billing 3g · storage
   connectors 3h · cap counter 4d ($2.99 top-up UNCONFIRMED, kTopUpEnabled) ·
-  camera-roll auto-scan (post-v1). NO login/account page ever. Proxy host:
-  NOT GCP (Arnar 2026-08-06) — Workers/Hetzner-class, decided post-alpha.
+  camera-roll auto-scan (post-v1). NO login/account page ever.
 - Cover-image crop tier 2 (bbox, same call) — spike-gated; tier 1 shipped.
 - Snap-a-page handwriting: promise UNTESTED — spike before listing copy (D9).
 - ADR 0001 (schema v1) — graduates on Gate-1 pass (incl. favorite).

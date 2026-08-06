@@ -26,7 +26,12 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   --dart-define=GEMINI_API_KEY behind a compile-time flag. Frozen request shape
   keeps the proxy swap ~1 h of client work; the proxy MUST exist before the 11 Dec
   production release. Accepted risk: a leaked closed-track APK burns capped quota —
-  recovery = rotate key, rebuild, minutes.
+  recovery = rotate key, rebuild, minutes. · 2026-08-06 infra round: dev key's
+  project is now TIER 3 POSTPAY (leak = money, hence daily quota cap + billing
+  alert in pulse queue). Proxy HOME direction: Cloud Run in the same GCP project
+  as the Gemini API (Arnar offered org+project, dissolving his earlier no-GCP)
+  — service-identity auth replaces the storable key entirely. Build timing
+  unchanged: post-alpha, before 11 Dec.
 - D3 (P3, 2026-08-06) state = ChangeNotifier + Provider only. Boring on purpose;
   revisit only on real pain — migrating four screens later is days, not weeks.
 - D4 (P1, 2026-08-06) list index = rescan the folder each app session; NO persisted
