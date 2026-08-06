@@ -94,27 +94,19 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - Deep doc: docs/design/skin-implementation-map.md — every deviation + why,
   where each screen lives, test-contract changes, post-alpha wiring points.
 
-## 2026-08-06 (eve→night, cowork) — arm A into the app · blitz · money round
-- Arnar challenged the spike protocol — he was right, it predated the working
-  app. T1 D5: arm A judged IN-APP (y/n at review BEFORE edits); harness =
-  tuning fallback; arm B unchanged; unit = recipes/rows (8 more → 10 total).
+## 2026-08-06 (eve→night, cowork) — arm A in-app · blitz · money + infra rounds
+- Arnar challenged the spike protocol — right, it predated the app. T1 D5:
+  arm A judged in-app (y/n at review BEFORE edits); harness = tuning fallback;
+  unit = recipes/rows (8 more → 10). Arm B unchanged.
 - Blitz (constraint 4 as amended): 4 Code nights — SAF → grocery 4a → batch
-  3b + manual → settings + D9. Out with one reason each: billing (no Play
-  acct — UNLESS the fee lands early: Arnar offered to pay before the w/e on
-  a strong Fri build, then billing joins) · proxy/cap (P5) · sync (constr. 6).
-- Money round (hyperfocus): T3 D10 on Arnar's delegated call — 3 LIFETIME free
-  imports → one-time unlock, ~$25 anchor, price ON the landing page (Gate 2
-  price-aware). Dashboard = Play Console, nothing to host · proxy NOT GCP ·
-  Friday = closed-test-complete (Google's 12-tester/14-day rule) · festival =
-  tester-QR recruiting. Login/account never; "signup" = T2 email capture.
-- Infra: hosting rec = Cloudflare-class for both our boxes (Vercel hobby tier
-  bans commercial use → $20/mo trap); no BaaS ever — it holds exactly what we
-  refuse to own. Gemini project now TIER 3 POSTPAY (bill paid; Aug-5 dev key
-  inherited it — no key swap). ACTION queued: daily quota cap + billing alert,
-  ~10 min — D2's leaked-APK risk is real money now.
-- Infra 2: Firebase-the-BaaS = no (bundles what we refuse to own). Proxy home
-  = Cloud Run in the Gemini project (service identity kills the storable key)
-  — supersedes the Cloudflare rec; CF at most = T2 static. Merkurial Studio =
-  trade name, NO org nr → Play account PERSONAL, 12-tester/14-day stands,
-  festival QR required. Set/y-n topic banked — stop re-mentioning (Arnar).
-- Next: set + in-app y/n tonight; Code night 1 = SAF; fee Fri if strong.
+  3b+manual → settings+D9; billing joins IF the fee lands Fri (Arnar's offer).
+  Fri = closed-test-complete; account = PERSONAL (no org nr) → 12×14 stands,
+  festival = tester QR.
+- T3 D10 on delegated call: 3 lifetime free imports → one-time unlock, ~$25
+  anchor, price ON the landing page. Dashboard = Play Console (nothing to
+  host). Gemini project now TIER 3 POSTPAY (cap task queued). Proxy home:
+  Cloud Run beside Gemini, service identity — supersedes CF rec. Firebase: no.
+- Arnar's stake: 150 buyers ≈ 30k NOK ≈ funds his formal org. Learned:
+  hyperfocus etiquette (no clock talk, banked stays banked) — behavioral
+  candidate, needs his explicit yes next session.
+- Next: Code night 1 = SAF (firing); fee Fri if strong; Gate 1 target: w/e.
