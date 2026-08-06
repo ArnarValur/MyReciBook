@@ -4,53 +4,57 @@
 ## 📍 Now
 - Phase: pre-project (kickoff 2026-08-20); constraint 4 amended — building
   unblocked, gates decide ship/stop (context.md §4).
-- NOW-MODE (explicit yes 2026-08-06): the queue is a SEQUENCE, not a schedule.
-  Never calendar-frame Arnar's tasks; dates only for external deadlines.
-  All-nighters normal. Items Arnar removes STAY removed → behavioral.md 15–16.
-- GATE 1 (extraction): PASSED — Arnar's in-app judgment on his own screenshots,
-  recorded 2026-08-06 on his report; results ritual waived. T1 CLOSED. Arm B
-  (ocr_dump) parked: tuning fallback only. DO NOT resurrect recipe-set tasks.
-- Tier-3 daily quota cap + billing alert: DONE (Arnar) — D2 baked-key fuse set.
-- Engine + ALL 12 hi-fi screens LIVE on the S21: 77 tests green, analyze clean;
-  7 alpha-wired, 5 dev-gallery. As-built → docs/design/skin-implementation-map.md.
-- Schema v1: original_images ARRAY · extraction.mode enum · optional favorite
-  bool. Arnar owns design; agent owns engine + skin. Skins replace widgets,
-  never flows.
-- T3 D10 monetization: 3 LIFETIME free imports → hard wall → one-time unlock,
-  ~$25 anchor (§6.2); price stated ON the landing page (Gate 2 price-aware).
-- BLITZ = sequence, not nights: share-sheet+SAF (in flight, live Code session)
-  → grocery 4a → batch 3b + manual entry → settings + D9 → billing 3g once the
-  fee is paid. Out until alpha: proxy/cap (P5) · sync (constraint 6).
-- Proxy home: Cloud Run beside Gemini (service identity, no storable key);
-  Firebase no. Play account PERSONAL (trade name) → 12-tester/14-day closed
-  test stands; festival QR recruiting.
-- Arnar's stake: 150 paid users (≈$3.2k net ≈ ~30k NOK) funds formal org
-  registration — his company milestone ≈ the shape of a passed Gate 3.
+- NOW-MODE (explicit yes 2026-08-06): queue is a SEQUENCE, not a schedule; no
+  calendar-framing; items Arnar removes STAY removed → behavioral.md 15–16.
+- GATE 1: PASSED (Arnar's in-app judgment, his screenshots, 2026-08-06). T1
+  CLOSED; arm B parked (tuning fallback only). Cap + billing alert: DONE.
+- Firebase: MyReciBook is now a Firebase project (Arnar, 2026-08-06 night) —
+  console home for keys/OAuth clients. BaaS stays NO: user files remain the
+  only storage (constraint 3); NO login/account page ever.
+- Play fee: PARKED by Arnar (2026-08-06 night) — build not yet "strong". His
+  bar ≈ nav shell + saved-recipe edit + storage connect (+ grocery). Billing/
+  paywall 3g waits behind the fee; tester chain (verification → closed track →
+  QR) starts when he calls it.
+- D6 AMENDED (Arnar, 2026-08-06 night): post-save edit = reopen the saved
+  recipe in the review screen and save back (was notes-only; too thin in real
+  use). Full structured editor still post-alpha.
+- Nav: mockups' answer is the bottom glass NavBar (2+2), built as
+  _GlassNavBarPreview — promoted to real shell when grocery 4a wires. Arnar
+  said "sidepanel"; design call is his, wiring size same either way.
+- Engine + 12 hi-fi screens LIVE on S21, 77 green, analyze clean; SAF +
+  share-sheet IN FLIGHT (live Code session). As-built → docs/design/
+  skin-implementation-map.md. D10: 3 lifetime free → one-time unlock ~$25,
+  price on landing page.
+- Arnar's stake: 150 paid users (≈$3.2k net) funds his formal org.
 
 ## 🚀 Active tracks
-- T3 mvp-build — blitz sequence above; SAF in flight now.
+- T3 mvp-build — tonight-max sequence in queue below.
   Plan: conductor/tracks/T3-mvp-build/plan.md
-- T2 landing-page — design startable now (off-repo, Claude Design); email
-  capture only, price on page. External date: live 2 Sep.
+- T2 landing-page — startable off-repo anytime; external date: live 2 Sep.
 
 ## ⚠️ Blockers
-- Play fee $25: on Arnar's call (his condition was a strong build — he's
-  called it working). Google verification + closed track + tester QR + billing
-  3g all queue behind payment. NO login/account page ever.
+- Storage connect 3h needs creds Arnar creates in console: Dropbox app-folder
+  app + Drive OAuth client (drive.file) in the Firebase project (~30 min).
+- Billing 3g ← Play fee ← Arnar's strong-build call. NO login ever.
 
-## 📋 Next queue (sequence — start anything now)
-1. Code (running): land SAF + share-sheet → grocery 4a → batch 3b + manual →
-   settings + D9 → billing 3g (post-fee).
-2. Arnar: Play fee $25 (personal) whenever he calls it → verification →
-   internal track → tester QR asset.
+## 📋 Next queue (sequence — no schedule)
+1. Code (running): land SAF + share-sheet → grocery engine + wire 4a +
+   promote nav shell → saved-recipe edit via review screen (D6 am.) →
+   storage connect 3h (once creds exist) → batch 3b + manual entry →
+   settings (D9 link door stays post-alpha). NO-LIMITS RUN (Arnar,
+   2026-08-06 night): eat in order until the list is empty, 77 green after
+   each item. Storage 3h builds FULL against placeholder client IDs —
+   Arnar's creds activate it the moment they land.
+2. Arnar, now, parallel: console creds for 3h (Dropbox app + Drive OAuth
+   client, ~30 min) — only him-task blocking a Code item.
 3. Arnar, off-repo: T2 landing design.
-4. External: festival 12–16 Aug — QR opt-in, recruit 12 testers.
-5. Scheduled: 20 Aug 09:00 kickoff — registration IF fee still unpaid then.
+4. Arnar's call: Play fee $25 when build meets his bar → billing 3g joins.
+5. External: festival 12–16 Aug (QR, 12 testers) · 20 Aug 09:00 kickoff
+   (scheduled).
 
 ## 📌 Parked
-- Arm B ocr_dump — tuning fallback only (Gate 1 passed; no deadline, no queue
-  slot).
-- Post-alpha: storage connectors 3h · cap counter 4d ($2.99 top-up UNCONFIRMED)
-  · camera-roll auto-scan (post-v1).
-- Cover-crop tier 2 spike-gated · handwriting promise UNTESTED (spike before
-  listing copy, D9) · ADR 0001 graduation now due (Gate-1 passed) — next close.
+- Proxy on Cloud Run (D2: must exist before 11 Dec production) · cap counter
+  4d · D9 link door · inbox strip · serving-rescale · step↔ingredient chips ·
+  camera-roll cleanup nudge · cover-crop tier 2 · telemetry (D8, production
+  decision) · arm B ocr_dump (tuning fallback) · $2.99 top-up UNCONFIRMED ·
+  handwriting promise UNTESTED before listing copy · ADR 0001 graduation due.

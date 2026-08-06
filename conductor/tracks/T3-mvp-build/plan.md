@@ -42,7 +42,9 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   post-alpha polish.
 - D6 (P6, 2026-08-06) editing scope v1: pre-save review edits = title + any raw
   line; post-save = notes only; full structured editing is post-alpha. Backstop:
-  delete + re-import (duplicates accepted in v1).
+  delete + re-import (duplicates accepted in v1). · AMENDED 2026-08-06 night
+  (Arnar): post-save edit = reopen the saved recipe in the review screen, save
+  back — notes-only too thin in real use; full structured editor still post-alpha.
 - D7 (P2, 2026-08-06) fair-use cap machinery: static shared secret + install_id
   frozen into the request shape from day one; the per-install counter lives in the
   proxy — constraint 3 amended to allow exactly that state (context.md §3).
@@ -116,15 +118,16 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
 5. ✔ 2026-08-06 (late) — alpha skin: hi-fi 3a/3c/3d/3e (+4b/4c) wired on the
    proven flows, cook mode 3f wired, post-alpha 3b/3g/3h/4a/4d built as
    dev-gallery previews. 77 tests green, on the S21 same night.
-6. BLITZ (agreed 2026-08-06 eve): night 1 share-sheet + SAF store (arch §8) →
-   night 2 grocery engine + wire 4a → night 3 batch 3b + manual entry →
-   night 4 settings + link door D9. IF the Play fee lands early (Arnar's
-   offer: pay before the w/e on a strong Friday build) → billing/paywall 3g
-   wiring joins, tested with license testers, D10 shape. Friday-midnight
-   target = CLOSED-TEST-COMPLETE build — Google's 12-tester/14-day closed-test
-   rule gates production regardless of build speed, and public sales stay
-   behind Gates 1–2 either way. Festival 12–16 Aug = tester recruiting
-   (QR to the opt-in link; 12 opted-in testers required).
+6. NO-LIMITS RUN (Arnar, 2026-08-06 night — supersedes the blitz night
+   framing; now-mode, behavioral 15): eat in order, 77 green after each item,
+   stop only when the list is empty: share-sheet + SAF (in flight) → grocery
+   engine + wire 4a + promote the glass NavBar shell → saved-recipe edit via
+   the review screen (D6 amended) → storage connect 3h built FULL against
+   placeholder client IDs (Dropbox app-folder + Drive drive.file; Arnar's
+   console creds activate it when they land) → batch 3b + manual entry →
+   settings. Billing/paywall 3g wiring JOINS the run the moment the Play fee
+   exists (Arnar's call). D9 link door stays post-alpha. Google's
+   12-tester/14-day closed-test rule still gates production (external).
 7. Alongside: Arnar's visual pass (12 screens, light+dark); T1 D5 in-app
    arm-A y/n run feeds Gate 1 (see T1 plan).
 
