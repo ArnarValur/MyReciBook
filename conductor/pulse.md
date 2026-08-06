@@ -25,7 +25,9 @@
   share-sheet IN FLIGHT (live Code session). As-built → docs/design/
   skin-implementation-map.md. D10: 3 lifetime free → one-time unlock ~$25,
   price on landing page.
-- Arnar's stake: 150 paid users (≈$3.2k net) funds his formal org.
+- Arnar's stake ladder (2026-08-06 night): 150 paid ≈ org registration ·
+  ~285 paid (≈$6k net after Play's 15%) = MacBook → iOS expansion (agreed
+  together; both rungs sit far past Gate 3's $500 bar).
 
 ## 🚀 Active tracks
 - T3 mvp-build — tonight-max sequence in queue below.
