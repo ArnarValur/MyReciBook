@@ -145,14 +145,38 @@ class StorageModel extends ChangeNotifier {
     };
   }
 
-  /// Provider-card status line (5b language, truthful parts only); null when
-  /// [provider] isn't the active connector. Drive files live in an
-  /// app-visible 'MyReciBook' folder; Dropbox in its app folder.
+  /// True remote path label (6e, turn 6): Drive mirrors into the app-visible
+  /// 'MyReciBook/recipes' folder; Dropbox's app folder makes the honest full
+  /// path 'Apps/MyReciBook/recipes'.
+  String pathLabel(String provider) => provider == dropbox
+      ? 'Apps/MyReciBook/recipes'
+      : 'MyReciBook/recipes';
+
+  /// Settings storage-row caption (6a, turn 6): 'This phone' alone when
+  /// local-only; 'This phone + `<Provider>`' plus only status parts that are
+  /// true (drawerSummary truth rules).
+  String settingsSummary() {
+    final active = _active;
+    if (active == null) return 'This phone';
+    final base = 'This phone + ${displayName(active)}';
+    return switch (_status.state) {
+      SyncState.syncing => '$base · syncing…',
+      SyncState.synced when _status.syncedAt != null =>
+        '$base · synced ${relative(_status.syncedAt!)}',
+      SyncState.offline => '$base · offline',
+      SyncState.authRevoked => '$base · reconnect',
+      _ => base,
+    };
+  }
+
+  /// Provider-card status line (6e language, truthful parts only); null when
+  /// [provider] isn't the active connector. Leads with the true remote path
+  /// ([pathLabel]), then only what actually happened.
   String? statusLine(String provider) {
     if (provider != _active) return null;
     final count = _remoteFileCount;
     return [
-      provider == dropbox ? 'app folder' : 'MyReciBook',
+      pathLabel(provider),
       if (count != null) '$count file${count == 1 ? '' : 's'}',
       switch (_status.state) {
         SyncState.syncing => 'syncing…',

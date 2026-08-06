@@ -1,8 +1,10 @@
-// Storage screen (promoted 3h) + drawer truthful states: designed copy,
-// connect's honest notConfigured state, disconnect, restore confirm → count
-// snackbar, reconnect on revoked auth. Model is wired to real temp-dir stores
-// with a FakeRemote — same harness discipline as the other UI tests (real IO
-// settles via runAsync rounds; snackbar assertions use SHORT settles).
+// Storage screen (6e, turn 6) + drawer truthful states: designed card copy,
+// the dimmed awaiting-keys placeholder state, connect on configured builds,
+// the 6f disconnect dialog (cancel = no-op, confirm disconnects, remote
+// untouched), restore confirm → count snackbar, reconnect on revoked auth.
+// Model is wired to real temp-dir stores with a FakeRemote — same harness
+// discipline as the other UI tests (real IO settles via runAsync rounds;
+// snackbar assertions use SHORT settles).
 
 import 'dart:convert';
 import 'dart:io';
@@ -18,7 +20,9 @@ import 'package:myrecibook/data/sync_engine.dart';
 import 'package:myrecibook/data/sync_source.dart';
 import 'package:myrecibook/data/token_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
+import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
+import 'package:myrecibook/ui/library_model.dart';
 import 'package:myrecibook/ui/storage_model.dart';
 import 'package:myrecibook/ui/storage_screen.dart';
 import 'package:myrecibook/ui/theme.dart';
@@ -61,14 +65,17 @@ void main() {
   late Directory tmp;
   late Directory folder;
   late FakeRemote remote;
+  late LibraryModel library;
 
   setUp(() async {
     tmp = await Directory.systemTemp.createTemp('recibook_storage_screen');
     folder = Directory('${tmp.path}/folder')..createSync();
     remote = FakeRemote();
+    library = LibraryModel(LocalFolderStore(Directory('${tmp.path}/recipes')));
   });
 
   tearDown(() async {
+    library.dispose();
     await tmp.delete(recursive: true);
   });
 
@@ -94,7 +101,9 @@ void main() {
   }
 
   Future<StorageModel> makeModel(WidgetTester tester,
-      {bool connected = false, bool tokensPresent = true}) async {
+      {bool connected = false,
+      bool tokensPresent = true,
+      bool configured = false}) async {
     return (await tester.runAsync(() async {
       final settings =
           await AppSettings.load(File('${tmp.path}/settings.json'));
@@ -111,6 +120,9 @@ void main() {
         tokenStore: tokens,
         flow: OAuthFlow(
             channel: const MethodChannel('unused-storage-screen-test')),
+        driveClientId:
+            configured ? 'gid-1.apps.googleusercontent.com' : 'placeholder-drive',
+        dropboxAppKey: configured ? 'appkey-1' : 'placeholder-dropbox',
         remoteFactory: (provider, client) => remote,
         engineFactory: (r, onStatus) => SyncEngine(
           source: LocalFolderSource(folder),
@@ -122,12 +134,40 @@ void main() {
     }))!;
   }
 
+  Future<void> seedRecipe(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      await LocalFolderStore(Directory('${tmp.path}/recipes')).save(
+        Recipe.assemble(
+          id: idA,
+          content: {
+            'title': 'Soup',
+            'ingredients': [
+              {'raw': '2 eggs', 'confidence': 0.9},
+            ],
+            'steps': [
+              {'raw': 'Mix.', 'confidence': 0.9},
+            ],
+          },
+          originalImages: const [],
+          importedAt: DateTime.utc(2026, 8, 6),
+          extractorModel: 'fake',
+          extractorMode: 'image',
+        ),
+        const [],
+      );
+      await library.rescan();
+    });
+  }
+
   Widget screen(StorageModel model,
           {String? folderName,
           VoidCallback? onChangeFolder,
           VoidCallback? onRestored}) =>
-      ChangeNotifierProvider<StorageModel>.value(
-        value: model,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<StorageModel>.value(value: model),
+          ChangeNotifierProvider<LibraryModel>.value(value: library),
+        ],
         child: MaterialApp(
           theme: rbLightTheme(),
           home: StorageScreen(
@@ -137,51 +177,57 @@ void main() {
         ),
       );
 
-  testWidgets('renders the three designed cards with exact 3h copy',
-      (tester) async {
+  testWidgets('6e cards render the designed copy; placeholder creds dim '
+      'the providers to the awaiting-keys state', (tester) async {
+    await seedRecipe(tester);
     final model = await makeModel(tester);
     addTearDown(model.dispose);
-    await tester.pumpWidget(screen(model, folderName: 'recipes'));
+    await tester.pumpWidget(
+        screen(model, folderName: 'recipes', onChangeFolder: () {}));
     await settle(tester, rounds: 4);
 
     expect(find.text('Storage'), findsOneWidget);
-    expect(find.text('Where should your recipes live?'), findsOneWidget);
     expect(find.text('Plain files, one per recipe. Yours.'), findsOneWidget);
+    // Card 1: real folder name + real LibraryModel count.
     expect(find.text('This phone'), findsOneWidget);
-    expect(find.text('zero setup · works offline'), findsOneWidget);
-    expect(find.text('recipes'), findsOneWidget); // current folder on the card
-    expect(find.text('Google Drive'), findsOneWidget);
-    expect(find.text("app folder only — we can't see the rest"), findsOneWidget);
-    expect(find.text('Dropbox'), findsOneWidget);
-    expect(find.text('app folder only'), findsOneWidget);
-    expect(find.text('Connect'), findsNWidgets(2));
-    // Local selected: the primary check on the This-phone card.
-    expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
-    expect(find.text('WHAT A RECIPE LOOKS LIKE ON DISK'), findsOneWidget);
-    expect(find.text('MyReciBook/recipes/creamy-garlic-pasta.json'),
+    expect(find.text('recipes · 1 recipe'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Change folder'),
         findsOneWidget);
+    // Provider cards, dimmed honest placeholder state — no Connect offered.
+    expect(find.text('Google Drive'), findsOneWidget);
+    expect(find.text('Dropbox'), findsOneWidget);
+    expect(find.text('awaiting keys in this build'), findsNWidgets(2));
+    expect(find.text('Connect'), findsNothing);
+    expect(
+        tester
+            .widget<Opacity>(find
+                .ancestor(of: find.text('Dropbox'), matching: find.byType(Opacity))
+                .first)
+            .opacity,
+        0.55);
+    // The dashed leave-anytime promise.
     expect(find.textContaining('If MyReciBook vanished tomorrow'),
         findsOneWidget);
-    expect(find.text('Continue'), findsOneWidget);
+    // 3h setup furniture is gone (6e supersedes the post-setup presentation).
+    expect(find.text('Where should your recipes live?'), findsNothing);
+    expect(find.text('Continue'), findsNothing);
     // Honest: nothing claims sync on a local-only build.
     expect(find.textContaining('synced'), findsNothing);
   });
 
-  testWidgets('placeholder build: Connect surfaces the honest awaiting state',
+  testWidgets('configured build: unconnected providers wake to Connect',
       (tester) async {
-    final model = await makeModel(tester);
+    final model = await makeModel(tester, configured: true);
     addTearDown(model.dispose);
     await tester.pumpWidget(screen(model));
     await settle(tester, rounds: 4);
 
-    await tester.tap(find.text('Connect').first); // Drive
-    await settle(tester, rounds: 4);
-
-    expect(find.text('awaiting keys in this build'), findsOneWidget);
-    expect(find.text('Connect'), findsNWidgets(2)); // still connectable later
+    expect(find.text('Connect'), findsNWidgets(2));
+    expect(find.text('awaiting keys in this build'), findsNothing);
+    expect(find.byType(Opacity), findsNothing); // nothing dimmed
   });
 
-  testWidgets('connected card: truthful status line, Disconnect and Restore',
+  testWidgets('connected card: true path caption, Restore and Disconnect',
       (tester) async {
     final model = await makeModel(tester, connected: true);
     addTearDown(model.dispose);
@@ -189,17 +235,59 @@ void main() {
     await settle(tester, rounds: 4);
 
     // Connected but nothing synced this session — says 'connected', not
-    // 'synced' (the honesty rule is hard).
-    expect(find.text('MyReciBook · connected'), findsOneWidget);
-    expect(find.text('Disconnect'), findsOneWidget);
-    expect(find.text('Restore from Google Drive'), findsOneWidget);
-    expect(find.text('Connect'), findsOneWidget); // only Dropbox offers it
+    // 'synced' (the honesty rule is hard); path label is the remote truth.
+    expect(find.text('MyReciBook/recipes · connected'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Restore from Google Drive'),
+        findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Disconnect'), findsOneWidget);
     expect(find.textContaining('synced'), findsNothing);
+    // Dropbox stays the dimmed placeholder card alongside.
+    expect(find.text('awaiting keys in this build'), findsOneWidget);
+  });
+
+  testWidgets('disconnect: 6f dialog with the designed copy; cancel is a '
+      'no-op', (tester) async {
+    remote.files['$idA.json'] = utf8.encode('{"a":1}');
+    final model = await makeModel(tester, connected: true);
+    addTearDown(model.dispose);
+    await tester.pumpWidget(screen(model));
+    await settle(tester, rounds: 4);
 
     await tester.tap(find.text('Disconnect'));
     await settle(tester, rounds: 4);
-    expect(find.text('Connect'), findsNWidgets(2));
-    expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+    expect(find.text('Disconnect Google Drive?'), findsOneWidget);
+    // Survives-before-stops, verbatim.
+    expect(
+        find.text('Nothing is deleted. Your recipes stay in your Drive '
+            'folder and in the copy on this phone — they just stop syncing.'),
+        findsOneWidget);
+    // The confirm repeats the verb on a filled destructive button.
+    expect(find.widgetWithText(FilledButton, 'Disconnect'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await settle(tester, rounds: 4);
+    expect(model.active, 'drive'); // nothing happened
+    expect(find.text('MyReciBook/recipes · connected'), findsOneWidget);
+    expect(remote.files.keys, ['$idA.json']);
+  });
+
+  testWidgets('disconnect: confirm disconnects; remote files stay untouched',
+      (tester) async {
+    remote.files['$idA.json'] = utf8.encode('{"a":1}');
+    final model = await makeModel(tester, connected: true);
+    addTearDown(model.dispose);
+    await tester.pumpWidget(screen(model));
+    await settle(tester, rounds: 4);
+
+    await tester.tap(find.text('Disconnect'));
+    await settle(tester, rounds: 4);
+    await tester.tap(find.widgetWithText(FilledButton, 'Disconnect'));
+    await settle(tester, rounds: 4);
+
+    expect(model.active, isNull);
+    // Placeholder creds → both providers fall back to the dimmed state.
+    expect(find.text('awaiting keys in this build'), findsNWidgets(2));
+    expect(remote.files.keys, ['$idA.json']); // the user's copy — untouched
   });
 
   testWidgets('restore: confirm dialog → count snackbar → library refresh',
@@ -225,7 +313,8 @@ void main() {
     expect(refreshed, 1);
     expect(File('${folder.path}/$idA.json').existsSync(), isTrue);
     // The card now proves the pass: count + synced.
-    expect(find.text('MyReciBook · 2 files · synced just now'), findsOneWidget);
+    expect(find.text('MyReciBook/recipes · 2 files · synced just now'),
+        findsOneWidget);
   });
 
   testWidgets('restore with nothing missing says so honestly', (tester) async {
@@ -250,7 +339,7 @@ void main() {
     await tester.pumpWidget(screen(model));
     await settle(tester, rounds: 4);
 
-    expect(find.text('MyReciBook · reconnect needed'), findsOneWidget);
+    expect(find.text('MyReciBook/recipes · reconnect needed'), findsOneWidget);
     expect(find.text('Reconnect'), findsOneWidget);
     expect(find.text('Restore from Google Drive'), findsNothing);
     expect(find.text('Disconnect'), findsOneWidget); // the way out still exists

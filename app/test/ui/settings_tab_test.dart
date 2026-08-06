@@ -1,8 +1,8 @@
-// Settings tab (undesigned-minimal-until-drawn surface): theme choice applied
-// live through MaterialApp.themeMode AND persisted through AppSettings, the
-// storage row reaching the 3h screen, the licenses page, and the version
-// footer. Same harness discipline as shell_test.dart (real IO settles via
-// runAsync rounds).
+// Settings tab (6a, turn 6): the segmented theme control applied live through
+// MaterialApp.themeMode AND persisted through AppSettings, the truthful
+// storage row reaching the 6e Storage screen, the licenses page, and the
+// version-only footer (no ownership claim until a receipt exists). Same
+// harness discipline as shell_test.dart (real IO settles via runAsync rounds).
 
 import 'dart:convert';
 import 'dart:io';
@@ -13,6 +13,7 @@ import 'package:myrecibook/data/app_settings.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/main.dart';
+import 'package:myrecibook/ui/settings_tab.dart';
 import 'package:myrecibook/ui/theme_model.dart';
 import 'package:myrecibook/version.dart';
 
@@ -67,8 +68,11 @@ void main() {
     expect(ThemeModel().mode, ThemeMode.system);
   });
 
-  testWidgets('theme choice reacts live and persists across a relaunch',
-      (tester) async {
+  FontWeight? segmentWeight(WidgetTester tester, String label) =>
+      tester.widget<Text>(find.text(label)).style?.fontWeight;
+
+  testWidgets('segmented theme control reacts live and persists across a '
+      'relaunch', (tester) async {
     final settingsFile = File('${tmp.path}/settings.json');
     final settings =
         (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
@@ -79,12 +83,28 @@ void main() {
     expect(appThemeMode(tester), ThemeMode.system); // default preserved
 
     await openSettings(tester);
+    // Active segment carries the check + w600; the others stay quiet.
+    expect(segmentWeight(tester, 'System'), FontWeight.w600);
+    expect(segmentWeight(tester, 'Dark'), FontWeight.w500);
+    expect(
+        find.descendant(
+            of: find.byType(SettingsTab),
+            matching: find.byIcon(Icons.check_rounded)),
+        findsOneWidget);
+
     await tester.tap(find.text('Dark'));
     await settle(tester, rounds: 4);
     expect(appThemeMode(tester), ThemeMode.dark); // MaterialApp reacted
-    expect(Theme.of(tester.element(find.text('Appearance'.toUpperCase())))
-            .brightness,
+    expect(
+        Theme.of(tester.element(find.text('Theme'.toUpperCase()))).brightness,
         Brightness.dark);
+    expect(segmentWeight(tester, 'Dark'), FontWeight.w600);
+    expect(segmentWeight(tester, 'System'), FontWeight.w500);
+    expect(
+        find.descendant(
+            of: find.byType(SettingsTab),
+            matching: find.byIcon(Icons.check_rounded)),
+        findsOneWidget); // the pill moved, it didn't multiply
 
     // Persisted: the choice survives a reload of the settings file...
     final reloaded =
@@ -111,28 +131,31 @@ void main() {
     expect(ThemeModel(settings: settings).mode, ThemeMode.system);
   });
 
-  testWidgets('storage row shows the truthful summary and opens the 3h screen',
+  testWidgets('storage row shows the truthful caption and opens the 6e screen',
       (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
     await openSettings(tester);
 
-    // Inert StorageModel, no folder name → the honest local-only state.
+    // Inert StorageModel → the honest local-only caption, nothing more.
+    expect(find.text('Where your recipes live'), findsOneWidget);
     expect(find.text('This phone'), findsOneWidget);
+    expect(find.textContaining('synced'), findsNothing);
     await tester.tap(find.text('Where your recipes live'));
     await settle(tester, rounds: 6);
     expect(find.text('Plain files, one per recipe. Yours.'), findsOneWidget);
   });
 
-  testWidgets('licenses page opens; version footer renders', (tester) async {
+  testWidgets('licenses page opens; footer is version-only — no ownership '
+      'claim without a receipt', (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
     await openSettings(tester);
 
-    expect(find.text('MyReciBook $kAppVersion · you own this copy'),
-        findsOneWidget);
+    expect(find.text('MyReciBook $kAppVersion'), findsOneWidget);
+    expect(find.textContaining('you own this copy'), findsNothing);
 
-    await tester.tap(find.text('Open source licenses'));
+    await tester.tap(find.text('Open-source licenses'));
     await settle(tester, rounds: 6);
     expect(find.byType(LicensePage), findsOneWidget);
   });

@@ -1,6 +1,8 @@
-// DriveRemote against an in-memory Drive v3 fake: folder ensure, pagination,
-// multipart-create vs media-update, and AuthedClient's token lifecycle
-// (401 → refresh → retry once, persisted returned set; bounded 5xx backoff).
+// DriveRemote against an in-memory Drive v3 fake: the MyReciBook/recipes
+// layout (6e: root folder → 'recipes' child with the jsons → its 'images'
+// child), folder ensure, pagination, multipart-create vs media-update, and
+// AuthedClient's token lifecycle (401 → refresh → retry once, persisted
+// returned set; bounded 5xx backoff).
 
 import 'dart:convert';
 import 'dart:io';
@@ -217,10 +219,11 @@ void main() {
   test('list paginates and maps both dirs to relative names', () async {
     final remote = await makeRemote();
     final root = drive.addFolder('MyReciBook');
-    final img = drive.addFolder('images', parent: root);
-    drive.addFile('a.json', root, utf8.encode('{"a":1}'));
-    drive.addFile('b.json', root, utf8.encode('{"b":22}'));
-    drive.addFile('c.json', root, utf8.encode('{"c":3}'));
+    final recipes = drive.addFolder('recipes', parent: root);
+    final img = drive.addFolder('images', parent: recipes);
+    drive.addFile('a.json', recipes, utf8.encode('{"a":1}'));
+    drive.addFile('b.json', recipes, utf8.encode('{"b":22}'));
+    drive.addFile('c.json', recipes, utf8.encode('{"c":3}'));
     drive.addFile('x-1.jpg', img, [1, 2, 3]);
 
     final listed = await remote.list();
@@ -229,8 +232,8 @@ void main() {
     expect(listed['a.json']!.size, 7);
     expect(listed['b.json']!.rev, isNotEmpty);
     expect(listed['images/x-1.jpg']!.size, 3);
-    // pageSize 2 with 4 root children means the pageToken loop actually ran.
-    expect(drive.folderSearches, 1);
+    // pageSize 2 with 4 recipes-children means the pageToken loop ran.
+    expect(drive.folderSearches, 2); // MyReciBook + recipes, then cached
   });
 
   test('folder layout ensured lazily, exactly once', () async {
@@ -238,12 +241,17 @@ void main() {
     await remote.list();
     await remote.list();
     await remote.upload('r.json', utf8.encode('{}'));
-    expect(drive.folderSearches, 1); // root searched once, then cached
+    expect(drive.folderSearches, 2); // root + recipes once, then cached
 
     await remote.upload('images/x-1.jpg', utf8.encode('img'));
     await remote.upload('images/y-1.jpg', utf8.encode('img2'));
-    expect(drive.folderSearches, 2); // + one images search, then cached
-    expect(drive.folders.length, 2); // MyReciBook + images, no duplicates
+    expect(drive.folderSearches, 3); // + one images search, then cached
+    // MyReciBook → recipes → images, no duplicates.
+    expect(drive.folders.length, 3);
+    final byName = {for (final f in drive.folders.entries) f.value.name: f};
+    expect(byName['MyReciBook']!.value.parent, isNull);
+    expect(byName['recipes']!.value.parent, byName['MyReciBook']!.key);
+    expect(byName['images']!.value.parent, byName['recipes']!.key);
   });
 
   test('new name → multipart create; known name → media update', () async {
@@ -263,7 +271,8 @@ void main() {
   test('update goes to the fileId learned from list()', () async {
     final remote = await makeRemote();
     final root = drive.addFolder('MyReciBook');
-    final id = drive.addFile('a.json', root, utf8.encode('old'));
+    final recipes = drive.addFolder('recipes', parent: root);
+    final id = drive.addFile('a.json', recipes, utf8.encode('old'));
     await remote.list();
     await remote.upload('a.json', utf8.encode('new'));
     expect(drive.createUploads, 0);
@@ -273,8 +282,9 @@ void main() {
   test('download via alt=media returns exact bytes', () async {
     final remote = await makeRemote();
     final root = drive.addFolder('MyReciBook');
+    final recipes = drive.addFolder('recipes', parent: root);
     final bytes = utf8.encode('portion: ½ cup'); // rule 7 payload
-    drive.addFile('a.json', root, bytes);
+    drive.addFile('a.json', recipes, bytes);
     expect(await remote.download('a.json'), bytes);
   });
 
@@ -282,7 +292,8 @@ void main() {
       () async {
     final remote = await makeRemote();
     final root = drive.addFolder('MyReciBook');
-    drive.addFile('a.json', root, utf8.encode('{}'));
+    final recipes = drive.addFolder('recipes', parent: root);
+    drive.addFile('a.json', recipes, utf8.encode('{}'));
     await remote.delete('a.json');
     expect(drive.files, isEmpty);
     await remote.delete('a.json'); // idempotent — no throw

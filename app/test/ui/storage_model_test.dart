@@ -188,6 +188,7 @@ void main() {
     final model = await makeModel();
     expect(model.active, isNull);
     expect(model.drawerSummary(folderName: 'recipes'), 'This phone · recipes');
+    expect(model.settingsSummary(), 'This phone'); // 6a: alone when local
 
     await completeConnect(model.connect(StorageModel.drive));
 
@@ -204,7 +205,16 @@ void main() {
     expect(model.remoteFileCount, 1);
     expect(model.drawerSummary(), 'Drive · synced just now');
     expect(model.statusLine(StorageModel.drive),
-        'MyReciBook · 1 file · synced just now');
+        'MyReciBook/recipes · 1 file · synced just now');
+    expect(model.settingsSummary(),
+        'This phone + Google Drive · synced just now');
+    model.dispose();
+  });
+
+  test('path labels are the remote truth per provider (6e)', () async {
+    final model = await makeModel();
+    expect(model.pathLabel(StorageModel.drive), 'MyReciBook/recipes');
+    expect(model.pathLabel(StorageModel.dropbox), 'Apps/MyReciBook/recipes');
     model.dispose();
   });
 
@@ -243,7 +253,9 @@ void main() {
     expect(model.active, 'drive');
     expect(model.status.state, SyncState.idle);
     expect(model.drawerSummary(), 'Drive'); // nothing synced yet: say nothing
-    expect(model.statusLine(StorageModel.drive), 'MyReciBook · connected');
+    expect(model.statusLine(StorageModel.drive),
+        'MyReciBook/recipes · connected');
+    expect(model.settingsSummary(), 'This phone + Google Drive'); // no claim
     model.dispose();
   });
 
@@ -330,7 +342,8 @@ void main() {
     expect(model.status.state, SyncState.authRevoked);
     expect(model.drawerSummary(), 'Drive · reconnect');
     expect(model.statusLine(StorageModel.drive),
-        'MyReciBook · reconnect needed');
+        'MyReciBook/recipes · reconnect needed');
+    expect(model.settingsSummary(), 'This phone + Google Drive · reconnect');
     model.dispose();
   });
 

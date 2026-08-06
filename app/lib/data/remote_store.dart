@@ -153,14 +153,17 @@ String _mimeFor(String name) {
 }
 
 /// Google Drive mirror (REST v3, drive.file scope). drive.file only surfaces
-/// files this app created — that IS the design: an app-visible `folderName`
-/// root folder holds the json files, its 'images' child holds the images.
+/// files this app created — that IS the design: the app-visible layout is
+/// 'MyReciBook/recipes' (6e, turn 6) — a `folderName` root folder whose
+/// 'recipes' child holds the json files, with its 'images' child holding the
+/// images.
 class DriveRemote implements RemoteStore {
   DriveRemote(this._client, {this.folderName = 'MyReciBook'});
 
   static const _api = 'https://www.googleapis.com/drive/v3';
   static const _uploadApi = 'https://www.googleapis.com/upload/drive/v3';
   static const _folderMime = 'application/vnd.google-apps.folder';
+  static const _recipesFolder = 'recipes';
 
   final AuthedClient _client;
   final String folderName;
@@ -168,6 +171,7 @@ class DriveRemote implements RemoteStore {
   // Session caches: folder ids ensured once; file ids from list() decide
   // multipart-create vs media-update.
   String? _rootId;
+  String? _recipesId;
   String? _imagesId;
   bool _listed = false;
   final Map<String, String> _fileIds = {}; // relative name → drive file id
@@ -216,13 +220,22 @@ class DriveRemote implements RemoteStore {
     return _rootId = await _createFolder(folderName, null);
   }
 
+  Future<String> _ensureRecipesId() async {
+    if (_recipesId != null) return _recipesId!;
+    final rootId = await _ensureRootId();
+    final found = await _query("name = '$_recipesFolder' and "
+        "mimeType = '$_folderMime' and '$rootId' in parents and trashed = false");
+    if (found.isNotEmpty) return _recipesId = found.first['id'] as String;
+    return _recipesId = await _createFolder(_recipesFolder, rootId);
+  }
+
   Future<String> _ensureImagesId() async {
     if (_imagesId != null) return _imagesId!;
-    final rootId = await _ensureRootId();
+    final recipesId = await _ensureRecipesId();
     final found = await _query("name = 'images' and "
-        "mimeType = '$_folderMime' and '$rootId' in parents and trashed = false");
+        "mimeType = '$_folderMime' and '$recipesId' in parents and trashed = false");
     if (found.isNotEmpty) return _imagesId = found.first['id'] as String;
-    return _imagesId = await _createFolder('images', rootId);
+    return _imagesId = await _createFolder('images', recipesId);
   }
 
   Future<String?> _idFor(String name) async {
@@ -232,7 +245,7 @@ class DriveRemote implements RemoteStore {
 
   @override
   Future<Map<String, RemoteEntry>> list() async {
-    final rootId = await _ensureRootId();
+    final recipesId = await _ensureRecipesId();
     final entries = <String, RemoteEntry>{};
     _fileIds.clear();
     void add(String name, Map<String, dynamic> f) {
@@ -244,7 +257,8 @@ class DriveRemote implements RemoteStore {
       );
     }
 
-    for (final f in await _query("'$rootId' in parents and trashed = false")) {
+    for (final f
+        in await _query("'$recipesId' in parents and trashed = false")) {
       if (f['mimeType'] == _folderMime) {
         if (f['name'] == 'images') _imagesId = f['id'] as String;
         continue;
@@ -276,7 +290,8 @@ class DriveRemote implements RemoteStore {
       return;
     }
     final isImage = name.startsWith('images/');
-    final parentId = isImage ? await _ensureImagesId() : await _ensureRootId();
+    final parentId =
+        isImage ? await _ensureImagesId() : await _ensureRecipesId();
     final leaf = isImage ? name.substring('images/'.length) : name;
     final boundary = 'myrecibook-${DateTime.now().microsecondsSinceEpoch}';
     final body = BytesBuilder(copy: false)
@@ -339,13 +354,16 @@ String _asciiArg(Map<String, Object?> value) {
   return sb.toString();
 }
 
-/// Dropbox mirror (App-folder access type: `/name` paths are already relative
-/// to the app folder, so the layout maps 1:1 and needs no folder bookkeeping).
+/// Dropbox mirror (App-folder access type). The layout lives in a 'recipes'
+/// child of the app folder — `/recipes/<name>` — so the on-Dropbox truth is
+/// 'Apps/MyReciBook/recipes' (6e, turn 6). Upload creates the folder
+/// implicitly; a missing folder on list is simply an empty mirror.
 class DropboxRemote implements RemoteStore {
   DropboxRemote(this._client);
 
   static const _api = 'https://api.dropboxapi.com/2';
   static const _content = 'https://content.dropboxapi.com/2';
+  static const _prefix = 'recipes/'; // app-folder-relative layout root
 
   final AuthedClient _client;
 
@@ -353,22 +371,32 @@ class DropboxRemote implements RemoteStore {
   Future<Map<String, RemoteEntry>> list() async {
     final entries = <String, RemoteEntry>{};
     var uri = Uri.parse('$_api/files/list_folder');
-    var body = jsonEncode({'path': '', 'recursive': true});
+    var body = jsonEncode({'path': '/recipes', 'recursive': true});
+    var first = true;
     while (true) {
       final u = uri;
       final b = body;
-      final resp = _ok(
-          await _client.send(() => http.Request('POST', u)
-            ..headers['Content-Type'] = 'application/json'
-            ..body = b),
-          'dropbox list');
+      final resp = await _client.send(() => http.Request('POST', u)
+        ..headers['Content-Type'] = 'application/json'
+        ..body = b);
+      // Nothing mirrored yet: the recipes folder doesn't exist until the
+      // first upload — an honest empty mirror, not an error.
+      if (first &&
+          resp.statusCode == 409 &&
+          _bodyText(resp).contains('not_found')) {
+        return entries;
+      }
+      first = false;
+      _ok(resp, 'dropbox list');
       final json = jsonDecode(_bodyText(resp)) as Map<String, dynamic>;
       for (final raw in json['entries'] as List? ?? const []) {
         final e = (raw as Map).cast<String, dynamic>();
         if (e['.tag'] != 'file') continue;
         final path = (e['path_display'] ?? e['path_lower'] ?? '') as String;
         if (path.isEmpty) continue;
-        final name = path.startsWith('/') ? path.substring(1) : path;
+        var name = path.startsWith('/') ? path.substring(1) : path;
+        if (!name.startsWith(_prefix)) continue; // outside the layout root
+        name = name.substring(_prefix.length);
         entries[name] = RemoteEntry(
           name: name,
           size: (e['size'] as num?)?.toInt() ?? 0,
@@ -384,21 +412,22 @@ class DropboxRemote implements RemoteStore {
   @override
   Future<void> upload(String name, List<int> bytes) async {
     _ok(
-        await _client.send(
-            () => http.Request('POST', Uri.parse('$_content/files/upload'))
-              ..headers['Dropbox-API-Arg'] =
-                  _asciiArg({'path': '/$name', 'mode': 'overwrite', 'mute': true})
-              ..headers['Content-Type'] = 'application/octet-stream'
-              ..bodyBytes = bytes),
+        await _client.send(() => http.Request(
+            'POST', Uri.parse('$_content/files/upload'))
+          ..headers['Dropbox-API-Arg'] = _asciiArg(
+              {'path': '/$_prefix$name', 'mode': 'overwrite', 'mute': true})
+          ..headers['Content-Type'] = 'application/octet-stream'
+          ..bodyBytes = bytes),
         'dropbox upload $name');
   }
 
   @override
   Future<List<int>> download(String name) async {
     final resp = _ok(
-        await _client.send(
-            () => http.Request('POST', Uri.parse('$_content/files/download'))
-              ..headers['Dropbox-API-Arg'] = _asciiArg({'path': '/$name'})),
+        await _client.send(() =>
+            http.Request('POST', Uri.parse('$_content/files/download'))
+              ..headers['Dropbox-API-Arg'] =
+                  _asciiArg({'path': '/$_prefix$name'})),
         'dropbox download $name');
     return resp.bodyBytes;
   }
@@ -408,7 +437,7 @@ class DropboxRemote implements RemoteStore {
     final resp = await _client
         .send(() => http.Request('POST', Uri.parse('$_api/files/delete_v2'))
           ..headers['Content-Type'] = 'application/json'
-          ..body = jsonEncode({'path': '/$name'}));
+          ..body = jsonEncode({'path': '/$_prefix$name'}));
     // Already gone → success: delete is idempotent by contract.
     if (resp.statusCode == 409 && _bodyText(resp).contains('not_found')) return;
     _ok(resp, 'dropbox delete $name');

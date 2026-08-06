@@ -1,6 +1,8 @@
-// DropboxRemote against an in-memory RPC/content fake: list_folder +
-// continue, overwrite upload, the ASCII-escaped Dropbox-API-Arg header
-// (recipes are titled 'Kjötsúpa' around here), and the 401 refresh path.
+// DropboxRemote against an in-memory RPC/content fake: the /recipes layout
+// (6e: app-folder truth 'Apps/MyReciBook/recipes'), list_folder + continue,
+// the not-yet-created folder listing as empty, overwrite upload, the
+// ASCII-escaped Dropbox-API-Arg header (recipes are titled 'Kjötsúpa' around
+// here), and the 401 refresh path.
 
 import 'dart:convert';
 import 'dart:io';
@@ -21,10 +23,11 @@ String? _header(http.Request req, String name) {
 }
 
 class FakeDropbox {
-  final files = <String, List<int>>{}; // relative path → bytes
+  final files = <String, List<int>>{}; // app-folder-relative path → bytes
   final validTokens = <String>{'at-1'};
   final apiArgs = <String>[]; // every Dropbox-API-Arg header, verbatim
   Map<String, dynamic>? lastListBody;
+  String listPrefix = ''; // folder scope of the in-flight list
   int listCalls = 0;
   int continueCalls = 0;
   int pageSize = 2;
@@ -40,6 +43,14 @@ class FakeDropbox {
         listCalls++;
         lastListBody =
             jsonDecode(utf8.decode(req.bodyBytes)) as Map<String, dynamic>;
+        final path = lastListBody!['path'] as String;
+        listPrefix = path.isEmpty ? '' : '${path.substring(1)}/';
+        // Real Dropbox: listing a folder no upload ever created → not_found.
+        if (listPrefix.isNotEmpty &&
+            !files.keys.any((n) => n.startsWith(listPrefix))) {
+          return http.Response(
+              '{"error_summary": "path/not_found/..."}', 409);
+        }
         return _page(0);
       case '/2/files/list_folder/continue':
         continueCalls++;
@@ -79,7 +90,8 @@ class FakeDropbox {
   }
 
   http.Response _page(int start) {
-    final names = files.keys.toList()..sort();
+    final names = files.keys.where((n) => n.startsWith(listPrefix)).toList()
+      ..sort();
     final page = names.skip(start).take(pageSize).toList();
     return http.Response(
         jsonEncode({
@@ -145,31 +157,38 @@ void main() {
     ));
   }
 
-  test('list walks list_folder + continue and maps relative names', () async {
+  test('list walks list_folder + continue and maps names relative to '
+      '/recipes', () async {
     final remote = await makeRemote();
-    dropbox.files['a.json'] = utf8.encode('{"a":1}');
-    dropbox.files['b.json'] = utf8.encode('{"b":22}');
-    dropbox.files['images/x-1.jpg'] = [1, 2, 3];
+    dropbox.files['recipes/a.json'] = utf8.encode('{"a":1}');
+    dropbox.files['recipes/b.json'] = utf8.encode('{"b":22}');
+    dropbox.files['recipes/images/x-1.jpg'] = [1, 2, 3];
 
     final listed = await remote.list();
     expect(dropbox.listCalls, 1);
     expect(dropbox.continueCalls, 1); // 3 entries, page size 2
-    expect(dropbox.lastListBody, {'path': '', 'recursive': true});
+    expect(dropbox.lastListBody, {'path': '/recipes', 'recursive': true});
     expect(listed.keys.toSet(), {'a.json', 'b.json', 'images/x-1.jpg'});
     expect(listed['a.json']!.size, 7);
-    expect(listed['a.json']!.rev, 'ch-a.json'); // content_hash preferred
+    expect(listed['a.json']!.rev, 'ch-recipes/a.json'); // content_hash preferred
   });
 
-  test('upload writes /<name> with mode overwrite', () async {
+  test('list before any upload: missing /recipes folder is an empty mirror, '
+      'not an error', () async {
+    final remote = await makeRemote(); // fresh app folder, nothing uploaded
+    expect(await remote.list(), isEmpty);
+  });
+
+  test('upload writes /recipes/<name> with mode overwrite', () async {
     final remote = await makeRemote();
     await remote.upload('a.json', utf8.encode('v1'));
-    expect(utf8.decode(dropbox.files['a.json']!), 'v1');
+    expect(utf8.decode(dropbox.files['recipes/a.json']!), 'v1');
 
     await remote.upload('a.json', utf8.encode('v2'));
-    expect(utf8.decode(dropbox.files['a.json']!), 'v2'); // overwrote, no copy
+    expect(utf8.decode(dropbox.files['recipes/a.json']!), 'v2'); // overwrote
     expect(dropbox.files, hasLength(1));
     final arg = jsonDecode(dropbox.apiArgs.first) as Map;
-    expect(arg['path'], '/a.json');
+    expect(arg['path'], '/recipes/a.json');
     expect(arg['mode'], 'overwrite');
   });
 
@@ -183,19 +202,19 @@ void main() {
     expect(header, contains('\\u00f6')); // ö
     expect(header, contains('\\u00fa')); // ú
     // The escaping is lossless: the fake stored it under the unicode path.
-    expect(dropbox.files.keys.single, 'images/Kjötsúpa-1.jpg');
+    expect(dropbox.files.keys.single, 'recipes/images/Kjötsúpa-1.jpg');
   });
 
   test('download returns exact bytes for a non-ASCII path', () async {
     final remote = await makeRemote();
     final bytes = utf8.encode('kjöt í súpu ½');
-    dropbox.files['images/Kjötsúpa-1.jpg'] = bytes;
+    dropbox.files['recipes/images/Kjötsúpa-1.jpg'] = bytes;
     expect(await remote.download('images/Kjötsúpa-1.jpg'), bytes);
   });
 
   test('delete removes; deleting a missing path is a no-op', () async {
     final remote = await makeRemote();
-    dropbox.files['a.json'] = utf8.encode('{}');
+    dropbox.files['recipes/a.json'] = utf8.encode('{}');
     await remote.delete('a.json');
     expect(dropbox.files, isEmpty);
     await remote.delete('a.json'); // 409 not_found → swallowed
@@ -208,7 +227,7 @@ void main() {
       ..add('at-2');
     await remote.upload('a.json', utf8.encode('{}'));
     expect(refreshes, 1);
-    expect(utf8.decode(dropbox.files['a.json']!), '{}');
+    expect(utf8.decode(dropbox.files['recipes/a.json']!), '{}');
     final reloaded = await TokenStore.load(tokenFile);
     expect(reloaded.tokens('dropbox')!.accessToken, 'at-2');
     expect(reloaded.tokens('dropbox')!.refreshToken, 'rt-1');

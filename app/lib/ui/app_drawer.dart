@@ -168,9 +168,8 @@ class AppDrawer extends StatelessWidget {
                   onTap: onOpenImportQueue),
               divider(),
               // 5b exists in design only — no entitlement engine, no action.
-              // DEVIATION from 5c row 5, for design to ratify: the designed
-              // "owned" trailing is dropped — an ownership claim the alpha
-              // cannot honestly make (the spec flags untrue ones as HIGH).
+              // The designed "owned" trailing is dropped per the 6a (turn 6)
+              // footer rule: ownership claims wait for a purchase receipt.
               row(icon: Icons.verified_rounded, label: 'Your copy'),
               gap,
               row(
@@ -192,10 +191,11 @@ class AppDrawer extends StatelessWidget {
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
-                // kAppVersion so this and the settings About footer can't
-                // drift apart (5c mock shows "1.0"; the pubspec truth is
-                // 1.0.0 — honesty over mock-verbatim here).
-                child: Text('MyReciBook $kAppVersion · you own this copy',
+                // versionFooter so this and the settings footer can't drift
+                // apart. owned stays false until a purchase receipt exists —
+                // the 6a (turn 6) annotation: the footer "drops 'you own this
+                // copy' until the receipt makes it true".
+                child: Text(versionFooter(owned: false),
                     style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 11, color: scheme.onSurfaceVariant)),
               ),

@@ -106,7 +106,7 @@ void main() {
     await tester.tap(find.text('Settings'));
     await tester.pump();
     expect(stackIndex(tester), 3);
-    expect(find.text('APPEARANCE'), findsOneWidget); // real settings surface
+    expect(find.text('THEME'), findsOneWidget); // real 6a settings surface
 
     await tester.tap(find.text('Cookbook'));
     await tester.pump();
@@ -127,8 +127,9 @@ void main() {
     expect(find.text('Your copy'), findsOneWidget);
     expect(find.text('Storage'), findsOneWidget);
     expect(find.text('Help & feedback'), findsOneWidget);
-    expect(find.text('MyReciBook $kAppVersion · you own this copy'),
-        findsOneWidget);
+    // 6a footer rule: version only — no ownership claim without a receipt.
+    expect(find.text('MyReciBook $kAppVersion'), findsOneWidget);
+    expect(find.textContaining('you own this copy'), findsNothing);
     // Honest state: local-only alpha never claims sync; no fake queue badge.
     expect(find.textContaining('synced'), findsNothing);
     expect(find.text('This phone'), findsOneWidget);
@@ -196,11 +197,12 @@ void main() {
     await settle(tester, rounds: 4);
     expect(find.text('This phone · root-id'), findsOneWidget);
 
-    // The row routes to the 3h storage screen, not straight to the picker.
+    // The row routes to the 6e storage screen, not straight to the picker.
     await tester.tap(find.text('Storage'));
     await settle(tester, rounds: 6);
     expect(find.text('Plain files, one per recipe. Yours.'), findsOneWidget);
-    expect(find.text('root-id'), findsOneWidget); // current folder on the card
+    // Current folder + real library count on the This-phone card.
+    expect(find.text('root-id · 0 recipes'), findsOneWidget);
 
     // 'Change folder' reaches the existing re-pick flow:
     // first-run copy, never the "lost" copy.

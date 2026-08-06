@@ -1,17 +1,12 @@
-// Settings tab. On the bar and in the drawer by design (turn-4 navItems, 5c),
-// but NO settings screen exists in any mockup (turn-5 "Try next: settings
-// screen") — so this whole surface is a DEVIATION, for design to draw:
-// undesigned-minimal-until-drawn, the least an alpha tester needs, rendered
-// in the house skin (SectionLabel + TokenCard rows). Element flags:
-// - Theme choice (System / Light / Dark): undesigned-minimal-until-drawn.
-//   Persisted via AppSettings, applied live through ThemeModel → themeMode.
-// - Storage row: undesigned-minimal-until-drawn. Truthful summary only
-//   (StorageModel.drawerSummary) → the existing 3h StorageScreen.
-// - About (licenses + version footer): undesigned-minimal-until-drawn.
-//   Licenses = the standard Flutter page (bundled-font OFL entries are
-//   registered in main); footer reuses the 5c drawer language verbatim.
-// Nothing else on purpose: no accounts (never), no telemetry (D8), no
-// notification toggles; the D9 link-import door is post-alpha and absent.
+// Settings — 6a (turn 6): "three blocks, nothing else". The mock draws a
+// pushed page with a back arrow; ours is the bar's Settings tab, so the tab
+// stays and the arrow goes (established adaptation). Blocks: Theme (segmented
+// pill), Storage (one truthful row → the 6e Storage screen), About (licenses)
+// + the centered version footer.
+//
+// Deliberately absent, per the 6a annotation — don't let them creep in:
+// accounts (never), telemetry, notification toggles, and the link-import
+// switch (post-alpha).
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,10 +20,11 @@ import 'widgets/skin.dart';
 class SettingsTab extends StatelessWidget {
   const SettingsTab({super.key, this.folderName, this.onOpenStorage});
 
-  /// Display name of the picked recipes folder (truthful storage summary).
+  /// Display name of the picked recipes folder (unused by the 6a caption —
+  /// kept so the shell wiring stays uniform with the drawer row).
   final String? folderName;
 
-  /// Routes to the storage screen (3h) — the shell's existing wiring.
+  /// Routes to the Storage screen (6e) — the shell's existing wiring.
   final VoidCallback? onOpenStorage;
 
   @override
@@ -42,7 +38,6 @@ class SettingsTab extends StatelessWidget {
       required IconData icon,
       required String title,
       String? caption,
-      Widget? trailing,
       VoidCallback? onTap,
     }) =>
         Padding(
@@ -78,38 +73,49 @@ class SettingsTab extends StatelessWidget {
                         ],
                       ]),
                 ),
-                trailing ??
-                    Icon(Icons.chevron_right_rounded,
-                        size: 22, color: scheme.onSurfaceVariant),
+                Icon(Icons.chevron_right_rounded,
+                    size: 22, color: scheme.onSurfaceVariant),
               ]),
             ),
           ),
         );
 
-    // One selectable card per mode, storage-screen option treatment.
-    Widget themeOption(ThemeMode mode, IconData icon, String label) {
+    // 6a segmented control: one stadium container, three segments; the active
+    // segment is a white pill on light / dark pill on dark
+    // (surfaceContainerLowest is exactly that) with a check icon + w600.
+    Widget themeSegment(ThemeMode mode, String label) {
       final selected = themeModel.mode == mode;
       return Expanded(
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          customBorder: const StadiumBorder(),
           onTap: () => themeModel.setMode(mode),
-          child: TokenCard(
-            selected: selected,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Column(children: [
-              Icon(icon,
-                  size: 21,
-                  color:
-                      selected ? scheme.primary : scheme.onSurfaceVariant),
-              const SizedBox(height: 5),
-              Text(label,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight:
-                          selected ? FontWeight.w600 : FontWeight.w500,
-                      color: selected
-                          ? scheme.primary
-                          : scheme.onSurfaceVariant)),
-            ]),
+          child: Container(
+            height: 38,
+            alignment: Alignment.center,
+            decoration: selected
+                ? BoxDecoration(
+                    color: scheme.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: context.rb.hairline),
+                    boxShadow: context.rb.cardShadow,
+                  )
+                : null,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (selected) ...[
+                  Icon(Icons.check_rounded, size: 15, color: scheme.onSurface),
+                  const SizedBox(width: 5),
+                ],
+                Text(label,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w500,
+                        color: selected
+                            ? scheme.onSurface
+                            : scheme.onSurfaceVariant)),
+              ],
+            ),
           ),
         ),
       );
@@ -130,29 +136,28 @@ class SettingsTab extends StatelessWidget {
               // Bottom clearance for the glass bar, grocery-tab convention.
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 110),
               children: [
-                const SectionLabel('Appearance'),
+                const SectionLabel('Theme'),
                 const SizedBox(height: 8),
-                Row(children: [
-                  themeOption(ThemeMode.system,
-                      Icons.brightness_auto_rounded, 'System'),
-                  const SizedBox(width: 10),
-                  themeOption(
-                      ThemeMode.light, Icons.light_mode_rounded, 'Light'),
-                  const SizedBox(width: 10),
-                  themeOption(
-                      ThemeMode.dark, Icons.dark_mode_rounded, 'Dark'),
-                ]),
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                      color: scheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(999)),
+                  child: Row(children: [
+                    themeSegment(ThemeMode.system, 'System'),
+                    themeSegment(ThemeMode.light, 'Light'),
+                    themeSegment(ThemeMode.dark, 'Dark'),
+                  ]),
+                ),
                 const SizedBox(height: 20),
                 const SectionLabel('Storage'),
                 const SizedBox(height: 8),
                 row(
-                  icon: storage.active != null
-                      ? Icons.cloud_done_rounded
-                      : Icons.smartphone_rounded,
+                  icon: Icons.cloud_rounded,
                   title: 'Where your recipes live',
-                  // Same truthful summary as the drawer row — never a state
-                  // that isn't real.
-                  caption: storage.drawerSummary(folderName: folderName),
+                  // Truthful one-liner (6a): 'This phone' alone, or
+                  // 'This phone + <Provider> · synced X ago' when proven.
+                  caption: storage.settingsSummary(),
                   onTap: onOpenStorage,
                 ),
                 const SizedBox(height: 8),
@@ -160,7 +165,7 @@ class SettingsTab extends StatelessWidget {
                 const SizedBox(height: 8),
                 row(
                   icon: Icons.description_outlined,
-                  title: 'Open source licenses',
+                  title: 'Open-source licenses',
                   onTap: () => showLicensePage(
                       context: context,
                       applicationName: 'MyReciBook',
@@ -168,7 +173,10 @@ class SettingsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Center(
-                  child: Text('MyReciBook $kAppVersion · you own this copy',
+                  // owned stays false until a purchase receipt exists (6a):
+                  // the footer "drops 'you own this copy' until the receipt
+                  // makes it true".
+                  child: Text(versionFooter(owned: false),
                       style: theme.textTheme.bodySmall?.copyWith(
                           fontSize: 11, color: scheme.onSurfaceVariant)),
                 ),

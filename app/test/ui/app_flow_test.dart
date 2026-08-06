@@ -231,6 +231,11 @@ void main() {
     await settle(tester);
     await tester.tap(find.byIcon(Icons.delete_rounded));
     await settle(tester);
+    // The canonical 6f destructive shape: safe Cancel + filled verb button.
+    expect(find.text('Delete recipe?'), findsOneWidget);
+    expect(find.text('"Soup" and its images will be removed.'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Cancel'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Delete'), findsOneWidget);
     await tester.tap(find.text('Delete'));
     await settle(tester);
 

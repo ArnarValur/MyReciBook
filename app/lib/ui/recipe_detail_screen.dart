@@ -120,24 +120,15 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   }
 
   Future<void> _delete() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete recipe?'),
-        content: Text('"${_recipe.title}" and its images will be removed.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+    // The canonical 6f destructive shape; copy unchanged (nothing survives a
+    // delete, so the body states plainly what is removed).
+    final ok = await showDestructiveConfirm(
+      context,
+      title: 'Delete recipe?',
+      body: '"${_recipe.title}" and its images will be removed.',
+      verb: 'Delete',
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     await context.read<LibraryModel>().delete(_recipe.id);
     if (mounted) Navigator.of(context).pop();
   }

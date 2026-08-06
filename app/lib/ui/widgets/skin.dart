@@ -329,6 +329,41 @@ class DashedInfoCard extends StatelessWidget {
   }
 }
 
+/// THE canonical destructive confirm (6f, turn 6) — mock annotation: "reuse
+/// it verbatim for any future destructive confirm; don't draft new shapes in
+/// code". Shape: title asks the question, body states what SURVIVES before
+/// what stops, actions are a safe text 'Cancel' + a FILLED error-red button
+/// repeating the verb. Returns true only on explicit confirm.
+Future<bool> showDestructiveConfirm(
+  BuildContext context, {
+  required String title,
+  required String body,
+  required String verb,
+}) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (dctx) {
+      final scheme = dctx.scheme;
+      return AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: scheme.error, foregroundColor: scheme.onError),
+            onPressed: () => Navigator.pop(dctx, true),
+            child: Text(verb),
+          ),
+        ],
+      );
+    },
+  );
+  return ok == true;
+}
+
 /// "400 g spaghetti" → bold leading quantity, regular rest. Display-only
 /// heuristic over `raw`; when no leading amount is found the line stays plain.
 TextSpan qtyBoldSpan(String raw, TextStyle? base) {
