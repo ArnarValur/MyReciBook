@@ -122,3 +122,14 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   import reported broken May 2026 = the angle) → AA Walker → Show HN local-first.
 - Bet scope: "can't follow me" = Crouton/Mela/Pestle only; ReciMe wedge =
   pay-once + working screenshot import + owned files (doc §7).
+
+## 2026-08-06 (night→dawn, Code) — no-limits run complete: 6/6 items, 77 → 309 tests
+- The whole remaining alpha surface landed in one run, each item built,
+  adversarially reviewed, tested, and verified installed on the S21:
+  SAF store + share-sheet · grocery engine + nav shell (bar + 5c drawer) ·
+  saved-recipe edit (D6 am.) · storage connect 3h (Drive+Dropbox, full on
+  placeholder creds) · batch 3b + manual entry · settings (minimal, flagged).
+- For Arnar: your strong-build bar is met on paper — the verdict is a
+  hands-on pass on the phone. Creds spec + debug SHA-1 are in chat; two
+  dev.env lines activate storage. ~15 DEVIATION flags await your design turn.
+- Next: your review → fee call → billing 3g. Code queue otherwise empty.

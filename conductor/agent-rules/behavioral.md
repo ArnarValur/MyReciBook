@@ -41,3 +41,10 @@
     done, record his verdict and wipe the item from pulse + plans in the SAME
     session. Never re-queue it from stale files or chat memory; his done is
     final for work he owns — don't demand re-proof. (Explicit yes 2026-08-06.)
+17. The mockups ARE Arnar's design answers — read the newest docs/ export
+    before any design question; never ask him to choose what a mockup already
+    resolves (the nav question was answered by 5c before it was asked). Newest
+    turn wins over older turns AND the handoff README. Say "the mockups" /
+    "your design" — internal design-system codenames confuse when surfaced.
+    (Arnar's direct instruction, 2026-08-06 night: "Claude Design has
+    everything… just follow the design that has been made for us.")

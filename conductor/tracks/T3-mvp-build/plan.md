@@ -103,7 +103,17 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
 - Known alpha edges (accepted): review flagged-line confirm chip is UI-state
   only · detail check-offs ephemeral · cook-mode timer is in-screen only ·
   link section absent from import sheet (D9 post-alpha).
-- NOT done: share-sheet · SAF store · empty-state link caption (needs D9).
+- RUN COMPLETE (2026-08-06 night, commits be855dd…9ef7b81): SAF document-tree
+  store (pick-once grant, re-pick flow, migration) + share-sheet intake ·
+  grocery engine (§6.3: merge, aliases, category memory) + 4a + glass NavBar
+  shell + 5c drawer · saved-recipe edit via review (D6 am.; updateRecipeOnList
+  hardened to preserve checked/staple state) · storage connect 3h full on
+  placeholder creds (PKCE, Drive/Dropbox remotes, manifest-diffed mirror-up +
+  additive restore) · batch 3b (sequential, auto-save high-confidence) +
+  manual entry (source.type 'manual', no cap) · settings minimal. 309 tests,
+  analyze clean, each item adversarially reviewed + installed on the S21.
+  ~15 DEVIATION flags in app/ mark undesigned surfaces for Arnar's design turn.
+- NOT done: billing 3g (behind fee) · D9 empty-state link caption.
 
 ## Steps
 1. ✔ 2026-08-06 — /grill done (cowork): 8/8 agreed → D2–D8; draft §9 + context.md
@@ -118,16 +128,11 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
 5. ✔ 2026-08-06 (late) — alpha skin: hi-fi 3a/3c/3d/3e (+4b/4c) wired on the
    proven flows, cook mode 3f wired, post-alpha 3b/3g/3h/4a/4d built as
    dev-gallery previews. 77 tests green, on the S21 same night.
-6. NO-LIMITS RUN (Arnar, 2026-08-06 night — supersedes the blitz night
-   framing; now-mode, behavioral 15): eat in order, 77 green after each item,
-   stop only when the list is empty: share-sheet + SAF (in flight) → grocery
-   engine + wire 4a + promote the glass NavBar shell → saved-recipe edit via
-   the review screen (D6 amended) → storage connect 3h built FULL against
-   placeholder client IDs (Dropbox app-folder + Drive drive.file; Arnar's
-   console creds activate it when they land) → batch 3b + manual entry →
-   settings. Billing/paywall 3g wiring JOINS the run the moment the Play fee
-   exists (Arnar's call). D9 link door stays post-alpha. Google's
-   12-tester/14-day closed-test rule still gates production (external).
+6. ✔ 2026-08-06 (night→dawn) — NO-LIMITS RUN COMPLETE, all 6 items, green
+   after each (detail in State above). Billing/paywall 3g still JOINS the
+   moment the Play fee exists (Arnar's call — his strong-build bar is now met
+   in code, verdict needs his hands-on pass). D9 link door stays post-alpha.
+   Google's 12-tester/14-day closed-test rule still gates production.
 7. Alongside: Arnar's visual pass (12 screens, light+dark); T1 D5 in-app
    arm-A y/n run feeds Gate 1 (see T1 plan).
 

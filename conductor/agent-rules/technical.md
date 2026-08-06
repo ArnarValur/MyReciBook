@@ -42,3 +42,8 @@
    Image.file decodes consume rounds, so new async UI work may need the number
    raised, and snackbar assertions need a SHORT settle (4s snackbar dies within
    a full one).
+9. Claude Design exports (docs/*.html, ~8MB) are HTML wrapping JS-escaped
+   string payloads — complex raw greps hang past the 120s timeout. Unescape
+   first (python3, json-style \" \n replacement), then text-search screen ids
+   in chunks. Screen annotations and exact copy live in those payloads
+   (2026-08-06 night).
