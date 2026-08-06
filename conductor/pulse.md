@@ -52,7 +52,9 @@
   paywall + billing 3g · storage connectors 3h · grocery engine +
   serving-rescale 4a · cap counter 4d ($2.99 top-up UNCONFIRMED, behind
   kTopUpEnabled) · link door (D9, blogs-only; also: empty-state link caption
-  + sheet link row omitted until then) · manual entry ("type it in by hand").
+  + sheet link row omitted until then) · manual entry ("type it in by hand") ·
+  settings screen (theme override, cap meter, licenses; ~1 night — NO login/
+  account page ever, re-affirmed with Arnar 2026-08-06).
 - Cover-image crop tier 2 (bbox from same extraction call) — spike-gated;
   tier 1 (BoxFit.cover) SHIPPED at skin time as planned.
 - Snap-a-page "handwriting welcome": promise UNTESTED — spike before listing
