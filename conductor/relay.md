@@ -133,3 +133,15 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   hands-on pass on the phone. Creds spec + debug SHA-1 are in chat; two
   dev.env lines activate storage. ~15 DEVIATION flags await your design turn.
 - Next: your review → fee call → billing 3g. Code queue otherwise empty.
+
+## 2026-08-06 (dawn, Code) — design turn 6 in code · creds next session
+- Arnar's turn 6 landed and was implemented same session: settings 6a
+  (segmented theme, truthful storage row, footer drops "you own this copy"
+  until a receipt exists), storage manage 6e (remote layout changed to make
+  the designed MyReciBook/recipes label TRUE), 6f extracted as the one
+  destructive-confirm shape app-wide (recipe delete migrated to it).
+- Ratified flags retired; still undesigned: manual entry, edit-mode copy,
+  batch edge states. 313 tests, verified on the S21. Commit 00937bb.
+- Checkpoint rule hardened after Arnar's correction: commit EVERYTHING,
+  always (behavioral 18) — this checkpoint stages the full tree.
+- Next: Arnar hands-on → fee verdict; storage creds arrive next session.

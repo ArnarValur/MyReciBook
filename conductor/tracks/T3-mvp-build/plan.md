@@ -113,7 +113,13 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   manual entry (source.type 'manual', no cap) · settings minimal. 309 tests,
   analyze clean, each item adversarially reviewed + installed on the S21.
   ~15 DEVIATION flags in app/ mark undesigned surfaces for Arnar's design turn.
-- NOT done: billing 3g (behind fee) · D9 empty-state link caption.
+- TURN 6 IN CODE (2026-08-06 dawn, 00937bb): settings 6a (segmented theme,
+  truthful storage row, version-only footer until receipt — drawer matched) ·
+  storage manage 6e (supersedes 3h post-setup; remotes restructured to make
+  MyReciBook/recipes true) · 6f canonical destructive confirm (shared widget,
+  recipe delete migrated). Ratified DEVIATION flags retired. 313 tests.
+- NOT done: billing 3g (behind fee) · D9 empty-state link caption ·
+  storage activation (creds next session, docs/storage-creds-runbook.md).
 
 ## Steps
 1. ✔ 2026-08-06 — /grill done (cowork): 8/8 agreed → D2–D8; draft §9 + context.md
