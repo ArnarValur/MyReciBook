@@ -63,7 +63,8 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   UTF-8 bodyBytes decode (technical rule 6); load() null on corrupt (§7).
 - Debug APK (dev key baked) installed + launched clean on S21 (Android 15).
   VS Code launch.json → "MyReciBook (S21, dev key)" via app/dev.env.
-- NOT done: real end-to-end import (Arnar, ~10 min) · share-sheet · SAF store.
+- Real end-to-end import PASSED on S21 2026-08-06 (incl. add-screenshot flow).
+- NOT done: share-sheet · SAF store · skin.
 
 ## Steps
 1. ✔ 2026-08-06 — /grill done (cowork): 8/8 agreed → D2–D8; draft §9 + context.md
@@ -72,8 +73,9 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
    goldens (P7); adversarial review closed 7 confirmed findings.
 3. ✔ 2026-08-06 — bare UI: list / import→review(editable) / detail(+delete,
    notes). Flows only — skin spec: docs/design/*.png.
-4. ◐ device run: installed + launched 2026-08-06; REAL end-to-end import =
-   Arnar's 10-min test (pulse queue 1).
+4. ✔ 2026-08-06 — device run PASSED (Arnar, real recipe): extract → edit → save,
+   including the add-screenshot re-extract pulling in the method. His words:
+   "comes out pretty well for the bare ui".
 5. Then per grill verdicts: share-sheet plumbing, SAF store (arch §8 budgets),
    alpha skin (1a/1b/1c/2a per §design).
 

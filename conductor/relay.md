@@ -68,3 +68,13 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - Watch-out: the design-drop session's commit swept this work in early (f05d8c5)
   — harmless solo; both sessions graduated the same lesson, merged as technical
   rule 5 (dev.env = 6, utf8 = 7). Next: queue 1–3 in pulse.
+
+## 2026-08-06 (late) — first REAL import passed on the S21 · cover idea parked
+- Arnar ran the app for real: extract → edit → save worked, and add-screenshot
+  pulled the method in — "comes out pretty well for the bare ui". T3 step 4 ✔.
+  The whole engine slice is now proven end-to-end on the actual device.
+- Idea parked (Arnar's, not built): auto-detect + crop the recipe cover photo.
+  Two tiers in pulse 📌 — free BoxFit.cover of screenshot 1 at skin time; AI
+  bbox crop only if the Gate-1 spike proves it (same call, no extra cost).
+- Next session: UI-heavy — Arnar brings many screens and new layouts; agent
+  pairs the skin onto the proven flows, then share-sheet + SAF store (arch §8).
