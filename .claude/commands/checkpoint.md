@@ -14,8 +14,12 @@
 4. Update the touched track plan + its one-liner in conductor/tracks.md.
    No metadata.json — facts live in the plan header.
 5. ADR (conductor/adr/NNNN-title.md) only if proposed AND approved this session.
-6. Git: stage work + conductor changes, commit on main. Verify `git status` clean —
-   sandbox commits can leave stale lock files (behavioral rule 12); if locks appear,
-   hand the commit to Arnar.
+6. Git: stage EVERYTHING — `git add -A`, the whole tree, docs/ and design
+   exports included. `git status` must be EMPTY after the commit; a dirty tree
+   at checkpoint is a failed checkpoint (Arnar, 2026-08-06: "commit everything,
+   stop leaving something out"). Technical rule 5's sibling-session caution
+   applies MID-session — never at checkpoint, which is the reconcile point.
+   Sandbox lock-file caveat (behavioral rule 12) still applies: if locks
+   appear, hand the commit to Arnar.
 7. Confirm in ≤6 lines: ✅ date · commit hash · what moved · rollback line · top of
    next queue.

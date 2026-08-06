@@ -48,3 +48,8 @@
     "your design" — internal design-system codenames confuse when surfaced.
     (Arnar's direct instruction, 2026-08-06 night: "Claude Design has
     everything… just follow the design that has been made for us.")
+18. Checkpoint commits EVERYTHING — `git add -A`, whole tree, docs/ included;
+    `git status` empty afterwards or the checkpoint failed. Mid-session
+    sibling caution (technical rule 5) never applies at checkpoint: checkpoint
+    IS the reconcile point. (Arnar's direct instruction, 2026-08-06 dawn,
+    after two checkpoints left his design exports uncommitted.)
