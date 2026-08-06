@@ -10,6 +10,9 @@ verdict: made together on spike/out/results.md evidence — 9 of 10 "y" or stop
   display falls back to raw) · per-item confidence drives the review screen ·
   `group` for "For the sauce:" sections · `schema_version` for future migration.
   → settle together before the spike; graduates to ADR 0001 on Gate-1 pass.
+  · 2026-08-06 hi-fi review: + optional `favorite` boolean (user-owned state
+  belongs in the user's file; `tags`/`notes` already existed). Code session:
+  add to schema + validator + a fixture, keep it optional-absent-false.
 - D2 structuring model — default: Gemini flash-class (free tier covers the whole
   spike, $0 — fits festival budget); OpenAI mini-class as B-provider. Model names
   drift, so the harness takes --model. The spike decides.
