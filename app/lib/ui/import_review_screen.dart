@@ -28,7 +28,20 @@ class ImportReviewScreen extends StatefulWidget {
     required this.images,
     required Extractor this.extractor,
     required Future<List<File>> Function() this.pickMore,
-  }) : editing = null;
+  })  : editing = null,
+        initialContent = null;
+
+  /// Batch hand-off (3b "Review"): the queue already holds an extraction —
+  /// review seeds from it, no fresh AI call. Retry and add-screenshot still
+  /// re-extract over the cached picks. Pops with the saved Recipe.
+  const ImportReviewScreen.prefilled({
+    super.key,
+    required this.images,
+    required Map<String, dynamic> content,
+    required Extractor this.extractor,
+    required Future<List<File>> Function() this.pickMore,
+  })  : editing = null,
+        initialContent = content;
 
   /// Post-save edit (D6 as amended 2026-08-06): the saved recipe reopens in
   /// this screen and saves back over the same file. Text-level only — no
@@ -42,12 +55,16 @@ class ImportReviewScreen extends StatefulWidget {
   })  : editing = recipe,
         images = originals,
         extractor = null,
-        pickMore = null;
+        pickMore = null,
+        initialContent = null;
 
   final List<File> images;
   final Extractor? extractor;
   final Future<List<File>> Function()? pickMore;
   final Recipe? editing;
+
+  /// Pre-extracted content from the batch queue; null = extract on mount.
+  final Map<String, dynamic>? initialContent;
 
   @override
   State<ImportReviewScreen> createState() => _ImportReviewScreenState();
@@ -82,7 +99,12 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     super.initState();
     final editing = widget.editing;
     if (editing == null) {
-      _extract();
+      final pre = widget.initialContent;
+      if (pre != null) {
+        _seed(pre); // batch hand-off: the extraction already happened
+      } else {
+        _extract();
+      }
       return;
     }
     // Edit mode: seed straight from the saved file — no extraction call.
@@ -143,26 +165,30 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     );
   }
 
+  /// Seeds review state from extraction [content]; wrap in setState when the
+  /// frame is already live (initState may call it bare).
+  void _seed(Map<String, dynamic> content) {
+    _content = content;
+    _title.text = (content['title'] as String?) ?? '';
+    _disposeLineCtrls();
+    _confirmed.clear();
+    _ingredientCtrls = [
+      for (final i in _ings)
+        TextEditingController(text: (i['raw'] as String?) ?? '')
+    ];
+    _stepCtrls = [
+      for (final s in _steps)
+        TextEditingController(text: (s['raw'] as String?) ?? '')
+    ];
+    _phase = _Phase.review;
+  }
+
   Future<void> _extract() async {
     setState(() => _phase = _Phase.extracting);
     try {
       final content = await widget.extractor!.extractContent(_images);
       if (!mounted) return;
-      setState(() {
-        _content = content;
-        _title.text = (content['title'] as String?) ?? '';
-        _disposeLineCtrls();
-        _confirmed.clear();
-        _ingredientCtrls = [
-          for (final i in _ings)
-            TextEditingController(text: (i['raw'] as String?) ?? '')
-        ];
-        _stepCtrls = [
-          for (final s in _steps)
-            TextEditingController(text: (s['raw'] as String?) ?? '')
-        ];
-        _phase = _Phase.review;
-      });
+      setState(() => _seed(content));
     } on ExtractionException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -264,7 +290,9 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
           .showSnackBar(SnackBar(content: Text('Save failed: $e')));
       return;
     }
-    if (mounted) Navigator.of(context).pop(_isEdit ? saved : null);
+    // Pops with the saved Recipe in every mode — edit (detail awaits it) and
+    // batch review-now (the queue marks the item saved) both consume it.
+    if (mounted) Navigator.of(context).pop(saved);
   }
 
   bool _flagTitle() => _needsReview.contains('title');

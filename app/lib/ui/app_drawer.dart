@@ -19,12 +19,14 @@ class AppDrawer extends StatelessWidget {
     this.storageLabel = 'This phone',
     this.storageCloud = false,
     this.onOpenStorage,
+    this.onOpenImportQueue,
   });
 
   final int activeTab;
   final ValueChanged<int> onSelectTab;
 
-  /// Real count of shares queued behind an open import; 0 hides the badge.
+  /// Real count of imports needing attention: batch items flagged/failed plus
+  /// shares queued behind an open import; 0 hides the badge.
   final int queuedImports;
 
   /// Truthful Storage row trailing (StorageModel.drawerSummary).
@@ -35,6 +37,9 @@ class AppDrawer extends StatelessWidget {
 
   /// Routes to the storage screen (3h).
   final VoidCallback? onOpenStorage;
+
+  /// Routes to the batch queue screen (3b).
+  final VoidCallback? onOpenImportQueue;
 
   @override
   Widget build(BuildContext context) {
@@ -153,12 +158,13 @@ class AppDrawer extends StatelessWidget {
                   active: activeTab == 2,
                   onTap: () => onSelectTab(2)),
               gap,
-              // D5 cut the inbox; the queue engine is post-alpha. The badge is
-              // backed by the only real queue: shares held behind an open import.
+              // Backed by the live session batch queue (3b) plus shares held
+              // behind an open import — the badge only ever shows what's true.
               row(
                   icon: Icons.download_rounded,
                   label: 'Import queue',
-                  trailing: queuedImports > 0 ? badge(queuedImports) : null),
+                  trailing: queuedImports > 0 ? badge(queuedImports) : null,
+                  onTap: onOpenImportQueue),
               divider(),
               // 5b exists in design only — no entitlement engine, no action.
               // DEVIATION from 5c row 5, for design to ratify: the designed

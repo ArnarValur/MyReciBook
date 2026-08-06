@@ -15,8 +15,8 @@ class DevGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // 3b batch queue was promoted to the real app (lib/ui/batch_queue_screen).
     final entries = <(String, String, Widget)>[
-      ('3b', 'Batch queue', const BatchQueuePreview()),
       ('3g', 'Paywall', const PaywallPreview()),
       ('3h', 'Storage setup', const StoragePreview()),
       ('4a', 'Grocery list', const GroceryPreview()),

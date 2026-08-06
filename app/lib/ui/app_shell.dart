@@ -7,15 +7,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show PlatformException;
 import 'package:provider/provider.dart';
 
 import '../data/share_entry.dart';
 import '../domain/extractor.dart';
 import 'app_drawer.dart';
+import 'batch_model.dart';
+import 'batch_queue_screen.dart';
 import 'grocery_tab.dart';
 import 'import_review_screen.dart';
 import 'import_sheet.dart';
+import 'manual_entry_screen.dart';
 import 'library_model.dart';
 import 'plan_tab.dart';
 import 'recipe_list_screen.dart';
@@ -101,25 +103,38 @@ class _AppShellState extends State<AppShell> {
     if (_importBusy) return;
     _importBusy = true;
     try {
-      final source =
-          await showImportSheet(context, withCamera: widget.camera != null);
-      if (source == null || !mounted) return;
-
-      final List<File> picks;
-      try {
-        picks = await (source == ImportSource.camera
-            ? widget.camera!()
-            : widget.picker());
-      } on PlatformException {
-        return; // double-tap races the native picker ('already_active')
+      // The sheet owns the pick now (3a): it pops with a typed choice.
+      final choice = await showImportSheet(context,
+          picker: widget.picker, camera: widget.camera);
+      if (choice == null || !mounted) return;
+      switch (choice) {
+        case ImportManual():
+          await Navigator.of(context).push(MaterialPageRoute<void>(
+              builder: (_) => const ManualEntryScreen()));
+        case ImportPicked(:final images, :final separate):
+          if (images.isEmpty) return;
+          if (separate) {
+            // One queue item per shot (2b/3b); the sequential worker takes
+            // over and the queue screen is non-blocking progress, not a gate.
+            context.read<BatchModel>().addAll([
+              for (final f in images) [f]
+            ]);
+            await _openImportQueue();
+          } else {
+            await _pushReview(images);
+          }
       }
-      if (picks.isEmpty || !mounted) return;
-      await _pushReview(picks);
     } finally {
       _importBusy = false;
       _drainQueuedShares();
     }
   }
+
+  Future<void> _openImportQueue() =>
+      Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => BatchQueueScreen(
+            extractor: widget.extractor, pickMore: widget.picker),
+      ));
 
   void _onShared(List<File> images) {
     if (!mounted || images.isEmpty) return;
@@ -173,17 +188,21 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final storage = context.watch<StorageModel>();
+    final batch = context.watch<BatchModel>();
     return Scaffold(
       key: _scaffoldKey,
       extendBody: true,
       drawerScrimColor: const Color(0x730B0D16),
       drawer: AppDrawer(
         activeTab: _tab,
-        queuedImports: _queuedShares.length,
+        // Live truth: batch items needing eyes (flagged/failed) + shares
+        // queued behind an open import.
+        queuedImports: batch.attention + _queuedShares.length,
         storageLabel: storage.drawerSummary(folderName: widget.folderName),
         storageCloud: storage.active != null,
         onSelectTab: _select,
         onOpenStorage: _openStorage,
+        onOpenImportQueue: _openImportQueue,
       ),
       body: IndexedStack(
         index: _tab,

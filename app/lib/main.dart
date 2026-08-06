@@ -21,6 +21,7 @@ import 'data/sync_source.dart';
 import 'data/token_store.dart';
 import 'domain/extractor.dart';
 import 'ui/app_shell.dart';
+import 'ui/batch_model.dart';
 import 'ui/folder_gate.dart';
 import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
@@ -157,6 +158,14 @@ Widget buildApp({
                     Provider.of<StorageModel>(ctx, listen: false).syncSoon)),
         // Shell AND pushed routes (detail's grocery button) share this scope.
         ChangeNotifierProvider(create: (_) => GroceryModel(grocery)),
+        // Session batch queue (D5): lives above the shell so it survives tab
+        // switches and pushed routes; dies with the app. Saves ride the
+        // LibraryModel seam, so grocery/storage glue comes along for free.
+        ChangeNotifierProvider(
+            create: (ctx) => BatchModel(
+                extractor: extractor,
+                save: (recipe, images) =>
+                    ctx.read<LibraryModel>().saveImported(recipe, images))),
       ],
       child: MaterialApp(
         title: 'MyReciBook',

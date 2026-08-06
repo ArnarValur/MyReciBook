@@ -1,6 +1,7 @@
-// Post-alpha design previews — faithful builds of hi-fi 3b/3g/3h/4a/4d with
+// Post-alpha design previews — faithful builds of hi-fi 3g/3h/4a/4d with
 // the mockups' own demo data. Reachable only through the debug DevGallery.
 // Buttons that would need a missing engine explain themselves via SnackBar.
+// (3b batch queue was PROMOTED to lib/ui/batch_queue_screen.dart.)
 //
 // Product guardrails carried from the handoff spec:
 // - Paywall states the fair-use cap in writing (constraint 2).
@@ -20,166 +21,6 @@ const bool kTopUpEnabled = false;
 void _notWired(BuildContext context, String what) {
   ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$what lands post-alpha — design preview only.')));
-}
-
-// ── 3b · Batch queue ────────────────────────────────────────────────────────
-
-class BatchQueuePreview extends StatelessWidget {
-  const BatchQueuePreview({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = context.scheme;
-
-    Widget thumb() => ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: const SizedBox(width: 44, height: 60, child: StripedPlaceholder()),
-        );
-
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('Rescuing 4 recipes…',
-                        style: theme.textTheme.headlineSmall
-                            ?.copyWith(fontSize: 22)),
-                  ),
-                  TextButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      child: const Text('Hide')),
-                ],
-              ),
-              Text("Keep browsing — we'll line them up for a quick check.",
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: scheme.onSurfaceVariant, height: 1.45)),
-              const SizedBox(height: 12),
-              TokenCard(
-                child: Row(children: [
-                  thumb(),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Miso butter salmon',
-                              style: theme.textTheme.titleSmall
-                                  ?.copyWith(fontSize: 15)),
-                          const SizedBox(height: 2),
-                          Text('saved · looked complete',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                  fontSize: 12.5,
-                                  color: scheme.onSurfaceVariant)),
-                        ]),
-                  ),
-                  const Icon(Icons.check_circle_rounded,
-                      color: RbColors.success, size: 24),
-                ]),
-              ),
-              const SizedBox(height: 12),
-              TokenCard(
-                borderColor: RbColors.warning.withValues(alpha: 0.55),
-                borderWidth: 1.5,
-                child: Row(children: [
-                  thumb(),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Creamy garlic pasta',
-                              style: theme.textTheme.titleSmall
-                                  ?.copyWith(fontSize: 15)),
-                          const SizedBox(height: 2),
-                          Text('1 line needs your eyes',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color.alphaBlend(
-                                      RbColors.warning.withValues(alpha: 0.55),
-                                      scheme.onSurface))),
-                        ]),
-                  ),
-                  FilledButton.tonal(
-                      onPressed: () => _notWired(context, 'The batch queue'),
-                      style: FilledButton.styleFrom(
-                          minimumSize: const Size(76, 36),
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 14)),
-                      child: const Text('Review')),
-                ]),
-              ),
-              const SizedBox(height: 12),
-              TokenCard(
-                child: Row(children: [
-                  thumb(),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Extracting…',
-                              style: theme.textTheme.titleSmall
-                                  ?.copyWith(fontSize: 15)),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(3),
-                            child: LinearProgressIndicator(
-                                value: 0.6,
-                                minHeight: 6,
-                                backgroundColor: scheme.surfaceContainerHigh),
-                          ),
-                        ]),
-                  ),
-                ]),
-              ),
-              const SizedBox(height: 12),
-              Opacity(
-                opacity: 0.65,
-                child: TokenCard(
-                  shadow: false,
-                  child: Row(children: [
-                    Container(
-                        width: 44,
-                        height: 60,
-                        decoration: BoxDecoration(
-                            color: scheme.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(8))),
-                    const SizedBox(width: 12),
-                    Text('Waiting…',
-                        style: theme.textTheme.bodyLarge
-                            ?.copyWith(color: scheme.onSurfaceVariant)),
-                  ]),
-                ),
-              ),
-              const SizedBox(height: 12),
-              _DashedInfoCard(
-                  text:
-                      'Not a recipe? We skip it and say so — no junk lands in your book.'),
-              const Spacer(),
-              Row(children: [
-                Expanded(
-                    child: OutlinedButton(
-                        onPressed: () => _notWired(context, 'The batch queue'),
-                        child: const Text('Review flagged · 1'))),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: FilledButton(
-                        onPressed: () => Navigator.of(context).maybePop(),
-                        child: const Text('Done'))),
-              ]),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ── 3g · Paywall ────────────────────────────────────────────────────────────
@@ -463,7 +304,7 @@ class StoragePreview extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              _DashedInfoCard(
+              const DashedInfoCard(
                   text:
                       'Move, export or leave anytime. If MyReciBook vanished tomorrow, your recipes wouldn\'t.'),
               const Spacer(),
@@ -839,25 +680,3 @@ class _CloseCircle extends StatelessWidget {
   }
 }
 
-class _DashedInfoCard extends StatelessWidget {
-  const _DashedInfoCard({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    // Hairline dashes need a custom painter; a dotted-alpha border reads the
-    // same at 1px — good enough for a debug preview.
-    final scheme = context.scheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-      decoration: BoxDecoration(
-        border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(text,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontSize: 12.5, height: 1.5, color: scheme.onSurfaceVariant)),
-    );
-  }
-}

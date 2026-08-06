@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myrecibook/domain/recipe.dart';
+import 'package:myrecibook/domain/validate.dart';
 
 Map<String, dynamic> loadFixture(String name) =>
     jsonDecode(File('test/fixtures/$name').readAsStringSync())
@@ -181,6 +182,41 @@ void main() {
       expect(r.steps.single.confidence, 0.9);
       expect(r.tags, ['breakfast']);
       expect(r.notes, isNull);
+    });
+  });
+
+  // Pins the schema-additive source.type value "manual" (T3 batch/manual
+  // slice): no extraction, no images — old files unaffected, new ones must
+  // survive the round-trip and pass validation.
+  group('manual file', () {
+    final manual = Recipe(
+      schemaVersion: Recipe.currentSchemaVersion,
+      id: 'manual-1',
+      title: "Nan's bread",
+      source: const RecipeSource(
+          type: 'manual', importedAt: '2026-08-06T20:00:00.000'),
+      servings: const Servings(raw: '6 servings'),
+      ingredients: const [
+        Ingredient(raw: '2 cups flour'),
+        Ingredient(raw: '1 tsp salt'),
+      ],
+      steps: const [RecipeStep(raw: 'Mix.'), RecipeStep(raw: 'Bake.')],
+    );
+
+    test('round-trips byte-identical with type manual and no extraction', () {
+      final json = manual.toJson();
+      expect((json['source'] as Map)['type'], 'manual');
+      expect((json['source'] as Map)['original_images'], isNull);
+      expect(json['extraction'], isNull);
+
+      final back = Recipe.fromJson(jsonDecode(jsonEncode(json)) as Map<String, dynamic>);
+      expect(back.source.type, 'manual');
+      expect(back.extraction, isNull);
+      expect(jsonEncode(back.toJson()), jsonEncode(json));
+    });
+
+    test('validator does not pin source.type — nothing blocks the save', () {
+      expect(fileProblems(manual.toJson()).where(isSaveBlocking), isEmpty);
     });
   });
 

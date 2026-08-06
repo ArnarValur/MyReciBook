@@ -305,6 +305,30 @@ class _StripePainter extends CustomPainter {
   bool shouldRepaint(_StripePainter old) => old.a != a || old.b != b;
 }
 
+/// Dashed-border info card — the quiet product-promise framing ("Not a
+/// recipe? We skip it and say so…"). True 1px dashes need a custom painter;
+/// a soft outline reads the same at hairline weight.
+class DashedInfoCard extends StatelessWidget {
+  const DashedInfoCard({super.key, required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+      decoration: BoxDecoration(
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(text,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize: 12.5, height: 1.5, color: scheme.onSurfaceVariant)),
+    );
+  }
+}
+
 /// "400 g spaghetti" → bold leading quantity, regular rest. Display-only
 /// heuristic over `raw`; when no leading amount is found the line stays plain.
 TextSpan qtyBoldSpan(String raw, TextStyle? base) {
