@@ -14,8 +14,7 @@
 - Play fee: Arnar's strong-build bar (nav shell + edit + storage + grocery)
   is MET in code — verdict needs his hands-on pass. Billing 3g + tester
   chain (verification → closed track → QR) start when he calls it.
-- Storage 3h placeholder-armed: DRIVE_CLIENT_ID + DROPBOX_APP_KEY in
-  app/dev.env activate it (rule 6). Debug SHA-1 handed to Arnar in chat.
+- Storage 3h placeholder-armed — activation: docs/storage-creds-runbook.md.
 - ~15 DEVIATION flags in app/ (grep DEVIATION): undesigned surfaces built
   minimal — manual entry, edit-mode copy, restore affordance, settings,
   batch edge states. Feed Arnar's next Claude Design turn.
@@ -36,8 +35,8 @@
   before posting.
 
 ## ⚠️ Blockers
-- Storage activation ← Arnar's console creds (Dropbox app-folder app + Drive
-  Android OAuth client, drive.file, ~30 min; spec + SHA-1 in chat 2026-08-06).
+- Storage activation ← Arnar's console pass, ~35 min — full walkthrough:
+  docs/storage-creds-runbook.md (written 2026-08-06; supersedes chat spec).
 - Billing 3g ← Play fee ← Arnar's hands-on verdict on the S21 build.
 
 ## 📋 Next queue (sequence — no schedule)
@@ -57,4 +56,5 @@
   telemetry (D8) · arm B ocr_dump · $2.99 top-up UNCONFIRMED · handwriting
   promise UNTESTED before listing copy · ADR 0001 graduation due · multi-
   image shares enter as one recipe (no batch choice on share path) · token
-  store plain JSON (harden before production).
+  store plain JSON (harden before production) · storage prod errands before
+  11 Dec: Dropbox production approval + Play-signing SHA-1 on Drive client.
