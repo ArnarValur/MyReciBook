@@ -35,6 +35,8 @@ class FakeSafChannel {
 
   final Map<String, FakeSafDoc> docs = {};
   bool revoked = false;
+  bool cancelNextPick = false; // next pickFolder returns null (user backed out)
+  String? nextPickUri; // one-shot pickFolder override (a different folder)
   int reads = 0; // readFile calls — cache-hit assertions
   int failWrites = 0; // next N writeFile calls fail SAF_IO (transient hiccup)
   int _seq = 0;
@@ -97,6 +99,15 @@ class FakeSafChannel {
     // These four never emit GRANT_LOST (bridge contract).
     switch (call.method) {
       case 'pickFolder':
+        if (cancelNextPick) {
+          cancelNextPick = false;
+          return null;
+        }
+        if (nextPickUri != null) {
+          final u = nextPickUri;
+          nextPickUri = null;
+          return u;
+        }
         return treeUri;
       case 'hasGrant':
         return !revoked;

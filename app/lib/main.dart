@@ -9,13 +9,15 @@ import 'package:provider/provider.dart';
 
 import 'data/app_settings.dart';
 import 'data/gemini_extractor.dart';
+import 'data/grocery_store.dart';
 import 'data/recipe_store.dart';
 import 'data/share_entry.dart';
 import 'data/share_intake.dart';
 import 'domain/extractor.dart';
+import 'ui/app_shell.dart';
 import 'ui/folder_gate.dart';
+import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
-import 'ui/recipe_list_screen.dart';
 import 'ui/theme.dart';
 
 typedef ImagePick = Future<List<File>> Function();
@@ -33,6 +35,10 @@ Future<void> main() async {
   final support = await getApplicationSupportDirectory();
   final cache = await getApplicationCacheDirectory();
   final settings = await AppSettings.load(File('${support.path}/settings.json'));
+  // Grocery is app-private working state (T3) — app-support, not the SAF folder.
+  final grocery = await GroceryStore.load(
+      listFile: File('${support.path}/grocery_list.json'),
+      overridesFile: File('${support.path}/grocery_overrides.json'));
 
   // Constructed once, before takePending; warm shares buffer in the entry
   // until the gate resolves (bridge contract + arch §3.1).
@@ -53,13 +59,16 @@ Future<void> main() async {
     settings: settings,
     localStore: LocalFolderStore(Directory('${docs.path}/recipes')),
     imageCache: Directory('${cache.path}/saf_images'),
-    appBuilder: (store, onGrantLost) => buildApp(
+    appBuilder: (store, onGrantLost, onChangeFolder) => buildApp(
       store: store,
       extractor: extractor,
       picker: pickImages,
       camera: snapPage,
       share: share,
+      grocery: grocery,
       onGrantLost: onGrantLost,
+      onChangeFolder: onChangeFolder,
+      folderName: folderDisplayName(settings.treeUri),
     ),
   ));
 }
@@ -71,15 +80,29 @@ Widget buildApp({
   required ImagePick picker,
   ImagePick? camera,
   ShareEntry? share,
+  GroceryStore? grocery,
   VoidCallback? onGrantLost,
+  VoidCallback? onChangeFolder,
+  String? folderName,
 }) =>
-    ChangeNotifierProvider(
-      create: (_) => LibraryModel(store, onGrantLost: onGrantLost),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (_) => LibraryModel(store, onGrantLost: onGrantLost)),
+        // Shell AND pushed routes (detail's grocery button) share this scope.
+        ChangeNotifierProvider(create: (_) => GroceryModel(grocery)),
+      ],
       child: MaterialApp(
         title: 'MyReciBook',
         theme: rbLightTheme(),
         darkTheme: rbDarkTheme(),
-        home: RecipeListScreen(
-            extractor: extractor, picker: picker, camera: camera, share: share),
+        home: AppShell(
+          extractor: extractor,
+          picker: picker,
+          camera: camera,
+          share: share,
+          folderName: folderName,
+          onChangeFolder: onChangeFolder,
+        ),
       ),
     );

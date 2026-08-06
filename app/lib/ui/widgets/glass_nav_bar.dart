@@ -1,0 +1,85 @@
+// Floating glass pill NavBar (turn-4 shell, confirmed by turn 5): 56dp pill
+// inside a 64dp hint (FAB overhang), 16dp above the bottom edge; the host
+// scaffold sets extendBody so content scrolls under the glass.
+
+import 'dart:ui' show ImageFilter;
+
+import 'package:flutter/material.dart';
+
+import '../theme.dart';
+import 'skin.dart';
+
+class GlassNavBar extends StatelessWidget {
+  const GlassNavBar({super.key, required this.active, this.onTab, this.onFab});
+
+  final int active;
+  final ValueChanged<int>? onTab;
+
+  /// Center gradient FAB — the import door (3a) from every tab.
+  final VoidCallback? onFab;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    final rb = context.rb;
+
+    Widget item(int i, IconData icon, String label) {
+      final selected = i == active;
+      final color = selected ? scheme.primary : scheme.onSurfaceVariant;
+      return Expanded(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTab == null ? null : () => onTab!(i),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(icon, size: 22, fill: selected ? 1 : 0, color: color),
+            const SizedBox(height: 2),
+            Text(label,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall
+                    ?.copyWith(fontSize: 10.5, letterSpacing: 0.2, color: color)),
+          ]),
+        ),
+      );
+    }
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        child: SizedBox(
+          height: 64,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: rb.glassFill,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: rb.glassBorder),
+                    ),
+                    child: Row(children: [
+                      item(0, Icons.menu_book_rounded, 'Cookbook'),
+                      item(1, Icons.checklist_rounded, 'Grocery'),
+                      const SizedBox(width: 60),
+                      item(2, Icons.calendar_month_rounded, 'Plan'),
+                      item(3, Icons.settings_rounded, 'Settings'),
+                    ]),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                child: GradientFab(onPressed: onFab ?? () {}),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

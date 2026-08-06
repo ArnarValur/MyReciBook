@@ -1,19 +1,14 @@
-// Cookbook home (design 3d; empty state 4b). Alpha shell: no bottom nav yet
-// (Grocery/Plan are post-alpha), so the gradient FAB floats center — same
-// position it will keep when the glass NavBar arrives around it.
+// Cookbook home (design 3d; empty state 4b), hosted as the shell's first tab.
+// The shell owns import + share intake; this screen renders the library and
+// hands its two doors back up: the FAB/empty-state import and the 5c drawer.
 
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show PlatformException;
 import 'package:provider/provider.dart';
 
-import '../data/share_entry.dart';
-import '../domain/extractor.dart';
 import '../domain/recipe.dart';
-import 'import_review_screen.dart';
-import 'import_sheet.dart';
 import 'library_model.dart';
 import 'postalpha/dev_gallery.dart';
 import 'recipe_detail_screen.dart';
@@ -25,33 +20,23 @@ enum _Filter { all, favorites, quick, sweet }
 class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({
     super.key,
-    required this.extractor,
-    required this.picker,
-    this.camera,
-    this.share,
+    required this.onImport,
+    this.onOpenDrawer,
   });
 
-  final Extractor extractor;
-  final Future<List<File>> Function() picker;
+  /// The shell's import flow (3a sheet → review) — empty-state button target.
+  final VoidCallback onImport;
 
-  /// Optional "Snap a page" source; the sheet hides the row when absent.
-  final Future<List<File>> Function()? camera;
-
-  /// Share-sheet arrivals enter the same review flow as picked images.
-  final ShareEntry? share;
+  /// Opens the shell's drawer (5c) — the header menu button target.
+  final VoidCallback? onOpenDrawer;
 
   @override
   State<RecipeListScreen> createState() => _RecipeListScreenState();
 }
 
 class _RecipeListScreenState extends State<RecipeListScreen> {
-  bool _importBusy = false;
   String _query = '';
   _Filter _filter = _Filter.all;
-
-  // Shares arriving while an import is open wait here — hijacking an open
-  // review would lose the user's edits.
-  final List<File> _queuedShares = [];
 
   @override
   void initState() {
@@ -59,76 +44,8 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<LibraryModel>().rescan();
-      widget.share?.attach(_onShared);
     });
   }
-
-  @override
-  void dispose() {
-    widget.share?.detach();
-    super.dispose();
-  }
-
-  Future<void> _import() async {
-    if (_importBusy) return;
-    _importBusy = true;
-    try {
-      final source = await showImportSheet(context,
-          withCamera: widget.camera != null);
-      if (source == null || !mounted) return;
-
-      final List<File> picks;
-      try {
-        picks = await (source == ImportSource.camera
-            ? widget.camera!()
-            : widget.picker());
-      } on PlatformException {
-        return; // double-tap races the native picker ('already_active')
-      }
-      if (picks.isEmpty || !mounted) return;
-      await _pushReview(picks);
-    } finally {
-      _importBusy = false;
-      _drainQueuedShares();
-    }
-  }
-
-  void _onShared(List<File> images) {
-    if (!mounted || images.isEmpty) return;
-    if (_importBusy) {
-      _queuedShares.addAll(images);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Screenshot saved for your next import')));
-      return;
-    }
-    _openShared(images);
-  }
-
-  Future<void> _openShared(List<File> images) async {
-    _importBusy = true;
-    try {
-      await _pushReview(images);
-    } finally {
-      _importBusy = false;
-      _drainQueuedShares();
-    }
-  }
-
-  void _drainQueuedShares() {
-    if (!mounted || _queuedShares.isEmpty) return;
-    final next = [..._queuedShares];
-    _queuedShares.clear();
-    _openShared(next);
-  }
-
-  Future<void> _pushReview(List<File> images) =>
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => ImportReviewScreen(
-          images: images,
-          extractor: widget.extractor,
-          pickMore: widget.picker,
-        ),
-      ));
 
   static bool _isSweet(Recipe r) {
     const sweet = {'sweet', 'dessert', 'cake', 'baking', 'cookies'};
@@ -165,6 +82,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
 
     return Scaffold(
       body: SafeArea(
+        bottom: false, // content scrolls under the shell's glass bar
         child: model.loading && model.recipes.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
@@ -201,7 +119,8 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                         )
                       else
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
+                          // 110 bottom: clears the 64dp bar hint + 16dp inset.
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
                           sliver: SliverGrid(
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
@@ -220,7 +139,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                       if (model.skipped > 0)
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
                             child: Text(
                               "${model.skipped} files in the folder couldn't be read",
                               style: theme.textTheme.bodySmall?.copyWith(
@@ -233,8 +152,6 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                 ),
               ),
       ),
-      floatingActionButton: GradientFab(onPressed: _import),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -260,8 +177,21 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
             ),
           ),
         ),
-        // Quiet local twin of the "Synced" pill (hi-fi review note 3).
-        const StatusPill(icon: Icons.smartphone_rounded, label: 'On this phone'),
+        // Turn-5 header: the menu button replaces the Synced badge — sync
+        // status now lives in the drawer's Storage row.
+        InkWell(
+          key: const Key('drawer-button'),
+          customBorder: const CircleBorder(),
+          onTap: widget.onOpenDrawer,
+          child: Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+                color: scheme.surfaceContainerHigh, shape: BoxShape.circle),
+            child: Icon(Icons.menu_rounded,
+                size: 18, color: scheme.onSurfaceVariant),
+          ),
+        ),
       ],
     );
   }
@@ -383,7 +313,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: _import,
+            onPressed: widget.onImport,
             icon: const Icon(Icons.add),
             label: const Text('Rescue your first recipe'),
           ),

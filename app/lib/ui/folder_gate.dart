@@ -32,9 +32,11 @@ class BootGate extends StatefulWidget {
   final LocalFolderStore localStore;
   final Directory imageCache;
 
-  /// Builds the real app once a store exists; the callback re-enters the gate.
-  final Widget Function(SafFolderStore store, VoidCallback onGrantLost)
-      appBuilder;
+  /// Builds the real app once a store exists. The first callback re-enters
+  /// the gate on a lost grant; the second is the deliberate change-folder
+  /// door (drawer Storage row) — same gate, first-run copy, nothing "lost".
+  final Widget Function(SafFolderStore store, VoidCallback onGrantLost,
+      VoidCallback onChangeFolder) appBuilder;
   final MethodChannel safChannel;
 
   @override
@@ -42,9 +44,15 @@ class BootGate extends StatefulWidget {
 }
 
 class _BootGateState extends State<BootGate> {
+  final _nav = GlobalKey<NavigatorState>();
   _Boot _phase = _Boot.checking;
   bool _lost = false;
   bool _picking = false;
+
+  /// Deliberate change-folder in flight — [_store] is kept so cancelling
+  /// (picker back-out, "Keep current folder", dialog Cancel) returns to the
+  /// running app instead of stranding on the gate.
+  bool _changing = false;
   SafFolderStore? _store;
 
   @override
@@ -76,8 +84,19 @@ class _BootGateState extends State<BootGate> {
     _picking = true;
     try {
       final uri = await widget.safChannel.invokeMethod<String>('pickFolder');
-      if (uri == null || !mounted) return; // user cancelled
+      if (uri == null || !mounted) {
+        _resumeCurrent(); // cancelled a deliberate change: back to the app
+        return;
+      }
       final old = widget.settings.treeUri;
+      if (_changing && old != null && uri != old && !await _confirmSwitch()) {
+        try {
+          await widget.safChannel
+              .invokeMethod<void>('releaseGrant', {'uri': uri});
+        } catch (_) {}
+        _resumeCurrent();
+        return;
+      }
       if (old != null && old != uri) {
         try {
           await widget.safChannel
@@ -85,16 +104,53 @@ class _BootGateState extends State<BootGate> {
         } catch (_) {}
       }
       await widget.settings.setTreeUri(uri);
+      _changing = false;
       await _enter(uri);
     } on PlatformException {
       // Picker failed to launch (SAF_IO): stay on the gate.
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      final ctx = _nav.currentContext;
+      if (ctx != null && ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
             content: Text("Couldn't open the folder picker — try again")));
       }
     } finally {
       _picking = false;
     }
+  }
+
+  /// Switching to a DIFFERENT folder silently shows whatever it holds — an
+  /// empty one reads as data loss. Confirm first. Copy undesigned — flagged.
+  Future<bool> _confirmSwitch() async {
+    final ctx = _nav.currentContext;
+    if (ctx == null) return true;
+    final ok = await showDialog<bool>(
+      context: ctx,
+      builder: (dctx) => AlertDialog(
+        title: const Text('Switch to this folder?'),
+        content: const Text(
+            'Your recipes stay in the current folder — nothing is moved or '
+            'deleted. The app will show what the new folder holds.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dctx, true),
+            child: const Text('Switch folder'),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
+  void _resumeCurrent() {
+    if (!_changing || _store == null || !mounted) return;
+    setState(() {
+      _changing = false;
+      _phase = _Boot.ready;
+    });
   }
 
   Future<void> _enter(String uri) async {
@@ -131,20 +187,38 @@ class _BootGateState extends State<BootGate> {
     if (!mounted || _phase != _Boot.ready) return;
     setState(() {
       _lost = true;
+      _changing = false;
       _store = null;
+      _phase = _Boot.gate;
+    });
+  }
+
+  void _changeFolder() {
+    if (!mounted || _phase != _Boot.ready) return;
+    setState(() {
+      _lost = false;
+      _changing = true; // keep _store: cancelling returns to the app
       _phase = _Boot.gate;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_phase == _Boot.ready) return widget.appBuilder(_store!, _onGrantLost);
+    if (_phase == _Boot.ready) {
+      return widget.appBuilder(_store!, _onGrantLost, _changeFolder);
+    }
     return MaterialApp(
       title: 'MyReciBook',
+      navigatorKey: _nav,
       theme: rbLightTheme(),
       darkTheme: rbDarkTheme(),
       home: switch (_phase) {
-        _Boot.gate => FolderGate(lost: _lost, onPick: _pick),
+        _Boot.gate => FolderGate(
+            lost: _lost,
+            onPick: _pick,
+            onCancel:
+                _changing && _store != null ? _resumeCurrent : null,
+          ),
         _ => _Busy(
             label: _phase == _Boot.migrating ? 'Moving your recipes in…' : null),
       },
@@ -182,10 +256,15 @@ class _Busy extends StatelessWidget {
 
 /// First-run / re-pick gate — a real screen, minimal on purpose.
 class FolderGate extends StatelessWidget {
-  const FolderGate({super.key, required this.onPick, this.lost = false});
+  const FolderGate(
+      {super.key, required this.onPick, this.lost = false, this.onCancel});
 
   final VoidCallback onPick;
   final bool lost;
+
+  /// Present only during a deliberate change-folder — the way back to the
+  /// running app. Copy undesigned — flagged.
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -264,6 +343,15 @@ class FolderGate extends StatelessWidget {
                   label: const Text('Choose folder'),
                 ),
               ),
+              if (onCancel != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: TextButton(
+                    key: const Key('keep-folder-button'),
+                    onPressed: onCancel,
+                    child: const Text('Keep current folder'),
+                  ),
+                ),
             ],
           ),
         ),

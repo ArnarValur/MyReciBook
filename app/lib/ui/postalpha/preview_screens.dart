@@ -8,11 +8,10 @@
 //   behind [kTopUpEnabled] until decided (report §6.2 Mechanism B).
 // - Grocery merge is suggest-and-confirm, never silent (§6.3).
 
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import '../widgets/glass_nav_bar.dart';
 import '../widgets/skin.dart';
 
 /// Product flag, not a debug flag: the top-up pack needs an explicit yes.
@@ -711,7 +710,13 @@ class GroceryPreview extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const _GlassNavBarPreview(active: 1),
+      // The promoted shell bar, demo-wired: this preview is a pushed route,
+      // so tabs and FAB only explain themselves.
+      bottomNavigationBar: GlassNavBar(
+        active: 1,
+        onTab: (_) => _notWired(context, 'The shell nav'),
+        onFab: () => _notWired(context, 'The shell nav'),
+      ),
     );
   }
 }
@@ -853,76 +858,6 @@ class _DashedInfoCard extends StatelessWidget {
       child: Text(text,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
               fontSize: 12.5, height: 1.5, color: scheme.onSurfaceVariant)),
-    );
-  }
-}
-
-/// The future app shell: glass pill nav, 2+2 tabs around the gradient FAB.
-/// Preview-only until Grocery and Plan exist.
-class _GlassNavBarPreview extends StatelessWidget {
-  const _GlassNavBarPreview({required this.active});
-
-  final int active;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.scheme;
-    final rb = context.rb;
-
-    Widget item(int i, IconData icon, String label) {
-      final selected = i == active;
-      final color = selected ? scheme.primary : scheme.onSurfaceVariant;
-      return Expanded(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 22, fill: selected ? 1 : 0, color: color),
-          const SizedBox(height: 2),
-          Text(label,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelSmall
-                  ?.copyWith(fontSize: 10.5, letterSpacing: 0.2, color: color)),
-        ]),
-      );
-    }
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-        child: SizedBox(
-          height: 64,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: rb.glassFill,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: rb.glassBorder),
-                    ),
-                    child: Row(children: [
-                      item(0, Icons.menu_book_rounded, 'Cookbook'),
-                      item(1, Icons.checklist_rounded, 'Grocery'),
-                      const SizedBox(width: 60),
-                      item(2, Icons.calendar_month_rounded, 'Plan'),
-                      item(3, Icons.settings_rounded, 'Settings'),
-                    ]),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 0,
-                child: GradientFab(
-                    onPressed: () => _notWired(context, 'The shell nav')),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../domain/recipe.dart';
 import 'cook_mode_screen.dart';
+import 'grocery_model.dart';
 import 'library_model.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
@@ -79,6 +80,28 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
 
   Future<void> _toggleFavorite() =>
       _persist(_recipe.copyWith(favorite: !_recipe.favorite));
+
+  // 3e footer: one-tap whole-recipe add; when on-list, the same tap subtracts
+  // the recipe's contribution again. Snackbar copy undesigned — flagged.
+  Future<void> _toggleGrocery() async {
+    final grocery = context.read<GroceryModel>();
+    final String msg;
+    if (grocery.isOnList(_recipe.id)) {
+      await grocery.removeRecipe(_recipe.id);
+      msg = 'Removed from grocery';
+    } else {
+      final res = await grocery.addRecipe(_recipe);
+      // addedCount == 0: every line hit a checked-off row, nothing was added
+      // and the recipe is NOT on the list — never claim "Added".
+      msg = res.addedCount == 0
+          ? 'Nothing added — everything is already checked off'
+          : res.excludedCheckedCount > 0
+              ? 'Added to grocery — checked-off items skipped'
+              : 'Added to grocery';
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
 
   Future<void> _delete() async {
     final ok = await showDialog<bool>(
@@ -209,19 +232,31 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 ],
               ),
             ),
-            if (_recipe.steps.isNotEmpty)
+            if (_recipe.steps.isNotEmpty || _recipe.ingredients.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () =>
-                        Navigator.of(context).push(MaterialPageRoute<void>(
-                      builder: (_) => CookModeScreen(recipe: _recipe),
-                    )),
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Start cooking'),
-                  ),
+                child: Row(
+                  children: [
+                    if (_recipe.ingredients.isNotEmpty)
+                      if (_recipe.steps.isEmpty)
+                        Expanded(child: _groceryButton())
+                      else
+                        _groceryButton(),
+                    if (_recipe.ingredients.isNotEmpty &&
+                        _recipe.steps.isNotEmpty)
+                      const SizedBox(width: 10),
+                    if (_recipe.steps.isNotEmpty)
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () =>
+                              Navigator.of(context).push(MaterialPageRoute<void>(
+                            builder: (_) => CookModeScreen(recipe: _recipe),
+                          )),
+                          icon: const Icon(Icons.play_arrow_rounded),
+                          label: const Text('Start cooking'),
+                        ),
+                      ),
+                  ],
                 ),
               ),
           ],
@@ -229,6 +264,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       ),
     );
   }
+
+  Widget _groceryButton() => FilledButton.tonalIcon(
+        onPressed: _toggleGrocery,
+        icon: Icon(context.watch<GroceryModel>().isOnList(_recipe.id)
+            ? Icons.playlist_add_check_rounded
+            : Icons.playlist_add_rounded),
+        label: const Text('Grocery'),
+      );
 
   Widget _hero(ColorScheme scheme, List<File> originals) {
     final cover = originals.firstOrNull;

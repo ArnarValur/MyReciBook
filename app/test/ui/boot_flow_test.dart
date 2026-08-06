@@ -14,6 +14,7 @@ import 'package:myrecibook/data/share_entry.dart';
 import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
+import 'package:myrecibook/ui/app_shell.dart';
 import 'package:myrecibook/ui/folder_gate.dart';
 import 'package:myrecibook/ui/library_model.dart';
 import 'package:myrecibook/ui/recipe_list_screen.dart';
@@ -110,12 +111,14 @@ void main() {
         localStore: localStore,
         imageCache: Directory('${tmp.path}/saf_images'),
         safChannel: fake.channel,
-        appBuilder: (store, onGrantLost) => buildApp(
+        appBuilder: (store, onGrantLost, onChangeFolder) => buildApp(
           store: store,
           extractor: extractor ?? FakeExtractor([canned()]),
           picker: () async => [pick],
           share: share,
           onGrantLost: onGrantLost,
+          onChangeFolder: onChangeFolder,
+          folderName: folderDisplayName(settings.treeUri),
         ),
       );
 
@@ -216,6 +219,75 @@ void main() {
     await tester.tap(find.text('Save to cookbook'));
     await settle(tester);
     expect(find.text('Pancakes'), findsOneWidget); // saved on retry
+  });
+
+  testWidgets('change folder: cancel or keep-button returns to the running app',
+      (tester) async {
+    await tester.runAsync(() => settingsFile.writeAsString(jsonEncode(
+        {'tree_uri': fake.treeUri, 'migration_done': true})));
+    final settings = await loadSettings(tester);
+    seedSafRecipe('seed-1', 'Soup');
+
+    await tester.pumpWidget(boot(settings));
+    await settle(tester);
+    expect(find.text('Soup'), findsOneWidget);
+
+    // Deliberate change (the drawer Storage row's plumbing).
+    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
+    await settle(tester, rounds: 4);
+    expect(find.text('Where should your recipes live?'), findsOneWidget);
+
+    // The explicit way back — no picker involved.
+    await tester.tap(find.byKey(const Key('keep-folder-button')));
+    await settle(tester);
+    expect(find.text('Soup'), findsOneWidget);
+
+    // Backing out of the picker also returns instead of stranding.
+    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
+    await settle(tester, rounds: 4);
+    fake.cancelNextPick = true;
+    await tester.tap(find.byKey(const Key('choose-folder-button')));
+    await settle(tester);
+    expect(find.text('Soup'), findsOneWidget);
+  });
+
+  testWidgets('change to a different folder asks first; cancel keeps the library',
+      (tester) async {
+    await tester.runAsync(() => settingsFile.writeAsString(jsonEncode(
+        {'tree_uri': fake.treeUri, 'migration_done': true})));
+    final settings = await loadSettings(tester);
+    seedSafRecipe('seed-1', 'Soup');
+    // The fake serves one tree regardless of uri — the switch is asserted on
+    // phase + persisted uri, not on differing folder contents.
+    const otherUri = 'content://fake.saf/tree/other-root';
+
+    await tester.pumpWidget(boot(settings));
+    await settle(tester);
+    expect(find.text('Soup'), findsOneWidget);
+
+    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
+    await settle(tester, rounds: 4);
+    fake.nextPickUri = otherUri;
+    await tester.tap(find.byKey(const Key('choose-folder-button')));
+    await settle(tester, rounds: 4);
+    expect(find.text('Switch to this folder?'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel'));
+    await settle(tester);
+    expect(find.text('Soup'), findsOneWidget); // nothing switched
+    expect(settings.treeUri, fake.treeUri);
+
+    // Confirmed switch enters the new (empty) folder.
+    tester.widget<AppShell>(find.byType(AppShell)).onChangeFolder!();
+    await settle(tester, rounds: 4);
+    fake.nextPickUri = otherUri;
+    await tester.tap(find.byKey(const Key('choose-folder-button')));
+    await settle(tester, rounds: 4);
+    await tester.tap(find.text('Switch folder'));
+    await settle(tester);
+    expect(find.text('Where should your recipes live?'), findsNothing);
+    expect(find.byType(RecipeListScreen), findsOneWidget);
+    expect(settings.treeUri, otherUri);
   });
 
   testWidgets('migration smoke: local recipes appear in the SAF-backed list',
