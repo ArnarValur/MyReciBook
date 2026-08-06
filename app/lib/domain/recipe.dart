@@ -18,6 +18,11 @@ class Recipe {
   final List<RecipeStep> steps;
   final List<String> tags;
   final String? notes;
+
+  /// User-owned flag (T1 D1 amendment 2026-08-06): lives in the user's file so
+  /// deleting the app keeps the favorites. Absent in JSON unless true, so
+  /// pre-amendment files round-trip byte-identical.
+  final bool favorite;
   final Extraction? extraction;
 
   const Recipe({
@@ -32,6 +37,7 @@ class Recipe {
     required this.steps,
     this.tags = const [],
     this.notes,
+    this.favorite = false,
     this.extraction,
   });
 
@@ -102,6 +108,7 @@ class Recipe {
         ],
         tags: [for (final t in (json['tags'] as List? ?? [])) t as String],
         notes: json['notes'] as String?,
+        favorite: json['favorite'] as bool? ?? false,
         extraction: json['extraction'] is Map
             ? Extraction.fromJson(json['extraction'] as Map<String, dynamic>)
             : null,
@@ -119,6 +126,7 @@ class Recipe {
         'steps': [for (final s in steps) s.toJson()],
         'tags': tags,
         'notes': notes,
+        if (favorite) 'favorite': true,
         'extraction': extraction?.toJson(),
       };
 
@@ -128,6 +136,7 @@ class Recipe {
     List<Ingredient>? ingredients,
     List<RecipeStep>? steps,
     List<String>? tags,
+    bool? favorite,
   }) =>
       Recipe(
         schemaVersion: schemaVersion,
@@ -141,6 +150,7 @@ class Recipe {
         steps: steps ?? this.steps,
         tags: tags ?? this.tags,
         notes: notes ?? this.notes,
+        favorite: favorite ?? this.favorite,
         extraction: extraction,
       );
 }

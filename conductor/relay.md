@@ -78,3 +78,16 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   bbox crop only if the Gate-1 spike proves it (same call, no extra cost).
 - Next session: UI-heavy — Arnar brings many screens and new layouts; agent
   pairs the skin onto the proven flows, then share-sheet + SAF store (arch §8).
+
+## 2026-08-06 (all-nighter, skin) — all 12 hi-fi screens built · skin live on the S21
+- What happened: Arnar's Claude Design project landed (DittoDatto design system,
+  full handoff spec → docs/design/handoff.md). One session built the whole set:
+  tokens → theme (light+dark), shared skin primitives, alpha screens wired on
+  the proven flows (import sheet · review with confirm chips · cookbook grid
+  with screenshot covers · detail with provenance flip + favorite heart · cook
+  mode with wakelock+timer), and the five post-alpha screens (batch, paywall,
+  storage, grocery, cap) as debug-gallery previews. Fonts bundled offline-safe
+  (rule 8); schema gained the agreed favorite bool. 77 green → APK on the S21,
+  skin verified rendering with Arnar's real recipe. Review-note catches all in.
+- For Arnar: open the app — it looks like your mockups now. Long-press the
+  wordmark for the post-alpha previews. Next session: share-sheet + SAF.

@@ -75,7 +75,9 @@ void main() {
   // event loop; the pump then rebuilds with the result.
   // Each round advances roughly one real-IO await step, so rounds must exceed
   // the longest chain (save: mkdir+copy+write, then rescan reads every file).
-  Future<void> settle(WidgetTester tester, {int rounds = 20}) async {
+  // The skin added real-IO steps of its own (bundled-font asset loads, cover
+  // Image.file decodes) that consume early rounds — hence 32, not 20.
+  Future<void> settle(WidgetTester tester, {int rounds = 32}) async {
     for (var i = 0; i < rounds; i++) {
       await tester
           .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
@@ -105,10 +107,20 @@ void main() {
           .where((f) => f.path.endsWith('.json'))
           .toList();
 
-  testWidgets('empty library points at the + button', (tester) async {
+  // Skin flow (3a): the FAB opens the import sheet; the screenshots tile
+  // hands off to the injected picker.
+  Future<void> startImport(WidgetTester tester) async {
+    await tester.tap(find.byType(FloatingActionButton));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('import-screenshots-tile')));
+    await settle(tester);
+  }
+
+  testWidgets('empty library sells the first rescue', (tester) async {
     await tester.pumpWidget(app(FakeExtractor([canned()])));
     await settle(tester);
-    expect(find.textContaining('No recipes yet'), findsOneWidget);
+    expect(find.textContaining('Your book is empty'), findsOneWidget);
+    expect(find.text('Rescue your first recipe'), findsOneWidget);
   });
 
   testWidgets('happy import: review, edit title, save to list and disk',
@@ -116,8 +128,7 @@ void main() {
     await tester.pumpWidget(app(FakeExtractor([canned()])));
     await settle(tester);
 
-    await tester.tap(find.byType(FloatingActionButton));
-    await settle(tester);
+    await startImport(tester);
     expect(find.widgetWithText(TextField, 'Pancakes'), findsOneWidget);
 
     // D6 pre-save scope: title + any raw line.
@@ -127,10 +138,10 @@ void main() {
         find.widgetWithText(TextField, '1 cup flour'), '2 cups flour');
     await tester.enterText(
         find.widgetWithText(TextField, 'Mix everything.'), 'Whisk everything.');
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Save to cookbook'));
     await settle(tester);
 
-    expect(find.widgetWithText(ListTile, 'Better Pancakes'), findsOneWidget);
+    expect(find.text('Better Pancakes'), findsOneWidget);
     final files = savedJsonFiles();
     expect(files, hasLength(1));
     final json =
@@ -146,16 +157,17 @@ void main() {
     await tester.pumpWidget(app(FakeExtractor([canned()])));
     await settle(tester);
 
-    await tester.tap(find.byType(FloatingActionButton));
-    await settle(tester);
+    await startImport(tester);
 
     await tester.enterText(find.widgetWithText(TextField, 'Pancakes'), '');
-    await tester.tap(find.text('Save'));
-    await settle(tester);
+    await tester.tap(find.text('Save to cookbook'));
+    // Validation is synchronous — a short settle keeps the 4s snackbar alive
+    // for the assertion (32 rounds × 150ms of fake clock would outlive it).
+    await settle(tester, rounds: 6);
 
     expect(find.text('empty title'), findsOneWidget); // blocking snackbar
     expect(savedJsonFiles(), isEmpty);
-    expect(find.text('Review import'), findsOneWidget); // did not pop
+    expect(find.text('Recipe rescued'), findsOneWidget); // did not pop
   });
 
   testWidgets('extraction failure shows retry; retry reaches review',
@@ -166,11 +178,10 @@ void main() {
     ])));
     await settle(tester);
 
-    await tester.tap(find.byType(FloatingActionButton));
-    await settle(tester);
-    expect(find.textContaining('Offline'), findsOneWidget);
+    await startImport(tester);
+    expect(find.text("You're offline"), findsOneWidget);
 
-    await tester.tap(find.text('Retry'));
+    await tester.tap(find.text('Try again'));
     await settle(tester);
     expect(find.widgetWithText(TextField, 'Waffles'), findsOneWidget);
   });
@@ -179,13 +190,12 @@ void main() {
     await tester.pumpWidget(app(FakeExtractor([canned(withSteps: false)])));
     await settle(tester);
 
-    await tester.tap(find.byType(FloatingActionButton));
-    await settle(tester);
+    await startImport(tester);
     expect(find.textContaining('No steps captured'), findsOneWidget);
 
-    await tester.tap(find.text('Save'));
+    await tester.tap(find.text('Save to cookbook'));
     await settle(tester);
-    expect(find.widgetWithText(ListTile, 'Pancakes'), findsOneWidget);
+    expect(find.text('Pancakes'), findsOneWidget);
     expect(savedJsonFiles(), hasLength(1));
   });
 
@@ -195,6 +205,11 @@ void main() {
     await settle(tester);
 
     await tester.tap(find.text('Soup'));
+    await settle(tester);
+    // The notes card sits below the fold of the detail list (3e hero + cards);
+    // lazy children must be scrolled into existence before enterText can find
+    // them. `.last` = the top route's ListView (detail, not the cookbook grid).
+    await tester.drag(find.byType(ListView).last, const Offset(0, -600));
     await settle(tester);
     await tester.enterText(
         find.byKey(const Key('notes-field')), 'less salt next time');
@@ -214,7 +229,7 @@ void main() {
 
     await tester.tap(find.text('Soup'));
     await settle(tester);
-    await tester.tap(find.byIcon(Icons.delete));
+    await tester.tap(find.byIcon(Icons.delete_rounded));
     await settle(tester);
     await tester.tap(find.text('Delete'));
     await settle(tester);

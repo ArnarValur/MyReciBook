@@ -32,3 +32,13 @@
    → ½/⅓/é mojibake in recipe text. Always
    `utf8.decode(resp.bodyBytes, allowMalformed: true)`; pinned by extractor
    test. Applies to the future proxy client too (2026-08-06).
+8. google_fonts fetches fonts at runtime and RETHROWS fetch failures — in
+   widget tests that fails whatever test is pumping. Fonts live as bundled
+   assets (app/google_fonts/ + pubspec `- google_fonts/`) and
+   test/flutter_test_config.dart pins `allowRuntimeFetching = false`; keep both
+   when adding font weights. Bundling is also product-correct: a kitchen app
+   must not need network for its own type (2026-08-06). Related: the widget
+   tests' `settle(rounds:)` helper counts real-IO awaits — asset font loads and
+   Image.file decodes consume rounds, so new async UI work may need the number
+   raised, and snackbar assertions need a SHORT settle (4s snackbar dies within
+   a full one).

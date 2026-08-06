@@ -1,10 +1,18 @@
-// Detail: read-only view + notes editing only post-save (D6) + delete.
+// Recipe detail (design 3e): hero cover with provenance flip, favorite heart
+// (the schema's user-owned bool), ingredient check-off (ephemeral view state),
+// notes editing post-save (D6) + delete. Servings render as a static chip —
+// the stepper waits for the rescale engine (post-alpha).
+
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../domain/recipe.dart';
+import 'cook_mode_screen.dart';
 import 'library_model.dart';
+import 'theme.dart';
+import 'widgets/skin.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
   const RecipeDetailScreen({super.key, required this.recipe});
@@ -19,6 +27,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   late Recipe _recipe = widget.recipe;
   late final TextEditingController _notes =
       TextEditingController(text: widget.recipe.notes ?? '');
+  final Set<int> _checked = {}; // kitchen-session state, not persisted
+  bool _showOriginal = false;
 
   @override
   void dispose() {
@@ -26,13 +36,19 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     super.dispose();
   }
 
-  Future<void> _saveNotes() async {
+  List<File> get _originals {
+    final model = context.read<LibraryModel>();
+    return [
+      for (final ref in _recipe.source.originalImages ?? const <String>[])
+        if (model.imageFor(ref) != null) model.imageFor(ref)!
+    ];
+  }
+
+  Future<void> _persist(Recipe next, {String? confirmation}) async {
     // Empty cachedImages keeps original_images intact (store contract).
     final Recipe saved;
     try {
-      saved = await context
-          .read<LibraryModel>()
-          .saveImported(_recipe.copyWith(notes: _notes.text), const []);
+      saved = await context.read<LibraryModel>().saveImported(next, const []);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -41,9 +57,17 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     }
     if (!mounted) return;
     setState(() => _recipe = saved);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Notes saved')));
+    if (confirmation != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(confirmation)));
+    }
   }
+
+  Future<void> _saveNotes() =>
+      _persist(_recipe.copyWith(notes: _notes.text), confirmation: 'Notes saved');
+
+  Future<void> _toggleFavorite() =>
+      _persist(_recipe.copyWith(favorite: !_recipe.favorite));
 
   Future<void> _delete() async {
     final ok = await showDialog<bool>(
@@ -70,62 +94,255 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final labelStyle = Theme.of(context).textTheme.titleMedium;
-    final children = <Widget>[
-      if (_recipe.servings?.raw != null)
-        Text('Servings: ${_recipe.servings!.raw}'),
-      if (_recipe.times?.raw != null) Text('Time: ${_recipe.times!.raw}'),
-      const SizedBox(height: 16),
-      Text('Ingredients', style: labelStyle),
-    ];
-
-    String? prevGroup;
-    for (final i in _recipe.ingredients) {
-      if (i.group != null && i.group != prevGroup) {
-        children.add(Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: Text(i.group!, style: Theme.of(context).textTheme.titleSmall),
-        ));
-      }
-      prevGroup = i.group;
-      children.add(Text(i.raw));
-    }
-
-    children
-      ..add(const SizedBox(height: 16))
-      ..add(Text('Steps', style: labelStyle));
-    for (var n = 0; n < _recipe.steps.length; n++) {
-      children.add(Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Text('${n + 1}. ${_recipe.steps[n].raw}'),
-      ));
-    }
-
-    children
-      ..add(const SizedBox(height: 16))
-      ..add(Text('Notes', style: labelStyle))
-      ..add(TextField(
-        key: const Key('notes-field'),
-        controller: _notes,
-        maxLines: null,
-        decoration: const InputDecoration(hintText: 'Your notes'),
-      ))
-      ..add(Align(
-        alignment: Alignment.centerLeft,
-        child: TextButton(
-          onPressed: _saveNotes,
-          child: const Text('Save notes'),
-        ),
-      ));
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    final originals = _originals;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_recipe.title),
-        actions: [
-          IconButton(icon: const Icon(Icons.delete), onPressed: _delete),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _hero(scheme, originals),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                children: [
+                  Text(_recipe.title, style: theme.textTheme.headlineSmall),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (_recipe.times?.raw != null)
+                        MetaChip(
+                            icon: Icons.schedule_rounded,
+                            label: _recipe.times!.raw!),
+                      if (_recipe.servings?.raw != null)
+                        MetaChip(
+                            icon: Icons.restaurant_rounded,
+                            label: _recipe.servings!.raw!),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  const SectionLabel('Ingredients'),
+                  const SizedBox(height: 8),
+                  TokenCard(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                    child: Column(children: _ingredientRows(theme, scheme)),
+                  ),
+                  const SizedBox(height: 14),
+                  const SectionLabel('Steps'),
+                  const SizedBox(height: 8),
+                  TokenCard(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (var n = 0; n < _recipe.steps.length; n++)
+                          Padding(
+                            padding: EdgeInsets.only(top: n == 0 ? 0 : 8),
+                            child: Text.rich(
+                              TextSpan(children: [
+                                TextSpan(
+                                  text: '${n + 1}  ',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: scheme.primary),
+                                ),
+                                TextSpan(text: _recipe.steps[n].raw),
+                              ]),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                height: 1.55,
+                                color: n == 0
+                                    ? scheme.onSurface
+                                    : scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const SectionLabel('Notes'),
+                  const SizedBox(height: 8),
+                  TokenCard(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          key: const Key('notes-field'),
+                          controller: _notes,
+                          maxLines: null,
+                          style: theme.textTheme.bodyMedium,
+                          decoration: InputDecoration(
+                            isCollapsed: true,
+                            border: InputBorder.none,
+                            hintText: 'Your notes',
+                            hintStyle: theme.textTheme.bodyMedium
+                                ?.copyWith(color: scheme.onSurfaceVariant),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: _saveNotes,
+                            child: const Text('Save notes'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_recipe.steps.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () =>
+                        Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (_) => CookModeScreen(recipe: _recipe),
+                    )),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Start cooking'),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _hero(ColorScheme scheme, List<File> originals) {
+    final cover = originals.firstOrNull;
+    return SizedBox(
+      height: 210,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          GestureDetector(
+            onTap: originals.isEmpty
+                ? null
+                : () => Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => OriginalsViewer(images: originals))),
+            child: _showOriginal
+                ? ColoredBox(
+                    color: scheme.surfaceContainerLow,
+                    child: CoverImage(cover, fit: BoxFit.contain))
+                : CoverImage(cover),
+          ),
+          Positioned(
+            top: 16,
+            left: 16,
+            child: GlassCircle(
+              icon: Icons.arrow_back_rounded,
+              onTap: () => Navigator.of(context).maybePop(),
+            ),
+          ),
+          Positioned(
+            top: 16,
+            right: 16,
+            child: Row(
+              children: [
+                GlassCircle(
+                  key: const Key('favorite-button'),
+                  icon: _recipe.favorite
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_outline_rounded,
+                  filled: _recipe.favorite,
+                  iconColor: _recipe.favorite
+                      ? scheme.tertiaryContainer
+                      : scheme.onSurface,
+                  onTap: _toggleFavorite,
+                ),
+                const SizedBox(width: 8),
+                GlassCircle(icon: Icons.delete_rounded, onTap: _delete),
+              ],
+            ),
+          ),
+          if (originals.isNotEmpty)
+            Positioned(
+              bottom: 12,
+              right: 12,
+              child: GlassPill(
+                icon: Icons.swap_horiz_rounded,
+                label: _showOriginal ? 'cover' : 'original',
+                onTap: () => setState(() => _showOriginal = !_showOriginal),
+              ),
+            ),
         ],
       ),
-      body: ListView(padding: const EdgeInsets.all(16), children: children),
     );
+  }
+
+  List<Widget> _ingredientRows(ThemeData theme, ColorScheme scheme) {
+    final rows = <Widget>[];
+    String? prevGroup;
+    final rb = context.rb;
+    for (var i = 0; i < _recipe.ingredients.length; i++) {
+      final ing = _recipe.ingredients[i];
+      if (ing.group != null && ing.group != prevGroup) {
+        rows.add(Padding(
+          padding: const EdgeInsets.only(top: 10, bottom: 2),
+          child: Align(
+              alignment: Alignment.centerLeft, child: SectionLabel(ing.group!)),
+        ));
+      }
+      prevGroup = ing.group;
+      final checked = _checked.contains(i);
+      final last = i == _recipe.ingredients.length - 1;
+      rows.add(InkWell(
+        onTap: () => setState(
+            () => checked ? _checked.remove(i) : _checked.add(i)),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: last
+              ? null
+              : BoxDecoration(
+                  border: Border(bottom: BorderSide(color: rb.separator))),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 18,
+                height: 18,
+                margin: const EdgeInsets.only(top: 1),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  color: checked ? scheme.primary : null,
+                  border: checked
+                      ? null
+                      : Border.all(color: scheme.outline, width: 2),
+                ),
+                child: checked
+                    ? Icon(Icons.check_rounded,
+                        size: 13, color: scheme.onPrimary)
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text.rich(
+                  qtyBoldSpan(
+                    ing.raw,
+                    theme.textTheme.bodyMedium?.copyWith(
+                      decoration:
+                          checked ? TextDecoration.lineThrough : null,
+                      color: checked ? scheme.onSurfaceVariant : null,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ));
+    }
+    return rows;
   }
 }

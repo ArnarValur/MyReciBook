@@ -7,11 +7,13 @@ opened: pulled forward 2026-08-06 (originally 21 Sep) · status: engine slice DO
 division: Arnar owns UI/design (sketches after festival); agent owns the engine.
           Skins replace widgets and colors, never flows (editable review, delete,
           reorder are load-bearing — architecture review 2026-08-06).
-design:   skin spec = docs/design/*.png (Arnar, 2026-08-06 — arrived early).
-          Alpha skin targets: 1a review · 1b cookbook · 1c detail · 2a
-          single-recipe import path. Post-alpha with designs READY: batch queue
-          2b · cook mode 1d · paywall 1e · storage setup 1f · camera-roll cleanup
-          nudge · serving-rescale→grocery.
+design:   skin spec = docs/design/handoff.md (full token→Flutter spec, imported
+          2026-08-06 from Arnar's Claude Design project) + docs/design/*.png +
+          review-notes.md catches. Alpha skin BUILT 2026-08-06: 3a import sheet ·
+          3c review · 3d cookbook · 3e detail (+4b empty, 4c failed) + cook mode
+          3f (pure view, wired). Post-alpha screens ALSO BUILT as previews behind
+          the debug dev gallery (long-press wordmark): batch 3b · paywall 3g ·
+          storage 3h · grocery 4a · cap 4d — wire when engines land.
 architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork session):
               all 8 proposals agreed → D2–D8 below. Draft §9 maps P# → D#.
 
@@ -64,7 +66,22 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
 - Debug APK (dev key baked) installed + launched clean on S21 (Android 15).
   VS Code launch.json → "MyReciBook (S21, dev key)" via app/dev.env.
 - Real end-to-end import PASSED on S21 2026-08-06 (incl. add-screenshot flow).
-- NOT done: share-sheet · SAF store · skin.
+- SKIN DONE 2026-08-06 (late night): DittoDatto tokens → lib/ui/theme.dart
+  (light "Stitch Slate" + dark "Midnight", both ship, themeMode system) ·
+  shared primitives lib/ui/widgets/skin.dart (TokenCard, chips, glass, gradient
+  FAB, striped placeholder, qty-bold, originals viewer) · fonts BUNDLED as
+  assets (app/google_fonts/, OFL licenses registered) — offline-correct and
+  test-safe (technical rule 8). Schema v1 + favorite bool (T1 D1 amendment;
+  serialized only when true → old files round-trip byte-identical). Review-note
+  catches honored: delete-toggle OMITTED (engine can't delete originals yet),
+  "On this phone" quiet pill, heart = tertiary moment. Covers = screenshot-1
+  BoxFit.cover (tier 1 free, per parked two-tier idea). Verified: 77 tests
+  green · analyze clean · APK installed + launched on S21, skin renders in
+  dark mode with Arnar's real recipe.
+- Known alpha edges (accepted): review flagged-line confirm chip is UI-state
+  only · detail check-offs ephemeral · cook-mode timer is in-screen only ·
+  link section absent from import sheet (D9 post-alpha).
+- NOT done: share-sheet · SAF store · empty-state link caption (needs D9).
 
 ## Steps
 1. ✔ 2026-08-06 — /grill done (cowork): 8/8 agreed → D2–D8; draft §9 + context.md
@@ -76,8 +93,11 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
 4. ✔ 2026-08-06 — device run PASSED (Arnar, real recipe): extract → edit → save,
    including the add-screenshot re-extract pulling in the method. His words:
    "comes out pretty well for the bare ui".
-5. Then per grill verdicts: share-sheet plumbing, SAF store (arch §8 budgets),
-   alpha skin (1a/1b/1c/2a per §design).
+5. ✔ 2026-08-06 (late) — alpha skin: hi-fi 3a/3c/3d/3e (+4b/4c) wired on the
+   proven flows, cook mode 3f wired, post-alpha 3b/3g/3h/4a/4d built as
+   dev-gallery previews. 77 tests green, on the S21 same night.
+6. Next: share-sheet plumbing + SAF store (arch §8 budgets); then Arnar's
+   visual pass on the skin (his eyes on 12 screens, light+dark).
 
 ## Rollback / cleanup
 Engine built ahead of gates: a failed Gate 1 or 2 archives app/ with the repo,

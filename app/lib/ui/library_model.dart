@@ -43,4 +43,12 @@ class LibraryModel extends ChangeNotifier {
     await rescan();
     return saved;
   }
+
+  /// Cover = the recipe's first original screenshot (tier-1 zero-effort cover).
+  File? coverFor(Recipe recipe) {
+    final refs = recipe.source.originalImages ?? const [];
+    return refs.isEmpty ? null : _store.resolveImage(refs.first);
+  }
+
+  File? imageFor(String ref) => _store.resolveImage(ref);
 }

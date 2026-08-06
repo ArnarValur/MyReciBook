@@ -39,6 +39,8 @@ dependencies:
   uuid: ^4.6.0
   path_provider: ^2.1.6
   provider: ^6.1.2
+  google_fonts: ^6.2.1
+  wakelock_plus: ^1.2.8
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +66,9 @@ flutter:
 
   assets:
     - assets/structure_prompt.md
+    # Bundled brand fonts (OFL) — google_fonts loads these from assets, so the
+    # skin renders correctly offline and in tests; no runtime fetching.
+    - google_fonts/
     - assets/recipe.schema.json
 
   # To add assets to your application, add an assets section, like this:

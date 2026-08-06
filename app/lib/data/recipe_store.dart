@@ -27,6 +27,10 @@ abstract class RecipeStore {
   /// Throws [StateError] when the file has save-blocking validation problems.
   Future<Recipe> save(Recipe recipe, List<File> cachedImages);
   Future<void> delete(String id);
+
+  /// Resolves a stored `images/…` reference (or a pre-save absolute path) to a
+  /// readable file; null when the reference is unsafe (§7 confinement).
+  File? resolveImage(String ref);
 }
 
 class LocalFolderStore implements RecipeStore {
@@ -115,6 +119,13 @@ class LocalFolderStore implements RecipeStore {
     await file.writeAsString(
         const JsonEncoder.withIndent('  ').convert(complete.toJson()));
     return complete;
+  }
+
+  @override
+  File? resolveImage(String ref) {
+    if (_safeImagePath(ref)) return File('${root.path}/$ref');
+    final f = File(ref);
+    return f.isAbsolute ? f : null;
   }
 
   @override
