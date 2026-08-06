@@ -51,6 +51,20 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   (report §6.5 droppable-bonus framing; §5 treadmill 1 avoided). ~2–3 nights when
   its turn comes. Flag: "handwriting welcome" (Snap-a-page) is an UNTESTED promise
   — must pass a spike test before it appears in any listing copy.
+- D10 monetization shape (2026-08-06 hyperfocus round; Arnar delegated the call
+  to the agent's marketing recommendation): free taste = 3 imports, LIFETIME,
+  never resets. Why: the aha must happen on the buyer's OWN screenshot —
+  "rescue YOUR camera roll" is personal, a demo recipe isn't — and a
+  non-resetting taste is the anti-pattern to ReciMe's resetting free tier,
+  the category's loudest complaint (report §2.2). After 3: hard wall
+  (constraint 2), one-time unlock. Price anchor ~$25 (Crouton ships AI import
+  at $24.99 one-time, §6.2); FINAL price = T4 decision; the landing page
+  STATES the price so Gate 2 measures price-aware demand. Implementation:
+  D7's per-install proxy counter doubles as the trial counter (installs start
+  with 3; purchase raises to the fair-use cap) + on-device gate for UI.
+  Accepted leak: reinstall resets the on-device taste (~3¢ exposure) — a
+  reinstall-grinder was never a buyer. Listing copy: "Try 3 free. Pay once.
+  Yours forever."
 
 ## State (2026-08-06 night checkpoint)
 - app/ (Flutter 3.44, Android-only) · deps: + provider (D3) · analyze clean,
@@ -97,8 +111,17 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
 5. ✔ 2026-08-06 (late) — alpha skin: hi-fi 3a/3c/3d/3e (+4b/4c) wired on the
    proven flows, cook mode 3f wired, post-alpha 3b/3g/3h/4a/4d built as
    dev-gallery previews. 77 tests green, on the S21 same night.
-6. Next: share-sheet plumbing + SAF store (arch §8 budgets); then Arnar's
-   visual pass on the skin (his eyes on 12 screens, light+dark).
+6. BLITZ (agreed 2026-08-06 eve): night 1 share-sheet + SAF store (arch §8) →
+   night 2 grocery engine + wire 4a → night 3 batch 3b + manual entry →
+   night 4 settings + link door D9. IF the Play fee lands early (Arnar's
+   offer: pay before the w/e on a strong Friday build) → billing/paywall 3g
+   wiring joins, tested with license testers, D10 shape. Friday-midnight
+   target = CLOSED-TEST-COMPLETE build — Google's 12-tester/14-day closed-test
+   rule gates production regardless of build speed, and public sales stay
+   behind Gates 1–2 either way. Festival 12–16 Aug = tester recruiting
+   (QR to the opt-in link; 12 opted-in testers required).
+7. Alongside: Arnar's visual pass (12 screens, light+dark); T1 D5 in-app
+   arm-A y/n run feeds Gate 1 (see T1 plan).
 
 ## Rollback / cleanup
 Engine built ahead of gates: a failed Gate 1 or 2 archives app/ with the repo,

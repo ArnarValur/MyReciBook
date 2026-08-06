@@ -94,14 +94,17 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - Deep doc: docs/design/skin-implementation-map.md — every deviation + why,
   where each screen lives, test-contract changes, post-alpha wiring points.
 
-## 2026-08-06 (eve, cowork) — Gate-1 arm A moves into the app · blitz agreed
-- Arnar challenged the spike protocol — he was right: it predated the working
-  app. Decided together (T1 D5): arm A judged in-app on the S21 (y/n at review
-  BEFORE edits); desktop harness demoted to tuning fallback; arm B unchanged.
-  Unit fixed: recipes/rows, not screenshots — 8 more recipes → 10 rows.
-- Pre-festival blitz (constraint 4 as amended): 4 Code nights — share-sheet+SAF
-  → grocery 4a → batch 3b + manual entry → settings + D9. Named out, one reason
-  each: billing (Play acct 20 Aug) · proxy/cap (P5) · sync (constraint 6).
-  Login/account: never, re-affirmed; "signup page" = T2 landing email capture
-  (Arnar designs it festival-adjacent; page live 2 Sep).
-- Next: Arnar's 25-min set + 40-min in-app y/n tonight; Code night 1 = SAF.
+## 2026-08-06 (eve→night, cowork) — arm A into the app · blitz · money round
+- Arnar challenged the spike protocol — he was right, it predated the working
+  app. T1 D5: arm A judged IN-APP (y/n at review BEFORE edits); harness =
+  tuning fallback; arm B unchanged; unit = recipes/rows (8 more → 10 total).
+- Blitz (constraint 4 as amended): 4 Code nights — SAF → grocery 4a → batch
+  3b + manual → settings + D9. Out with one reason each: billing (no Play
+  acct — UNLESS the fee lands early: Arnar offered to pay before the w/e on
+  a strong Fri build, then billing joins) · proxy/cap (P5) · sync (constr. 6).
+- Money round (hyperfocus): T3 D10 on Arnar's delegated call — 3 LIFETIME free
+  imports → one-time unlock, ~$25 anchor, price ON the landing page (Gate 2
+  price-aware). Dashboard = Play Console, nothing to host · proxy NOT GCP ·
+  Friday = closed-test-complete (Google's 12-tester/14-day rule) · festival =
+  tester-QR recruiting. Login/account never; "signup" = T2 email capture.
+- Next: set + in-app y/n tonight; Code night 1 = SAF; fee Fri if strong.
