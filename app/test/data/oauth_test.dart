@@ -52,6 +52,16 @@ void main() {
             headers: {'content-type': 'application/json'});
       });
 
+  test('Drive redirect = reversed client id (Google policy; S21 2026-08-09)',
+      () {
+    final p =
+        OAuthProvider.googleDrive('123-abc.apps.googleusercontent.com');
+    expect(p.redirectUri, 'com.googleusercontent.apps.123-abc:/oauth2redirect');
+    // Query parsing works without an authority — the code exchange depends on it.
+    final u = Uri.parse('${p.redirectUri}?code=c&state=s');
+    expect(u.queryParameters, {'code': 'c', 'state': 's'});
+  });
+
   test('PKCE challenge matches RFC 7636 appendix B vector', () {
     expect(
       pkceChallenge('dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk'),
@@ -91,7 +101,7 @@ void main() {
     final q = auth.queryParameters;
     expect(q['response_type'], 'code');
     expect(q['client_id'], 'gid-1.apps.googleusercontent.com');
-    expect(q['redirect_uri'], 'com.merkurialstudio.myrecibook://oauth2');
+    expect(q['redirect_uri'], 'com.googleusercontent.apps.gid-1:/oauth2redirect');
     expect(q['scope'], 'https://www.googleapis.com/auth/drive.file');
     expect(q['access_type'], 'offline');
     expect(q['prompt'], 'consent');
@@ -117,7 +127,7 @@ void main() {
     final body = Uri.splitQueryString(tokenReq.body);
     expect(body['grant_type'], 'authorization_code');
     expect(body['code'], 'c0de');
-    expect(body['redirect_uri'], 'com.merkurialstudio.myrecibook://oauth2');
+    expect(body['redirect_uri'], 'com.googleusercontent.apps.gid-1:/oauth2redirect');
     expect(body['client_id'], 'gid-1.apps.googleusercontent.com');
     // PKCE loop closes: hashed POSTed verifier == launched challenge.
     expect(pkceChallenge(body['code_verifier']!), q['code_challenge']);

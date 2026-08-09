@@ -110,10 +110,26 @@ class OAuthProvider {
         authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
         tokenEndpoint: 'https://oauth2.googleapis.com/token',
         clientId: clientId,
+        // Google POLICY (S21 400 invalid_request, 2026-08-09): an installed
+        // app's custom redirect scheme MUST be the reversed client id — the
+        // package-name scheme is rejected even with "custom URI scheme"
+        // enabled on the client. AuthBridge routes any
+        // com.googleusercontent.apps.* redirect; the manifest needs one
+        // <data> entry per Android client (i.e. per signing cert).
+        redirectUri: '${reversedClientScheme(clientId)}:/oauth2redirect',
         scopes: const ['https://www.googleapis.com/auth/drive.file'],
         // Google mints a refresh token only with offline access + forced consent.
         extraAuthParams: const {'access_type': 'offline', 'prompt': 'consent'},
       );
+
+  /// 'N-x.apps.googleusercontent.com' → 'com.googleusercontent.apps.N-x'.
+  static String reversedClientScheme(String clientId) {
+    const suffix = '.apps.googleusercontent.com';
+    final stem = clientId.endsWith(suffix)
+        ? clientId.substring(0, clientId.length - suffix.length)
+        : clientId;
+    return 'com.googleusercontent.apps.$stem';
+  }
 
   /// App-folder scoping lives in the Dropbox app registration, not a scope.
   static OAuthProvider dropbox(String appKey) => OAuthProvider(

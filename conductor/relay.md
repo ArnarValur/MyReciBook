@@ -137,3 +137,17 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - Graduated as tech rule 9 — the same errand returns at first Play upload
   (Play App Signing = a third cert). Next: SHA-1 in console → Drive smoke →
   your verdict → fee.
+
+## 2026-08-09 (Hermes, evening) — Drive 400 cracked: Google demands the reversed-client-id redirect
+- Your new OAuth client + ticked custom-URI box weren't enough: Google's
+  policy rejects package-name redirect schemes outright (the 400's own
+  request details showed it). Installed apps must redirect to the REVERSED
+  client id — com.googleusercontent.apps.<id>:/oauth2redirect.
+- Fixed in code, not console: oauth.dart derives the scheme from whatever
+  client id the build carries, AuthBridge routes any
+  com.googleusercontent.apps.* redirect, the manifest lists one entry per
+  client. New client id mirrored into .env/dev.env (gitignored).
+- Rebuilt, 338 tests green, installed on the S21 — your Drive retry is the
+  open question this checkpoint can't answer. Graduated as tech rule 10;
+  the Play App Signing cert will need the same pair of errands (rules 9+10).
+- Next: retry Drive → save → files in Drive → kill/reopen = smoke PASSED.

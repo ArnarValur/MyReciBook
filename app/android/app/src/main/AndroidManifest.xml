@@ -45,6 +45,16 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="com.merkurialstudio.myrecibook" android:host="oauth2"/>
             </intent-filter>
+            <!-- Drive OAuth (Google policy): scheme = REVERSED client id,
+                 one entry per Android client / signing cert. This is the
+                 upload-key client (2026-08-09); add the debug client's
+                 reversed id here if debug-signed Drive auth is ever needed. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="com.googleusercontent.apps.213431165631-72m8s4qshj9v3degivvkd8r6kecfn5nh"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

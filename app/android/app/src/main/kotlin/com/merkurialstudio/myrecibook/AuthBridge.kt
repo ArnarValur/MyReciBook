@@ -17,6 +17,11 @@ class AuthBridge(private val activity: Activity) {
     private const val CHANNEL = "com.merkurialstudio.myrecibook/auth"
     private const val REDIRECT_SCHEME = "com.merkurialstudio.myrecibook"
     private const val REDIRECT_HOST = "oauth2"
+
+    // Google policy: Drive's redirect scheme is the REVERSED client id
+    // (com.googleusercontent.apps.<id>), one per Android client. Prefix-match
+    // so a client-id swap only touches the manifest, never this file.
+    private const val GOOGLE_SCHEME_PREFIX = "com.googleusercontent.apps."
   }
 
   fun attach(messenger: BinaryMessenger) {
@@ -49,7 +54,9 @@ class AuthBridge(private val activity: Activity) {
   // auth/share split, a redirect must never reach ShareBridge.
   fun handleIntent(intent: Intent?): Boolean {
     val uri = intent?.data ?: return false
-    if (uri.scheme != REDIRECT_SCHEME || uri.host != REDIRECT_HOST) return false
+    val ours = uri.scheme == REDIRECT_SCHEME && uri.host == REDIRECT_HOST
+    val google = uri.scheme?.startsWith(GOOGLE_SCHEME_PREFIX) == true
+    if (!ours && !google) return false
     deliver(uri.toString())
     return true
   }

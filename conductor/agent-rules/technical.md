@@ -85,3 +85,10 @@
    Play App Signing cert at first Play upload. ADD clients, never replace:
    replacing kills auth for the other build flavor. Extract a SHA-1 with:
    keytool -list -v -keystore <jks> -storepass <pw> | grep SHA1
+10. Google OAuth for installed Android apps REQUIRES the redirect scheme to
+    be the reversed client id (com.googleusercontent.apps.<id>); a
+    package-name scheme 400s invalid_request even with the client's "Enable
+    custom URI scheme" box ticked (S21, 2026-08-09). Client-id swap =
+    manifest <data> entry swap too — the scheme is derived in oauth.dart but
+    the intent-filter is static. Dropbox has no such rule (byte-exact
+    console-registered redirect).

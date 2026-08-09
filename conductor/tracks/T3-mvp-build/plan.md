@@ -6,8 +6,9 @@ opened: pulled forward 2026-08-06 (originally 21 Sep) · status: senior review
         CLOSED 2026-08-09 (all findings fixed, 337 tests, strict analyzers);
         upload-key build live on the S21 — Arnar's round 2 PROVED camera-photo
         extraction, screenshots and Dropbox connect+sync on-device; Drive
-        auth waits only on the upload SHA-1 in the GCP console (pulse has the
-        fingerprint); F5 conflict fence + D2 proxy code built
+        needed TWO fixes (upload-SHA-1 client in console + reversed-client-id
+        redirect, tech rules 9-10) — installed, retry pending; F5 conflict
+        fence + D2 proxy code built
 division: Arnar owns UI/design (sketches after festival); agent owns the engine.
           Skins replace widgets and colors, never flows (editable review, delete,
           reorder are load-bearing — architecture review 2026-08-06).
