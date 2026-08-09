@@ -198,4 +198,34 @@ void main() {
     expect(parts[1]['inline_data'],
         {'mime_type': 'image/jpeg', 'data': base64Encode([1])});
   });
+
+  test('proxy mode: proxy URL, no key anywhere, install id rides the header',
+      () async {
+    final img = await image('a.jpg', [1, 2, 3]);
+    late http.Request seen;
+    final ex = GeminiExtractor(
+        proxyUrl: 'https://proxy.example',
+        installId: 'install-1234',
+        client: MockClient((request) async {
+          seen = request;
+          return _candidateResponse('{"title": "x"}');
+        }));
+    expect(await ex.extractContent([img]), {'title': 'x'});
+    expect(seen.url.toString(),
+        'https://proxy.example/v1beta/models/gemini-3.6-flash:generateContent');
+    expect(seen.headers['X-Install-Id'], 'install-1234');
+    expect(seen.headers.keys.map((k) => k.toLowerCase()),
+        isNot(contains('x-goog-api-key')));
+  });
+
+  test('neither proxy nor key configured → honest ExtractionException',
+      () async {
+    final img = await image('a.jpg', [1]);
+    final ex = GeminiExtractor(
+        apiKey: '',
+        proxyUrl: '',
+        client: MockClient((_) async => _candidateResponse('{}')));
+    await expectLater(
+        ex.extractContent([img]), throwsA(isA<ExtractionException>()));
+  });
 }

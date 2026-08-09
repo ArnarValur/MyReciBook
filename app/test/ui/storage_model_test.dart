@@ -319,6 +319,30 @@ void main() {
     model.dispose();
   });
 
+  test('F5 conflict surfaces in both truthful status lines', () async {
+    await seedConnected();
+    await put('$idA.json', '{"x":1}');
+    final model = await makeModel();
+    model.syncSoon();
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    expect(model.status.state, SyncState.synced);
+
+    // Changed elsewhere (device B / provider UI), then edited here too: the
+    // fence skips the overwrite and the UI must say so.
+    remote.files['$idA.json'] = utf8.encode('{"x":"changed on device B"}');
+    await put('$idA.json', '{"x":"edited here"}');
+    model.syncSoon();
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    expect(model.status.conflicts, ['$idA.json']);
+    expect(model.settingsSummary(),
+        'This phone + Google Drive · synced just now · 1 changed elsewhere');
+    expect(model.statusLine(StorageModel.drive), endsWith('1 changed elsewhere'));
+    expect(utf8.decode(remote.files['$idA.json']!),
+        '{"x":"changed on device B"}');
+    model.dispose();
+  });
+
   test('syncSoon without a connector is a quiet no-op', () async {
     final model = await makeModel();
     model.syncSoon();

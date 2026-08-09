@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../domain/grocery.dart';
+import 'atomic_file.dart';
 
 class GroceryStore {
   GroceryStore._(this._listFile, this._overridesFile, this._items,
@@ -117,21 +118,11 @@ class GroceryStore {
         'keep_apart': [..._keepApart],
       });
 
-  // Writes serialize through one chain: overlapping saves share a tmp path,
-  // and interleaved writes corrupt the file (rapid check-offs fire un-awaited
-  // saves through GroceryModel).
-  Future<void> _writeQueue = Future.value();
-
-  Future<void> _writeJson(File file, Object data) {
-    final job = _writeQueue.then((_) async {
-      await file.parent.create(recursive: true);
-      final tmp = File('${file.path}.tmp');
-      await tmp.writeAsString(jsonEncode(data), flush: true);
-      await tmp.rename(file.path);
-    });
-    _writeQueue = job.then((_) {}, onError: (_) {});
-    return job;
-  }
+  // Per-path serialization lives in writeStringAtomic: overlapping saves
+  // (rapid check-offs fire un-awaited saves through GroceryModel) queue
+  // instead of interleaving on the shared tmp.
+  Future<void> _writeJson(File file, Object data) =>
+      writeStringAtomic(file, jsonEncode(data));
 
   /// Engine invariant: id == key (key derives from name). Rows written by the
   /// pre-fix alias bug can violate it or duplicate ids — heal on load: rename

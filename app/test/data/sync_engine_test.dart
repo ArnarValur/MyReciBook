@@ -316,4 +316,84 @@ void main() {
     expect(remote.files[img], [1, 2, 3]);
     expect(e.status.state, SyncState.synced);
   });
+
+  // F5 conflict fence: a remote copy whose rev moved since OUR last upload is
+  // skipped + surfaced, never overwritten (senior review 2026-08-08).
+
+  test('F5: remote edited elsewhere → local edit skipped + surfaced, sticky',
+      () async {
+    await put(jsonA, '{"a":1}');
+    final e = engine();
+    await e.syncUp(); // records the post-upload rev in the manifest
+
+    // Device B (or the Drive UI) replaces the remote copy: rev moves.
+    remote.files[jsonA] = utf8.encode('{"a":"device B edit, longer"}');
+    await put(jsonA, '{"a":"device A edit"}');
+
+    await e.syncUp();
+    expect(e.status.state, SyncState.synced);
+    expect(e.status.conflicts, [jsonA]);
+    expect(utf8.decode(remote.files[jsonA]!),
+        '{"a":"device B edit, longer"}'); // B's copy survived
+    expect(remote.uploads, 1); // nothing re-sent
+
+    await e.syncUp(); // unresolved → surfaces again, still no overwrite
+    expect(e.status.conflicts, [jsonA]);
+    expect(utf8.decode(remote.files[jsonA]!), '{"a":"device B edit, longer"}');
+  });
+
+  test('F5: deleted here + edited there → remote kept, claim released',
+      () async {
+    await put(jsonA, '{"a":1}');
+    final e = engine();
+    await e.syncUp();
+
+    remote.files[jsonA] = utf8.encode('{"a":"newer remote"}');
+    await File('${folder.path}/$jsonA').delete();
+
+    await e.syncUp();
+    expect(e.status.conflicts, [jsonA]);
+    expect(remote.deletes, 0); // the newer copy was NOT deleted
+    expect(remote.files.containsKey(jsonA), isTrue);
+
+    // Claim released: the next pass neither deletes nor re-surfaces...
+    await e.syncUp();
+    expect(e.status.conflicts, isEmpty);
+    expect(remote.deletes, 0);
+    // ...and restoreDown brings the book back (additive).
+    expect(await e.restoreDown(), 1);
+    expect(await File('${folder.path}/$jsonA').readAsString(),
+        '{"a":"newer remote"}');
+  });
+
+  test('F5: unmoved rev uploads normally; no-change pass costs zero lists',
+      () async {
+    await put(jsonA, '{"a":1}');
+    final e = engine();
+    await e.syncUp();
+    final listsAfterFirst = remote.listCalls;
+
+    await e.syncUp(); // nothing changed — the fence must stay lazy
+    expect(remote.listCalls, listsAfterFirst);
+
+    await put(jsonA, '{"a":"edited"}'); // remote rev untouched → real upload
+    await e.syncUp();
+    expect(e.status.conflicts, isEmpty);
+    expect(utf8.decode(remote.files[jsonA]!), '{"a":"edited"}');
+    expect(remote.uploads, 2);
+  });
+
+  test('F5: restoreDown records the remote rev as the fence baseline',
+      () async {
+    remote.files[jsonA] = utf8.encode('{"a":1}');
+    final e = engine();
+    expect(await e.restoreDown(), 1);
+
+    // Remote then changes elsewhere; a local edit must hit the fence.
+    remote.files[jsonA] = utf8.encode('{"a":"changed elsewhere!"}');
+    await put(jsonA, '{"a":"local edit"}');
+    await e.syncUp();
+    expect(e.status.conflicts, [jsonA]);
+    expect(utf8.decode(remote.files[jsonA]!), '{"a":"changed elsewhere!"}');
+  });
 }

@@ -242,10 +242,7 @@ class StoragePreview extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(children: [
-                IconButton(
-                    tooltip: 'Back',
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    onPressed: () => Navigator.of(context).maybePop()),
+                const AppBackButton(),
                 Text('Storage', style: theme.textTheme.titleLarge),
               ]),
               const SizedBox(height: 4),

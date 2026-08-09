@@ -1,0 +1,16 @@
+name: myrecibook_proxy
+description: >-
+  Thin extraction proxy (D2) — holds the Gemini key server-side so it never
+  ships in the APK (senior review F3). Stateless except the per-install
+  fair-use counter (context.md constraint 3, amended 2026-08-06).
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  http: ^1.2.0
+  shelf: ^1.4.0
+
+dev_dependencies:
+  test: ^1.25.0

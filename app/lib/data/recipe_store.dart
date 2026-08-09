@@ -8,6 +8,7 @@ import 'dart:io';
 
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
+import 'atomic_file.dart';
 
 class StoreResult {
   final List<Recipe> recipes;
@@ -119,14 +120,11 @@ class LocalFolderStore implements RecipeStore {
         appHint: recipe.source.appHint,
       ).toJson()));
 
-    // tmp+rename like the app-private stores: a mid-write kill must never
-    // leave a truncated <id>.json where a good one stood (edits especially).
-    final file = File('${root.path}/${recipe.id}.json');
-    final tmp = File('${file.path}.tmp');
-    await tmp.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(complete.toJson()),
-        flush: true);
-    await tmp.rename(file.path);
+    // Atomic + serialized (writeStringAtomic): a mid-write kill must never
+    // leave a truncated <id>.json where a good one stood, and a double-fired
+    // save can't interleave on the shared tmp.
+    await writeStringAtomic(File('${root.path}/${recipe.id}.json'),
+        const JsonEncoder.withIndent('  ').convert(complete.toJson()));
     return complete;
   }
 
@@ -151,6 +149,10 @@ class LocalFolderStore implements RecipeStore {
       } catch (_) {} // still delete the JSON below
       await file.delete();
     }
+    // A stranded atomic-write leftover holds the full recipe JSON — a deleted
+    // recipe must not survive in its .tmp shadow.
+    final tmp = File('${file.path}.tmp');
+    if (await tmp.exists()) await tmp.delete();
     for (final rel in images ?? const <String>[]) {
       if (!_safeImagePath(rel)) continue;
       final img = File('${root.path}/$rel');

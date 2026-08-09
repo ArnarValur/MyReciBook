@@ -145,12 +145,18 @@ class StorageModel extends ChangeNotifier {
     return switch (_status.state) {
       SyncState.syncing => '$base · syncing…',
       SyncState.synced when _status.syncedAt != null =>
-        '$base · synced ${relative(_status.syncedAt!)}',
+        '$base · synced ${relative(_status.syncedAt!)}$_conflictPart',
       SyncState.offline => '$base · offline',
       SyncState.authRevoked => '$base · reconnect',
       _ => base,
     };
   }
+
+  /// Truthful-parts conflict surface (F5): files the mirror refused to
+  /// overwrite because they changed elsewhere. Empty string when none.
+  String get _conflictPart => _status.conflicts.isEmpty
+      ? ''
+      : ' · ${_status.conflicts.length} changed elsewhere';
 
   /// Provider-card status line (6e language, truthful parts only); null when
   /// [provider] isn't the active connector. Leads with the true remote path
@@ -169,6 +175,8 @@ class StorageModel extends ChangeNotifier {
         SyncState.authRevoked => 'reconnect needed',
         _ => 'connected',
       },
+      if (_status.conflicts.isNotEmpty)
+        '${_status.conflicts.length} changed elsewhere',
     ].join(' · ');
   }
 

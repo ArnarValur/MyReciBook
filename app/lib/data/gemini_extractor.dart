@@ -1,8 +1,12 @@
 // Arm A extractor: images straight to a flash-class vision model.
 // Request shape mirrors the proven spike harness (spike/harness.py).
 //
-// Key comes from --dart-define=GEMINI_API_KEY (P5: dev key behind a compile
-// flag for the closed track; swaps to the thin proxy with ~1 h of client work).
+// Two transports, same request:
+//  - EXTRACTION_PROXY_URL set → the D2 proxy (proxy/): no key on the device,
+//    X-Install-Id header feeds the fair-use counter. Production mode.
+//  - else GEMINI_API_KEY via --dart-define → direct Gemini, key on device.
+//    Dev/closed-track mode only; a public build must never ship this way
+//    (senior review F3).
 
 import 'dart:async';
 import 'dart:convert';
@@ -16,18 +20,28 @@ import '../domain/extractor.dart';
 class GeminiExtractor implements Extractor {
   static const _defaultModel = 'gemini-3.6-flash';
   static const _apiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static const _proxyUrl = String.fromEnvironment('EXTRACTION_PROXY_URL');
 
   final String model;
   final String apiKey;
+  final String proxyUrl;
+
+  /// Anonymous per-install id (install_id.dart) — the proxy's counter key.
+  /// Only sent in proxy mode.
+  final String installId;
+
   final Duration timeout;
   final http.Client _client;
 
   GeminiExtractor(
       {this.model = _defaultModel,
       String? apiKey,
+      String? proxyUrl,
+      this.installId = '',
       this.timeout = const Duration(seconds: 120),
       http.Client? client})
       : apiKey = apiKey ?? _apiKey,
+        proxyUrl = proxyUrl ?? _proxyUrl,
         _client = client ?? http.Client();
 
   @override
@@ -38,8 +52,10 @@ class GeminiExtractor implements Extractor {
 
   @override
   Future<Map<String, dynamic>> extractContent(List<File> images) async {
-    if (apiKey.isEmpty) {
-      throw ExtractionException('No API key — build with --dart-define=GEMINI_API_KEY=...');
+    final viaProxy = proxyUrl.isNotEmpty;
+    if (!viaProxy && apiKey.isEmpty) {
+      throw ExtractionException('No API key — build with '
+          '--dart-define=GEMINI_API_KEY=... or EXTRACTION_PROXY_URL=...');
     }
     var prompt = await rootBundle.loadString('assets/structure_prompt.md');
     if (images.length > 1) {
@@ -62,13 +78,18 @@ class GeminiExtractor implements Extractor {
         },
     ];
 
-    final uri = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey');
+    final uri = viaProxy
+        ? Uri.parse('$proxyUrl/v1beta/models/$model:generateContent')
+        : Uri.parse(
+            'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey');
     final http.Response resp;
     try {
       resp = await _client
           .post(uri,
-              headers: {'Content-Type': 'application/json'},
+              headers: {
+                'Content-Type': 'application/json',
+                if (viaProxy) 'X-Install-Id': installId,
+              },
               body: jsonEncode({
                 'contents': [
                   {'parts': parts}

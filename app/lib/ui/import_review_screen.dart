@@ -334,11 +334,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     final theme = Theme.of(context);
     return Row(
       children: [
-        IconButton(
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        const AppBackButton(),
         Expanded(
           child: Row(
             children: [

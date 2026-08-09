@@ -60,7 +60,7 @@ void main() {
 
   Future<void> openSettings(WidgetTester tester) async {
     await tester.tap(find.text('Settings'));
-    await settle(tester, rounds: 4);
+    await settle(tester, rounds: 8);
   }
 
   ThemeMode? appThemeMode(WidgetTester tester) =>
@@ -95,7 +95,7 @@ void main() {
         findsOneWidget);
 
     await tester.tap(find.text('Dark'));
-    await settle(tester, rounds: 4);
+    await settle(tester, rounds: 8);
     expect(appThemeMode(tester), ThemeMode.dark); // MaterialApp reacted
     expect(
         Theme.of(tester.element(find.text('Theme'.toUpperCase()))).brightness,
@@ -116,7 +116,7 @@ void main() {
     expect(ThemeModel(settings: reloaded).mode, ThemeMode.dark);
 
     await tester.tap(find.text('Light'));
-    await settle(tester, rounds: 4);
+    await settle(tester, rounds: 8);
     expect(appThemeMode(tester), ThemeMode.light);
     expect(
         (await tester.runAsync(() => AppSettings.load(settingsFile)))!
@@ -169,7 +169,7 @@ void main() {
     await openSettings(tester);
 
     await tester.longPress(find.text('MyReciBook $kAppVersion'));
-    await settle(tester, rounds: 4);
+    await settle(tester, rounds: 8);
     expect(find.text('Error log'), findsOneWidget);
     expect(find.text('No captured errors.'), findsOneWidget);
     // empty log offers no Clear/Copy — nothing that pretends to do something
@@ -186,16 +186,16 @@ void main() {
     await openSettings(tester);
 
     await tester.longPress(find.text('MyReciBook $kAppVersion'));
-    await settle(tester, rounds: 4);
+    await settle(tester, rounds: 8);
     expect(find.text('Error log (1)'), findsOneWidget);
     expect(find.text('NullPointerException: sky fell'), findsOneWidget);
 
     await tester.tap(find.text('Clear'));
-    await settle(tester, rounds: 4);
+    await settle(tester, rounds: 8);
     expect(log.count, 0);
     // reopened: honest empty state
     await tester.longPress(find.text('MyReciBook $kAppVersion'));
-    await settle(tester, rounds: 4);
+    await settle(tester, rounds: 8);
     expect(find.text('No captured errors.'), findsOneWidget);
   });
 }

@@ -56,6 +56,9 @@ class LocalFolderSource implements SyncSource {
     await for (final e in root.list()) {
       if (e is! File) continue;
       final name = e.uri.pathSegments.last;
+      // Stranded atomic-write leftovers are not content: an uploaded .tmp
+      // could never be deleted remotely (_ownedName wants .json$).
+      if (name.endsWith('.tmp')) continue;
       entries[name] = SourceEntry(name: name, size: await e.length());
     }
     final images = Directory('${root.path}/images');
@@ -63,6 +66,7 @@ class LocalFolderSource implements SyncSource {
       await for (final e in images.list()) {
         if (e is! File) continue;
         final name = 'images/${e.uri.pathSegments.last}';
+        if (name.endsWith('.tmp')) continue;
         entries[name] = SourceEntry(name: name, size: await e.length());
       }
     }

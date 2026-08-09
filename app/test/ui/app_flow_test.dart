@@ -13,6 +13,8 @@ import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
 
+import '../helpers/fixtures.dart';
+
 class FakeExtractor implements Extractor {
   FakeExtractor(this.outcomes);
 
@@ -35,22 +37,6 @@ class FakeExtractor implements Extractor {
     return jsonDecode(jsonEncode(o)) as Map<String, dynamic>;
   }
 }
-
-Map<String, dynamic> canned({String title = 'Pancakes', bool withSteps = true}) =>
-    {
-      'title': title,
-      'ingredients': [
-        {'raw': '2 eggs', 'qty': 2, 'item': 'eggs', 'confidence': 0.95},
-        {'raw': '1 cup flour', 'confidence': 0.6},
-      ],
-      'steps': withSteps
-          ? [
-              {'raw': 'Mix everything.', 'confidence': 0.9},
-              {'raw': 'Fry until golden.', 'confidence': 0.9},
-            ]
-          : <Object?>[],
-      'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
-    };
 
 void main() {
   late Directory tmp;

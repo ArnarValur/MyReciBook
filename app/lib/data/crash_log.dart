@@ -10,6 +10,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'atomic_file.dart';
+
 class CrashLog {
   CrashLog._(this._file, this._entries);
 
@@ -49,16 +51,13 @@ class CrashLog {
   static const int _errorChars = 500;
   static const int _stackLines = 12;
 
-  // Writes serialize through one chain (grocery_store pattern): errors can
-  // arrive in bursts and overlapping tmp+rename writes would corrupt.
-  Future<void> _writeQueue = Future.value();
-
   /// Fire-and-forget safe: swallows all IO errors, trims to [cap].
   Future<void> record(Object error, StackTrace? stack, {String? context}) {
     try {
       final s = stack?.toString();
       _entries.add({
-        'at': DateTime.now().toIso8601String(),
+        // UTC: copied logs must correlate unambiguously across timezones.
+        'at': DateTime.now().toUtc().toIso8601String(),
         'error': _clip('$error', _errorChars),
         if (context != null && context.isNotEmpty)
           'context': _clip(context, _errorChars),
@@ -93,22 +92,23 @@ class CrashLog {
           ].join('\n'),
       ].join('\n\n');
 
+  // Coalesced: an error BURST is this log's whole reason to exist, so it must
+  // not become the jank generator — one pending write at a time, encoding the
+  // LIVE ring when its turn comes. Records landing mid-write schedule exactly
+  // one follow-up; writeStringAtomic serializes the file access.
+  Future<void>? _pending;
+
   Future<void> _save() {
     final file = _file;
     if (file == null) return Future.value();
-    final snapshot = jsonEncode(_entries);
-    final job = _writeQueue.then((_) async {
+    return _pending ??= Future(() async {
+      _pending = null; // from here on, new records need a fresh write
       try {
-        await file.parent.create(recursive: true);
-        final tmp = File('${file.path}.tmp');
-        await tmp.writeAsString(snapshot, flush: true);
-        await tmp.rename(file.path);
+        await writeStringAtomic(file, jsonEncode(_entries));
       } catch (_) {
         // best-effort: a lost write costs log lines, never stability
       }
     });
-    _writeQueue = job;
-    return job;
   }
 
   // Transport exceptions can embed a full request URI — and the Gemini key

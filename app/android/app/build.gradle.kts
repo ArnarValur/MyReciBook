@@ -15,6 +15,7 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
 }
+val hasUploadKey = keystoreProperties.isNotEmpty()
 
 android {
     namespace = "com.merkurialstudio.myrecibook"
@@ -35,9 +36,14 @@ android {
     }
 
     signingConfigs {
-        if (keystoreProperties.isNotEmpty()) {
+        if (hasUploadKey) {
             create("release") {
-                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                // Fail with the real cause: a typo'd key would otherwise
+                // surface as file(null) breaking even debug builds. Relative
+                // paths resolve against android/ (key.properties' home).
+                val storePath = keystoreProperties.getProperty("storeFile")
+                    ?: error("key.properties exists but has no storeFile= entry")
+                storeFile = rootProject.file(storePath)
                 storePassword = keystoreProperties.getProperty("storePassword")
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
@@ -47,7 +53,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystoreProperties.isNotEmpty()) {
+            signingConfig = if (hasUploadKey) {
                 signingConfigs.getByName("release")
             } else {
                 // Loud, not silent: a debug-signed "release" looks fine until

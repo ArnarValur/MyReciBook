@@ -214,10 +214,7 @@ class StorageScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
             Row(children: [
-              IconButton(
-                  tooltip: 'Back',
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  onPressed: () => Navigator.of(context).maybePop()),
+              const AppBackButton(),
               Text('Storage', style: theme.textTheme.titleLarge),
             ]),
             const SizedBox(height: 4),

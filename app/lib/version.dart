@@ -1,4 +1,4 @@
-// The ONE user-facing version string (drawer footer + settings About).
+// The ONE user-facing version string (settings About footer).
 // Hand-sourced from pubspec.yaml — test/version_sync_test.dart fails the
 // suite on drift, so the mirror can't rot silently. The 0.x scheme itself is
 // PROPOSED, pending Arnar's versioning session (see pubspec.yaml). At

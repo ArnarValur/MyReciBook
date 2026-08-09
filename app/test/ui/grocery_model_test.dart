@@ -8,14 +8,7 @@ import 'package:myrecibook/data/grocery_store.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/ui/grocery_model.dart';
 
-Map<String, dynamic> ing(String raw, {num? qty, String? unit, String? item}) =>
-    {
-      'raw': raw,
-      'qty': ?qty,
-      'unit': ?unit,
-      'item': ?item,
-      'confidence': 0.9,
-    };
+import '../helpers/fixtures.dart' show ing;
 
 Recipe recipe(String id, String title, List<Map<String, dynamic>> ings) =>
     Recipe.assemble(

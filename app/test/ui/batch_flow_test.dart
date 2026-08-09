@@ -11,6 +11,8 @@ import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/main.dart';
 
+import '../helpers/fixtures.dart' show notARecipe;
+
 class FakeExtractor implements Extractor {
   FakeExtractor(this.outcomes);
 
@@ -49,13 +51,6 @@ Map<String, dynamic> canned({
         {'raw': 'Mix everything.', 'confidence': 0.9},
       ],
       'extraction': {'overall_confidence': overall, 'needs_review': needsReview},
-    };
-
-Map<String, dynamic> notARecipe() => {
-      'title': '',
-      'ingredients': <Object?>[],
-      'steps': <Object?>[],
-      'extraction': {'overall_confidence': 0.1, 'needs_review': <Object?>[]},
     };
 
 void main() {

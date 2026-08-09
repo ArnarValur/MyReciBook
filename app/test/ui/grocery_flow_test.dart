@@ -17,6 +17,8 @@ import 'package:myrecibook/ui/grocery_model.dart';
 import 'package:myrecibook/ui/grocery_tab.dart';
 import 'package:provider/provider.dart';
 
+import '../helpers/fixtures.dart' show ing;
+
 class FakeExtractor implements Extractor {
   @override
   String get mode => 'image';
@@ -26,15 +28,6 @@ class FakeExtractor implements Extractor {
   Future<Map<String, dynamic>> extractContent(List<File> images) async =>
       {'title': 'Unused', 'ingredients': <Object?>[], 'steps': <Object?>[], 'extraction': <String, Object?>{}};
 }
-
-Map<String, dynamic> ing(String raw, {num? qty, String? unit, String? item}) =>
-    {
-      'raw': raw,
-      'qty': ?qty,
-      'unit': ?unit,
-      'item': ?item,
-      'confidence': 0.9,
-    };
 
 Map<String, dynamic> content(String title, List<Map<String, dynamic>> ings) =>
     {

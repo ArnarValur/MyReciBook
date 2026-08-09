@@ -14,6 +14,7 @@ import 'data/app_settings.dart';
 import 'data/crash_log.dart';
 import 'data/gemini_extractor.dart';
 import 'data/grocery_store.dart';
+import 'data/install_id.dart';
 import 'data/oauth.dart';
 import 'data/recipe_store.dart';
 import 'data/sha256.dart';
@@ -55,33 +56,45 @@ Future<void> main() async {
           ['google_fonts'], await rootBundle.loadString('google_fonts/$f'));
     }
   });
-  final docs = await getApplicationDocumentsDirectory();
-  final support = await getApplicationSupportDirectory();
-  final cache = await getApplicationCacheDirectory();
-  final settings = await AppSettings.load(File('${support.path}/settings.json'));
+  // Two parallel batches instead of seven serial awaits — every one of these
+  // gates the first frame (review 2026-08-09).
+  final (docs, support, cache) = await (
+    getApplicationDocumentsDirectory(),
+    getApplicationSupportDirectory(),
+    getApplicationCacheDirectory(),
+  ).wait;
+  // Grocery is app-private working state (T3) — app-support, not the SAF folder.
+  final (settings, crashLog, grocery, tokenStore, installId) = await (
+    AppSettings.load(File('${support.path}/settings.json')),
+    CrashLog.load(File('${support.path}/crash_log.json')),
+    GroceryStore.load(
+        listFile: File('${support.path}/grocery_list.json'),
+        overridesFile: File('${support.path}/grocery_overrides.json')),
+    TokenStore.load(File('${support.path}/tokens.json')),
+    loadInstallId(File('${support.path}/install_id')),
+  ).wait;
 
   // Uncaught errors → local ring-buffer (crash story without telemetry, D8).
   // Both hooks log and move on: for a consumer app a degraded frame beats a
   // process death, and the evidence survives for the tester to copy out.
-  final crashLog = await CrashLog.load(File('${support.path}/crash_log.json'));
   FlutterError.onError = (details) {
     FlutterError.presentError(details); // keep the default console dump
-    crashLog.record(details.exception, details.stack,
-        context: details.context?.toDescription());
+    String? context;
+    try {
+      context = details.context?.toDescription();
+    } catch (_) {} // a throwing DiagnosticsNode must not break the hook
+    crashLog.record(details.exception, details.stack, context: context);
   };
   PlatformDispatcher.instance.onError = (error, stack) {
+    // Keep logcat visibility — recording alone would make async failures
+    // invisible outside the long-press door during development.
+    debugPrint('Uncaught async error: $error\n$stack');
     crashLog.record(error, stack);
     // Trade-off, eyes open: true keeps the app alive but also keeps these
     // out of Play Console vitals. During closed test the local log IS the
     // crash story; revisit for production if vitals ever matter.
     return true; // handled: logged locally
   };
-  // Grocery is app-private working state (T3) — app-support, not the SAF folder.
-  final grocery = await GroceryStore.load(
-      listFile: File('${support.path}/grocery_list.json'),
-      overridesFile: File('${support.path}/grocery_overrides.json'));
-
-  final tokenStore = await TokenStore.load(File('${support.path}/tokens.json'));
   // THE one OAuthFlow app-wide — its constructor claims the auth channel
   // handler; a second instance would silently steal redirects.
   final oauthFlow = OAuthFlow();
@@ -120,7 +133,7 @@ Future<void> main() async {
   final themeModel = ThemeModel(settings: settings);
 
   final picker = ImagePicker();
-  final extractor = GeminiExtractor();
+  final extractor = GeminiExtractor(installId: installId);
   Future<List<File>> pickImages() async =>
       [for (final x in await picker.pickMultiImage()) File(x.path)];
   Future<List<File>> snapPage() async {

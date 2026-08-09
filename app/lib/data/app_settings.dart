@@ -5,6 +5,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'atomic_file.dart';
+
 class AppSettings {
   AppSettings._(this._file, this._data);
 
@@ -52,7 +54,8 @@ class AppSettings {
 
   Future<void> _write(String key, Object? value) async {
     _data[key] = value;
-    await _file.parent.create(recursive: true);
-    await _file.writeAsString(jsonEncode(_data));
+    // Atomic: this file holds tree_uri — a truncated write here would cost
+    // the user their folder grant on next boot.
+    await writeStringAtomic(_file, jsonEncode(_data));
   }
 }

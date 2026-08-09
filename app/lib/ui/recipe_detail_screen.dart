@@ -308,6 +308,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         child: Center(
           child: GlassCircle(
             icon: Icons.arrow_back_rounded,
+            tooltip: 'Back',
             onTap: () => Navigator.of(context).maybePop(),
           ),
         ),
@@ -316,6 +317,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         GlassCircle(
           key: const Key('edit-button'),
           icon: Icons.edit_rounded,
+          tooltip: 'Edit',
           onTap: _edit,
         ),
         const SizedBox(width: 8),
@@ -328,10 +330,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           iconColor: _recipe.favorite
               ? scheme.tertiaryContainer
               : scheme.onSurface,
+          tooltip: _recipe.favorite ? 'Remove favorite' : 'Favorite',
           onTap: _toggleFavorite,
         ),
         const SizedBox(width: 8),
-        GlassCircle(icon: Icons.delete_rounded, onTap: _delete),
+        GlassCircle(
+            icon: Icons.delete_rounded, tooltip: 'Delete', onTap: _delete),
         const SizedBox(width: 16),
       ],
       flexibleSpace: FlexibleSpaceBar(

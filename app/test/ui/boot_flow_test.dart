@@ -12,7 +12,6 @@ import 'package:myrecibook/data/app_settings.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/data/share_entry.dart';
 import 'package:myrecibook/domain/extractor.dart';
-import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/app_shell.dart';
 import 'package:myrecibook/ui/folder_gate.dart';
@@ -21,6 +20,7 @@ import 'package:myrecibook/ui/recipe_list_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../data/fake_saf_channel.dart';
+import '../helpers/fixtures.dart';
 
 class FakeExtractor implements Extractor {
   FakeExtractor(this.outcomes);
@@ -44,28 +44,6 @@ class FakeExtractor implements Extractor {
     return jsonDecode(jsonEncode(o)) as Map<String, dynamic>;
   }
 }
-
-Map<String, dynamic> canned({String title = 'Pancakes'}) => {
-      'title': title,
-      'ingredients': [
-        {'raw': '2 eggs', 'qty': 2, 'item': 'eggs', 'confidence': 0.95},
-        {'raw': '1 cup flour', 'confidence': 0.6},
-      ],
-      'steps': [
-        {'raw': 'Mix everything.', 'confidence': 0.9},
-        {'raw': 'Fry until golden.', 'confidence': 0.9},
-      ],
-      'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
-    };
-
-Recipe cannedRecipe(String id, String title) => Recipe.assemble(
-      id: id,
-      content: canned(title: title),
-      originalImages: const [],
-      importedAt: DateTime.utc(2026, 8, 6),
-      extractorModel: 'fake-model',
-      extractorMode: 'image',
-    );
 
 void main() {
   late Directory tmp;

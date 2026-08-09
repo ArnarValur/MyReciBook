@@ -139,20 +139,41 @@ class StatusPill extends StatelessWidget {
   }
 }
 
-/// 40dp frosted-glass circular button (hero overlays).
+/// The ONE back button (review 2026-08-09: four hand-copied IconButtons had
+/// to be edited in lockstep). Flutter's BackButton forces the platform icon;
+/// the design wants arrow_back_rounded, so this stays ours.
+class AppBackButton extends StatelessWidget {
+  const AppBackButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+        tooltip: 'Back',
+        icon: const Icon(Icons.arrow_back_rounded),
+        onPressed: () => Navigator.of(context).maybePop(),
+      );
+}
+
+/// 40dp frosted-glass circular button (hero overlays). [tooltip] doubles as
+/// the semantics label — icon-only tap targets must read under TalkBack.
 class GlassCircle extends StatelessWidget {
   const GlassCircle(
-      {super.key, required this.icon, this.onTap, this.iconColor, this.filled = false});
+      {super.key,
+      required this.icon,
+      this.onTap,
+      this.iconColor,
+      this.filled = false,
+      this.tooltip});
 
   final IconData icon;
   final VoidCallback? onTap;
   final Color? iconColor;
   final bool filled;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
     final rb = context.rb;
-    return ClipOval(
+    Widget circle = ClipOval(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Material(
@@ -173,6 +194,11 @@ class GlassCircle extends StatelessWidget {
         ),
       ),
     );
+    final label = tooltip;
+    if (label != null) {
+      circle = Tooltip(message: label, child: circle);
+    }
+    return circle;
   }
 }
 

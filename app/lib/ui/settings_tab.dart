@@ -69,7 +69,7 @@ class SettingsTab extends StatelessWidget {
                   ),
           ),
           actions: [
-            if (entries.isNotEmpty)
+            if (entries.isNotEmpty) ...[
               TextButton(
                 onPressed: () async {
                   await log.clear();
@@ -77,7 +77,6 @@ class SettingsTab extends StatelessWidget {
                 },
                 child: const Text('Clear'),
               ),
-            if (entries.isNotEmpty)
               TextButton(
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: log.export()));
@@ -91,6 +90,7 @@ class SettingsTab extends StatelessWidget {
                 },
                 child: const Text('Copy all'),
               ),
+            ],
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
               child: const Text('Close'),
@@ -256,12 +256,20 @@ class SettingsTab extends StatelessWidget {
                   // surface shape to ratify at the next design turn.
                   child: GestureDetector(
                     onLongPress: () => _showErrorLog(context),
+                    // Opaque + padded: the tester instruction is "long-press
+                    // the version footer" — a miss by a few px must not read
+                    // as "the door doesn't exist".
+                    behavior: HitTestBehavior.opaque,
                     // owned stays false until a purchase receipt exists (6a):
                     // the footer "drops 'you own this copy' until the receipt
                     // makes it true".
-                    child: Text(versionFooter(owned: false),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                            fontSize: 11, color: scheme.onSurfaceVariant)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 32, vertical: 12),
+                      child: Text(versionFooter(owned: false),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              fontSize: 11, color: scheme.onSurfaceVariant)),
+                    ),
                   ),
                 ),
               ],

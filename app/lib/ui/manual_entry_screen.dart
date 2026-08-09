@@ -139,11 +139,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Row(
                 children: [
-                  IconButton(
-                    tooltip: 'Back',
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    onPressed: () => Navigator.of(context).maybePop(),
-                  ),
+                  const AppBackButton(),
                   Text('Type it in yourself', style: theme.textTheme.titleLarge),
                 ],
               ),

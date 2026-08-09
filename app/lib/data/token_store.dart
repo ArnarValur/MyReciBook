@@ -7,6 +7,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'atomic_file.dart';
 import 'oauth.dart' show TokenSet;
 
 class TokenStore {
@@ -37,17 +38,14 @@ class TokenStore {
     }
   }
 
-  /// Write-through; null clears (disconnect). tmp+rename keeps the previous
-  /// file intact until the new one is fully on disk.
+  /// Write-through; null clears (disconnect). Atomic replace keeps the
+  /// previous file intact until the new one is fully on disk.
   Future<void> setTokens(String provider, TokenSet? tokens) async {
     if (tokens == null) {
       _data.remove(provider);
     } else {
       _data[provider] = tokens.toJson();
     }
-    await _file.parent.create(recursive: true);
-    final tmp = File('${_file.path}.tmp');
-    await tmp.writeAsString(jsonEncode(_data), flush: true);
-    await tmp.rename(_file.path);
+    await writeStringAtomic(_file, jsonEncode(_data));
   }
 }

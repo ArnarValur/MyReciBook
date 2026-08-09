@@ -11,6 +11,8 @@ import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/ui/batch_model.dart';
 
+import '../helpers/fixtures.dart' show notARecipe;
+
 /// Immediate outcomes, consumed in order; last repeats. Map = success,
 /// ExtractionException = throw.
 class FakeExtractor implements Extractor {
@@ -76,13 +78,6 @@ Map<String, dynamic> content({
             ]
           : <Object?>[],
       'extraction': {'overall_confidence': overall, 'needs_review': needsReview},
-    };
-
-Map<String, dynamic> notARecipe() => {
-      'title': '',
-      'ingredients': <Object?>[],
-      'steps': <Object?>[],
-      'extraction': {'overall_confidence': 0.1, 'needs_review': <Object?>[]},
     };
 
 void main() {
