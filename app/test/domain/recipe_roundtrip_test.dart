@@ -90,7 +90,7 @@ void main() {
           expect(r.extraction!.extractedAt, ext['extracted_at']);
           expect(r.extraction!.overallConfidence,
               (ext['overall_confidence'] as num?)?.toDouble());
-          expect(r.extraction!.needsReview, ext['needs_review'] ?? const []);
+          expect(r.extraction!.needsReview, ext['needs_review'] ?? const <Object?>[]);
         }
       });
 

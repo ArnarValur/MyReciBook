@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- API 31+. OAuth refresh tokens (app-support/tokens.json, plaintext until the
+     pre-prod keystore hardening) must never ride cloud backup or D2D transfer.
+     Recipes live in the user's own SAF folder — outside app data, unaffected. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="tokens.json"/>
+        <exclude domain="file" path="tokens.json.tmp"/>
+        <exclude domain="file" path="crash_log.json"/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="tokens.json"/>
+        <exclude domain="file" path="tokens.json.tmp"/>
+        <exclude domain="file" path="crash_log.json"/>
+    </device-transfer>
+</data-extraction-rules>

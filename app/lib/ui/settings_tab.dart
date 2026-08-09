@@ -9,8 +9,10 @@
 // switch (post-alpha).
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:provider/provider.dart';
 
+import '../data/crash_log.dart';
 import '../version.dart';
 import 'storage_model.dart';
 import 'theme.dart';
@@ -26,6 +28,78 @@ class SettingsTab extends StatelessWidget {
 
   /// Routes to the Storage screen (6e) — the shell's existing wiring.
   final VoidCallback? onOpenStorage;
+
+  void _showErrorLog(BuildContext context) {
+    final log = context.read<CrashLog>();
+    showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        final scheme = ctx.scheme;
+        final entries = log.entries;
+        return AlertDialog(
+          title: Text(entries.isEmpty
+              ? 'Error log'
+              : 'Error log (${entries.length})'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: entries.isEmpty
+                ? Text('No captured errors.',
+                    style: Theme.of(ctx)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: scheme.onSurfaceVariant))
+                : ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: entries.length,
+                    separatorBuilder: (_, _) => const Divider(height: 16),
+                    itemBuilder: (_, i) {
+                      final e = entries[i];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('${e['at']}',
+                              style: Theme.of(ctx).textTheme.labelSmall
+                                  ?.copyWith(color: scheme.onSurfaceVariant)),
+                          const SizedBox(height: 2),
+                          Text('${e['error']}',
+                              style: Theme.of(ctx).textTheme.bodySmall),
+                        ],
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            if (entries.isNotEmpty)
+              TextButton(
+                onPressed: () async {
+                  await log.clear();
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                child: const Text('Clear'),
+              ),
+            if (entries.isNotEmpty)
+              TextButton(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: log.export()));
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                  // The OUTER context crossed the await too — guard it
+                  // separately; the tab can unmount while the copy runs.
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Error log copied — paste it to Arnar')));
+                  }
+                },
+                child: const Text('Copy all'),
+              ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,12 +247,22 @@ class SettingsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Center(
-                  // owned stays false until a purchase receipt exists (6a):
-                  // the footer "drops 'you own this copy' until the receipt
-                  // makes it true".
-                  child: Text(versionFooter(owned: false),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 11, color: scheme.onSurfaceVariant)),
+                  // Quiet door keeping 6a's "three blocks, nothing else":
+                  // long-press opens the local error log so a tester can copy
+                  // evidence out — no telemetry (D8). Unlike the debug-only
+                  // dev gallery this SHIPS in release (testers are the point),
+                  // and it is undiscoverable by design — the closed-test
+                  // instructions must name the long-press. UNDESIGNED —
+                  // surface shape to ratify at the next design turn.
+                  child: GestureDetector(
+                    onLongPress: () => _showErrorLog(context),
+                    // owned stays false until a purchase receipt exists (6a):
+                    // the footer "drops 'you own this copy' until the receipt
+                    // makes it true".
+                    child: Text(versionFooter(owned: false),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 11, color: scheme.onSurfaceVariant)),
+                  ),
                 ),
               ],
             ),

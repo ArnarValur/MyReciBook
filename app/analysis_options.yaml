@@ -9,6 +9,15 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+# Strict modes (2026-08-08): implicit casts/raw types/inference silently
+# defeat the type system exactly where JSON handling lives. Errors at analyze
+# time are cheaper than skipped-recipe reports from testers.
+analyzer:
+  language:
+    strict-casts: true
+    strict-raw-types: true
+    strict-inference: true
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

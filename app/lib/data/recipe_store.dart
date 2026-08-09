@@ -119,9 +119,14 @@ class LocalFolderStore implements RecipeStore {
         appHint: recipe.source.appHint,
       ).toJson()));
 
+    // tmp+rename like the app-private stores: a mid-write kill must never
+    // leave a truncated <id>.json where a good one stood (edits especially).
     final file = File('${root.path}/${recipe.id}.json');
-    await file.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(complete.toJson()));
+    final tmp = File('${file.path}.tmp');
+    await tmp.writeAsString(
+        const JsonEncoder.withIndent('  ').convert(complete.toJson()),
+        flush: true);
+    await tmp.rename(file.path);
     return complete;
   }
 

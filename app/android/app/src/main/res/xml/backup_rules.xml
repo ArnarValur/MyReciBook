@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- API ≤30 auto-backup equivalent of data_extraction_rules.xml. -->
+<full-backup-content>
+    <exclude domain="file" path="tokens.json"/>
+    <exclude domain="file" path="tokens.json.tmp"/>
+    <exclude domain="file" path="crash_log.json"/>
+</full-backup-content>

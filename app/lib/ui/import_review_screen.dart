@@ -335,6 +335,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     return Row(
       children: [
         IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).maybePop(),
         ),

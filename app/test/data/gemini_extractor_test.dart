@@ -53,7 +53,7 @@ void main() {
     final ex = extractor(MockClient(
         (_) async => _candidateResponse('{"title": "Pancakes", "steps": []}')));
     expect(await ex.extractContent([img]),
-        {'title': 'Pancakes', 'steps': []});
+        {'title': 'Pancakes', 'steps': <Object?>[]});
   });
 
   test('UTF-8 body without charset header keeps ½ intact (no latin1 fallback)',

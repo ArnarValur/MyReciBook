@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myrecibook/data/app_settings.dart';
+import 'package:myrecibook/data/crash_log.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/main.dart';
@@ -26,7 +27,7 @@ class FakeExtractor implements Extractor {
 
   @override
   Future<Map<String, dynamic>> extractContent(List<File> images) async =>
-      {'title': 'unused', 'ingredients': [], 'steps': []};
+      {'title': 'unused', 'ingredients': <Object?>[], 'steps': <Object?>[]};
 }
 
 void main() {
@@ -50,11 +51,12 @@ void main() {
     }
   }
 
-  Widget app({ThemeModel? themeModel}) => buildApp(
+  Widget app({ThemeModel? themeModel, CrashLog? crashLog}) => buildApp(
       store: store,
       extractor: FakeExtractor(),
       picker: () async => const [],
-      themeModel: themeModel);
+      themeModel: themeModel,
+      crashLog: crashLog);
 
   Future<void> openSettings(WidgetTester tester) async {
     await tester.tap(find.text('Settings'));
@@ -158,5 +160,42 @@ void main() {
     await tester.tap(find.text('Open-source licenses'));
     await settle(tester, rounds: 6);
     expect(find.byType(LicensePage), findsOneWidget);
+  });
+
+  testWidgets('footer long-press opens the error log door — honest empty '
+      'state', (tester) async {
+    await tester.pumpWidget(app());
+    await settle(tester);
+    await openSettings(tester);
+
+    await tester.longPress(find.text('MyReciBook $kAppVersion'));
+    await settle(tester, rounds: 4);
+    expect(find.text('Error log'), findsOneWidget);
+    expect(find.text('No captured errors.'), findsOneWidget);
+    // empty log offers no Clear/Copy — nothing that pretends to do something
+    expect(find.text('Copy all'), findsNothing);
+    expect(find.text('Clear'), findsNothing);
+  });
+
+  testWidgets('error log door lists captured errors and Clear empties it',
+      (tester) async {
+    final log = CrashLog.inert();
+    await log.record('NullPointerException: sky fell', null);
+    await tester.pumpWidget(app(crashLog: log));
+    await settle(tester);
+    await openSettings(tester);
+
+    await tester.longPress(find.text('MyReciBook $kAppVersion'));
+    await settle(tester, rounds: 4);
+    expect(find.text('Error log (1)'), findsOneWidget);
+    expect(find.text('NullPointerException: sky fell'), findsOneWidget);
+
+    await tester.tap(find.text('Clear'));
+    await settle(tester, rounds: 4);
+    expect(log.count, 0);
+    // reopened: honest empty state
+    await tester.longPress(find.text('MyReciBook $kAppVersion'));
+    await settle(tester, rounds: 4);
+    expect(find.text('No captured errors.'), findsOneWidget);
   });
 }

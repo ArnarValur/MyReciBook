@@ -37,7 +37,7 @@ void main() {
     });
 
     test('zero ingredients', () {
-      expect(contentProblems(validContent()..['ingredients'] = []),
+      expect(contentProblems(validContent()..['ingredients'] = <Object?>[]),
           contains('only 0 ingredients'));
     });
 
@@ -68,7 +68,7 @@ void main() {
     });
 
     test('steps present but empty', () {
-      expect(contentProblems(validContent()..['steps'] = []),
+      expect(contentProblems(validContent()..['steps'] = <Object?>[]),
           contains('no steps'));
     });
 

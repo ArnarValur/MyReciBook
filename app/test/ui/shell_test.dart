@@ -51,7 +51,7 @@ Map<String, dynamic> canned({String title = 'Pancakes'}) => {
       'steps': [
         {'raw': 'Mix everything.', 'confidence': 0.9},
       ],
-      'extraction': {'overall_confidence': 0.9, 'needs_review': []},
+      'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
     };
 
 void main() {

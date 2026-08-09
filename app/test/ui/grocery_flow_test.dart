@@ -24,7 +24,7 @@ class FakeExtractor implements Extractor {
   String get modelName => 'fake-model';
   @override
   Future<Map<String, dynamic>> extractContent(List<File> images) async =>
-      {'title': 'Unused', 'ingredients': [], 'steps': [], 'extraction': {}};
+      {'title': 'Unused', 'ingredients': <Object?>[], 'steps': <Object?>[], 'extraction': <String, Object?>{}};
 }
 
 Map<String, dynamic> ing(String raw, {num? qty, String? unit, String? item}) =>
@@ -43,7 +43,7 @@ Map<String, dynamic> content(String title, List<Map<String, dynamic>> ings) =>
       'steps': [
         {'raw': 'Cook.', 'confidence': 0.9}
       ],
-      'extraction': {'overall_confidence': 0.9, 'needs_review': []},
+      'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
     };
 
 void main() {

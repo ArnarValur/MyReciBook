@@ -53,9 +53,9 @@ Map<String, dynamic> canned({
 
 Map<String, dynamic> notARecipe() => {
       'title': '',
-      'ingredients': [],
-      'steps': [],
-      'extraction': {'overall_confidence': 0.1, 'needs_review': []},
+      'ingredients': <Object?>[],
+      'steps': <Object?>[],
+      'extraction': {'overall_confidence': 0.1, 'needs_review': <Object?>[]},
     };
 
 void main() {

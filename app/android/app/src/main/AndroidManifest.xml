@@ -1,8 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Release builds need this here, not only in debug/profile manifests:
+         Gemini extraction, OAuth and Drive/Dropbox sync all die without it. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="MyReciBook"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"

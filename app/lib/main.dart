@@ -1,14 +1,17 @@
 import 'dart:convert' show utf8;
 import 'dart:io';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/foundation.dart' show LicenseRegistry, LicenseEntryWithLineBreaks;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'data/app_settings.dart';
+import 'data/crash_log.dart';
 import 'data/gemini_extractor.dart';
 import 'data/grocery_store.dart';
 import 'data/oauth.dart';
@@ -42,6 +45,9 @@ const _dropboxAppKey = String.fromEnvironment('DROPBOX_APP_KEY',
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Fonts are bundled assets (pubspec google_fonts/); with runtime fetching
+  // off a missed lookup falls back locally instead of trying the network.
+  GoogleFonts.config.allowRuntimeFetching = false;
   // Bundled-font licenses (OFL) surface in the standard licenses page.
   LicenseRegistry.addLicense(() async* {
     for (final f in ['OFL-PlusJakartaSans.txt', 'OFL-Inter.txt']) {
@@ -53,6 +59,23 @@ Future<void> main() async {
   final support = await getApplicationSupportDirectory();
   final cache = await getApplicationCacheDirectory();
   final settings = await AppSettings.load(File('${support.path}/settings.json'));
+
+  // Uncaught errors → local ring-buffer (crash story without telemetry, D8).
+  // Both hooks log and move on: for a consumer app a degraded frame beats a
+  // process death, and the evidence survives for the tester to copy out.
+  final crashLog = await CrashLog.load(File('${support.path}/crash_log.json'));
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details); // keep the default console dump
+    crashLog.record(details.exception, details.stack,
+        context: details.context?.toDescription());
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    crashLog.record(error, stack);
+    // Trade-off, eyes open: true keeps the app alive but also keeps these
+    // out of Play Console vitals. During closed test the local log IS the
+    // crash story; revisit for production if vitals ever matter.
+    return true; // handled: logged locally
+  };
   // Grocery is app-private working state (T3) — app-support, not the SAF folder.
   final grocery = await GroceryStore.load(
       listFile: File('${support.path}/grocery_list.json'),
@@ -131,6 +154,7 @@ Future<void> main() async {
         grocery: grocery,
         storage: storage,
         themeModel: themeModel,
+        crashLog: crashLog,
         onGrantLost: onGrantLost,
         onChangeFolder: onChangeFolder,
         folderName: folderDisplayName(settings.treeUri),
@@ -155,6 +179,7 @@ Widget buildApp({
   GroceryStore? grocery,
   StorageModel? storage,
   ThemeModel? themeModel,
+  CrashLog? crashLog,
   VoidCallback? onGrantLost,
   VoidCallback? onChangeFolder,
   String? folderName,
@@ -174,6 +199,9 @@ Widget buildApp({
           ChangeNotifierProvider<ThemeModel>.value(value: themeModel)
         else
           ChangeNotifierProvider<ThemeModel>(create: (_) => ThemeModel()),
+        // Plain Provider (not a notifier): the settings footer door reads it
+        // on demand. Inert default keeps the test seam file-free.
+        Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),
         ChangeNotifierProvider(
             create: (ctx) => LibraryModel(store,
                 onGrantLost: onGrantLost,

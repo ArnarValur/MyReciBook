@@ -26,7 +26,7 @@ Recipe recipe(String id, String title, List<Map<String, dynamic>> ings) =>
         'steps': [
           {'raw': 'Cook.', 'confidence': 0.9}
         ],
-        'extraction': {'overall_confidence': 0.9, 'needs_review': []},
+        'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
       },
       originalImages: const [],
       importedAt: DateTime.utc(2026, 8, 6),

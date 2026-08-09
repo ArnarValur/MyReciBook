@@ -30,9 +30,11 @@
   with the phone shortly. 315 tests, analyze clean, uncommitted-to-device.
 - Turn-7 design queue: cover-image picker (own photo / pick from originals —
   Arnar's wedge; AI covers parked) · drawer removal + bar reshape to ratify ·
-  collapsing hero · manual entry · edit copy · batch edges (grep DEVIATION).
-- Versioning: 1.0.0 footer is a pubspec placeholder — Arnar settling
-  versioning in a separate cowork session; ignore until it lands.
+  collapsing hero · manual entry · edit copy · batch edges (grep DEVIATION) ·
+  error-log door (Settings footer long-press, 2026-08-08 — dialog UNDESIGNED;
+  tester instructions must name the long-press).
+- Versioning: 0.5.0+2 PROPOSED 2026-08-08 (pubspec = source of truth, drift
+  test) — strawman only; Arnar's separate versioning session still decides.
 - Play fee: strong-build bar met in code; verdict = his hands-on pass.
   Firebase project = console home; BaaS NO; no login ever. D10: 3 free →
   ~$25 unlock. Stake ladder: 150 paid ≈ org account · ~285 ≈ MacBook → iOS.

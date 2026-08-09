@@ -17,3 +17,4 @@ app/dev.env
 # OAuth client downloads (console litter; IDs live in .env)
 client_secret_*.json
 docs/namecheap-order-210380156.pdf
+docs/MyReciBook Flutter mockups/myrecibook-design-system/*

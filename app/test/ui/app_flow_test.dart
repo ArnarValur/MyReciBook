@@ -48,8 +48,8 @@ Map<String, dynamic> canned({String title = 'Pancakes', bool withSteps = true}) 
               {'raw': 'Mix everything.', 'confidence': 0.9},
               {'raw': 'Fry until golden.', 'confidence': 0.9},
             ]
-          : [],
-      'extraction': {'overall_confidence': 0.9, 'needs_review': []},
+          : <Object?>[],
+      'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
     };
 
 void main() {

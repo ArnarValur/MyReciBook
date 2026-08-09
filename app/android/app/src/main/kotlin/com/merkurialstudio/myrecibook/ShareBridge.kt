@@ -157,7 +157,11 @@ class ShareBridge(private val activity: Activity) {
     } catch (_: Exception) {
       null
     }
-    val fromName = name?.substringAfterLast('.', "")?.takeIf { it.isNotEmpty() && it.length <= 5 }
+    // DISPLAY_NAME is sender-controlled: keep alphanumerics only so the
+    // extension can never smuggle a path separator into the cache filename.
+    val fromName = name?.substringAfterLast('.', "")
+      ?.filter { it.isLetterOrDigit() }
+      ?.takeIf { it.isNotEmpty() && it.length <= 5 }
     return fromName ?: "jpg"
   }
 }

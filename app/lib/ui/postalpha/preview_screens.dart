@@ -243,6 +243,7 @@ class StoragePreview extends StatelessWidget {
             children: [
               Row(children: [
                 IconButton(
+                    tooltip: 'Back',
                     icon: const Icon(Icons.arrow_back_rounded),
                     onPressed: () => Navigator.of(context).maybePop()),
                 Text('Storage', style: theme.textTheme.titleLarge),

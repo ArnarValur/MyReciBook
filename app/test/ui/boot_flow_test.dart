@@ -55,7 +55,7 @@ Map<String, dynamic> canned({String title = 'Pancakes'}) => {
         {'raw': 'Mix everything.', 'confidence': 0.9},
         {'raw': 'Fry until golden.', 'confidence': 0.9},
       ],
-      'extraction': {'overall_confidence': 0.9, 'needs_review': []},
+      'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
     };
 
 Recipe cannedRecipe(String id, String title) => Recipe.assemble(
