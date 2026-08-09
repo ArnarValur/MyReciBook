@@ -69,3 +69,12 @@
     persist and never queue behind a stale toast's exit animation. In widget
     tests, a Dismissible's slide+resize needs ~10 settle rounds before the
     bar is assertable (2026-08-06).
+7. All persisted JSON/text writes go through lib/data/atomic_file.dart
+   writeStringAtomic — never hand-roll tmp+rename (5 copies had drifted by
+   2026-08-09; AppSettings had none and risked the SAF grant). The exact
+   `<path>.tmp` suffix is LOAD-BEARING: res/xml backup rules enumerate it and
+   delete paths sweep it — changing the naming means changing both.
+8. Widget tests settle real IO in rounds (runAsync+pump per hop) — adding IO
+   hops to a persisted write path (flush, rename) needs the affected tests'
+   `rounds:` budget raised, or they fail as "state didn't persist"
+   (settings_tab_test, 2026-08-09). Count the awaits, not the wall time.

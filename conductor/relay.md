@@ -109,3 +109,17 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - His cover-image wedge (own photo / pick from screenshots) → turn-7 frame;
   AI-generated covers parked. 315 tests green. Latest APK BUILT, NOT
   installed — the S21 was unplugged; he's back with the phone after a workout.
+
+## 2026-08-09 (Hermes) — review closed: 18 findings fixed · F5 fence · D2 proxy built · fresh build ON the phone
+- Ran the correctness lens yesterday's limit killed (7 finders + my verify
+  pass): 18 confirmed findings, all fixed same-day. One write discipline now
+  (atomic_file.dart) — settings.json was one truncated write from silently
+  losing your folder grant.
+- F5: sync never overwrites a file edited elsewhere — skips it and the status
+  line says "N changed elsewhere". D2 proxy exists in proxy/ (key
+  server-side, capped); deploying it is your gcloud call, $0 tier.
+- You plugged the S21 in mid-session: fresh upload-key build installed,
+  launched clean. The one-time signature flip wiped app-private state —
+  re-pick the folder; the recipes in the folder are safe.
+- For you: docs/workday-2026-08-09.md (4 decisions). 337+10 tests green.
+  Commits d61bf83 + eb2b6a5. Next: your hands-on + storage smoke → verdict → fee.

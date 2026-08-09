@@ -2,8 +2,10 @@
 goal: extract → save → list → open, installable alpha on closed track 2026-10-19
 gate: builds ahead of Gates 1–2 under amended constraint 4 (context.md §4,
       2026-08-06) — gates still decide whether any of this SHIPS
-opened: pulled forward 2026-08-06 (originally 21 Sep) · status: engine slice DONE
-        through bare UI (77 tests green); app installed + launched on the S21
+opened: pulled forward 2026-08-06 (originally 21 Sep) · status: senior review
+        CLOSED 2026-08-09 (all findings fixed, 337 tests, strict analyzers);
+        upload-key-signed build with creds live on the S21; F5 conflict fence
+        + D2 proxy code built — storage smoke is the next proof
 division: Arnar owns UI/design (sketches after festival); agent owns the engine.
           Skins replace widgets and colors, never flows (editable review, delete,
           reorder are load-bearing — architecture review 2026-08-06).
@@ -31,7 +33,12 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   alert in pulse queue). Proxy HOME direction: Cloud Run in the same GCP project
   as the Gemini API (Arnar offered org+project, dissolving his earlier no-GCP)
   — service-identity auth replaces the storable key entirely. Build timing
-  unchanged: post-alpha, before 11 Dec.
+  unchanged: post-alpha, before 11 Dec. · 2026-08-09: proxy BUILT AHEAD
+  (proxy/ — Dart shelf relay, key server-side as header, model allowlist,
+  per-install monthly cap strawman, 10 tests; Cloud Run runbook in
+  proxy/README.md) and the client swap is DONE (EXTRACTION_PROXY_URL define +
+  X-Install-Id from install_id.dart; no define = direct-key dev mode). Only
+  the DEPLOY remains — Arnar's gcloud/billing call, deadline unchanged.
 - D3 (P3, 2026-08-06) state = ChangeNotifier + Provider only. Boring on purpose;
   revisit only on real pain — migrating four screens later is days, not weeks.
 - D4 (P1, 2026-08-06) list index = rescan the folder each app session; NO persisted

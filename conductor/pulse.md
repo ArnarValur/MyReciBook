@@ -2,71 +2,64 @@
 *State only. REWRITTEN at every checkpoint, never appended. Cap 60 lines.*
 
 ## 📍 Now
-- Phase: pre-project (kickoff 2026-08-20); constraint 4 amended — building
-  unblocked, gates decide ship/stop (context.md §4). GATE 1 PASSED; T1 closed.
-- NOW-MODE (behavioral 15–16) · checkpoint commits EVERYTHING (18) · NO
-  DEAD-END SURFACES (19, new): engine-less UI hides behind flags in
-  app/lib/features.dart; a container left with only duplicates is removed.
-- STORAGE CREDS WIRED (2026-08-06): DRIVE_CLIENT_ID + DROPBOX_APP_KEY live in
-  .env → app/dev.env (gitignored). Consoles verified on screenshots; Dropbox
-  Permissions-tab submission unconfirmed. SMOKE STILL PENDING — no on-device
-  connect has run yet. Drive debug SHA-1
-  B8:2C:53:F7:60:EA:0B:A4:B3:CD:76:05:41:36:78:D5:93:0A:07:EB
-  (project gen-lang-client-0166122901).
-- HANDS-ON ROUND 1 DONE (Arnar, 2026-08-06): 7 findings → all in code same
-  session except cover-image change (needs a design frame). Now in app:
-  swipe-delete + Clear all (6f) on grocery · status-bar + folder-gate theme
-  fixes · Favorites-only chips · collapsing hero on detail (cover scrolls
-  away) · triage record docs/hands-on-triage-2026-08-06.md (partly superseded
-  by the session's founder decisions).
-- NAV RESHAPE (founder decisions, Arnar+Code): bar = Cookbook · Grocery ·
-  Queue (badge) · Settings + FAB; 5c DRAWER REMOVED (only duplicated
-  bar/Settings once dead rows hid); change-folder → system picker DIRECTLY
-  (gate screen = first-run/lost-grant only; app subtree remounts keyed by
-  folder). Flags off: kMealPlanEnabled (NOT cut — bet's week-two hook) ·
-  kYourCopyEnabled (waits for billing 3g, lands as Settings row) ·
-  kRecipeTagsEnabled.
-- LATEST APK BUILT, NOT INSTALLED — S21 unplugged mid-session; Arnar back
-  with the phone shortly. 315 tests, analyze clean, uncommitted-to-device.
-- Turn-7 design queue: cover-image picker (own photo / pick from originals —
-  Arnar's wedge; AI covers parked) · drawer removal + bar reshape to ratify ·
-  collapsing hero · manual entry · edit copy · batch edges (grep DEVIATION) ·
-  error-log door (Settings footer long-press, 2026-08-08 — dialog UNDESIGNED;
-  tester instructions must name the long-press).
-- Versioning: 0.5.0+2 PROPOSED 2026-08-08 (pubspec = source of truth, drift
-  test) — strawman only; Arnar's separate versioning session still decides.
-- Play fee: strong-build bar met in code; verdict = his hands-on pass.
-  Firebase project = console home; BaaS NO; no login ever. D10: 3 free →
-  ~$25 unlock. Stake ladder: 150 paid ≈ org account · ~285 ≈ MacBook → iOS.
+- Phase: pre-project (kickoff 2026-08-20); building unblocked, gates decide
+  ship/stop (context.md §4). GATE 1 PASSED; T1 closed.
+- NOW-MODE (behavioral 15–16) · checkpoint commits EVERYTHING (18) · no
+  dead-end surfaces (19).
+- SENIOR REVIEW CLOSED (docs/senior-review-2026-08-08.md, workday docs
+  08-08/08-09): every finding fixed incl. the 18 from the 08-09 correctness
+  lens (eb2b6a5). atomic_file.dart = THE write discipline (tech rule 7).
+  Release AAB signs with the UPLOAD KEY (~/keystores/myrecibook-upload.jks —
+  SINGLE COPY, backup pending).
+- F5 FENCE live: sync never overwrites a remote file whose rev moved — skip +
+  "N changed elsewhere" in status lines; local-delete vs remote-edit → remote
+  wins, claim released; restoreDown baselines revs.
+- D2 PROXY BUILT, NOT DEPLOYED: proxy/ (key server-side, allowlist,
+  per-install cap strawman 100/mo, 10 tests, Cloud Run runbook). Client done:
+  EXTRACTION_PROXY_URL + X-Install-Id (install_id.dart). Deploy needs Arnar:
+  gcloud/billing on gen-lang-client-0166122901 ($0 tier) + listed cap number.
+- ON THE S21 (08-09): upload-key build with creds installed, launched clean.
+  Signature flip forced one-time uninstall — FOLDER RE-PICK NEEDED, grocery
+  list gone; SAF-folder recipes intact. Storage smoke still NOT run.
+- 337 app + 10 proxy tests, analyzers clean (strict). Versioning 0.5.0+2
+  strawman awaits Arnar. Error-log door = long-press version footer (padded);
+  dialog UNDESIGNED — tester instructions must name the long-press.
+- Turn-7 design queue: cover-image picker · nav reshape ratify · collapsing
+  hero · manual entry · edit copy · batch edges (grep DEVIATION) · log door.
+- Play fee: strong-build bar met; verdict = his hands-on pass. D10: 3 free →
+  ~$25. Stake ladder: 150 paid ≈ org account · ~285 ≈ MacBook → iOS.
+- OPEN (Arnar): design authority in git — unzipped design-system now
+  gitignored, only the zip versioned (workday 08-09 item 4).
 
 ## 🚀 Active tracks
-- T3 mvp-build — hands-on round 1 folded in; next: install latest APK →
-  storage smoke → Arnar verdict → fee → billing 3g.
+- T3 mvp-build — review closed, F5 + D2 built, fresh build on-device; next:
+  Arnar pokes it → storage smoke → verdict → fee → billing 3g.
   Plan: conductor/tracks/T3-mvp-build/plan.md
-- T2 landing-page — myrecibook.com REGISTERED (Namecheap, receipt in docs/);
-  live 2 Sep. Channels → docs/marketing-channels.md (5 venues; seed accounts).
+- T2 landing-page — myrecibook.com registered; live 2 Sep. Channels →
+  docs/marketing-channels.md (5 venues; seed accounts).
 
 ## ⚠️ Blockers
-- Latest build not on the phone (S21 unplugged) — one adb install away.
-- Storage UNPROVEN on device: connect/sync never run. Runbook Part C =
-  the smoke; failure modes in docs/storage-creds-runbook.md.
-- Billing 3g ← Play fee ← Arnar's hands-on verdict.
+- Storage smoke needs Arnar (re-pick folder, Drive/Dropbox login on S21) —
+  runbook Part C; failure modes in docs/storage-creds-runbook.md.
+- Proxy deploy + listed cap number ← Arnar's gcloud/billing decision.
+- Billing 3g ← Play fee ← hands-on verdict.
 
 ## 📋 Next queue (sequence — no schedule)
-1. Arnar plugs S21 → Code installs → poke new shell (Queue tab, swipe rows,
-   change-folder, collapsing hero).
-2. Storage smoke: connect Dropbox AND Drive → save recipe → files visible
-   remotely → kill/reopen. Then his strong-build verdict → fee $25 →
-   billing 3g.
-3. Claude Design turn 7: flags above + fold turns 5–6 into the handoff.
-4. Arnar off-repo: T2 landing design + 5 Gate-2 venues + seed accounts.
-5. External: festival 12–16 Aug (QR, 12 testers) · 20 Aug 09:00 kickoff.
+1. Arnar: poke fresh build (re-pick folder) → storage smoke: connect Dropbox
+   AND Drive → save → files visible remotely → kill/reopen.
+2. Verdict → fee $25 → billing 3g.
+3. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
+   design-authority-in-git.
+4. Claude Design turn 7 · then Arnar off-repo: T2 landing + Gate-2 venues.
+5. External: festival 12–16 Aug (QR, 12 testers) · 20 Aug 09:00 kickoff +
+   Play Console registration.
 
 ## 📌 Parked
-- Proxy on Cloud Run (D2: before 11 Dec) · cap counter 4d · D9 link door ·
-  inbox strip · serving-rescale · step↔ingredient chips · camera-roll nudge ·
-  cover-crop tier 2 · AI-generated covers (Arnar: "later bonus if ever") ·
-  telemetry (D8) · arm B ocr_dump · $2.99 top-up UNCONFIRMED · handwriting
-  UNTESTED · ADR 0001 graduation due · multi-image shares one recipe · token
-  store plain JSON (harden pre-prod) · storage prod errands before 11 Dec:
-  Dropbox production approval + Play-signing SHA-1 on Drive client.
+- Proxy DEPLOY (D2: before 11 Dec) · durable cap store (4d) · Play Integrity ·
+  D9 link door · inbox strip · serving-rescale · step↔ingredient chips ·
+  camera-roll nudge · cover-crop tier 2 · AI covers · telemetry (D8) · arm B
+  ocr_dump · $2.99 top-up UNCONFIRMED · handwriting UNTESTED · ADR 0001
+  graduation due · multi-image shares one recipe · token store → keystore
+  pre-prod · orphan-image GC (post-alpha) · schema-v2 read policy · full a11y
+  pass (16 Nov) · fixture superset beyond byte-identical · Dropbox production
+  approval + Play-signing SHA-1 on Drive client.
