@@ -78,3 +78,10 @@
    hops to a persisted write path (flush, rename) needs the affected tests'
    `rounds:` budget raised, or they fail as "state didn't persist"
    (settings_tab_test, 2026-08-09). Count the awaits, not the wall time.
+9. Google's Android OAuth clients bind package name + signing-cert SHA-1
+   (2026-08-09: the debug→upload signing flip broke Drive auth on-device;
+   Dropbox PKCE checks no cert and kept working). Every signing cert needs
+   its own Android client entry in the GCP console — debug, upload, and the
+   Play App Signing cert at first Play upload. ADD clients, never replace:
+   replacing kills auth for the other build flavor. Extract a SHA-1 with:
+   keytool -list -v -keystore <jks> -storepass <pw> | grep SHA1

@@ -123,3 +123,17 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   re-pick the folder; the recipes in the folder are safe.
 - For you: docs/workday-2026-08-09.md (4 decisions). 337+10 tests green.
   Commits d61bf83 + eb2b6a5. Next: your hands-on + storage smoke → verdict → fee.
+
+## 2026-08-09 (Hermes, cont.) — hands-on round 2: camera + Dropbox PROVEN; Drive = one console line away
+- Your round 2 on the upload-key build: photographing a recipe extracts
+  ("boom works" — first camera proof), screenshots still work, and DROPBOX
+  connected and synced on the phone — that half of the storage smoke PASSED.
+- Drive's auth error is not GCP being broken: this morning's signing flip
+  changed the app's SHA-1 fingerprint, and the Drive Android client only
+  trusts the old debug one. Fix (2 min): GCP console → Credentials → ADD an
+  Android OAuth client, same package, SHA-1
+  B0:E5:3A:23:85:47:3C:24:F6:8D:B5:2F:A4:4A:FD:DA:67:06:58:28 — keep the
+  debug client too. Then retry Drive connect; no rebuild needed.
+- Graduated as tech rule 9 — the same errand returns at first Play upload
+  (Play App Signing = a third cert). Next: SHA-1 in console → Drive smoke →
+  your verdict → fee.

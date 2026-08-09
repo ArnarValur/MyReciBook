@@ -4,8 +4,10 @@ gate: builds ahead of Gates 1–2 under amended constraint 4 (context.md §4,
       2026-08-06) — gates still decide whether any of this SHIPS
 opened: pulled forward 2026-08-06 (originally 21 Sep) · status: senior review
         CLOSED 2026-08-09 (all findings fixed, 337 tests, strict analyzers);
-        upload-key-signed build with creds live on the S21; F5 conflict fence
-        + D2 proxy code built — storage smoke is the next proof
+        upload-key build live on the S21 — Arnar's round 2 PROVED camera-photo
+        extraction, screenshots and Dropbox connect+sync on-device; Drive
+        auth waits only on the upload SHA-1 in the GCP console (pulse has the
+        fingerprint); F5 conflict fence + D2 proxy code built
 division: Arnar owns UI/design (sketches after festival); agent owns the engine.
           Skins replace widgets and colors, never flows (editable review, delete,
           reorder are load-bearing — architecture review 2026-08-06).
