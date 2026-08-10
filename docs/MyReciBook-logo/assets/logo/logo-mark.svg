@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="1024" height="1024">
+  <defs>
+    <mask id="spine">
+      <rect width="108" height="108" fill="white"></rect>
+      <path d="M54 62 L54 76" stroke="black" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
+    </mask>
+  </defs>
+  <g mask="url(#spine)">
+    <path d="M54 60 C47 53 36 51 26 53 L26 72 C36 70 47 72 54 78 C61 72 72 70 82 72 L82 53 C72 51 61 53 54 60 Z" fill="#24389c"></path>
+    <path d="M45 26 c-5 7 5 9 0 16" stroke="#24389c" stroke-width="6" stroke-linecap="round" fill="none"></path>
+    <path d="M63 26 c-5 7 5 9 0 16" stroke="#24389c" stroke-width="6" stroke-linecap="round" fill="none"></path>
+  </g>
+</svg>

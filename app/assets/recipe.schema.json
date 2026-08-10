@@ -63,6 +63,7 @@
     },
     "tags": { "type": "array", "items": { "type": "string" } },
     "notes": { "type": ["string", "null"], "description": "user's own notes, never touched by extraction" },
+    "cover": { "type": ["string", "null"], "description": "user-chosen cover image: images/<id>-cover.jpg for a photo they supplied, or one of source.original_images when they picked a screenshot. Absent = no cover chosen; the app draws its own tile rather than promoting a screenshot (2026-08-10)" },
     "extraction": {
       "type": ["object", "null"],
       "properties": {

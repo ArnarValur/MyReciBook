@@ -38,7 +38,8 @@ class StubStore implements RecipeStore {
   Future<Recipe?> load(String id) async => null;
 
   @override
-  Future<Recipe> save(Recipe recipe, List<File> cachedImages) async {
+  Future<Recipe> save(Recipe recipe, List<File> cachedImages,
+      {File? coverImage}) async {
     if (saveError != null) throw saveError!;
     return recipe;
   }

@@ -23,6 +23,14 @@ class Recipe {
   /// deleting the app keeps the favorites. Absent in JSON unless true, so
   /// pre-amendment files round-trip byte-identical.
   final bool favorite;
+
+  /// User-chosen cover image, relative like `images/<id>-cover.jpg`, or one of
+  /// [RecipeSource.originalImages] when the user picked a screenshot. Presentation,
+  /// not provenance — hence top-level rather than under `source`. Absent in JSON
+  /// unless set, so untouched files round-trip byte-identical (favorite's rule).
+  /// Null means "no cover picked": the UI draws its own tile, it does NOT fall
+  /// back to screenshot 1 (Arnar 2026-08-10 — raw screenshots made ugly covers).
+  final String? cover;
   final Extraction? extraction;
 
   const Recipe({
@@ -38,6 +46,7 @@ class Recipe {
     this.tags = const [],
     this.notes,
     this.favorite = false,
+    this.cover,
     this.extraction,
   });
 
@@ -109,6 +118,7 @@ class Recipe {
         tags: [for (final t in (json['tags'] as List? ?? [])) t as String],
         notes: json['notes'] as String?,
         favorite: json['favorite'] as bool? ?? false,
+        cover: json['cover'] as String?,
         extraction: json['extraction'] is Map
             ? Extraction.fromJson(json['extraction'] as Map<String, dynamic>)
             : null,
@@ -127,9 +137,12 @@ class Recipe {
         'tags': tags,
         'notes': notes,
         if (favorite) 'favorite': true,
+        if (cover != null) 'cover': cover,
         'extraction': extraction?.toJson(),
       };
 
+  /// `cover:` accepts a new ref, omission (keep), or [clearCover] (remove) —
+  /// a plain `cover: null` can't say "remove" and "leave alone" apart.
   Recipe copyWith({
     String? title,
     String? notes,
@@ -137,6 +150,8 @@ class Recipe {
     List<RecipeStep>? steps,
     List<String>? tags,
     bool? favorite,
+    String? cover,
+    bool clearCover = false,
   }) =>
       Recipe(
         schemaVersion: schemaVersion,
@@ -151,6 +166,7 @@ class Recipe {
         tags: tags ?? this.tags,
         notes: notes ?? this.notes,
         favorite: favorite ?? this.favorite,
+        cover: clearCover ? null : (cover ?? this.cover),
         extraction: extraction,
       );
 }

@@ -92,3 +92,10 @@
     manifest <data> entry swap too — the scheme is derived in oauth.dart but
     the intent-filter is static. Dropbox has no such rule (byte-exact
     console-registered redirect).
+11. EVERY device build must carry the keys: `flutter build apk --release
+    --dart-define-from-file=dev.env` (same flag for `flutter run`). A plain
+    build compiles the OAuth client ids in as `placeholder-*`, and the app
+    reports it honestly as "awaiting keys in this build" on the storage
+    screen — which reads like a regression in Drive/Dropbox, not like a
+    build mistake (Hermes shipped one to the S21, 2026-08-10). Rule 6 says
+    where the mirror lives; this one says the flag is never optional.

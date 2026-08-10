@@ -157,7 +157,8 @@ class SafFolderStore implements RecipeStore {
   }
 
   @override
-  Future<Recipe> save(Recipe recipe, List<File> cachedImages) async {
+  Future<Recipe> save(Recipe recipe, List<File> cachedImages,
+      {File? coverImage}) async {
     final blocking = fileProblems(recipe.toJson()).where(isSaveBlocking).toList();
     if (!RecipeStore.safeId(recipe.id)) blocking.add('unsafe id "${recipe.id}"');
     if (blocking.isNotEmpty) {
@@ -167,37 +168,67 @@ class SafFolderStore implements RecipeStore {
     try {
       final rootFiles = await _root();
 
-      final imagePaths = <String>[];
-      if (cachedImages.isNotEmpty) {
+      // Shared by the originals and the cover: both are app-owned files under
+      // images/, written through the same create-or-reuse dance.
+      Future<String> writeImage(String name, File src) async {
         if (_imagesDirId == null) {
           _imagesDirId = await _invoke<String>(
               'createDir', {'treeUri': treeUri, 'name': 'images'});
           _imageFiles = {};
         }
         final images = await _images();
-        for (var n = 0; n < cachedImages.length; n++) {
-          final ext =
-              cachedImages[n].path.toLowerCase().endsWith('.png') ? 'png' : 'jpg';
-          final name = '${recipe.id}-${n + 1}.$ext';
-          // Existing docId first — never let SAF auto-rename create "x (1)".
-          final docId = images[name] ??
-              await _invoke<String>('createFile', {
-                'treeUri': treeUri,
-                'parentDocId': _imagesDirId,
-                'name': name,
-                'mime': ext == 'png' ? 'image/png' : 'image/jpeg',
-              });
-          images[name] = docId;
-          await _invoke<void>('writeFile', {
-            'treeUri': treeUri,
-            'docId': docId,
-            'bytes': await cachedImages[n].readAsBytes(),
-          });
-          // Stale hydrated copy must not shadow the new bytes.
-          final cached = File('${imageCache.path}/$name');
-          if (await cached.exists()) await cached.delete();
-          imagePaths.add('images/$name');
+        // Existing docId first — never let SAF auto-rename create "x (1)".
+        final docId = images[name] ??
+            await _invoke<String>('createFile', {
+              'treeUri': treeUri,
+              'parentDocId': _imagesDirId,
+              'name': name,
+              'mime':
+                  name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg',
+            });
+        images[name] = docId;
+        await _invoke<void>('writeFile', {
+          'treeUri': treeUri,
+          'docId': docId,
+          'bytes': await src.readAsBytes(),
+        });
+        // Stale hydrated copy must not shadow the new bytes.
+        final cached = File('${imageCache.path}/$name');
+        if (await cached.exists()) await cached.delete();
+        return 'images/$name';
+      }
+
+      final imagePaths = <String>[];
+      for (var n = 0; n < cachedImages.length; n++) {
+        final ext =
+            cachedImages[n].path.toLowerCase().endsWith('.png') ? 'png' : 'jpg';
+        imagePaths
+            .add(await writeImage('${recipe.id}-${n + 1}.$ext', cachedImages[n]));
+      }
+
+      Future<void> dropCoverFile(String name) async {
+        final images = await _images();
+        final staleDocId = images[name];
+        if (staleDocId != null) {
+          await _invoke<bool>(
+              'deleteFile', {'treeUri': treeUri, 'docId': staleDocId});
+          images.remove(name);
         }
+        final cached = File('${imageCache.path}/$name');
+        if (await cached.exists()) await cached.delete();
+      }
+
+      String? coverRef = recipe.cover;
+      if (coverImage != null) {
+        final ext = coverImage.path.toLowerCase().endsWith('.png') ? 'png' : 'jpg';
+        coverRef = await writeImage('${recipe.id}-cover.$ext', coverImage);
+        // A cover swapped jpg↔png would otherwise leave the old file behind,
+        // syncing forever with nothing pointing at it.
+        await dropCoverFile('${recipe.id}-cover.${ext == 'png' ? 'jpg' : 'png'}');
+      } else if (coverRef == null) {
+        // "Remove cover" — take the bytes with it.
+        await dropCoverFile('${recipe.id}-cover.jpg');
+        await dropCoverFile('${recipe.id}-cover.png');
       }
 
       final complete = Recipe.fromJson(recipe.toJson()
@@ -207,7 +238,9 @@ class SafFolderStore implements RecipeStore {
           originalImages:
               imagePaths.isEmpty ? recipe.source.originalImages : imagePaths,
           appHint: recipe.source.appHint,
-        ).toJson()));
+        ).toJson())
+        ..['cover'] = coverRef
+        ..removeWhere((k, v) => k == 'cover' && v == null));
 
       final jsonName = '${recipe.id}.json';
       final jsonDocId = rootFiles[jsonName] ??
@@ -260,16 +293,18 @@ class SafFolderStore implements RecipeStore {
     if (!RecipeStore.safeId(id)) return;
     final rootFiles = await _root();
     final docId = rootFiles['$id.json'];
-    List<String>? images;
+    final images = <String>[];
     if (docId != null) {
       try {
         final bytes = await _invoke<Uint8List>(
             'readFile', {'treeUri': treeUri, 'docId': docId});
-        images = Recipe.fromJson(
-                jsonDecode(utf8.decode(bytes, allowMalformed: true))
-                    as Map<String, dynamic>)
-            .source
-            .originalImages;
+        final recipe = Recipe.fromJson(
+            jsonDecode(utf8.decode(bytes, allowMalformed: true))
+                as Map<String, dynamic>);
+        images.addAll(recipe.source.originalImages ?? const []);
+        // A picked cover is the app's own file too — it must not outlive the
+        // recipe. Screenshot covers are already in originalImages.
+        if (recipe.cover != null) images.add(recipe.cover!);
       } on GrantLostException {
         rethrow;
       } catch (_) {} // still delete the JSON below
@@ -277,7 +312,7 @@ class SafFolderStore implements RecipeStore {
           'deleteFile', {'treeUri': treeUri, 'docId': docId});
       rootFiles.remove('$id.json');
     }
-    for (final rel in images ?? const <String>[]) {
+    for (final rel in images) {
       if (!RecipeStore.safeImageRef(rel)) continue;
       final name = rel.substring('images/'.length);
       try {

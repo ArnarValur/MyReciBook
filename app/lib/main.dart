@@ -30,10 +30,9 @@ import 'ui/folder_gate.dart';
 import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
 import 'ui/storage_model.dart';
+import 'ui/photo_sources.dart';
 import 'ui/theme.dart';
 import 'ui/theme_model.dart';
-
-typedef ImagePick = Future<List<File>> Function();
 
 // Storage connector credentials (rule 6): device builds read the gitignored
 // app/dev.env via --dart-define-from-file — it gains DRIVE_CLIENT_ID=... and
@@ -215,6 +214,10 @@ Widget buildApp({
         // Plain Provider (not a notifier): the settings footer door reads it
         // on demand. Inert default keeps the test seam file-free.
         Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),
+        // Same stance: the cover picker on the pushed detail route reads these
+        // on demand instead of being threaded down through list and card.
+        Provider<PhotoSources>.value(
+            value: PhotoSources(gallery: picker, camera: camera)),
         ChangeNotifierProvider(
             create: (ctx) => LibraryModel(store,
                 onGrantLost: onGrantLost,

@@ -7,6 +7,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import 'logo_mark.dart';
 import 'skin.dart';
 
 class GlassNavBar extends StatelessWidget {
@@ -32,10 +33,14 @@ class GlassNavBar extends StatelessWidget {
     final scheme = context.scheme;
     final rb = context.rb;
 
-    Widget item(int i, IconData icon, String label, {int badge = 0}) {
+    // `iconBuilder` lets a slot draw something that is not a Material glyph —
+    // Cookbook uses the logo's book so the tab and the app icon are one mark.
+    Widget item(int i, IconData icon, String label,
+        {int badge = 0, Widget Function(Color color)? iconBuilder}) {
       final selected = i == active;
       final color = selected ? scheme.primary : scheme.onSurfaceVariant;
-      Widget ic = Icon(icon, size: 22, fill: selected ? 1 : 0, color: color);
+      Widget ic = iconBuilder?.call(color) ??
+          Icon(icon, size: 22, fill: selected ? 1 : 0, color: color);
       if (badge > 0) {
         ic = Badge.count(
             count: badge,
@@ -80,7 +85,9 @@ class GlassNavBar extends StatelessWidget {
                       border: Border.all(color: rb.glassBorder),
                     ),
                     child: Row(children: [
-                      item(0, Icons.menu_book_rounded, 'Cookbook'),
+                      item(0, Icons.menu_book_rounded, 'Cookbook',
+                          iconBuilder: (color) => LogoMark(
+                              size: 22, color: color, withSteam: false)),
                       item(1, Icons.checklist_rounded, 'Grocery'),
                       const SizedBox(width: 60),
                       // Slot 2 was Meal plan (hidden behind kMealPlanEnabled

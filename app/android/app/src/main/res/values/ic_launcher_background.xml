@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Brand blue behind the launcher mark. Matches the scheme's primaryContainer
+     (app/lib/ui/theme.dart) and the app-icon.svg background. -->
+<resources>
+    <color name="ic_launcher_background">#3F51B5</color>
+</resources>

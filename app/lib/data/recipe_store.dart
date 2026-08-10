@@ -25,8 +25,12 @@ abstract class RecipeStore {
   Future<Recipe?> load(String id);
 
   /// Validates, writes JSON, copies [cachedImages] to `images/<id>-<n>.jpg`.
+  /// [coverImage], when given, is copied to `images/<id>-cover.<ext>` and
+  /// becomes the saved recipe's `cover` — the user's own photo lives beside
+  /// their recipe, so it syncs and survives an uninstall like everything else.
   /// Throws [StateError] when the file has save-blocking validation problems.
-  Future<Recipe> save(Recipe recipe, List<File> cachedImages);
+  Future<Recipe> save(Recipe recipe, List<File> cachedImages,
+      {File? coverImage});
   Future<void> delete(String id);
 
   /// Resolves a stored `images/…` reference (or a pre-save absolute path) to a
@@ -93,7 +97,8 @@ class LocalFolderStore implements RecipeStore {
   }
 
   @override
-  Future<Recipe> save(Recipe recipe, List<File> cachedImages) async {
+  Future<Recipe> save(Recipe recipe, List<File> cachedImages,
+      {File? coverImage}) async {
     final blocking = fileProblems(recipe.toJson()).where(isSaveBlocking).toList();
     if (!_safeId(recipe.id)) blocking.add('unsafe id "${recipe.id}"');
     if (blocking.isNotEmpty) {
@@ -112,13 +117,35 @@ class LocalFolderStore implements RecipeStore {
       }
     }
 
+    String? coverRef = recipe.cover;
+    if (coverImage != null) {
+      await _imagesDir.create(recursive: true);
+      final ext = coverImage.path.toLowerCase().endsWith('.png') ? 'png' : 'jpg';
+      coverRef = 'images/${recipe.id}-cover.$ext';
+      await coverImage.copy('${root.path}/$coverRef');
+      // A cover swapped jpg↔png would otherwise leave the old file behind,
+      // syncing forever with nothing pointing at it.
+      final stale = File(
+          '${root.path}/images/${recipe.id}-cover.${ext == 'png' ? 'jpg' : 'png'}');
+      if (await stale.exists()) await stale.delete();
+    } else if (coverRef == null) {
+      // "Remove cover" — take the bytes with it, or the folder keeps syncing
+      // a picture nothing points at.
+      for (final ext in const ['jpg', 'png']) {
+        final f = File('${root.path}/images/${recipe.id}-cover.$ext');
+        if (await f.exists()) await f.delete();
+      }
+    }
+
     final complete = Recipe.fromJson(recipe.toJson()
       ..['source'] = (RecipeSource(
         type: recipe.source.type,
         importedAt: recipe.source.importedAt,
         originalImages: imagePaths.isEmpty ? recipe.source.originalImages : imagePaths,
         appHint: recipe.source.appHint,
-      ).toJson()));
+      ).toJson())
+      ..['cover'] = coverRef
+      ..removeWhere((k, v) => k == 'cover' && v == null));
 
     // Atomic + serialized (writeStringAtomic): a mid-write kill must never
     // leave a truncated <id>.json where a good one stood, and a double-fired
@@ -139,13 +166,15 @@ class LocalFolderStore implements RecipeStore {
   Future<void> delete(String id) async {
     if (!_safeId(id)) return;
     final file = File('${root.path}/$id.json');
-    List<String>? images;
+    final images = <String>[];
     if (await file.exists()) {
       try {
-        images = Recipe.fromJson(
-                jsonDecode(await file.readAsString()) as Map<String, dynamic>)
-            .source
-            .originalImages;
+        final recipe = Recipe.fromJson(
+            jsonDecode(await file.readAsString()) as Map<String, dynamic>);
+        images.addAll(recipe.source.originalImages ?? const []);
+        // A picked cover is the app's own file too — it must not outlive the
+        // recipe. Screenshot covers are already in originalImages.
+        if (recipe.cover != null) images.add(recipe.cover!);
       } catch (_) {} // still delete the JSON below
       await file.delete();
     }
@@ -153,7 +182,7 @@ class LocalFolderStore implements RecipeStore {
     // recipe must not survive in its .tmp shadow.
     final tmp = File('${file.path}.tmp');
     if (await tmp.exists()) await tmp.delete();
-    for (final rel in images ?? const <String>[]) {
+    for (final rel in images) {
       if (!_safeImagePath(rel)) continue;
       final img = File('${root.path}/$rel');
       if (await img.exists()) await img.delete();

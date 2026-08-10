@@ -13,6 +13,7 @@ import 'cook_mode_screen.dart';
 import 'grocery_model.dart';
 import 'import_review_screen.dart';
 import 'library_model.dart';
+import 'photo_sources.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
 
@@ -32,11 +33,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   final Set<int> _checked = {}; // kitchen-session state, not persisted
   bool _showOriginal = false;
   List<File> _originals = const [];
+  File? _cover;
 
   @override
   void initState() {
     super.initState();
     _loadOriginals();
+    _loadCover();
   }
 
   @override
@@ -57,6 +60,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     if (mounted) setState(() => _originals = files);
   }
 
+  Future<void> _loadCover() async {
+    File? file;
+    try {
+      file = await context.read<LibraryModel>().coverFor(_recipe);
+    } catch (_) {} // lost grant: the drawn tile stands in, list owns re-pick
+    if (mounted) setState(() => _cover = file);
+  }
+
   Future<void> _persist(Recipe next, {String? confirmation}) async {
     // Empty cachedImages keeps original_images intact (store contract).
     final Recipe saved;
@@ -74,6 +85,122 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(confirmation)));
     }
+  }
+
+  /// Cover door (Arnar 2026-08-10). Own photo first — that is the picture he
+  /// actually wants on the card; the screenshots are the fallback, not the
+  /// default. Every branch writes into the user's own folder, so covers sync
+  /// and survive a reinstall like the recipes do.
+  Future<void> _pickCover() async {
+    final photos = context.read<PhotoSources>();
+    final model = context.read<LibraryModel>();
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (photos.camera != null)
+              ListTile(
+                key: const Key('cover-camera'),
+                leading: const Icon(Icons.photo_camera_rounded),
+                title: const Text('Take a photo'),
+                subtitle: const Text('Snap the dish you just cooked'),
+                onTap: () => Navigator.of(sheet).pop('camera'),
+              ),
+            ListTile(
+              key: const Key('cover-gallery'),
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.of(sheet).pop('gallery'),
+            ),
+            if (_originals.isNotEmpty)
+              ListTile(
+                key: const Key('cover-screenshot'),
+                leading: const Icon(Icons.image_rounded),
+                title: const Text('Use a screenshot'),
+                subtitle: Text(_originals.length == 1
+                    ? 'The original you imported'
+                    : 'Pick one of ${_originals.length} originals'),
+                onTap: () => Navigator.of(sheet).pop('screenshot'),
+              ),
+            if (_recipe.cover != null)
+              ListTile(
+                key: const Key('cover-remove'),
+                leading: const Icon(Icons.hide_image_rounded),
+                title: const Text('Remove cover'),
+                onTap: () => Navigator.of(sheet).pop('remove'),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (choice == null || !mounted) return;
+
+    String? ref;
+    File? photo;
+    switch (choice) {
+      case 'camera':
+        photo = await photos.pickOne(photos.camera!);
+      case 'gallery':
+        photo = await photos.pickOne(photos.gallery);
+      case 'screenshot':
+        ref = await _chooseOriginal();
+      case 'remove':
+        break;
+    }
+    // Backing out of the camera/gallery/grid must leave the cover alone —
+    // only 'remove' clears it.
+    if (!mounted || (choice != 'remove' && photo == null && ref == null)) return;
+
+    try {
+      final saved = choice == 'remove'
+          ? await model.clearCover(_recipe)
+          : await model.setCover(_recipe, photo: photo, ref: ref);
+      if (!mounted) return;
+      setState(() {
+        _recipe = saved;
+        _showOriginal = false;
+      });
+      await _loadCover();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Cover not saved: $e')));
+    }
+  }
+
+  /// One screenshot → straight through; several → a grid to choose from.
+  Future<String?> _chooseOriginal() async {
+    final refs = _recipe.source.originalImages ?? const <String>[];
+    if (refs.length <= 1) return refs.firstOrNull;
+    return showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: 3,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 0.72,
+            children: [
+              for (var i = 0; i < refs.length && i < _originals.length; i++)
+                InkWell(
+                  onTap: () => Navigator.of(sheet).pop(refs[i]),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: CoverImage(_originals[i]),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _saveNotes() =>
@@ -292,10 +419,10 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       );
 
   /// Collapsing hero: expanded it is the 210px cover (tap → originals
-  /// viewer, swap pill bottom-right); scrolled, the image parallaxes away and
-  /// only the pinned toolbar with back/edit/favorite/delete remains.
+  /// viewer, swap pill bottom-right, cover door bottom-left); scrolled, the
+  /// image parallaxes away and only the pinned toolbar with
+  /// back/edit/favorite/delete remains.
   Widget _heroSliver(ColorScheme scheme, List<File> originals) {
-    final cover = originals.firstOrNull;
     return SliverAppBar(
       pinned: true,
       expandedHeight: 210,
@@ -348,11 +475,24 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   ? null
                   : () => Navigator.of(context).push(MaterialPageRoute<void>(
                       builder: (_) => OriginalsViewer(images: originals))),
+              // The flip now swaps two different pictures: the chosen cover
+              // (or its drawn stand-in) and the screenshot it came from.
               child: _showOriginal
                   ? ColoredBox(
                       color: scheme.surfaceContainerLow,
-                      child: CoverImage(cover, fit: BoxFit.contain))
-                  : CoverImage(cover),
+                      child: CoverImage(originals.firstOrNull,
+                          fit: BoxFit.contain))
+                  : RecipeCover(file: _cover, title: _recipe.title),
+            ),
+            Positioned(
+              bottom: 12,
+              left: 12,
+              child: GlassPill(
+                key: const Key('cover-door'),
+                icon: Icons.add_photo_alternate_rounded,
+                label: _recipe.cover == null ? 'add cover' : 'cover',
+                onTap: _pickCover,
+              ),
             ),
             if (originals.isNotEmpty)
               Positioned(

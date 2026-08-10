@@ -82,6 +82,17 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   Accepted leak: reinstall resets the on-device taste (~3¢ exposure) — a
   reinstall-grinder was never a buyer. Listing copy: "Try 3 free. Pay once.
   Yours forever."
+- D11 (2026-08-10, Arnar's call on his own hands-on) covers are USER-CHOSEN,
+  never auto-promoted from a screenshot. A screenshot cover "comes out ugly",
+  and the grid is the first thing a buyer sees. No-cover renders a drawn tile
+  (brand gradient keyed off the title + logo watermark), so the app is never
+  ugly by default and never needs an image it doesn't have. Costs a schema
+  addition — top-level `cover`, absent unless set, pointing either at
+  images/<id>-cover.<ext> (their photo, copied into their folder so it syncs
+  and survives reinstall) or at one of source.original_images (no second copy
+  of bytes already there). File-format change = hard to reverse, hence a
+  D-number; supersedes the "covers = screenshot-1 BoxFit.cover" tier-1 note
+  in the 2026-08-06 State below. Auto-crop tier 2 and AI covers stay parked.
 
 ## State (2026-08-06 night checkpoint)
 - app/ (Flutter 3.44, Android-only) · deps: + provider (D3) · analyze clean,
@@ -143,9 +154,18 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   undo — technical rule 13) · Favorites-only chips · flags home =
   app/lib/features.dart (behavioral 19). 315 tests. Latest APK built,
   NOT installed (S21 unplugged).
-- Turn-7 design queue: cover-image picker (own photo / pick from originals) ·
+- Turn-7 design queue: ~~cover-image picker~~ SHIPPED 2026-08-10 (D11) ·
   ratify drawer removal + bar reshape + collapsing hero · manual entry ·
   edit copy · batch edges.
+- BRAND + COVERS SHIPPED (2026-08-10): Arnar's logo pack
+  (docs/MyReciBook-logo/assets/logo/) is the authority; app/android res carries
+  an adaptive icon (vector foreground doubling as the Android 13 monochrome
+  layer, evenOdd spine knockout) + regenerated legacy PNGs, and
+  app/lib/ui/widgets/logo_mark.dart draws the same paths in-app for the header
+  (full mark) and the Cookbook tab (book only — the steam is mush at 22dp).
+  Cover picker per D11 lives on the detail hero as the 'add cover' pill.
+  KNOWN GAP: 338 tests cover NONE of the cover flow — schema round-trip,
+  picker branches and delete-takes-the-cover-file are all unproven. Queued.
 - NOT done: billing 3g (behind fee) · D9 empty-state link caption ·
   on-device storage smoke (runbook Part C) · latest-APK install.
 

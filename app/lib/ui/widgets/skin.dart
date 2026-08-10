@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 
 import '../theme.dart';
+import 'logo_mark.dart';
 
 /// `INGREDIENTS · 8` — tiny tracked uppercase label.
 class SectionLabel extends StatelessWidget {
@@ -441,6 +442,65 @@ class OriginalsViewer extends StatelessWidget {
               child: Center(child: CoverImage(f, fit: BoxFit.contain)),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// A recipe's cover: the picked image when there is one, otherwise a drawn
+/// tile — brand gradient, chosen from the title so a recipe keeps its colour
+/// forever, watermarked with the logo. Screenshots are NOT promoted to covers
+/// (Arnar 2026-08-10: they came out ugly); the originals stay one tap away
+/// behind the hero's provenance flip.
+class RecipeCover extends StatelessWidget {
+  const RecipeCover({super.key, required this.file, required this.title});
+
+  final File? file;
+  final String title;
+
+  /// Deep enough for a white watermark, all inside the cream/indigo skin's
+  /// family with three warm food tones for variety.
+  static const List<List<Color>> _gradients = [
+    [Color(0xFF3F51B5), Color(0xFF24389C)], // indigo — the brand
+    [Color(0xFF4A5A8C), Color(0xFF2C3557)], // slate blue
+    [Color(0xFF8E3B62), Color(0xFF5B2340)], // plum
+    [Color(0xFFB4643C), Color(0xFF7C3F24)], // terracotta
+    [Color(0xFF2E6F6A), Color(0xFF1B4744)], // teal
+    [Color(0xFF5E7346), Color(0xFF3B4A2B)], // olive
+  ];
+
+  // Not String.hashCode: that is only stable within a run, and a cover that
+  // changes colour between launches looks like a bug.
+  static int _slot(String s) {
+    var sum = 0;
+    for (final unit in s.codeUnits) {
+      sum = (sum + unit * 31) % 1000003;
+    }
+    return sum % _gradients.length;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (file != null) return CoverImage(file);
+    final pair = _gradients[_slot(title)];
+    return LayoutBuilder(
+      builder: (context, box) => DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: pair,
+          ),
+        ),
+        child: Center(
+          child: Opacity(
+            opacity: 0.22,
+            child: LogoMark(
+              size: box.biggest.shortestSide * 0.46,
+              color: Colors.white,
+            ),
+          ),
+        ),
       ),
     );
   }

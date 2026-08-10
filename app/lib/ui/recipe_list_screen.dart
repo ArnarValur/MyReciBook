@@ -14,6 +14,7 @@ import 'library_model.dart';
 import 'postalpha/dev_gallery.dart';
 import 'recipe_detail_screen.dart';
 import 'theme.dart';
+import 'widgets/logo_mark.dart';
 import 'widgets/skin.dart';
 
 enum _Filter { all, favorites, quick, sweet }
@@ -155,7 +156,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   Widget _header(ThemeData theme, ColorScheme scheme) {
     return Row(
       children: [
-        Icon(Icons.menu_book_rounded, size: 26, color: scheme.primary),
+        LogoMark(size: 28, color: scheme.primary),
         const SizedBox(width: 8),
         Expanded(
           child: GestureDetector(
@@ -360,7 +361,8 @@ class _RecipeCard extends StatelessWidget {
                 width: double.infinity,
                 child: FutureBuilder<File?>(
                   future: model.coverFor(recipe),
-                  builder: (_, snap) => CoverImage(snap.data),
+                  builder: (_, snap) =>
+                      RecipeCover(file: snap.data, title: recipe.title),
                 ),
               ),
               Padding(

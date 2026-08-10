@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon (API 26+). The legacy mipmap-*/ic_launcher.png files stay as
+     the pre-26 fallback. Content sits inside the 72dp safe zone, so every
+     launcher mask (circle, squircle, teardrop) crops nothing. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>

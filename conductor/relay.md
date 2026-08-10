@@ -151,3 +151,23 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   open question this checkpoint can't answer. Graduated as tech rule 10;
   the Play App Signing cert will need the same pair of errands (rules 9+10).
 - Next: retry Drive → save → files in Drive → kill/reopen = smoke PASSED.
+
+## 2026-08-10 (Hermes) — your logo is the app · screenshots demoted as covers · doc tidy
+- Your logo pack landed everywhere it belongs: launcher icon (the Flutter
+  default is gone, adaptive + themed variants included), the cookbook header,
+  and the Cookbook tab. The app DRAWS the mark from your SVG's paths, so it
+  tints with the theme and never pixelates — the svg files stay the authority.
+- Covers: you said the screenshots came out ugly, so they are no longer
+  promoted to covers at all. A recipe with no cover gets its own drawn tile
+  (brand gradient fixed by title + logo watermark), and the hero now carries
+  an 'add cover' pill → photo · gallery · a screenshot · remove. Your picture
+  is copied into YOUR folder, so it syncs and survives a reinstall.
+- Honest gap: 338 tests green, but NONE of them touch the cover flow. That
+  path is unproven until we write them. You also told me twice tonight to
+  stop test-looping cosmetic work and to deploy to the phone myself.
+- My mistake, worth remembering: the first APK I pushed had placeholder OAuth
+  keys — I built without --dart-define-from-file=dev.env, which is what the
+  "awaiting keys in this build" caption was reporting. Now tech rule 11.
+- Docs: five dated session files → docs/archive/. The feasibility report
+  stays at root — it is warm reference, not stale.
+- Next: your Drive retry is still the one open proof; then cover-flow tests.

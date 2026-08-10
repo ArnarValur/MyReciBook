@@ -60,3 +60,12 @@
     container of everything it alone owns, remove the container itself — the
     drawer went this way 2026-08-06. (Arnar's direct instruction, "hide dead
     ends please", 2026-08-06.)
+20. Ask, don't rule — before testing anything, put the question to him out
+    loud: "does this require strict testing?" A logo, a colour, a spacing
+    tweak almost never does; a sync path or a file-format change does. Same
+    for the reverse claim: say what was actually verified rather than citing
+    a green suite as blanket proof. He rejected two rigid rules offered in
+    place of this one, in his words: "Communication claude! It solves
+    everything." Also: anything I can run myself (build, install to the S21)
+    I run — never hand him a command as the "next step". (Arnar's own
+    framing, 2026-08-10, after a logo change turned into a render loop.)
