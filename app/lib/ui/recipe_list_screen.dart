@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../domain/recipe.dart';
 import '../features.dart';
 import 'batch_model.dart';
+import 'cookbook_prefs.dart';
 import 'library_model.dart';
 import 'postalpha/dev_gallery.dart';
 import 'recipe_detail_screen.dart';
@@ -127,7 +128,8 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                             ),
                           ),
                         )
-                      else
+                      else if (context.watch<CookbookPrefs>().view ==
+                          CookbookView.grid)
                         SliverPadding(
                           // 110 bottom: clears the 64dp bar hint + 16dp inset.
                           padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
@@ -142,6 +144,16 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                             delegate: SliverChildBuilderDelegate(
                               (context, i) =>
                                   _RecipeCard(recipe: recipes[i]),
+                              childCount: recipes.length,
+                            ),
+                          ),
+                        )
+                      else
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, i) => _RecipeRow(recipe: recipes[i]),
                               childCount: recipes.length,
                             ),
                           ),
@@ -321,22 +333,60 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
       );
     }
 
-    // Bleeds to the screen edge — the half-visible last chip is the scroll cue.
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(20, 12, 0, 0),
+    // Chips bleed to the screen edge — the half-visible last chip is the
+    // scroll cue; the view toggle stays pinned at the far end (Arnar's ask,
+    // 2026-08-15: covers grid ⇄ compact list).
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
       child: Row(children: [
-        chip(_Filter.all, 'All'),
-        chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
-        // Quick/Sweet are drawn in 3d but nothing lets a recipe EARN the tag —
-        // dead filters on real libraries (Arnar's pass, 2026-08-06). Hidden
-        // behind kRecipeTagsEnabled until a tagging design exists; the
-        // predicates above stay live for the flip.
-        if (kRecipeTagsEnabled) ...[
-          chip(_Filter.quick, 'Quick', Icons.bolt_rounded),
-          chip(_Filter.sweet, 'Sweet', Icons.cake_rounded),
-        ],
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(left: 20),
+            child: Row(children: [
+              chip(_Filter.all, 'All'),
+              chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
+              // Quick/Sweet are drawn in 3d but nothing lets a recipe EARN the
+              // tag — dead filters on real libraries (Arnar's pass,
+              // 2026-08-06). Hidden behind kRecipeTagsEnabled until a tagging
+              // design exists; the predicates above stay live for the flip.
+              if (kRecipeTagsEnabled) ...[
+                chip(_Filter.quick, 'Quick', Icons.bolt_rounded),
+                chip(_Filter.sweet, 'Sweet', Icons.cake_rounded),
+              ],
+            ]),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 8, right: 20),
+          child: _viewToggle(),
+        ),
       ]),
+    );
+  }
+
+  /// Grid ⇄ list switch. Shows the layout a tap takes you TO (files-app
+  /// convention); the choice persists through CookbookPrefs.
+  Widget _viewToggle() {
+    final prefs = context.watch<CookbookPrefs>();
+    final scheme = context.scheme;
+    final toList = prefs.view == CookbookView.grid;
+    return InkWell(
+      key: const Key('view-toggle'),
+      customBorder: const CircleBorder(),
+      onTap: () => context.read<CookbookPrefs>().setView(
+          toList ? CookbookView.list : CookbookView.grid),
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+            color: scheme.surfaceContainerHigh, shape: BoxShape.circle),
+        child: Icon(
+            toList ? Icons.view_list_rounded : Icons.grid_view_rounded,
+            size: 19,
+            color: scheme.onSurfaceVariant,
+            semanticLabel: toList ? 'Show as list' : 'Show as grid'),
+      ),
     );
   }
 
@@ -374,6 +424,70 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
             label: const Text('Rescue your first recipe'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Compact list form: title + meta, no cover decode — the fast scanning
+/// view for big libraries. Favorites keep their heart (the tertiary moment).
+class _RecipeRow extends StatelessWidget {
+  const _RecipeRow({required this.recipe});
+
+  final Recipe recipe;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    final rb = context.rb;
+    final meta = _RecipeCard.metaLine(recipe);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 11),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (_) => RecipeDetailScreen(recipe: recipe),
+        )),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: rb.hairline),
+            boxShadow: rb.cardShadow,
+          ),
+          child: Row(children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    recipe.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontSize: 14, height: 1.3),
+                  ),
+                  if (meta.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      meta,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 11.5, color: scheme.onSurfaceVariant),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (recipe.favorite) ...[
+              const SizedBox(width: 8),
+              Icon(Icons.favorite_rounded, size: 16, color: scheme.tertiary),
+            ],
+          ]),
+        ),
       ),
     );
   }

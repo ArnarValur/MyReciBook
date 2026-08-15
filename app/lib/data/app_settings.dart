@@ -43,9 +43,18 @@ class AppSettings {
     return v == 'light' || v == 'dark' ? v as String : 'system';
   }
 
+  /// Cookbook layout ('grid' / 'list'); default grid (the designed 3d form).
+  /// Unknown values read as 'grid' — a corrupt entry is a default, not a crash.
+  String get cookbookView {
+    final v = _data['cookbook_view'];
+    return v == 'list' ? 'list' : 'grid';
+  }
+
   Future<void> setTreeUri(String? uri) => _write('tree_uri', uri);
 
   Future<void> setThemeMode(String mode) => _write('theme_mode', mode);
+
+  Future<void> setCookbookView(String view) => _write('cookbook_view', view);
 
   Future<void> setActiveConnector(String? provider) =>
       _write('active_connector', provider);

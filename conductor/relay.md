@@ -190,5 +190,9 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - 341 tests green (3 new on the Unlock tab guard the cap-in-writing line and
   the honest CTA). grocery_flow flaked under this container's load at high
   test concurrency — clean tree flakes identically; not this change.
+- Second ask same session (from the road): grid ⇄ list toggle at the far end
+  of the Cookbook filter bar. Compact rows (title + meta + favorite heart, no
+  cover decode), choice persists via AppSettings ('cookbook_view') through
+  new CookbookPrefs — the ThemeModel pattern verbatim. 344 tests green.
 - Next: your Drive retry stays the queue head; Play fee after the weekend →
   billing 3g wires the real purchase into the seam this session left.
