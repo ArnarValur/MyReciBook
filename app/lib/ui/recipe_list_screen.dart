@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../domain/recipe.dart';
 import '../features.dart';
+import 'batch_model.dart';
 import 'library_model.dart';
 import 'postalpha/dev_gallery.dart';
 import 'recipe_detail_screen.dart';
@@ -23,10 +24,16 @@ class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({
     super.key,
     required this.onImport,
+    this.onOpenQueue,
   });
 
   /// The shell's import flow (3a sheet → review) — empty-state button target.
   final VoidCallback onImport;
+
+  /// Reopens the pushed batch-queue route. Since the queue tab retired
+  /// (2026-08-15) the attention strip below is the way back to a batch
+  /// that is still moving or wants eyes.
+  final VoidCallback? onOpenQueue;
 
   @override
   State<RecipeListScreen> createState() => _RecipeListScreenState();
@@ -91,6 +98,11 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                       sliver: SliverToBoxAdapter(child: _header(theme, scheme)),
+                    ),
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      sliver:
+                          SliverToBoxAdapter(child: _queueStrip(theme, scheme)),
                     ),
                     if (emptyBook)
                       SliverFillRemaining(
@@ -178,6 +190,59 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         // Wordmark only — the drawer (and its menu button) was removed
         // 2026-08-06; sync status lives on the Settings storage row (6a).
       ],
+    );
+  }
+
+  /// Non-blocking batch receipt (3b's promise kept without its tab): visible
+  /// only while the queue is moving or holding items that want eyes, gone
+  /// without residue once everything saved. Tap = back into the queue route.
+  Widget _queueStrip(ThemeData theme, ColorScheme scheme) {
+    final batch = context.watch<BatchModel?>();
+    if (batch == null) return const SizedBox.shrink();
+    final moving = batch.remaining;
+    final eyes = batch.attention;
+    if (moving + eyes == 0) return const SizedBox.shrink();
+
+    final caption = [
+      if (moving > 0) 'Rescuing $moving…',
+      if (eyes > 0) '$eyes need${eyes == 1 ? 's' : ''} your eyes',
+    ].join(' · ');
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: InkWell(
+        key: const Key('queue-strip'),
+        borderRadius: BorderRadius.circular(12),
+        onTap: widget.onOpenQueue,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+          decoration: BoxDecoration(
+            color: Color.alphaBlend(
+                scheme.secondaryContainer.withValues(alpha: 0.4),
+                scheme.surface),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(children: [
+            if (moving > 0)
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: scheme.primary),
+              )
+            else
+              Icon(Icons.visibility_rounded, size: 18, color: scheme.primary),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Text(caption,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(fontSize: 12.5, height: 1.4)),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                size: 18, color: scheme.onSurfaceVariant),
+          ]),
+        ),
+      ),
     );
   }
 

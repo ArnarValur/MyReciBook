@@ -235,8 +235,8 @@ void main() {
   });
 
   testWidgets(
-      'Queue tab badge counts attention items live; tab shows the batch screen',
-      (tester) async {
+      'attention items reach the Cookbook badge + strip; the strip reopens '
+      'the queue', (tester) async {
     await tester.pumpWidget(app(
         FakeExtractor([
           canned(title: 'Pasta', overall: 0.5), // held
@@ -251,17 +251,25 @@ void main() {
     await tester.tap(find.byKey(const Key('import-rescue-cta')));
     await settle(tester, rounds: 48);
 
-    // Leave the pushed queue: badge on the bar's Queue tab (2026-08-06
-    // reshape — the count moved from the drawer row) = needsReview+failed = 2.
+    // Leave the pushed queue. The queue TAB retired 2026-08-15 (slot 2 sells
+    // the app now), so the count = needsReview+failed = 2 sits on Cookbook,
+    // home of the attention strip.
     await tester.tap(find.text('Hide'));
     await settle(tester, rounds: 6);
-    expect(find.text('Queue'), findsOneWidget);
+    expect(find.text('Queue'), findsNothing);
     expect(find.text('2'), findsOneWidget);
+    expect(find.text('2 need your eyes'), findsOneWidget);
 
-    // The tab shows the live batch screen, not a dead surface.
-    await tester.tap(find.text('Queue'));
+    // The strip is the way back into the live batch screen.
+    await tester.tap(find.byKey(const Key('queue-strip')));
     await settle(tester, rounds: 6);
     expect(find.text('Review flagged · 1'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);
+
+    // Leaving again with both items still unresolved: the strip stays —
+    // unfinished business never goes invisible.
+    await tester.tap(find.text('Hide'));
+    await settle(tester, rounds: 6);
+    expect(find.byKey(const Key('queue-strip')), findsOneWidget);
   });
 }

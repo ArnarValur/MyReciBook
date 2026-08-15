@@ -38,9 +38,15 @@
 - Docs tidied: five dated session artifacts → docs/archive/.
   recipe-app-feasibility-report.md STAYS at root (warm strategy, cited by
   four files) — decided 2026-08-10, not stale, do not re-propose archiving.
-- Turn-7 design queue: nav reshape ratify · collapsing hero · manual entry ·
-  edit copy · batch edges (grep DEVIATION) · error-log door (long-press
-  version footer, dialog UNDESIGNED).
+- QUEUE TAB RETIRED 2026-08-15 (Arnar's call, settles the turn-7 nav
+  question): slot 2 = Unlock tab — 3g pitch live in nav, honest disabled CTA
+  until billing 3g; queue = pushed route + Cookbook strip/badge. Rate/share
+  rows behind kSpreadWordEnabled; gifting IMPOSSIBLE on Play (promo codes at
+  launch instead). ON BRANCH claude/queue-page-app-promotion-0x9sw8 — needs
+  fold to main.
+- Turn-7 design queue: collapsing hero · manual entry · edit copy · batch
+  edges (grep DEVIATION) · error-log door (long-press version footer, dialog
+  UNDESIGNED).
 - Play fee: bar met; verdict = his hands-on pass. D10: 3 free → ~$25.
 - OPEN (Arnar): design authority in git — unzipped design-system gitignored,
   only the zip versioned.

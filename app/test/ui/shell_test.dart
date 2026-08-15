@@ -98,14 +98,24 @@ void main() {
     expect(stackIndex(tester), 1);
     expect(find.byType(GroceryTab), findsOneWidget);
 
-    // Slot 2 is Import queue since the 2026-08-06 reshape (Plan is behind
-    // kMealPlanEnabled); embedded form has no Hide/Done buttons.
-    await tester.tap(find.text('Queue'));
+    // Slot 2 is Unlock since 2026-08-15 (the queue tab retired — Arnar's
+    // call; the queue lives on as the pushed batch route + Cookbook strip).
+    // The purchase CTA states its own missing engine instead of no-opping.
+    await tester.tap(find.text('Unlock'));
     await tester.pump();
     expect(stackIndex(tester), 2);
-    expect(find.textContaining('line up here'), findsOneWidget);
-    expect(find.text('Hide'), findsNothing);
-    expect(find.text('Done'), findsNothing);
+    expect(find.text('No subscription. No account. Ever.'), findsOneWidget);
+    expect(find.text('ONE-TIME'), findsOneWidget);
+    // Constraint 2: the fair-use cap is stated where the money is.
+    expect(find.text('600 AI rescues a year — fair-use cap, in writing'),
+        findsOneWidget);
+    final cta = tester.widget<FilledButton>(find.widgetWithText(
+        FilledButton, 'Unlock MyReciBook — \$24.99'));
+    expect(cta.onPressed, isNull);
+    expect(find.textContaining('nothing to buy just yet'), findsOneWidget);
+    // Spread-the-word waits for a live destination (kSpreadWordEnabled).
+    expect(find.text('Rate MyReciBook'), findsNothing);
+    expect(find.text('Share with a friend'), findsNothing);
 
     await tester.tap(find.text('Settings'));
     await tester.pump();
@@ -148,7 +158,7 @@ void main() {
     await tester.pumpWidget(app());
     await settle(tester);
 
-    await tester.tap(find.text('Queue'));
+    await tester.tap(find.text('Unlock'));
     await tester.pump();
     await tester.tap(find.byType(FloatingActionButton));
     await settle(tester, rounds: 4);

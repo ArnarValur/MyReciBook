@@ -25,3 +25,22 @@ const bool kYourCopyEnabled = false;
 /// recipe GETS a tag, so they filtered on nothing. Favorites-only until a
 /// tagging design exists (Arnar's call, 2026-08-06).
 const bool kRecipeTagsEnabled = false;
+
+/// Unlock tab in nav slot 2 — the 3g paywall pitch promoted from the debug
+/// gallery to a real tab, replacing the Import queue tab (Arnar's call,
+/// 2026-08-15: "the queue page is kinda useless… a better place for users to
+/// buy the app"). The queue keeps living as the pushed batch route plus the
+/// Cookbook attention strip; only its TAB retires.
+///
+/// The purchase CTA states its own engine status until billing 3g lands
+/// (Play fee → Console app → one-time product) — same honesty pattern as the
+/// storage screen's "awaiting keys" caption. Off flips slot 2 back to the
+/// queue tab unchanged.
+const bool kUnlockTabEnabled = true;
+
+/// "Spread the word" rows on the Unlock tab (rate on Google Play · share
+/// with a friend). Both need a live destination — the Play listing for
+/// rating, at least the landing page (live 2 Sep) for the share link — so
+/// they stay hidden until one exists (dead-end rule). Flip = one line here
+/// plus real handlers in unlock_tab.dart.
+const bool kSpreadWordEnabled = false;

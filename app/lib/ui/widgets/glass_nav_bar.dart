@@ -6,6 +6,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import '../../features.dart';
 import '../theme.dart';
 import 'logo_mark.dart';
 import 'skin.dart';
@@ -24,8 +25,10 @@ class GlassNavBar extends StatelessWidget {
   /// Center gradient FAB — the import door (3a) from every tab.
   final VoidCallback? onFab;
 
-  /// Imports needing attention — the drawer badge's count, now on the Queue
-  /// tab (slot 2 since the 2026-08-06 reshape). 0 hides the dot.
+  /// Imports needing attention. With the Unlock tab live (slot 2 since
+  /// 2026-08-15) the count sits on Cookbook — home of the attention strip
+  /// that reopens the queue; with the flag off it sits on the Queue tab as
+  /// before. 0 hides the dot.
   final int queueBadge;
 
   @override
@@ -86,15 +89,20 @@ class GlassNavBar extends StatelessWidget {
                     ),
                     child: Row(children: [
                       item(0, Icons.menu_book_rounded, 'Cookbook',
+                          badge: kUnlockTabEnabled ? queueBadge : 0,
                           iconBuilder: (color) => LogoMark(
                               size: 22, color: color, withSteam: false)),
                       item(1, Icons.checklist_rounded, 'Grocery'),
                       const SizedBox(width: 60),
-                      // Slot 2 was Meal plan (hidden behind kMealPlanEnabled
-                      // until an engine exists) — Import queue promoted here,
-                      // Arnar's hands-on pass 2026-08-06.
-                      item(2, Icons.download_rounded, 'Queue',
-                          badge: queueBadge),
+                      // Slot 2 history: Meal plan (engine-less, hidden) →
+                      // Import queue (2026-08-06 hands-on) → Unlock
+                      // (2026-08-15, Arnar: sell the app here; the queue
+                      // lives on as the pushed batch route + Cookbook strip).
+                      if (kUnlockTabEnabled)
+                        item(2, Icons.lock_open_rounded, 'Unlock')
+                      else
+                        item(2, Icons.download_rounded, 'Queue',
+                            badge: queueBadge),
                       item(3, Icons.settings_rounded, 'Settings'),
                     ]),
                   ),

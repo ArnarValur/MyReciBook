@@ -12,6 +12,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import '../unlock_tab.dart';
 import '../widgets/glass_nav_bar.dart';
 import '../widgets/skin.dart';
 
@@ -25,6 +26,10 @@ void _notWired(BuildContext context, String what) {
 
 // ── 3g · Paywall ────────────────────────────────────────────────────────────
 
+// The pitch itself was PROMOTED to lib/ui/unlock_tab.dart (the Unlock tab,
+// 2026-08-15) — this preview keeps the 3g MODAL shape (close circle, pinned
+// CTA, restore line) for the future hard-paywall route, sharing the promoted
+// PaywallPitch so the copy can't drift.
 class PaywallPreview extends StatelessWidget {
   const PaywallPreview({super.key});
 
@@ -32,17 +37,6 @@ class PaywallPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
-
-    Widget check(String text) => Padding(
-          padding: const EdgeInsets.only(top: 9),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(Icons.check_rounded, size: 18, color: scheme.primary),
-            const SizedBox(width: 9),
-            Expanded(
-                child: Text(text,
-                    style: theme.textTheme.bodyMedium?.copyWith(height: 1.4))),
-          ]),
-        );
 
     return Scaffold(
       body: SafeArea(
@@ -56,98 +50,11 @@ class PaywallPreview extends StatelessWidget {
                 child: _CloseCircle(),
               ),
               const SizedBox(height: 4),
-              Center(
-                child: Container(
-                  width: 68,
-                  height: 68,
-                  decoration: BoxDecoration(
-                      color: scheme.secondaryContainer,
-                      borderRadius: BorderRadius.circular(22)),
-                  child: Icon(Icons.menu_book_rounded,
-                      size: 34, color: scheme.onSecondaryContainer),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text('Pay once.\nCook forever.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                      fontSize: 29, height: 1.15, letterSpacing: -0.58)),
-              const SizedBox(height: 8),
-              Text('No subscription. No account. Ever.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyLarge
-                      ?.copyWith(color: scheme.onSurfaceVariant)),
-              const SizedBox(height: 14),
-              TokenCard(
-                radius: 16,
-                selected: true,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('\$24.99',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                                fontSize: 24, fontWeight: FontWeight.w800)),
-                        // The app's ONE tertiary moment — the commerce accent.
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                              color: scheme.tertiaryContainer,
-                              borderRadius: BorderRadius.circular(8)),
-                          child: Text('ONE-TIME',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.3,
-                                  color: scheme.onTertiaryContainer)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    check('Every recipe, forever, in your storage'),
-                    check('600 AI rescues a year — fair-use cap, in writing'),
-                    check('A grocery list that actually merges'),
-                    check('All future features included'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              TokenCard(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Why not a subscription?',
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontSize: 13.5)),
-                        Icon(Icons.expand_less_rounded,
-                            size: 19, color: scheme.onSurfaceVariant),
-                      ],
-                    ),
-                    const SizedBox(height: 7),
-                    Text(
-                      "Because your recipe box shouldn't have a landlord. You "
-                      'buy MyReciBook like you\'d buy a good knife: once.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 12.5,
-                          height: 1.55,
-                          color: scheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
+              const PaywallPitch(),
               const Spacer(),
               FilledButton(
                 onPressed: () => _notWired(context, 'Google Play billing'),
-                child: const Text('Unlock MyReciBook — \$24.99'),
+                child: const Text('Unlock MyReciBook — $kUnlockPrice'),
               ),
               const SizedBox(height: 10),
               Text.rich(

@@ -12,6 +12,12 @@
 // the bar or Settings, and a founder-decision (Arnar + Code agreeing) cut
 // the maintenance surface. Its future rows (Your copy at billing 3g, Help)
 // land as Settings rows instead.
+//
+// SUPERSEDED 2026-08-15 (Arnar, settling the turn-7 question himself): the
+// Queue TAB retires — "kinda useless, I never use it" — and slot 2 sells the
+// app instead (unlock_tab.dart, behind kUnlockTabEnabled). Batch imports
+// still push the queue screen, and the Cookbook attention strip + Cookbook
+// badge are the way back to a queue that still wants eyes.
 
 import 'dart:io';
 
@@ -34,6 +40,7 @@ import 'plan_tab.dart';
 import 'recipe_list_screen.dart';
 import 'settings_tab.dart';
 import 'storage_screen.dart';
+import 'unlock_tab.dart';
 import 'widgets/glass_nav_bar.dart';
 
 /// Display form of a SAF tree uri — the folder name the user picked.
@@ -80,7 +87,7 @@ class _AppShellState extends State<AppShell> {
 
   // Lazy tabs: a surface is built on first visit and then kept alive, so
   // finders and IO stay quiet until a tester actually goes there.
-  // Index 2 is Import queue (was Meal plan — see the DEVIATION note above).
+  // Index 2 is Unlock (queue tab retired 2026-08-15 — see above).
   final List<bool> _built = [true, false, false, false];
 
   bool _importBusy = false;
@@ -211,17 +218,21 @@ class _AppShellState extends State<AppShell> {
         body: IndexedStack(
           index: _tab,
           children: [
-            RecipeListScreen(onImport: _import),
+            RecipeListScreen(onImport: _import, onOpenQueue: _openImportQueue),
             _built[1] ? const GroceryTab() : const SizedBox.shrink(),
-            // Import queue as a tab: same screen, embedded (no Hide/Done —
-            // a tab has nothing to pop back to).
-            _built[2]
-                ? BatchQueueScreen(
-                    extractor: widget.extractor,
-                    pickMore: widget.picker,
-                    embedded: true,
-                  )
-                : const SizedBox.shrink(),
+            // Slot 2: the Unlock pitch — or, with the flag off, the queue
+            // tab in its embedded form (no Hide/Done — a tab has nothing to
+            // pop back to).
+            if (kUnlockTabEnabled)
+              _built[2] ? const UnlockTab() : const SizedBox.shrink()
+            else
+              _built[2]
+                  ? BatchQueueScreen(
+                      extractor: widget.extractor,
+                      pickMore: widget.picker,
+                      embedded: true,
+                    )
+                  : const SizedBox.shrink(),
             // Settings reuses the drawer Storage row's exact destination wiring.
             _built[3]
                 ? SettingsTab(

@@ -171,3 +171,24 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - Docs: five dated session files → docs/archive/. The feasibility report
   stays at root — it is warm reference, not stale.
 - Next: your Drive retry is still the one open proof; then cover-flow tests.
+
+## 2026-08-15 (remote, queue-page branch) — queue tab retired: slot 2 sells the app
+- Your call from the festival drive: the queue tab is dead weight — that slot
+  should let people buy, rate and share instead. Built tonight, on branch
+  claude/queue-page-app-promotion-0x9sw8 (NOT yet folded to main).
+- Slot 2 = Unlock tab: the 3g "Pay once. Cook forever." pitch promoted from
+  the debug gallery (one shared PaywallPitch widget — tab and future paywall
+  route can't drift). CTA is honest: disabled + "billing connects when
+  MyReciBook reaches the store". Flags: kUnlockTabEnabled (flip back = queue
+  tab returns), kSpreadWordEnabled (rate/share rows wait for a live listing).
+- The queue itself lives on: batch imports still push the queue screen, and a
+  Cookbook strip ("Rescuing N · M need your eyes") + Cookbook-tab badge are
+  the way back. Strip gone without residue when everything saves.
+- GIFTING CUT: Google Play has no user-to-user gifting for apps or IAPs.
+  Honest substitute at launch: Play promo codes (you mint up to 500/quarter
+  in the Console) — a marketing tool for you, not an in-app button.
+- 341 tests green (3 new on the Unlock tab guard the cap-in-writing line and
+  the honest CTA). grocery_flow flaked under this container's load at high
+  test concurrency — clean tree flakes identically; not this change.
+- Next: your Drive retry stays the queue head; Play fee after the weekend →
+  billing 3g wires the real purchase into the seam this session left.
