@@ -6,6 +6,8 @@
 // the UI must never read "OFF didn't answer" as "not in the database" — the
 // shell-spike lesson from 2026-08-17, where throttling masqueraded as misses.
 
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 import '../../data/off_client.dart';
@@ -105,6 +107,38 @@ class PantryModel extends ChangeNotifier {
     _products = [
       for (final p in _products)
         if (p.id != id) p
+    ];
+    notifyListeners();
+  }
+
+  /// User's own photo on a product — no store (test seam) keeps the ref
+  /// in memory only, same degrade as every other op.
+  Future<void> attachImage(Product product, File photo) async {
+    final updated = await _store?.attachImage(product, photo) ??
+        product.copyWith(image: 'images/${product.id}.jpg');
+    _replace(updated);
+  }
+
+  Future<void> removeImage(Product product) async {
+    final updated = await _store?.removeImage(product) ??
+        product.copyWith(clearImage: true);
+    _replace(updated);
+  }
+
+  /// Resolved photo file for display; null = unset, store-less, or foreign.
+  File? imageFileOf(Product product) => _store?.imageFile(product);
+
+  /// Row/detail lookups after a mutation: same id, fresh fields.
+  Product? byId(String id) {
+    for (final p in _products) {
+      if (p.id == id) return p;
+    }
+    return null;
+  }
+
+  void _replace(Product updated) {
+    _products = [
+      for (final p in _products) p.id == updated.id ? updated : p
     ];
     notifyListeners();
   }

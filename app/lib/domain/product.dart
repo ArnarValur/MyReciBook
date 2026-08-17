@@ -25,6 +25,11 @@ class Product {
   final String? addedAt;
   final Nutriments? nutriments;
 
+  /// User's own photo of the product, relative like `images/<id>.jpg` —
+  /// the recipe cover convention applied to the pantry. Absent in JSON
+  /// unless set, so pre-photo files round-trip byte-identical.
+  final String? image;
+
   const Product({
     required this.schemaVersion,
     required this.barcode,
@@ -34,6 +39,7 @@ class Product {
     required this.source,
     this.addedAt,
     this.nutriments,
+    this.image,
   });
 
   /// Store identity and filename stem: the barcode when scanned, else a slug
@@ -50,6 +56,7 @@ class Product {
         source: json['source'] as String? ?? 'manual',
         addedAt: json['added_at'] as String?,
         nutriments: Nutriments.fromJsonOrNull(json['nutriments']),
+        image: json['image'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -61,13 +68,18 @@ class Product {
         'source': source,
         'added_at': addedAt,
         'nutriments': nutriments?.toJson(),
+        if (image != null) 'image': image,
       };
 
+  /// `image:` accepts a new ref, omission (keep), or [clearImage] (remove) —
+  /// the recipe cover's tri-state rule.
   Product copyWith({
     String? name,
     String? brand,
     String? quantity,
     Nutriments? nutriments,
+    String? image,
+    bool clearImage = false,
   }) =>
       Product(
         schemaVersion: schemaVersion,
@@ -78,6 +90,7 @@ class Product {
         source: source,
         addedAt: addedAt,
         nutriments: nutriments ?? this.nutriments,
+        image: clearImage ? null : (image ?? this.image),
       );
 }
 

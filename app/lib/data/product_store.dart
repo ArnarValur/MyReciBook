@@ -34,6 +34,16 @@ abstract class ProductStore {
   /// [Product.id]. Callers that mean "create or overwrite" use [save].
   Future<Product> update(Product product);
   Future<void> delete(String id);
+
+  /// Copies the user's photo into `images/<id>.<ext>` and saves the product
+  /// with the ref — the recipe-cover contract: replace cleans up a
+  /// jpg↔png leftover, [removeImage] takes the bytes, [delete] takes the
+  /// photo with the product.
+  Future<Product> attachImage(Product product, File photo);
+  Future<Product> removeImage(Product product);
+
+  /// Resolves a product's image ref to a file, or null when unset/foreign.
+  File? imageFile(Product product);
 }
 
 class LocalPantryStore implements ProductStore {
@@ -114,5 +124,50 @@ class LocalPantryStore implements ProductStore {
     // deleted product must not survive in its .tmp shadow.
     final tmp = File('${file.path}.tmp');
     if (await tmp.exists()) await tmp.delete();
+    // The photo goes with the product (covers rule: delete takes the cover).
+    for (final ext in _imageExts) {
+      final img = File('${root.path}/images/$id.$ext');
+      if (await img.exists()) await img.delete();
+    }
+  }
+
+  static const _imageExts = ['jpg', 'png'];
+
+  @override
+  Future<Product> attachImage(Product product, File photo) async {
+    if (!_safeId(product.id)) {
+      throw StateError('unsafe id "${product.id}"');
+    }
+    final ext =
+        photo.path.toLowerCase().endsWith('.png') ? 'png' : 'jpg';
+    await Directory('${root.path}/images').create(recursive: true);
+    await photo.copy('${root.path}/images/${product.id}.$ext');
+    // Replacing jpg with png (or back) must not strand the old bytes.
+    for (final other in _imageExts) {
+      if (other == ext) continue;
+      final stale = File('${root.path}/images/${product.id}.$other');
+      if (await stale.exists()) await stale.delete();
+    }
+    return save(product.copyWith(image: 'images/${product.id}.$ext'));
+  }
+
+  @override
+  Future<Product> removeImage(Product product) async {
+    final file = imageFile(product);
+    if (file != null && await file.exists()) await file.delete();
+    return save(product.copyWith(clearImage: true));
+  }
+
+  @override
+  File? imageFile(Product product) {
+    final ref = product.image;
+    // Confinement (§7): only our own layout resolves — a foreign file's ref
+    // must never escape the pantry folder.
+    if (ref == null ||
+        !RegExp(r'^images/[A-Za-z0-9._-]+$').hasMatch(ref) ||
+        ref.contains('..')) {
+      return null;
+    }
+    return File('${root.path}/$ref');
   }
 }

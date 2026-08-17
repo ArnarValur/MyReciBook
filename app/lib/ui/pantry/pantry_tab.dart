@@ -8,10 +8,13 @@
 // empty state. Long-press a row removes it (grocery's destructive-confirm
 // shape); a not-on-OFF scan states the label-photo fallback honestly.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/product.dart';
+import '../photo_sources.dart';
 import '../theme.dart';
 import '../widgets/skin.dart';
 import 'barcode_scan_screen.dart';
@@ -61,9 +64,10 @@ class _PantryTabState extends State<PantryTab> {
 
   /// Tap a row → pushed detail page (the recipe-detail gesture; a bottom
   /// sheet fought the device's own nav bar — Arnar's S21 pass, 2026-08-17).
+  /// By id, not value: photo edits on the pushed route re-render live.
   Future<void> _openDetail(Product p) =>
       Navigator.of(context).push<void>(MaterialPageRoute<void>(
-          builder: (_) => _ProductDetailScreen(product: p)));
+          builder: (_) => _ProductDetailScreen(productId: p.id)));
 
   Future<void> _removeSheet(PantryModel model, String id, String name) async {
     final ok = await showDestructiveConfirm(
@@ -134,6 +138,7 @@ class _PantryTabState extends State<PantryTab> {
               for (final p in model.products)
                 _ProductRow(
                   product: p,
+                  imageFile: model.imageFileOf(p),
                   onTap: () => _openDetail(p),
                   onLongPress: () => _removeSheet(model, p.id, p.name),
                 ),
@@ -155,9 +160,13 @@ class _PantryTabState extends State<PantryTab> {
 
 class _ProductRow extends StatelessWidget {
   const _ProductRow(
-      {required this.product, required this.onTap, required this.onLongPress});
+      {required this.product,
+      this.imageFile,
+      required this.onTap,
+      required this.onLongPress});
 
   final Product product;
+  final File? imageFile;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
@@ -180,15 +189,22 @@ class _ProductRow extends StatelessWidget {
           onTap: onTap,
           onLongPress: onLongPress,
           child: Row(children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                  color: scheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(12)),
-              child: Icon(Icons.kitchen_rounded,
-                  size: 20, color: scheme.onSecondaryContainer),
-            ),
+            if (imageFile != null && imageFile!.existsSync())
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(imageFile!,
+                    width: 38, height: 38, fit: BoxFit.cover, cacheWidth: 114),
+              )
+            else
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                    color: scheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(12)),
+                child: Icon(Icons.kitchen_rounded,
+                    size: 20, color: scheme.onSecondaryContainer),
+              ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -220,18 +236,81 @@ class _ProductRow extends StatelessWidget {
 }
 
 /// Product detail — everything the file carries, per 100 g, on a pushed
-/// route (covers the glass bar like every detail screen). Read-only and
-/// deliberately cover-less; the design turn decides the real look. Null
-/// macros just don't print — OFF is crowdsourced and sparse files are normal.
+/// route (covers the glass bar like every detail screen). The user's own
+/// photo enriches it (their ask, 2026-08-17) — recipe-cover mechanics: copy
+/// into pantry/images, replace cleans up, delete takes it. Null macros just
+/// don't print — OFF is crowdsourced and sparse files are normal.
 class _ProductDetailScreen extends StatelessWidget {
-  const _ProductDetailScreen({required this.product});
+  const _ProductDetailScreen({required this.productId});
 
-  final Product product;
+  final String productId;
+
+  Future<void> _pick(BuildContext context, Product product,
+      Future<List<File>> Function() source) async {
+    final model = context.read<PantryModel>();
+    final photo = await context.read<PhotoSources>().pickOne(source);
+    if (photo == null) return;
+    final old = model.imageFileOf(product);
+    await model.attachImage(product, photo);
+    // Same path, new bytes: evict or the cache shows the old photo.
+    if (old != null) await FileImage(old).evict();
+    final fresh = model.byId(productId);
+    final file = fresh == null ? null : model.imageFileOf(fresh);
+    if (file != null) await FileImage(file).evict();
+  }
+
+  Future<void> _photoSheet(BuildContext context, Product product) async {
+    final photos = context.read<PhotoSources>();
+    final model = context.read<PantryModel>();
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          if (photos.camera != null)
+            ListTile(
+                leading: const Icon(Icons.photo_camera_rounded),
+                title: const Text('Take a photo'),
+                onTap: () => Navigator.pop(ctx, 'camera')),
+          ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('From gallery'),
+              onTap: () => Navigator.pop(ctx, 'gallery')),
+          if (product.image != null)
+            ListTile(
+                leading: Icon(Icons.delete_outline_rounded,
+                    color: ctx.scheme.error),
+                title: const Text('Remove photo'),
+                onTap: () => Navigator.pop(ctx, 'remove')),
+        ]),
+      ),
+    );
+    if (choice == null || !context.mounted) return;
+    switch (choice) {
+      case 'camera':
+        await _pick(context, product, photos.camera!);
+      case 'gallery':
+        await _pick(context, product, photos.gallery);
+      case 'remove':
+        await model.removeImage(product);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
+    final model = context.watch<PantryModel>();
+    final found = model.byId(productId);
+    if (found == null) {
+      // Removed while this route was open — honest empty, not a crash.
+      return Scaffold(
+          appBar: AppBar(leading: const AppBackButton()),
+          body: const Center(child: Text('This product was removed.')));
+    }
+    final product = found;
+    final imageFile = model.imageFileOf(product);
+    final hasImage = imageFile != null && imageFile.existsSync();
     final n = product.nutriments;
     final rows = <(String, double?, String)>[
       ('Energy', n?.kcal, 'kcal'),
@@ -252,6 +331,23 @@ class _ProductDetailScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
+          // The user's own photo of the product; tap to add/replace/remove.
+          if (hasImage)
+            GestureDetector(
+              onTap: () => _photoSheet(context, product),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.file(imageFile,
+                    height: 180, fit: BoxFit.cover, cacheWidth: 1080),
+              ),
+            )
+          else
+            OutlinedButton.icon(
+              onPressed: () => _photoSheet(context, product),
+              icon: const Icon(Icons.add_a_photo_rounded, size: 18),
+              label: const Text('Add your photo'),
+            ),
+          const SizedBox(height: 16),
           Text(product.name,
               style: theme.textTheme.headlineMedium
                   ?.copyWith(fontSize: 24, letterSpacing: -0.3)),
