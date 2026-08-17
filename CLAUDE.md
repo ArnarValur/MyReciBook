@@ -31,31 +31,7 @@ HARD CONSTRAINTS — flag loudly if a plan violates one
 6. Build order is set by the closed-test deadline, not by what's natural:
    extract → save → list → open. Paywall, sync connectors and polish come after the alpha ships.
 
-KILL CRITERION — pre-committed 2026-08-05, not renegotiable mid-project
-Project starts 20 Aug 2026; anything done before that is bonus and pulls Gate 1 earlier.
-  GATE 1 — extraction, deadline Sun 30 Aug 2026.
-    Fewer than 9 of 10 of my own recipe screenshots extract into a recipe I'd use
-    without editing → stop.
-  GATE 2 — demand, deadline Sun 20 Sep 2026.
-    Under 200 landing-page signups after posting in 5 real communities → stop, or re-test
-    one new positioning by Sun 4 Oct. One re-test only.
-  GATE 3 — traction, deadline Thu 11 Mar 2027 (90 days after launch).
-    Under 1,000 downloads OR under $500 total revenue → stop building, leave it listed,
-    keep it as portfolio.
-  "Stop" = no new features, no new marketing, archive the repo.
-Restate the relevant gate whenever I propose scope beyond v1.
 
-SCHEDULE
-  before 12 Aug ..... Play Console account registered (calendar time, not work time)
-  w/e 22-23 Aug ..... extraction spike (2 days)
-  2 Sep ............. landing page live
-  21 Sep - 15 Nov ... MVP build, 8 weeks of nights
-  19 Oct ............ HARD MILESTONE: installable alpha on the closed track, 12 testers
-                      opted in — week 4 of the build, not week 8. (Disappears if the Play
-                      account is an organisation account.)
-  2 Nov ............. 14-day closed test done → apply for production access
-  16 Nov - 10 Dec ... store listing, ASO, launch content, slack
-  11 Dec ............ production release
 
 HOW TO WORK
 - One topic per reply. Numbered steps. A time estimate on each.
