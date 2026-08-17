@@ -12,6 +12,7 @@ import 'package:myrecibook/data/app_settings.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/data/share_entry.dart';
 import 'package:myrecibook/domain/extractor.dart';
+import 'package:myrecibook/features.dart';
 import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/app_shell.dart';
 import 'package:myrecibook/ui/folder_gate.dart';
@@ -53,6 +54,11 @@ Map<String, dynamic> canned({String title = 'Pancakes'}) => {
       ],
       'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
     };
+
+/// Nav slot 2's label follows the flags: Pantry (PoC, dev builds) → Unlock →
+/// Queue. Tests tap the one that is actually there.
+final String kSlot2Label =
+    kPantryEnabled ? 'Pantry' : (kUnlockTabEnabled ? 'Unlock' : 'Queue');
 
 void main() {
   late Directory tmp;
@@ -99,23 +105,30 @@ void main() {
     expect(find.byType(GroceryTab), findsOneWidget);
 
     // Slot 2 is Unlock since 2026-08-15 (the queue tab retired — Arnar's
-    // call; the queue lives on as the pushed batch route + Cookbook strip).
-    // The purchase CTA states its own missing engine instead of no-opping.
-    await tester.tap(find.text('Unlock'));
+    // call; the queue lives on as the pushed batch route + Cookbook strip),
+    // unless the pantry PoC borrows the slot on dev builds (kPantryEnabled,
+    // 2026-08-17). Assert whichever surface the flags actually put there.
+    await tester.tap(find.text(kSlot2Label));
     await tester.pump();
     expect(stackIndex(tester), 2);
-    expect(find.text('No subscription. No account. Ever.'), findsOneWidget);
-    expect(find.text('ONE-TIME'), findsOneWidget);
-    // Constraint 2: the fair-use cap is stated where the money is.
-    expect(find.text('600 AI rescues a year — fair-use cap, in writing'),
-        findsOneWidget);
-    final cta = tester.widget<FilledButton>(find.widgetWithText(
-        FilledButton, 'Unlock MyReciBook — \$24.99'));
-    expect(cta.onPressed, isNull);
-    expect(find.textContaining('nothing to buy just yet'), findsOneWidget);
-    // Spread-the-word waits for a live destination (kSpreadWordEnabled).
-    expect(find.text('Rate MyReciBook'), findsNothing);
-    expect(find.text('Share with a friend'), findsNothing);
+    if (kPantryEnabled) {
+      expect(find.text('Pantry'), findsWidgets);
+      expect(find.text('Scan a product'), findsOneWidget);
+    } else {
+      // The purchase CTA states its own missing engine instead of no-opping.
+      expect(find.text('No subscription. No account. Ever.'), findsOneWidget);
+      expect(find.text('ONE-TIME'), findsOneWidget);
+      // Constraint 2: the fair-use cap is stated where the money is.
+      expect(find.text('600 AI rescues a year — fair-use cap, in writing'),
+          findsOneWidget);
+      final cta = tester.widget<FilledButton>(find.widgetWithText(
+          FilledButton, 'Unlock MyReciBook — \$24.99'));
+      expect(cta.onPressed, isNull);
+      expect(find.textContaining('nothing to buy just yet'), findsOneWidget);
+      // Spread-the-word waits for a live destination (kSpreadWordEnabled).
+      expect(find.text('Rate MyReciBook'), findsNothing);
+      expect(find.text('Share with a friend'), findsNothing);
+    }
 
     await tester.tap(find.text('Settings'));
     await tester.pump();
@@ -158,7 +171,7 @@ void main() {
     await tester.pumpWidget(app());
     await settle(tester);
 
-    await tester.tap(find.text('Unlock'));
+    await tester.tap(find.text(kSlot2Label));
     await tester.pump();
     await tester.tap(find.byType(FloatingActionButton));
     await settle(tester, rounds: 4);
