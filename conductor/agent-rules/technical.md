@@ -126,3 +126,15 @@
     is uninstall, which WIPES app data — warn first, get the yes. Same-host
     rebuilds thereafter keep data (S21, 2026-08-17). Kin to rule 9's
     cert-binding: signature identity, different layer.
+16. External-lookup failures masquerade as not-found (OFF shell spike,
+    2026-08-17: throttled requests printed MISS; same barcodes HIT on rerun).
+    Any lookup client models THREE outcomes — FOUND / NOT_FOUND only on the
+    API's explicit negative ("status":0) / UNAVAILABLE for everything else —
+    and retries only UNAVAILABLE. OffClient's sealed result is the pattern;
+    the UI must show the two negatives differently. OFF also requires an
+    identifying User-Agent.
+17. FileImage caches by PATH: overwriting an image file in place (product
+    photo replace, jpg→jpg) keeps rendering the old bytes until
+    `FileImage(file).evict()`. Any same-path image overwrite needs the evict;
+    recipe covers dodged it only because the jpg↔png swap changes the path
+    (2026-08-17).

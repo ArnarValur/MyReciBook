@@ -69,3 +69,8 @@
     everything." Also: anything I can run myself (build, install to the S21)
     I run — never hand him a command as the "next step". (Arnar's own
     framing, 2026-08-10, after a logo change turned into a render loop.)
+21. No time estimates, ever — amends rule 2's estimate clause and the
+    CLAUDE.md line it came from. Next steps are an ordered sequence, nothing
+    more; sizes only if he asks. Kin to rule 15 (no calendar framing) but
+    stricter: "~2 nights" is as banned as "Friday". (Arnar directly, 2026-08-17:
+    "Stop these time estimates, they make no sense.")

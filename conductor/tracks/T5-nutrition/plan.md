@@ -1,14 +1,33 @@
-# T5 — nutrition (PROPOSED, parked)
+# T5 — nutrition (POC BUILT 2026-08-17 night, on poc/pantry — unfolded)
 goal: per-serving nutrition on every recipe, fed by the user's own barcode scans +
       label photos, in any country — "the meal plan becomes the food diary."
-start condition: post-v1 track — opens after extract → save → list → open ships
-      and Gate 2 is passed. Exception: Phase 0 rides inside v1 (see below).
-      Restating the standing agreement once: build order is fixed; nothing here
-      jumps ahead of billing 3g / T2 / T4. This file exists so the design is
-      banked while it's fresh, not so the build starts now.
+start condition: was post-v1; Arnar pulled the capture shelf forward
+      2026-08-17 ("agreements were goals, not stone") under amended
+      constraint 4: building ahead is allowed, gates still decide shipping.
+      Billing 3g / T2 / T4 remain the standing queue.
 origin: Cowork brainstorm 2026-08-17 (Arnar + Hermes-side session). Evidence
-      pending: spikes/off_barcode_lookup.sh — Arnar's own shelf vs Open Food
-      Facts. The hit rate decides N1 ordering.
+      IN: spikes/off_barcode_lookup.sh — 15/15 of Arnar's shelf, then 28
+      real products scanned on-device. N1 resolved: OFF-first stands.
+
+## 2026-08-17 night — PoC status (branch poc/pantry, 9 commits)
+BUILT + proven by Arnar's eyes on the S21: mobile_scanner collect-mode
+scan (3s cooldown, 8s same-code grace) · OffClient (sealed three-way
+result — tech rule 16) · Product + LocalPantryStore (store discipline,
+38 tests) · Pantry tab on nav slot 2 (kPantryEnabled borrows it from
+Unlock on dev builds) · product detail w/ per-100g macros · user photo
+per product (cover mechanics, additive `image` ref) · ingredient
+long-press → product link (`product_ref`, additive, tri-state copyWith)
+with search + photo thumbnails in the picker.
+DISCOVERY: Phase 0 below is OBSOLETE — the qty/unit/item split has been
+in D1's Ingredient since day one AND the extractor's schema asks for it;
+Arnar's real files carry it filled. No D-number, no work: it exists.
+GAPS accepted in the PoC: pantry lives in app docs and does NOT sync
+(sync layout confines to root *.json + images/ — needs an additive
+pantry/ case, first job after the fold) · dangling product_ref after a
+product delete is silent · one barcode per gallery image.
+STILL UNBUILT from the phases below: link memory (N7) · label-photo
+fallback · manual digit/product entry · staples + density table ·
+calculator + badge · plan totals.
 division: same as T3 — Arnar owns UI/design (screens enter a future design
       turn; rule 17 — the mockups are the design answers, so engine phases
       never block on skin). Agent owns engine. All new surfaces behind a
@@ -100,6 +119,20 @@ Every surface: flag-gated, no dead ends (rule 19).
   T4-adjacent pricing decision; either way label-photo calls sit inside the
   stated fair-use cap (constraint 2 language already covers it).
 - N7 one linking store shared by grocery categories + nutrition (Phase 1).
+  2026-08-17 night sharpened this: "remembered links" is the coverage
+  engine — a confirmed "milk → Mellommelk" gets SUGGESTED on every future
+  recipe, one tap to accept; nobody hand-links 40 recipes, the memory
+  snowballs coverage instead.
+- N8 grocery product-ization (Arnar's brainstorm, 2026-08-17 night —
+  "one doesn't buy 2 cups of sugar"): three tiers, in order. Tier 1:
+  staple rows hide quantities (display only — the engine already knows
+  staples). Tier 2: "in your pantry" hint on rows matching an owned
+  product — suggest-and-confirm, NEVER auto-remove (a bag ≠ enough).
+  Tier 3: linked rows aggregate to package counts ("600ml milk → 1
+  carton") — waits for the unit table, which nutrition math needs anyway:
+  one conversion engine, two customers. Linked rows also merge by
+  barcode identity (exact), replacing fuzzy text merge where links exist;
+  unlinked rows keep today's behavior — no forced chore anywhere.
 
 ## Testing
 Store tests mirror recipe_store discipline; calculator = pure-function
@@ -118,12 +151,16 @@ stays dropped (behavioral 16). Suites run per-file as today (tech rule 13).
   decisions the data can't carry.
 - Scope gravity: this track is recipe-attached nutrition, NOT a diary app —
   MFP-style manual logging is out; the meal plan is the diary.
+- NAMED TRAP (agreed 2026-08-17 night): NO inventory tracking, ever. The
+  pantry says WHAT you own, never HOW MUCH is left — depletion bookkeeping
+  is a diligence chore that kills apps. Hints, not ledgers.
 
 
 ## Open (Arnar)
-1. Shelf spike result → N1 order.
+1. ~~Shelf spike result → N1 order.~~ RESOLVED 2026-08-17: 15/15, OFF-first.
 2. Pack vs included → bank for T4 pricing round.
 3. Launch scope: metric-only units first, or cups from day one?
+4. Fold poc/pantry → main (then: pantry/ sync case heads the follow-ons).
 
 ## Relay note for Claude Code
 On receipt: read this file, then STOP — the track is parked; the standing

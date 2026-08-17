@@ -1,60 +1,68 @@
 # Pulse — MyReciBook
 *State only. REWRITTEN at every checkpoint, never appended. Cap 60 lines.*
 
-> **Updated:** 2026-08-17 by checkpoint (S21 session: Drive smoke passed)
+> **Updated:** 2026-08-17 late by checkpoint (pantry PoC night)
 ## 📍 Now
 - Phase: pre-project (kickoff 2026-08-20, 3 days); building unblocked, gates
   decide ship/stop (context.md §4). GATE 1 PASSED; T1 closed.
-- DRIVE SMOKE PASSED 2026-08-17 — Arnar on a fresh dev.env build on the S21:
-  connect, save, sync, reopen all clean. Queue head since 08-09 is closed.
-  Both connectors now proven on-device (Dropbox passed 08-09).
-- S21 carries current main + today's change: the Unlock tab's "Why not a
-  subscription?" collapse is now a STATIC CARD (Arnar's call on the installed
-  build). Eyeball pass on Unlock tab + grid ⇄ list toggle PASSED.
-- Covers: STORE LAYER TESTED (6 new tests — copy-in, jpg↔png swap, remove
-  takes bytes, promote = ref not copy, delete takes cover, edit keeps it).
-  UI tap-choreography tests DROPPED 2026-08-17 (Arnar: "just drop it") —
-  do not re-queue (behavioral 16). One data wipe on the S21 agreed 08-17
-  (foreign-keystore install; tech rule 15).
-- Tests: 350 app on paper (344 + 6 new) + 10 proxy; today only touched files
-  re-ran green (recipe_store 21/21, unlock_tab 3/3). Full suite not re-run;
-  still unaudited by Arnar; flaky under parallel isolates (tech rule 13).
-- PLAY: developer profile IN PROGRESS (Arnar, preliminaries) — expected
-  ~2026-08-18. Then fee → Console app + one-time product → billing 3g wires
-  the real purchase into the Unlock seam.
-- D2 PROXY BUILT, NOT DEPLOYED (key server-side, cap strawman 100/mo);
-  deploy = his gcloud call ($0 tier) + listed cap. Versioning 0.5.0+2
-  strawman awaits him. GIFTING IMPOSSIBLE on Play — promo codes at launch.
+- PANTRY POC LIVE ON THE S21 — branch poc/pantry (9 commits, NOT folded;
+  fold = Arnar's call). Working tonight, his eyes on all of it: barcode
+  collect-mode scan (beep-beep, 3s cooldown) → OFF lookup → one JSON per
+  product in app docs · pantry tab borrows nav slot 2 (kPantryEnabled=true
+  on dev; false restores Unlock) · product detail w/ per-100g macros ·
+  user photo per product (cover mechanics) · ingredient long-press →
+  link to pantry product (product_ref, additive) w/ search + thumbnails.
+- OFF evidence: 15/15 shelf barcodes (spikes/off_barcode_lookup.sh) then
+  28 real products scanned. Coverage risk for T5 = retired.
+- DISCOVERY: the ingredient qty/unit/item split already exists in D1's
+  schema AND the extractor fills it (his real files prove it) — T5
+  "Phase 0" costs zero. Linking is the actual frontier.
+- POC gaps, accepted: pantry does NOT sync (layout confines to root
+  *.json + images/ — needs a pantry/ case) so products+photos don't yet
+  follow the user's folder · dangling product_ref after product delete ·
+  one barcode per gallery image.
+- Tests: ~48 new green tonight (off_client 10 · product store/roundtrip 38
+  incl. 6 photo · pantry model 6 · ingredient link 4 — only these ran;
+  full suite not re-run; still unaudited by Arnar; tech rule 13).
+- PLAY: developer profile IN PROGRESS (Arnar) — expected ~2026-08-18.
+  Then fee → Console app + one-time product → billing 3g wires the real
+  purchase into the Unlock seam.
+- D2 PROXY BUILT, NOT DEPLOYED (cap strawman 100/mo); versioning 0.5.0+2
+  strawman awaits him. Promo codes at launch (no Play gifting).
 - Turn-7 design queue: collapsing hero ratify · manual entry · edit copy ·
-  batch edges (grep DEVIATION) · error-log door (dialog UNDESIGNED).
-- OPEN (Arnar): design authority in git (unzipped design-system gitignored).
+  batch edges · error-log door · NEW: pantry surfaces (tab, detail,
+  link picker — all built minimal, undesigned).
+- OPEN (Arnar): design authority in git (design-system gitignored).
 
 ## 🚀 Active tracks
-- T3 mvp-build — Drive smoke PASSED; billing 3g is the next engine seam,
-  waiting on the Play profile. Plan: conductor/tracks/T3-mvp-build/plan.md
-- T2 landing-page — myrecibook.com registered; live 2 Sep. Channels →
-  docs/marketing-channels.md (5 venues; seed accounts).
+- T5 nutrition — POC BUILT (see Now). Plan: conductor/tracks/T5-nutrition/
+  plan.md — brainstorms banked 2026-08-17: remembered links · grocery
+  product-ization (staples hide qty → "you have it" hint → package math) ·
+  NO inventory tracking, ever (named trap).
+- T3 mvp-build — billing 3g next engine seam, waiting on Play profile.
+- T2 landing-page — myrecibook.com registered; live 2 Sep (Gate 2 needs it).
 
 ## ⚠️ Blockers
-- Billing 3g ← Play developer profile (Arnar, ~18 Aug) → fee → Console
-  app + product setup.
+- Billing 3g ← Play developer profile (Arnar) → fee → Console app+product.
 - Proxy deploy + listed cap number ← Arnar's gcloud/billing decision.
+- Pantry sync case ← fold decision on poc/pantry (Arnar).
 
 ## 📋 Next queue (sequence — no schedule)
 1. Arnar: finish Play profile → pay fee → Console app + one-time product.
-2. Billing 3g: real purchase into the Unlock seam; flip kSpreadWordEnabled
-   when the listing is live.
-3. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
-   design-authority-in-git.
-4. Design turn 7 · T2 landing page (live 2 Sep — Gate 2 needs it).
-5. D9 link spike WHEN his 5–10 real test links arrive (asked 2026-08-15).
+2. Billing 3g: real purchase into the Unlock seam.
+3. Arnar decisions: fold poc/pantry → main · proxy deploy + cap ·
+   versioning · keystore backup · design-authority-in-git.
+4. Pantry follow-ons (post-fold): pantry/ sync case → remembered links →
+   grocery tier 1+2 (staples hide qty, pantry hint) → unit table
+   (feeds nutrition badge AND package math).
+5. Design turn 7 · T2 landing page · D9 link spike when his links arrive.
 
 ## 📌 Parked
-- Proxy DEPLOY (D2: before 11 Dec) · durable cap store (4d) · Play Integrity ·
-  inbox strip · serving-rescale · step↔ingredient chips · camera-roll nudge ·
-  cover auto-crop tier 2 · AI covers · telemetry (D8) · arm B ocr_dump ·
-  $2.99 top-up UNCONFIRMED · handwriting UNTESTED · ADR 0001 graduation due ·
-  multi-image shares one recipe · token store → keystore pre-prod · orphan-
-  image GC · schema-v2 read policy · full a11y pass (16 Nov) · fixture
-  superset · Dropbox production approval · Play App Signing cert at first
-  upload needs BOTH a Drive client (rule 9) AND its manifest entry (rule 10).
+- Proxy DEPLOY · durable cap store · Play Integrity · inbox strip ·
+  serving-rescale · step↔ingredient chips · camera-roll nudge · cover
+  auto-crop 2 · AI covers · telemetry (D8) · arm B ocr_dump · $2.99 top-up
+  UNCONFIRMED · handwriting UNTESTED · ADR 0001 graduation due · multi-image
+  shares · token store → keystore · orphan-image GC · schema-v2 policy ·
+  a11y pass · fixture superset · Dropbox prod approval · Play App Signing
+  cert (rules 9+10) · OFF image_url enrichment · multi-barcode per image ·
+  nutrition badge math (after unit table) · PlanTab wake-up (diary).

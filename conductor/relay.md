@@ -147,3 +147,21 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   runAsync, tech rule 14) and you dropped them: file deleted, gap accepted.
 - Play: you're building the developer profile, expecting it ~tomorrow →
   fee → Console → billing 3g into the seam. That's the next engine work.
+
+## 2026-08-17 night — pantry PoC: your kitchen became files in one sitting
+- The OFF spike said 15/15, so we built the whole capture loop same night:
+  three parallel agents (scan spike · product store · OFF client), wired
+  into a Pantry tab on slot 2, all on branch poc/pantry — main untouched.
+- You swept 28 real products "beep, beep, beep" in collect mode, added
+  photos (camera + gallery), and long-press-linked ingredients to YOUR
+  products — Mellommelk answering "250ml Milk". Search + thumbnails in
+  the picker, per-100g macros on every product page.
+- Discovery that changes T5: the qty/unit/item split has been in the
+  schema since D1 and the extractor already fills it. Phase 0 was free.
+- Honest gaps: pantry doesn't sync yet (needs a pantry/ case), so it
+  doesn't follow your folder — first job after you call the fold.
+- Your brainstorms banked in the T5 plan: remembered links, grocery rows
+  as products (staples hide qty → "you have it" → package math), and the
+  named trap we will not build: inventory tracking.
+- Next: your Play profile → billing 3g stays the engine seam; fold call
+  on poc/pantry when you're ready.
