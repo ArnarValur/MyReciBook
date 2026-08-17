@@ -139,6 +139,7 @@ class GroceryStore {
           checked: i.checked,
           manual: i.manual,
           staple: i.staple,
+          productRef: i.productRef,
           manualParts: i.manualParts,
           recipeParts: i.recipeParts,
         );
@@ -157,6 +158,7 @@ class GroceryStore {
         checked: prev.checked && i.checked,
         manual: prev.manual || i.manual,
         staple: prev.staple && i.staple,
+        productRef: prev.productRef ?? i.productRef,
         manualParts: [...prev.manualParts, ...i.manualParts],
         recipeParts: parts,
       );

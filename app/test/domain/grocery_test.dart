@@ -13,8 +13,10 @@ Recipe recipe(String id, List<Ingredient> ings) => Recipe(
       steps: const [RecipeStep(raw: 'cook')],
     );
 
-Ingredient ing(String raw, {num? qty, String? unit, String? item}) =>
-    Ingredient(raw: raw, qty: qty, unit: unit, item: item);
+Ingredient ing(String raw,
+        {num? qty, String? unit, String? item, String? productRef}) =>
+    Ingredient(
+        raw: raw, qty: qty, unit: unit, item: item, productRef: productRef);
 
 void main() {
   group('normalizeName', () {
@@ -300,6 +302,129 @@ void main() {
           recipe: recipe('pasta', [ing('4 lemons', qty: 4, item: 'lemons')])).items;
       expect(items, hasLength(1)); // one row, not two lemon rows forever
       expect(items.single.qtyLabel, '6');
+    });
+  });
+
+  // N8: a linked ingredient's product_ref rides onto the grocery row, and
+  // rows sharing a ref ARE the same product — folding them is certain,
+  // never a "Same thing?" prompt.
+  group('product refs (N8)', () {
+    test('linked ingredient carries its ref onto the created item', () {
+      final r = addRecipeToList(
+          items: const [],
+          recipe: recipe('r1', [
+            ing('250 ml milk',
+                qty: 250, unit: 'ml', item: 'milk', productRef: '7038010071751'),
+            ing('2 lemons', qty: 2, item: 'lemons'),
+          ]));
+      expect(r.items.firstWhere((i) => i.key == 'milk').productRef,
+          '7038010071751');
+      expect(r.items.firstWhere((i) => i.key == 'lemons').productRef, isNull);
+    });
+
+    test('fold adopts an arriving ref; an existing link is never overwritten',
+        () {
+      var items = addRecipeToList(
+          items: const [],
+          recipe: recipe('r1', [ing('milk', qty: 1, unit: 'l', item: 'milk')])).items;
+      items = addRecipeToList(
+          items: items,
+          recipe: recipe('r2', [
+            ing('milk', qty: 2, unit: 'dl', item: 'milk', productRef: 'ref-a')
+          ])).items;
+      expect(items.single.productRef, 'ref-a'); // adopted
+      items = addRecipeToList(
+          items: items,
+          recipe: recipe('r3', [
+            ing('milk', qty: 1, unit: 'dl', item: 'milk', productRef: 'ref-b')
+          ])).items;
+      expect(items.single.productRef, 'ref-a'); // first link wins
+    });
+
+    test('same ref under different names auto-merges — certain, not a prompt',
+        () {
+      var items = addRecipeToList(
+          items: const [],
+          recipe: recipe('pasta', [
+            ing('250 ml milk',
+                qty: 250, unit: 'ml', item: 'milk', productRef: '7038010071751')
+          ])).items;
+      items = addRecipeToList(
+          items: items,
+          recipe: recipe('pancakes', [
+            ing('1 l whole milk',
+                qty: 1, unit: 'l', item: 'whole milk', productRef: '7038010071751')
+          ])).items;
+      expect(items, hasLength(1));
+      final row = items.single;
+      expect(row.name, 'milk'); // the earlier row survives
+      expect(row.id, row.key); // engine invariant holds through the fold
+      expect(row.qtyLabel, '250 ml + 1 l'); // nothing lost, units side by side
+      expect(row.sourceCount, 2);
+      expect(mergeSuggestions(items), isEmpty); // no leftover prompt
+    });
+
+    test('different refs or missing refs never auto-merge', () {
+      final r = addRecipeToList(
+          items: const [],
+          recipe: recipe('r1', [
+            ing('milk', qty: 1, unit: 'l', item: 'milk', productRef: 'ref-a'),
+            ing('oat milk',
+                qty: 1, unit: 'l', item: 'oat milk', productRef: 'ref-b'),
+            ing('cream', qty: 1, unit: 'dl', item: 'cream'),
+          ]));
+      expect(r.items, hasLength(3));
+    });
+
+    test('mergeSameProduct folds every same-ref row into the first', () {
+      const items = [
+        GroceryItem(id: 'milk', name: 'milk', category: 'Pantry',
+            productRef: 'x', recipeParts: {'r1': [QtyPart(qty: 1, unit: 'l')]}),
+        GroceryItem(id: 'lemons', name: 'lemons', category: 'Produce'),
+        GroceryItem(id: 'whole milk', name: 'whole milk', category: 'Pantry',
+            productRef: 'x', recipeParts: {'r2': [QtyPart(qty: 2, unit: 'dl')]}),
+        GroceryItem(id: 'milk 1.5%', name: 'milk 1.5%', category: 'Pantry',
+            productRef: 'x', manual: true),
+      ];
+      final out = mergeSameProduct(items);
+      expect([for (final i in out) i.id], ['milk', 'lemons']);
+      final milk = out.first;
+      expect(milk.qtyLabel, '1 l + 2 dl');
+      expect(milk.manual, isTrue); // absorbed manual claim survives
+      expect(mergeSameProduct(out), out); // idempotent
+    });
+
+    test('removing one source keeps the merged row and its ref', () {
+      var items = addRecipeToList(
+          items: const [],
+          recipe: recipe('pasta',
+              [ing('milk', qty: 250, unit: 'ml', item: 'milk', productRef: 'x')])).items;
+      items = addRecipeToList(
+          items: items,
+          recipe: recipe('pancakes', [
+            ing('whole milk', qty: 1, unit: 'l', item: 'whole milk', productRef: 'x')
+          ])).items;
+      final after = removeRecipeFromList(items, 'pasta');
+      expect(after.single.productRef, 'x');
+      expect(after.single.qtyLabel, '1 l');
+    });
+  });
+
+  group('displayQtyLabel (N8 tier 1 — shopping, not cooking)', () {
+    test('staple row shows the bare name even when parts exist', () {
+      const sugar = GroceryItem(
+          id: 'sugar', name: 'Sugar', category: 'Pantry', staple: true,
+          manualParts: [QtyPart(qty: 2, unit: 'cups')]);
+      expect(sugar.qtyLabel, '2 cups'); // engine data untouched
+      expect(sugar.displayQtyLabel, ''); // display hides it
+    });
+
+    test('non-staple rows are unchanged', () {
+      const lemons = GroceryItem(
+          id: 'lemons', name: 'lemons', category: 'Produce',
+          manualParts: [QtyPart(qty: 6)]);
+      expect(lemons.displayQtyLabel, lemons.qtyLabel);
+      expect(lemons.displayQtyLabel, '6');
     });
   });
 

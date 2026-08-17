@@ -151,6 +151,68 @@ void main() {
     expect(item.sourceCount, 2);
   });
 
+  // product_ref (N8) is additive: old lists know nothing of it and must
+  // keep loading — and re-saving — exactly as before.
+  test('old list without product_ref loads unchanged and never gains the key',
+      () async {
+    await listFile().create(recursive: true);
+    await listFile().writeAsString(jsonEncode({
+      'version': 1,
+      'items': [
+        {
+          'id': 'lemons',
+          'name': 'lemons',
+          'category': 'Produce',
+          'recipe_parts': {
+            'pasta': [
+              {'qty': 2, 'unit': null}
+            ]
+          },
+        },
+      ],
+    }));
+
+    final s = await load();
+    expect(s.items.single.productRef, isNull);
+    expect(s.items.single.qtyLabel, '2'); // everything else as before
+
+    await s.saveItems(s.items);
+    final raw = jsonDecode(await listFile().readAsString()) as Map<String, dynamic>;
+    final row = (raw['items'] as List).single as Map<String, dynamic>;
+    expect(row.containsKey('product_ref'), isFalse);
+  });
+
+  test('product_ref survives a save/reload round-trip', () async {
+    final s = await load();
+    await s.saveItems([
+      const GroceryItem(
+          id: 'milk',
+          name: 'milk',
+          category: 'Pantry',
+          productRef: '7038010071751'),
+    ]);
+    expect((await load()).items.single.productRef, '7038010071751');
+  });
+
+  test('heal keeps a ref when folding duplicate ids', () async {
+    await listFile().create(recursive: true);
+    await listFile().writeAsString(jsonEncode({
+      'version': 1,
+      'items': [
+        {'id': 'milk', 'name': 'milk', 'category': 'Pantry'},
+        {
+          'id': 'milk',
+          'name': 'milk',
+          'category': 'Pantry',
+          'product_ref': '7038010071751',
+        },
+      ],
+    }));
+
+    final s = await load();
+    expect(s.items.single.productRef, '7038010071751');
+  });
+
   test('removeCategoryOverride persists', () async {
     final s = await load();
     await s.setCategoryOverride('rice', 'Asian Pantry');

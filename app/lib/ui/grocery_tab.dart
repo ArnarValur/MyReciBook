@@ -11,8 +11,10 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:provider/provider.dart';
 
 import '../domain/grocery.dart';
+import '../features.dart';
 import 'grocery_model.dart';
 import 'library_model.dart';
+import 'pantry/pantry_model.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
 
@@ -25,6 +27,18 @@ class GroceryTab extends StatefulWidget {
 
 class _GroceryTabState extends State<GroceryTab> {
   final _addField = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // The "in your pantry" hint needs the shelf; cheap and cached after boot
+    // (recipe detail's idiom).
+    if (kPantryEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.read<PantryModel>().ensureLoaded();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -136,6 +150,11 @@ class _GroceryTabState extends State<GroceryTab> {
     final model = context.watch<GroceryModel>();
     final titles = {
       for (final r in context.watch<LibraryModel>().recipes) r.id: r.title
+    };
+    // Owned pantry ids for the row hint — hint only, never row behavior.
+    final owned = <String>{
+      if (kPantryEnabled)
+        for (final p in context.watch<PantryModel>().products) p.id,
     };
     final items = model.items;
     final suggestion = model.suggestions.firstOrNull;
@@ -252,6 +271,7 @@ class _GroceryTabState extends State<GroceryTab> {
                 for (var i = 0; i < sections[category]!.length; i++)
                   _itemRow(sections[category]![i], model,
                       last: i == sections[category]!.length - 1,
+                      inPantry: owned.contains(sections[category]![i].productRef),
                       theme: theme,
                       scheme: scheme),
               ]),
@@ -372,9 +392,11 @@ class _GroceryTabState extends State<GroceryTab> {
 
   Widget _itemRow(GroceryItem item, GroceryModel model,
       {required bool last,
+      required bool inPantry,
       required ThemeData theme,
       required ColorScheme scheme}) {
-    final qty = item.staple ? '' : item.qtyLabel;
+    // N8 tier 1: staples show the bare name — shopping, not cooking.
+    final qty = item.displayQtyLabel;
     final moved = model.categoryOverrides.containsKey(item.key);
     final caption = item.staple
         ? null
@@ -414,10 +436,22 @@ class _GroceryTabState extends State<GroceryTab> {
           ),
         ),
       ),
-      if (caption != null)
+      // N8 tier 2 hint — a bag ≠ enough: never checks off, removes, or dims
+      // a row; it only says the product is on the shelf.
+      if (inPantry) ...[
+        Icon(Icons.kitchen_rounded, size: 12, color: scheme.onSurfaceVariant),
+        const SizedBox(width: 3),
+        Text('in your pantry',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(fontSize: 11, color: scheme.onSurfaceVariant)),
+      ],
+      if (caption != null) ...[
+        if (inPantry) const SizedBox(width: 8),
         Text(caption,
             style: theme.textTheme.bodySmall
                 ?.copyWith(fontSize: 11, color: scheme.onSurfaceVariant)),
+      ],
+      if (inPantry && item.staple) const SizedBox(width: 8),
       if (item.staple)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

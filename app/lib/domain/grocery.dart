@@ -150,6 +150,10 @@ class GroceryItem {
   /// Dimmed row, no quantity, never nags; tap activates (staple → false).
   final bool staple;
 
+  /// Pantry product id (N8 tier 2) — flows off a linked ingredient's
+  /// product_ref at add time. Additive: absent everywhere = old behavior.
+  final String? productRef;
+
   final List<QtyPart> manualParts;
 
   /// recipeId → that recipe's quantity contributions. Membership drives
@@ -163,6 +167,7 @@ class GroceryItem {
     this.checked = false,
     this.manual = false,
     this.staple = false,
+    this.productRef,
     this.manualParts = const [],
     this.recipeParts = const {},
   });
@@ -203,12 +208,20 @@ class GroceryItem {
           : '${formatQty(p.qty!)} ${p.unit}')
       .join(' + ');
 
+  /// Shopping label (N8 tier 1 — "one doesn't buy 2 cups of sugar"): staple
+  /// rows show the bare name. Display only; qtyLabel keeps whatever the
+  /// engine holds.
+  String get displayQtyLabel => staple ? '' : qtyLabel;
+
+  /// `productRef:` set or keep only — nothing unlinks a grocery row today,
+  /// so no clear flag (the tri-state rule waits for a caller that needs it).
   GroceryItem copyWith({
     String? name,
     String? category,
     bool? checked,
     bool? manual,
     bool? staple,
+    String? productRef,
     List<QtyPart>? manualParts,
     Map<String, List<QtyPart>>? recipeParts,
   }) =>
@@ -219,6 +232,7 @@ class GroceryItem {
         checked: checked ?? this.checked,
         manual: manual ?? this.manual,
         staple: staple ?? this.staple,
+        productRef: productRef ?? this.productRef,
         manualParts: manualParts ?? this.manualParts,
         recipeParts: recipeParts ?? this.recipeParts,
       );
@@ -230,6 +244,7 @@ class GroceryItem {
         checked: json['checked'] as bool? ?? false,
         manual: json['manual'] as bool? ?? false,
         staple: json['staple'] as bool? ?? false,
+        productRef: json['product_ref'] as String?,
         manualParts: [
           for (final p in (json['manual_parts'] as List? ?? []))
             QtyPart.fromJson(p as Map<String, dynamic>)
@@ -251,6 +266,9 @@ class GroceryItem {
         'checked': checked,
         'manual': manual,
         'staple': staple,
+        // Absent unless linked — old lists round-trip byte-identical
+        // (favorite/cover's rule applied to the grocery file).
+        if (productRef != null) 'product_ref': productRef,
         'manual_parts': [for (final p in manualParts) p.toJson()],
         'recipe_parts': {
           for (final e in recipeParts.entries)
@@ -338,13 +356,17 @@ GroceryAddResult addRecipeToList({
         continue;
       }
       if (isStaple && !existing.staple) continue; // user activated it: hands off
-      next[at] = existing.copyWith(recipeParts: {
-        ...existing.recipeParts,
-        recipe.id: [
-          ...existing.recipeParts[recipe.id] ?? const <QtyPart>[],
-          if (!isStaple) parsed.part,
-        ],
-      });
+      next[at] = existing.copyWith(
+          // Additive: a fold adopts an arriving ref; an existing link is
+          // never overwritten by a later recipe's different one.
+          productRef: existing.productRef ?? ing.productRef,
+          recipeParts: {
+            ...existing.recipeParts,
+            recipe.id: [
+              ...existing.recipeParts[recipe.id] ?? const <QtyPart>[],
+              if (!isStaple) parsed.part,
+            ],
+          });
       added++;
     } else {
       // Invariant: id == key, and key derives from name — an alias re-apply
@@ -356,6 +378,7 @@ GroceryAddResult addRecipeToList({
         name: aliased ? key : parsed.name,
         category: categoryFor(key, categoryOverrides),
         staple: isStaple,
+        productRef: ing.productRef,
         recipeParts: {
           recipe.id: [if (!isStaple) parsed.part]
         },
@@ -363,7 +386,9 @@ GroceryAddResult addRecipeToList({
       added++;
     }
   }
-  return GroceryAddResult(next, false, added, excluded);
+  // Certainty pre-pass (N8): rows that arrived under different names but the
+  // same pantry link are one product — fold before any suggestion runs.
+  return GroceryAddResult(mergeSameProduct(next), false, added, excluded);
 }
 
 /// Subtracts one recipe's contribution. Items left with no source and no
@@ -554,11 +579,34 @@ List<GroceryItem> mergeItems(
     manual: keep.manual || absorb.manual,
     staple: keep.staple && absorb.staple,
     checked: keep.checked && absorb.checked,
+    productRef: keep.productRef ?? absorb.productRef,
     manualParts: [...keep.manualParts, ...absorb.manualParts],
     recipeParts: parts,
   );
   next.removeAt(absorbAt);
   return next;
+}
+
+/// Certain merge (N8): two rows carrying the SAME productRef are the same
+/// pantry product — folding them is a fact, never a "Same thing?" prompt.
+/// A pre-pass to the suggest-and-confirm flow: unlinked rows are untouched,
+/// the earlier row survives (its name and aisle win; id == key holds because
+/// [mergeItems] keeps an existing row wholesale).
+List<GroceryItem> mergeSameProduct(List<GroceryItem> items) {
+  final keeperByRef = <String, String>{}; // productRef → surviving row id
+  var out = items;
+  // Snapshot iteration is safe: mergeItems only ever removes rows.
+  for (final item in List.of(out)) {
+    final ref = item.productRef;
+    if (ref == null) continue;
+    final keeper = keeperByRef[ref];
+    if (keeper == null) {
+      keeperByRef[ref] = item.id;
+    } else {
+      out = mergeItems(out, keepId: keeper, absorbId: item.id);
+    }
+  }
+  return out;
 }
 
 /// Canonical id for a keep-apart pair — order-independent.
