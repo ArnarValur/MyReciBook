@@ -533,58 +533,95 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               'Pantry tab first, then link them here.')));
       return;
     }
+    var query = '';
     final choice = await showModalBottomSheet<Object>(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (ctx) => SafeArea(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.7),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-                child: SectionLabel('Which product is "${ing.item ?? ing.raw}"?'),
-              ),
-              Flexible(
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          final q = query.toLowerCase();
+          final matches = [
+            for (final p in pantry.products)
+              if (q.isEmpty ||
+                  p.name.toLowerCase().contains(q) ||
+                  (p.brand ?? '').toLowerCase().contains(q))
+                p
+          ];
+          return SafeArea(
+            child: Padding(
+              // Keep the field above the keyboard while typing.
+              padding:
+                  EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(ctx).size.height * 0.7),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (ing.productRef != null)
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.link_off_rounded,
-                            color: ctx.scheme.error),
-                        title: const Text('Unlink'),
-                        onTap: () => Navigator.pop(ctx, false),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+                      child: SectionLabel(
+                          'Which product is "${ing.item ?? ing.raw}"?'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                      child: TextField(
+                        autofocus: false,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.search_rounded),
+                          hintText: 'Search your pantry',
+                          isDense: true,
+                        ),
+                        onChanged: (v) => setSheet(() => query = v),
                       ),
-                    for (final p in pantry.products)
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(Icons.kitchen_rounded,
-                            color: p.id == ing.productRef
-                                ? ctx.scheme.primary
-                                : ctx.scheme.onSurfaceVariant),
-                        title: Text(p.name,
-                            style: TextStyle(
-                                color: p.id == ing.productRef
-                                    ? ctx.scheme.primary
-                                    : null)),
-                        subtitle: (p.brand ?? '').isEmpty
-                            ? null
-                            : Text(p.brand!),
-                        onTap: () => Navigator.pop(ctx, p),
+                    ),
+                    Flexible(
+                      child: ListView(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                        children: [
+                          if (ing.productRef != null && q.isEmpty)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(Icons.link_off_rounded,
+                                  color: ctx.scheme.error),
+                              title: const Text('Unlink'),
+                              onTap: () => Navigator.pop(ctx, false),
+                            ),
+                          if (matches.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Text('Nothing in your pantry matches '
+                                  '"$query".'),
+                            ),
+                          for (final p in matches)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(Icons.kitchen_rounded,
+                                  color: p.id == ing.productRef
+                                      ? ctx.scheme.primary
+                                      : ctx.scheme.onSurfaceVariant),
+                              title: Text(p.name,
+                                  style: TextStyle(
+                                      color: p.id == ing.productRef
+                                          ? ctx.scheme.primary
+                                          : null)),
+                              subtitle: (p.brand ?? '').isEmpty
+                                  ? null
+                                  : Text(p.brand!),
+                              onTap: () => Navigator.pop(ctx, p),
+                            ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
     if (!mounted || choice == null) return;
