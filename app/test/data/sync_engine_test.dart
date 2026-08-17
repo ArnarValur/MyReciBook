@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myrecibook/data/remote_store.dart';
 import 'package:myrecibook/data/saf_store.dart' show GrantLostException;
+import 'package:myrecibook/data/sha256.dart';
 import 'package:myrecibook/data/sync_engine.dart';
 import 'package:myrecibook/data/sync_source.dart';
 
@@ -395,5 +396,110 @@ void main() {
     await e.syncUp();
     expect(e.status.conflicts, [jsonA]);
     expect(utf8.decode(remote.files[jsonA]!), '{"a":"changed elsewhere!"}');
+  });
+
+  // Pantry layout: pantry/<stem>.json + pantry/images/<stem> travel exactly
+  // like recipes — and nothing else under pantry/ does.
+
+  const pantryJson = 'pantry/7038010071751.json';
+  const pantryImg = 'pantry/images/7038010071751.jpg';
+
+  test('pantry files mirror up; deleting a product deletes its remote copy',
+      () async {
+    await put(pantryJson, '{"name":"Melk"}');
+    await put(pantryImg, 'jpeg-bytes');
+    final e = engine();
+    await e.syncUp();
+    expect(remote.files.keys.toSet(), {pantryJson, pantryImg});
+    expect(utf8.decode(remote.files[pantryJson]!), '{"name":"Melk"}');
+
+    await File('${folder.path}/$pantryJson').delete();
+    await File('${folder.path}/$pantryImg').delete();
+    await e.syncUp();
+    expect(remote.deletes, 2); // owned names — deletion propagates
+    expect(remote.files, isEmpty);
+  });
+
+  test('restoreDown pulls pantry files back into pantry/', () async {
+    remote.files[pantryJson] = utf8.encode('{"name":"Melk"}');
+    remote.files[pantryImg] = utf8.encode('jpeg-bytes');
+
+    expect(await engine().restoreDown(), 2);
+    expect(await File('${folder.path}/$pantryJson').readAsString(),
+        '{"name":"Melk"}');
+    expect(await File('${folder.path}/$pantryImg').readAsString(),
+        'jpeg-bytes');
+  });
+
+  test('foreign names under pantry/ are never uploaded', () async {
+    await put(pantryJson, '{"name":"Melk"}');
+    await put('pantry/notes.txt', 'not a product');
+    await engine().syncUp();
+    expect(remote.files.keys.toSet(), {pantryJson}); // .txt refused (§7)
+  });
+
+  // Safety (b): a manifest written by a PRE-PANTRY app version tracks names
+  // as flat relative paths, and that version could never have uploaded (so
+  // never tracked) a pantry/ name. "Vanished → remote delete" only fires for
+  // TRACKED names missing locally — new pantry files are local-and-untracked,
+  // the exact opposite, so they can only upload, never delete.
+  test('pre-pantry manifest: pantry files upload as new, nothing vanishes',
+      () async {
+    const recipeBytes = '{"a":1}';
+    final hash = [
+      for (final b in sha256(utf8.encode(recipeBytes)))
+        b.toRadixString(16).padLeft(2, '0')
+    ].join();
+    // Byte-exact shape an older engine persisted: only recipe-layout names.
+    await manifestFile.parent.create(recursive: true);
+    await manifestFile.writeAsString(jsonEncode({
+      'files': {
+        jsonA: {'size': recipeBytes.length, 'sha256': hash, 'rev': 'r7'},
+        img: {'size': 10, 'sha256': 'irrelevant'},
+      }
+    }));
+    remote.files[jsonA] = utf8.encode(recipeBytes);
+    await put(jsonA, recipeBytes);
+    await put(img, 'jpeg-bytes'); // changed since the old manifest
+    await put(pantryJson, '{"name":"Melk"}');
+    await put(pantryImg, 'photo');
+
+    final e = engine();
+    await e.syncUp();
+
+    expect(remote.deletes, 0); // NOTHING read as vanished
+    expect(remote.files.keys.toSet(), {jsonA, img, pantryJson, pantryImg});
+    expect(remote.uploads, 3); // pantry pair + changed image; jsonA hash held
+    expect(e.status.state, SyncState.synced);
+  });
+
+  // Safety (c): to a PRE-PANTRY client a remote pantry/ folder is just an
+  // unknown-subdir name — and this engine's treatment of unknown-subdir
+  // names is version-independent: restore refuses them (safeName), and a
+  // tracked one is dropped from tracking, never deleted (_ownedName fence).
+  // 'meals/' stands in for what 'pantry/' is to the old client; the same
+  // mechanism protects any future layout dir from THIS client.
+  test('unknown-subdir remote names: restore skips, tracking drops, no delete',
+      () async {
+    remote.files['meals/1.json'] = utf8.encode('{"future":true}');
+    // Worst case: the name somehow ended up tracked.
+    await manifestFile.parent.create(recursive: true);
+    await manifestFile.writeAsString(jsonEncode({
+      'files': {
+        'meals/1.json': {'size': 15, 'sha256': 'whatever'}
+      }
+    }));
+
+    final e = engine();
+    expect(await e.restoreDown(), 0); // refused, not downloaded
+    expect(await File('${folder.path}/1.json').exists(), isFalse);
+
+    await e.syncUp(); // 'meals/1.json' is tracked but not local → vanished
+    expect(remote.deletes, 0); // fence held: dropped from tracking instead
+    expect(remote.files.containsKey('meals/1.json'), isTrue);
+
+    await e.syncUp(); // second pass proves the claim is gone, still no delete
+    expect(remote.deletes, 0);
+    expect(remote.files.containsKey('meals/1.json'), isTrue);
   });
 }

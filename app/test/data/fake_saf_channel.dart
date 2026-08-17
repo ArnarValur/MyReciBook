@@ -148,10 +148,12 @@ class FakeSafChannel {
         reads++;
         return doc.bytes;
       case 'createFile':
+        // The real bridge is DocumentsContract.createDocument: the dir mime
+        // creates a subdirectory under any parent (how pantry/images is made).
+        final mime = args['mime'] as String? ?? '';
         return _create(
-            args['parentDocId'] as String?, args['name'] as String?,
-            args['mime'] as String? ?? '',
-            isDir: false);
+            args['parentDocId'] as String?, args['name'] as String?, mime,
+            isDir: mime == 'vnd.android.document/directory');
       case 'createDir':
         return _create(rootId, args['name'] as String?,
             'vnd.android.document/directory',

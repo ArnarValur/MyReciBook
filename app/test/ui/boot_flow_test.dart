@@ -9,8 +9,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myrecibook/data/app_settings.dart';
+import 'package:myrecibook/data/product_store.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/data/share_entry.dart';
+import 'package:myrecibook/domain/product.dart';
 import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/app_shell.dart';
@@ -83,21 +85,26 @@ void main() {
   Future<AppSettings> loadSettings(WidgetTester tester) async =>
       (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
 
-  Widget boot(AppSettings settings, {ShareEntry? share, Extractor? extractor}) {
+  Widget boot(AppSettings settings,
+      {ShareEntry? share, Extractor? extractor, LocalPantryStore? pantry}) {
     // The app's own navigator key, handed to the gate for ready-phase
     // dialogs (change-folder confirm), as main.dart wires it.
     final nav = GlobalKey<NavigatorState>();
     return BootGate(
       settings: settings,
       localStore: localStore,
+      localPantry: pantry,
       imageCache: Directory('${tmp.path}/saf_images'),
+      pantryImageCache:
+          pantry == null ? null : Directory('${tmp.path}/pantry_images'),
       safChannel: fake.channel,
       appNavigatorKey: nav,
-      appBuilder: (store, onGrantLost, onChangeFolder) => buildApp(
+      appBuilder: (store, pantry, onGrantLost, onChangeFolder) => buildApp(
         store: store,
         extractor: extractor ?? FakeExtractor([canned()]),
         picker: () async => [pick],
         share: share,
+        pantry: pantry,
         onGrantLost: onGrantLost,
         onChangeFolder: onChangeFolder,
         folderName: folderDisplayName(settings.treeUri),
@@ -282,6 +289,29 @@ void main() {
     expect(fake.find('seed-1.json'), isNotNull);
     expect(fake.find('seed-2.json'), isNotNull);
     expect(settings.migrationDone, isTrue);
+  });
+
+  testWidgets('pantry migration smoke: docs/pantry drains into <tree>/pantry',
+      (tester) async {
+    final localPantry = LocalPantryStore(Directory('${tmp.path}/pantry'));
+    await tester.runAsync(() => localPantry.save(const Product(
+        schemaVersion: 1,
+        barcode: '7038010071751',
+        name: 'Mellommelk',
+        source: 'off',
+        addedAt: '2026-08-17T10:00:00Z')));
+    final settings = await loadSettings(tester);
+
+    await tester.pumpWidget(boot(settings, pantry: localPantry));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('choose-folder-button')));
+    await settle(tester);
+
+    // The product now lives in the user's tree, and the old dir is drained.
+    final pantryId = fake.findId('pantry');
+    expect(pantryId, isNotNull);
+    expect(fake.find('7038010071751.json', parentId: pantryId!), isNotNull);
+    expect(await tester.runAsync(() => localPantry.root.exists()), isFalse);
   });
 
   testWidgets('warm share opens review with both screenshots', (tester) async {

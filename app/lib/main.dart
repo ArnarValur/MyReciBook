@@ -152,13 +152,18 @@ Future<void> main() async {
   runApp(BootGate(
     settings: settings,
     localStore: LocalFolderStore(Directory('${docs.path}/recipes')),
+    // Pre-pantry installs kept products app-private here; BootGate drains it
+    // into <tree>/pantry/ (copy-verify-delete) so pantry data lives and syncs
+    // beside the recipes from now on.
+    localPantry: LocalPantryStore(Directory('${docs.path}/pantry')),
     imageCache: Directory('${cache.path}/saf_images'),
+    pantryImageCache: Directory('${cache.path}/pantry_images'),
     // The gate's own MaterialApp follows the saved preference — without this
     // it sat on ThemeMode.system and change-folder opened dark over a light
     // app (Arnar's S21 pass, 2026-08-06).
     themeMode: themeModel,
     appNavigatorKey: nav,
-    appBuilder: (store, onGrantLost, onChangeFolder) {
+    appBuilder: (store, pantry, onGrantLost, onChangeFolder) {
       // A lost grant mid-sync joins the same re-pick flow as store ops.
       storage.onGrantLost = onGrantLost;
       return buildApp(
@@ -168,11 +173,10 @@ Future<void> main() async {
         camera: snapPage,
         share: share,
         grocery: grocery,
-        // Pantry rides docs like recipes (user-owned files), NOT app-support:
-        // the food base is the user's to keep. Sibling of recipes/ — the sync
-        // layout confines to root *.json + images/, so pantry stays local
-        // until sync learns a pantry/ case (flagged, out of POC scope).
-        pantry: LocalPantryStore(Directory('${docs.path}/pantry')),
+        // Pantry lives in the user's tree (<tree>/pantry/) via the SAF store
+        // BootGate built beside the recipe store, and the sync layout's
+        // pantry/ case mirrors it like everything else.
+        pantry: pantry,
         storage: storage,
         themeModel: themeModel,
         cookbookPrefs: cookbookPrefs,

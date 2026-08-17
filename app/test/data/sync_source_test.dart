@@ -16,6 +16,33 @@ import 'fake_saf_channel.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  group('safeName', () {
+    test('admits exactly the four layout shapes', () {
+      expect(SyncSource.safeName('a.json'), isTrue);
+      expect(SyncSource.safeName('notes.txt'), isTrue); // any root segment
+      expect(SyncSource.safeName('images/a-1.jpg'), isTrue);
+      expect(SyncSource.safeName('pantry/7038010071751.json'), isTrue);
+      expect(SyncSource.safeName('pantry/plain-flour.json'), isTrue);
+      expect(SyncSource.safeName('pantry/images/7038010071751.jpg'), isTrue);
+    });
+
+    test('refuses everything outside them', () {
+      expect(SyncSource.safeName('../x.json'), isFalse);
+      expect(SyncSource.safeName('images/../x'), isFalse);
+      expect(SyncSource.safeName('pantry/..'), isFalse);
+      expect(SyncSource.safeName('pantry/../x.json'), isFalse);
+      expect(SyncSource.safeName('pantry/images/../x.jpg'), isFalse);
+      expect(SyncSource.safeName('pantry/a/b.json'), isFalse); // deeper nesting
+      expect(SyncSource.safeName('pantry/images/a/b.jpg'), isFalse);
+      expect(SyncSource.safeName('pantry/notes.txt'), isFalse); // json only
+      expect(SyncSource.safeName('pantry/x.json.tmp'), isFalse);
+      expect(SyncSource.safeName('pantry/'), isFalse);
+      expect(SyncSource.safeName('pantry/images'), isFalse); // dir aliasing
+      expect(SyncSource.safeName(r'pantry/a\b.json'), isFalse);
+      expect(SyncSource.safeName('meals/1.json'), isFalse); // unknown dir
+    });
+  });
+
   group('SafFolderSource', () {
     late FakeSafChannel fake;
 
@@ -113,6 +140,82 @@ void main() {
       await expectLater(
           src.write('images/../x.json', [1]), throwsA(isA<ArgumentError>()));
       await expectLater(src.write('a/b.json', [1]), throwsA(isA<ArgumentError>()));
+      await expectLater(
+          src.write('pantry/../x.json', [1]), throwsA(isA<ArgumentError>()));
+      await expectLater(
+          src.write('pantry/a/b.json', [1]), throwsA(isA<ArgumentError>()));
+      await expectLater(
+          src.write('pantry/notes.txt', [1]), throwsA(isA<ArgumentError>()));
+    });
+
+    test('list maps pantry/ and pantry/images/ into the layout', () async {
+      fake.seedFile('a.json', utf8.encode('{"a":1}'));
+      final pantry = fake.seedDir('pantry');
+      fake.seedFile('7038010071751.json', utf8.encode('{"p":1}'),
+          parentId: pantry);
+      final pantryImages = fake.seedDir('images', parentId: pantry);
+      fake.seedFile('7038010071751.jpg', [9, 9], parentId: pantryImages);
+      final foreign = fake.seedDir('other', parentId: pantry);
+      fake.seedFile('deep.txt', [1], parentId: foreign); // not our layout
+
+      final listed = await source().list();
+      expect(listed.keys.toSet(), {
+        'a.json',
+        'pantry/7038010071751.json',
+        'pantry/images/7038010071751.jpg',
+      });
+    });
+
+    test('pantry read round-trips bytes', () async {
+      final pantry = fake.seedDir('pantry');
+      fake.seedFile('skyr.json', utf8.encode('{"n":"Skyr"}'), parentId: pantry);
+      final pantryImages = fake.seedDir('images', parentId: pantry);
+      fake.seedFile('skyr.jpg', [7, 7, 7], parentId: pantryImages);
+
+      final src = source();
+      expect(await src.read('pantry/skyr.json'), utf8.encode('{"n":"Skyr"}'));
+      expect(await src.read('pantry/images/skyr.jpg'), [7, 7, 7]);
+    });
+
+    test('pantry write creates dirs once, reuses docIds — never "x (1)"',
+        () async {
+      final src = source();
+      await src.write('pantry/111.json', utf8.encode('old'));
+      await src.write('pantry/111.json', utf8.encode('new'));
+      await src.write('pantry/images/111.jpg', [1]);
+      await src.write('pantry/images/111.jpg', [2]);
+
+      final pantryId = fake.findId('pantry')!;
+      expect(fake.docs[pantryId]!.isDir, isTrue);
+      expect(fake.find('111.json', parentId: pantryId)!.bytes,
+          utf8.encode('new'));
+      expect(fake.findId('111 (1).json', parentId: pantryId), isNull);
+      final imagesId = fake.findId('images', parentId: pantryId)!;
+      expect(fake.docs[imagesId]!.isDir, isTrue);
+      expect(fake.find('111.jpg', parentId: imagesId)!.bytes, [2]);
+      expect(fake.findId('111 (1).jpg', parentId: imagesId), isNull);
+      // pantry/images/ landed INSIDE pantry, never at the tree root.
+      expect(fake.findId('pantry (1)'), isNull);
+      expect(
+          fake.docs.values
+              .where((d) => d.isDir && d.name == 'pantry')
+              .length,
+          1);
+    });
+
+    test('pantry write into a seeded tree reuses the existing dirs', () async {
+      final pantry = fake.seedDir('pantry');
+      fake.seedFile('111.json', utf8.encode('old'), parentId: pantry);
+
+      final src = source();
+      await src.write('pantry/111.json', utf8.encode('new'));
+      await src.write('pantry/images/111.jpg', [3]);
+
+      expect(fake.find('111.json', parentId: pantry)!.bytes,
+          utf8.encode('new'));
+      expect(fake.findId('pantry (1)'), isNull);
+      final imagesId = fake.findId('images', parentId: pantry)!;
+      expect(fake.find('111.jpg', parentId: imagesId)!.bytes, [3]);
     });
   });
 
@@ -157,6 +260,34 @@ void main() {
       await expectLater(src.write('a/b.json', [1]), throwsA(isA<ArgumentError>()));
       await expectLater(
           src.write(r'..\x.json', [1]), throwsA(isA<ArgumentError>()));
+      await expectLater(
+          src.write('pantry/../x.json', [1]), throwsA(isA<ArgumentError>()));
+      await expectLater(
+          src.write('pantry/notes.txt', [1]), throwsA(isA<ArgumentError>()));
+    });
+
+    test('list covers pantry/ + pantry/images/, skips strays and .tmp',
+        () async {
+      await File('${tmp.path}/a.json').writeAsString('{"a":1}');
+      await Directory('${tmp.path}/pantry/images').create(recursive: true);
+      await File('${tmp.path}/pantry/111.json').writeAsString('{"p":1}');
+      await File('${tmp.path}/pantry/111.json.tmp').writeAsString('partial');
+      await File('${tmp.path}/pantry/images/111.jpg').writeAsString('img');
+      await Directory('${tmp.path}/pantry/other').create();
+      await File('${tmp.path}/pantry/other/x.txt').writeAsString('no');
+
+      final listed = await LocalFolderSource(tmp).list();
+      expect(listed.keys.toSet(),
+          {'a.json', 'pantry/111.json', 'pantry/images/111.jpg'});
+    });
+
+    test('pantry write/read round-trip, dirs created on demand', () async {
+      final src = LocalFolderSource(tmp);
+      await src.write('pantry/111.json', utf8.encode('{"p":1}'));
+      await src.write('pantry/images/111.jpg', [4, 5]);
+      expect(await src.read('pantry/111.json'), utf8.encode('{"p":1}'));
+      expect(await src.read('pantry/images/111.jpg'), [4, 5]);
+      expect(await File('${tmp.path}/pantry/images/111.jpg').exists(), isTrue);
     });
   });
 }

@@ -11,7 +11,9 @@ import 'package:flutter/services.dart';
 
 import '../data/app_settings.dart';
 import '../data/migration.dart';
+import '../data/product_store.dart';
 import '../data/recipe_store.dart';
+import '../data/saf_pantry_store.dart';
 import '../data/saf_store.dart';
 import 'theme.dart';
 
@@ -24,6 +26,8 @@ class BootGate extends StatefulWidget {
     required this.localStore,
     required this.imageCache,
     required this.appBuilder,
+    this.localPantry,
+    this.pantryImageCache,
     this.themeMode,
     this.appNavigatorKey,
     this.safChannel = const MethodChannel('com.merkurialstudio.myrecibook/saf'),
@@ -51,11 +55,23 @@ class BootGate extends StatefulWidget {
   final LocalFolderStore localStore;
   final Directory imageCache;
 
-  /// Builds the real app once a store exists. The first callback re-enters
-  /// the gate on a lost grant; the second is the deliberate change-folder
-  /// door (Storage screen) — straight to the system picker, no gate screen.
-  final Widget Function(SafFolderStore store, VoidCallback onGrantLost,
-      VoidCallback onChangeFolder) appBuilder;
+  /// Pre-pantry app-private products (docs/pantry) — the pantry migration
+  /// source, drained into `<tree>/pantry/` on entry. Null (tests): no pantry
+  /// store is built and [appBuilder] receives null.
+  final LocalPantryStore? localPantry;
+
+  /// App-private hydration dir for SAF pantry photos (the recipes'
+  /// imageCache twin). Required for the pantry store — null skips it.
+  final Directory? pantryImageCache;
+
+  /// Builds the real app once a store exists. [pantry] is the SAF-backed
+  /// product store rooted in the same tree (null when [localPantry] /
+  /// [pantryImageCache] were not given — the widget-test seam). The first
+  /// callback re-enters the gate on a lost grant; the second is the
+  /// deliberate change-folder door (Storage screen) — straight to the
+  /// system picker, no gate screen.
+  final Widget Function(SafFolderStore store, ProductStore? pantry,
+      VoidCallback onGrantLost, VoidCallback onChangeFolder) appBuilder;
   final MethodChannel safChannel;
 
   @override
@@ -80,6 +96,7 @@ class _BootGateState extends State<BootGate> {
   /// running app instead of stranding on the gate.
   bool _changing = false;
   SafFolderStore? _store;
+  SafPantryStore? _pantry;
 
   @override
   void initState() {
@@ -186,13 +203,28 @@ class _BootGateState extends State<BootGate> {
       imageCache: widget.imageCache,
       channel: widget.safChannel,
     );
-    if (!widget.settings.migrationDone) {
+    final localPantry = widget.localPantry;
+    final pantryCache = widget.pantryImageCache;
+    final pantry = localPantry != null && pantryCache != null
+        ? SafPantryStore(
+            treeUri: uri, imageCache: pantryCache, channel: widget.safChannel)
+        : null;
+    // Pantry migration has no done-flag: the drained old dir is the flag, so
+    // this stays a cheap exists() on every later boot.
+    final pantryPending =
+        localPantry != null && await localPantry.root.exists();
+    if (!widget.settings.migrationDone || pantryPending) {
       if (mounted) setState(() => _phase = _Boot.migrating);
       try {
-        await migrateLocalToSaf(widget.localStore, store,
-            settings: widget.settings);
+        if (!widget.settings.migrationDone) {
+          await migrateLocalToSaf(widget.localStore, store,
+              settings: widget.settings);
+        }
+        if (pantryPending && pantry != null) {
+          await migratePantryToSaf(localPantry, pantry);
+        }
       } on GrantLostException {
-        // Flag stays unset — re-pick, then the migration runs again.
+        // Flag stays unset / old dir stays — re-pick, then both run again.
         if (mounted) {
           setState(() {
             _lost = true;
@@ -205,6 +237,7 @@ class _BootGateState extends State<BootGate> {
     if (mounted) {
       setState(() {
         _store = store;
+        _pantry = pantry;
         _phase = _Boot.ready;
       });
     }
@@ -216,6 +249,7 @@ class _BootGateState extends State<BootGate> {
       _lost = true;
       _changing = false;
       _store = null;
+      _pantry = null;
       _phase = _Boot.gate;
     });
   }
@@ -244,7 +278,7 @@ class _BootGateState extends State<BootGate> {
       // the screen the user was on.
       return KeyedSubtree(
         key: ValueKey(widget.settings.treeUri),
-        child: widget.appBuilder(_store!, _onGrantLost, _changeFolder),
+        child: widget.appBuilder(_store!, _pantry, _onGrantLost, _changeFolder),
       );
     }
     final gateHome = switch (_phase) {

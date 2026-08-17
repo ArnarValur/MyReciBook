@@ -195,7 +195,7 @@ void main() {
       localStore: store,
       imageCache: Directory('${tmp.path}/saf_images'),
       safChannel: fake.channel,
-      appBuilder: (safStore, onGrantLost, onChangeFolder) => buildApp(
+      appBuilder: (safStore, pantry, onGrantLost, onChangeFolder) => buildApp(
         store: safStore,
         extractor: FakeExtractor([canned()]),
         picker: () async => [pick],

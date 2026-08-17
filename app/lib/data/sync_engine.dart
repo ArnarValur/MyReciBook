@@ -65,14 +65,20 @@ class SyncEngine {
   Future<void>? _inflightUp;
   Future<void> _tail = Future.value(); // serializes syncUp/restoreDown
 
-  // Deletions propagate only for names this app owns — '<uuid>.json' or
-  // images/* — so foreign remote files are never touched.
+  // Deletions propagate only for names this app owns — '<uuid>.json',
+  // images/*, or the pantry layout (pantry/<stem>.json + pantry/images/*,
+  // exactly what safeName admits under pantry/) — so foreign remote files
+  // are never touched. Manifest names are full relative paths: an app
+  // version that predates a layout dir can never have tracked names in it,
+  // so those names can never read as vanished there — and in this version a
+  // tracked name outside the layout is dropped from tracking, never deleted.
   static final _uuidJson = RegExp(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-'
       r'[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.json$');
 
   static bool _ownedName(String name) =>
       _uuidJson.hasMatch(name) ||
-      (name.startsWith('images/') && SyncSource.safeName(name));
+      (name.startsWith('images/') && SyncSource.safeName(name)) ||
+      (name.startsWith('pantry/') && SyncSource.safeName(name));
 
   void _emit(SyncStatus s) {
     _status = s;
