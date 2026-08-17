@@ -138,3 +138,21 @@
     `FileImage(file).evict()`. Any same-path image overwrite needs the evict;
     recipe covers dodged it only because the jpg↔png swap changes the path
     (2026-08-17).
+18. A flag that renames a nav surface breaks every test that FINDS it by
+    label — kPantryEnabled relabelled slot 2 'Unlock'→'Pantry' and two
+    shell_test cases failed two sessions later, misattributed to the next
+    agent's diff. Tests that tap a flag-owned surface derive the label from
+    the flags (shell_test's kSlot2Label) instead of hardcoding it. Corollary
+    proven the same night: a subagent's "pre-existing failure" claim is a
+    HYPOTHESIS — verify against the base commit before accepting it; this
+    one was our own earlier change (2026-08-17).
+19. Adding a directory to the sync layout is a DELETE-SAFETY change, not a
+    feature: sync_source.safeName is a strict whitelist of exact shapes and
+    sync_engine._ownedName gates delete propagation to those same shapes.
+    Two invariants must be tested when extending it (pantry/, 2026-08-17):
+    an OLD manifest can never contain the new names (so they can never read
+    as vanished→delete), and an OLD client meeting the new remote dir drops
+    it from tracking rather than deleting it. Data migrations into the
+    user's folder go copy → read-back-VERIFY → delete, remove the source dir
+    only when empty, and carry no done-flag — a drained dir is the flag, so
+    an interrupted run resumes.

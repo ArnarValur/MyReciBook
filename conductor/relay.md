@@ -178,3 +178,22 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   anything, because a sync-layout mistake can wipe remote files.
 - Next session opens on: their two reports → hard review of sync → wire,
   test, S21. Then remembered links.
+
+## 2026-08-17 late-night — the pantry moved into your folder, for real
+- Both agents landed and are merged on poc/pantry-follow (not folded —
+  your call). Your 28 products and 3 photos now live in
+  /sdcard/MyReciFolder/pantry, moved by a boot migration I watched run on
+  your phone; the old app-private copy is gone. Pantry travels on Drive
+  and Dropbox like recipes now — the "files you own" gap is closed.
+- Grocery got your two tiers: staples say "Sugar", not "2 cups sugar";
+  rows built from a linked ingredient show a quiet "in your pantry" hint
+  and never remove themselves; two rows meaning the same product merge
+  without asking.
+- I reviewed the sync work myself before merging (it can delete remote
+  files) — the layout filter stayed strict and the migration verifies
+  every copy before deleting anything.
+- Correction worth knowing: two failing shell tests were blamed on the
+  sync agent; they were mine, from renaming nav slot 2 to Pantry. Fixed,
+  and the lesson is now a rule.
+- FULL SUITE 454/454, run serially — first complete run in a while.
+- Next: fold poc/pantry-follow when you say so; then remembered links.

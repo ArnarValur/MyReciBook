@@ -28,6 +28,24 @@ product delete is silent · one barcode per gallery image.
 STILL UNBUILT from the phases below: link memory (N7) · label-photo
 fallback · manual digit/product entry · staples + density table ·
 calculator + badge · plan totals.
+
+## 2026-08-17 late-night — follow-ons (branch poc/pantry-follow, unfolded)
+Two parallel agents, both merged after review; full suite 454/454 serial.
+- SYNC CASE DONE: `pantry/<stem>.json` + `pantry/images/*` are now legal
+  mirrored names (sync_source.safeName + engine._ownedName), SafPantryStore
+  roots the pantry at `<tree>/pantry/`, and a boot migration
+  (data/migration.dart, copy→verify→delete) moved Arnar's 28 products + 3
+  photos into /sdcard/MyReciFolder/pantry — verified on-device, old dir
+  drained. Delete-safety invariants pinned by test (tech rule 19). Photos
+  hydrate through cache/pantry_images, so a photo restored from remote
+  appears after the next pantry rescan.
+- GROCERY N8 TIERS 1+2 DONE: `GroceryItem.productRef` (additive) flows
+  from linked ingredients; staple rows render bare names; owned-product
+  rows show a muted "in your pantry" hint (never removes/checks/dims);
+  same-ref rows auto-merge with certainty (shipped as a pure pre-pass over
+  mergeItems). Tier 3 (package math) still waits on the unit table.
+- Gap left open: mergeSuggestions can still text-suggest a pair carrying
+  two DIFFERENT refs — N8 says linked rows should suppress that.
 division: same as T3 — Arnar owns UI/design (screens enter a future design
       turn; rule 17 — the mockups are the design answers, so engine phases
       never block on skin). Agent owns engine. All new surfaces behind a
