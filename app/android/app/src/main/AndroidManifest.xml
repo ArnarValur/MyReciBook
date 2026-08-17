@@ -2,6 +2,12 @@
     <!-- Release builds need this here, not only in debug/profile manifests:
          Gemini extraction, OAuth and Drive/Dropbox sync all die without it. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Pantry barcode scan (poc/pantry-scan): mobile_scanner drives the
+         camera directly, unlike image_picker's intent-based capture, so it
+         needs the permission. required="false" keeps Play from filtering
+         out camera-less devices — scanning is an extra, not the product. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
         android:label="MyReciBook"
         android:name="${applicationName}"

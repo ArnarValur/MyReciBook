@@ -38,6 +38,14 @@ const bool kRecipeTagsEnabled = false;
 /// queue tab unchanged.
 const bool kUnlockTabEnabled = true;
 
+/// Pantry barcode scan (`ui/pantry/barcode_scan_screen.dart`) — poc spike,
+/// 2026-08-17: live EAN/UPC capture via mobile_scanner, gallery fallback
+/// through PhotoSources. No pantry surface exists yet, so the screen is
+/// reachable from nowhere (dead-end rule); the wiring session flips this and
+/// adds the entry point. The screen pops the digits as a String — nothing
+/// downstream is built.
+const bool kPantryEnabled = false;
+
 /// "Spread the word" rows on the Unlock tab (rate on Google Play · share
 /// with a friend). Both need a live destination — the Play listing for
 /// rating, at least the landing page (live 2 Sep) for the share link — so
