@@ -36,6 +36,7 @@ import 'import_review_screen.dart';
 import 'import_sheet.dart';
 import 'manual_entry_screen.dart';
 import 'library_model.dart';
+import 'pantry/pantry_tab.dart';
 import 'plan_tab.dart';
 import 'recipe_list_screen.dart';
 import 'settings_tab.dart';
@@ -220,10 +221,14 @@ class _AppShellState extends State<AppShell> {
           children: [
             RecipeListScreen(onImport: _import, onOpenQueue: _openImportQueue),
             _built[1] ? const GroceryTab() : const SizedBox.shrink(),
-            // Slot 2: the Unlock pitch — or, with the flag off, the queue
+            // Slot 2: the pantry POC borrows the slot on dev builds (Arnar's
+            // test call, 2026-08-17 — flag off restores Unlock untouched);
+            // then the Unlock pitch — or, with both flags off, the queue
             // tab in its embedded form (no Hide/Done — a tab has nothing to
             // pop back to).
-            if (kUnlockTabEnabled)
+            if (kPantryEnabled)
+              _built[2] ? const PantryTab() : const SizedBox.shrink()
+            else if (kUnlockTabEnabled)
               _built[2] ? const UnlockTab() : const SizedBox.shrink()
             else
               _built[2]

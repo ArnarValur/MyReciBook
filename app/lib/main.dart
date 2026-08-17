@@ -16,6 +16,7 @@ import 'data/gemini_extractor.dart';
 import 'data/grocery_store.dart';
 import 'data/install_id.dart';
 import 'data/oauth.dart';
+import 'data/product_store.dart';
 import 'data/recipe_store.dart';
 import 'data/sha256.dart';
 import 'data/share_entry.dart';
@@ -30,6 +31,7 @@ import 'ui/cookbook_prefs.dart';
 import 'ui/folder_gate.dart';
 import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
+import 'ui/pantry/pantry_model.dart';
 import 'ui/storage_model.dart';
 import 'ui/photo_sources.dart';
 import 'ui/theme.dart';
@@ -166,6 +168,11 @@ Future<void> main() async {
         camera: snapPage,
         share: share,
         grocery: grocery,
+        // Pantry rides docs like recipes (user-owned files), NOT app-support:
+        // the food base is the user's to keep. Sibling of recipes/ — the sync
+        // layout confines to root *.json + images/, so pantry stays local
+        // until sync learns a pantry/ case (flagged, out of POC scope).
+        pantry: LocalPantryStore(Directory('${docs.path}/pantry')),
         storage: storage,
         themeModel: themeModel,
         cookbookPrefs: cookbookPrefs,
@@ -192,6 +199,7 @@ Widget buildApp({
   ImagePick? camera,
   ShareEntry? share,
   GroceryStore? grocery,
+  ProductStore? pantry,
   StorageModel? storage,
   ThemeModel? themeModel,
   CookbookPrefs? cookbookPrefs,
@@ -237,6 +245,9 @@ Widget buildApp({
                     Provider.of<StorageModel>(ctx, listen: false).syncSoon)),
         // Shell AND pushed routes (detail's grocery button) share this scope.
         ChangeNotifierProvider(create: (_) => GroceryModel(grocery)),
+        // Same stance for the pantry POC: null store (test seam) degrades to
+        // in-memory; the real OffClient only fires on an actual scan.
+        ChangeNotifierProvider(create: (_) => PantryModel(pantry)),
         // Session batch queue (D5): lives above the shell so it survives tab
         // switches and pushed routes; dies with the app. Saves ride the
         // LibraryModel seam, so grocery/storage glue comes along for free.

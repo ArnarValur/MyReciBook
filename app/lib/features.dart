@@ -38,13 +38,13 @@ const bool kRecipeTagsEnabled = false;
 /// queue tab unchanged.
 const bool kUnlockTabEnabled = true;
 
-/// Pantry barcode scan (`ui/pantry/barcode_scan_screen.dart`) — poc spike,
-/// 2026-08-17: live EAN/UPC capture via mobile_scanner, gallery fallback
-/// through PhotoSources. No pantry surface exists yet, so the screen is
-/// reachable from nowhere (dead-end rule); the wiring session flips this and
-/// adds the entry point. The screen pops the digits as a String — nothing
-/// downstream is built.
-const bool kPantryEnabled = false;
+/// Pantry POC (`ui/pantry/`) — scan a barcode, OFF fills the product, one
+/// JSON per product in the user's pantry folder (docs/pantry, beside
+/// recipes). ON borrows nav slot 2 from the Unlock tab for on-device testing
+/// (Arnar's call, 2026-08-17); flipping this false restores Unlock untouched.
+/// Not sync'd yet: the sync layout confines to root *.json + images/, so the
+/// pantry folder needs its own sync case before it travels.
+const bool kPantryEnabled = true;
 
 /// "Spread the word" rows on the Unlock tab (rate on Google Play · share
 /// with a friend). Both need a live destination — the Play listing for
