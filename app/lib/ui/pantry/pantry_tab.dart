@@ -59,6 +59,77 @@ class _PantryTabState extends State<PantryTab> {
     }
   }
 
+  /// Tap a row → everything its file carries, per 100 g. Read-only; the
+  /// design turn decides the real product screen. Null macros just don't
+  /// print — OFF is crowdsourced and sparse files are normal.
+  Future<void> _detailSheet(Product p) {
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    final n = p.nutriments;
+    final rows = <(String, double?, String)>[
+      ('Energy', n?.kcal, 'kcal'),
+      ('Fat', n?.fat, 'g'),
+      ('— of which saturated', n?.saturatedFat, 'g'),
+      ('Carbohydrates', n?.carbs, 'g'),
+      ('— of which sugars', n?.sugars, 'g'),
+      ('Protein', n?.protein, 'g'),
+      ('Salt', n?.salt, 'g'),
+    ];
+    final meta = [
+      if ((p.brand ?? '').isNotEmpty) p.brand!,
+      if ((p.quantity ?? '').isNotEmpty) p.quantity!,
+    ].join(' · ');
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(p.name,
+                style: theme.textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            if (meta.isNotEmpty)
+              Text(meta,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: scheme.onSurfaceVariant)),
+            const SizedBox(height: 14),
+            if (rows.every((r) => r.$2 == null))
+              Text(
+                'No nutrition data on Open Food Facts for this one — the '
+                'label-photo rescue will fill it in later.',
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+              )
+            else ...[
+              const SectionLabel('Per 100 g'),
+              const SizedBox(height: 4),
+              for (final (label, value, unit) in rows)
+                if (value != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(children: [
+                      Expanded(
+                          child: Text(label,
+                              style: theme.textTheme.bodyMedium)),
+                      Text(
+                          '${value == value.roundToDouble() ? value.round() : value} $unit',
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600)),
+                    ]),
+                  ),
+            ],
+            const SizedBox(height: 12),
+            Text('From Open Food Facts · barcode ${p.barcode}',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: scheme.onSurfaceVariant)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _removeSheet(PantryModel model, String id, String name) async {
     final ok = await showDestructiveConfirm(
       context,
@@ -128,6 +199,7 @@ class _PantryTabState extends State<PantryTab> {
               for (final p in model.products)
                 _ProductRow(
                   product: p,
+                  onTap: () => _detailSheet(p),
                   onLongPress: () => _removeSheet(model, p.id, p.name),
                 ),
             if (model.skipped > 0) ...[
@@ -147,9 +219,11 @@ class _PantryTabState extends State<PantryTab> {
 }
 
 class _ProductRow extends StatelessWidget {
-  const _ProductRow({required this.product, required this.onLongPress});
+  const _ProductRow(
+      {required this.product, required this.onTap, required this.onLongPress});
 
   final Product product;
+  final VoidCallback onTap;
   final VoidCallback onLongPress;
 
   @override
@@ -168,6 +242,7 @@ class _ProductRow extends StatelessWidget {
         radius: 14,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: InkWell(
+          onTap: onTap,
           onLongPress: onLongPress,
           child: Row(children: [
             Container(
