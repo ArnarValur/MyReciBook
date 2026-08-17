@@ -1,89 +1,60 @@
 # Pulse — MyReciBook
 *State only. REWRITTEN at every checkpoint, never appended. Cap 60 lines.*
 
-> **Updated:** 2026-08-10 23:16 by checkpoint
-
+> **Updated:** 2026-08-15 by checkpoint (remote session folded to main)
 ## 📍 Now
 - Phase: pre-project (kickoff 2026-08-20); building unblocked, gates decide
-  ship/stop (context.md §4). GATE 1 PASSED; T1 closed.
-- NOW-MODE (behavioral 15–16) · checkpoint commits EVERYTHING (18) · no
-  dead-end surfaces (19).
-- BRAND LANDED 2026-08-10: Arnar's logo (open book + steam) is now the app
-  icon (adaptive + monochrome + legacy PNGs, Flutter default gone), the
-  cookbook header mark, and the Cookbook tab glyph. Authority =
-  docs/MyReciBook-logo/assets/logo/*.svg; app draws it from transcribed
-  paths (app/lib/ui/widgets/logo_mark.dart), no new dependency.
-- COVERS REWORKED same session, Arnar's call: a screenshot is NEVER the
-  cover any more (they came out ugly). No-cover = drawn tile (brand
-  gradient chosen from the title + logo watermark). Cover door = 'add
-  cover' pill on the detail hero → photo / gallery / a screenshot / remove.
-  New top-level `cover` field in the recipe JSON, absent unless set.
-  Picked photos live at images/<id>-cover.jpg in the user's folder, so they
-  sync and survive reinstall. UNTESTED PATH — 338 tests touch none of it.
-- Release APK with dev.env keys INSTALLED on the S21 and confirmed good by
-  Arnar (logo + covers). Dropbox connect+sync still the only PROVEN half of
-  the storage smoke.
-- DRIVE AUTH: reversed-client-id fix (tech rule 10) is in the installed
-  build; Arnar's connect retry has still NOT been run. Drive smoke = queue
-  head, unchanged from 2026-08-09.
-- SENIOR REVIEW CLOSED. atomic_file.dart = THE write discipline (rule 7).
-  F5 fence live. AAB signs with the upload key — keystore SINGLE COPY,
-  backup pending.
-- D2 PROXY BUILT, NOT DEPLOYED: proxy/ (key server-side, allowlist, cap
-  strawman 100/mo). Deploy = Arnar's gcloud/billing call ($0 tier) + listed
-  cap number.
-- 338 app + 10 proxy tests, analyzers clean. Arnar has NOT audited the
-  suite and distrusts its assertions — an adversarial audit is offered, not
-  scheduled. Versioning 0.5.0+2 strawman still awaits him.
-- Docs tidied: five dated session artifacts → docs/archive/.
-  recipe-app-feasibility-report.md STAYS at root (warm strategy, cited by
-  four files) — decided 2026-08-10, not stale, do not re-propose archiving.
-- QUEUE TAB RETIRED 2026-08-15 (Arnar's call, settles the turn-7 nav
-  question): slot 2 = Unlock tab — 3g pitch live in nav, honest disabled CTA
-  until billing 3g; queue = pushed route + Cookbook strip/badge. Rate/share
-  rows behind kSpreadWordEnabled; gifting IMPOSSIBLE on Play (promo codes at
-  launch instead). ON BRANCH claude/queue-page-app-promotion-0x9sw8 — needs
-  fold to main.
+  ship/stop (context.md §4). GATE 1 PASSED; T1 closed. Behavioral 15–20 live.
+- SHIPPED TO MAIN 2026-08-15 (Arnar's calls, remote session): ① queue tab
+  retired — slot 2 = Unlock tab (3g pitch via shared PaywallPitch, CTA
+  honestly disabled until billing 3g; queue lives on as pushed batch route +
+  Cookbook strip/badge; flags kUnlockTabEnabled · kSpreadWordEnabled) —
+  settles the turn-7 nav question. ② Cookbook grid ⇄ list toggle at the
+  filter bar's end (CookbookPrefs → 'cookbook_view', persists).
+  GIFTING IMPOSSIBLE on Play — promo codes (500/quarter, Console) at launch.
+- NOT yet on the S21 — next install needs dev.env flag (tech rule 11).
+- PLAY FEE: GO given 2026-08-15 ("I will pay… so we can publish after
+  weekend") — pays at workstation; then billing 3g wires the Unlock seam.
+- DRIVE AUTH: rule-10 fix installed; his connect retry still NOT run.
+  Drive smoke = queue head, unchanged since 2026-08-09.
+- Covers rework UNTESTED PATH — cover-flow tests still the known gap.
+  344 app + 10 proxy tests, analyzers clean; flaky under parallel isolates
+  on loaded machines (tech rule 13). Suite still unaudited by Arnar.
+- D2 PROXY BUILT, NOT DEPLOYED (key server-side, cap strawman 100/mo);
+  deploy = his gcloud call ($0 tier) + listed cap. Versioning 0.5.0+2
+  strawman awaits him.
 - Turn-7 design queue: collapsing hero · manual entry · edit copy · batch
-  edges (grep DEVIATION) · error-log door (long-press version footer, dialog
-  UNDESIGNED).
-- Play fee: bar met; verdict = his hands-on pass. D10: 3 free → ~$25.
-- OPEN (Arnar): design authority in git — unzipped design-system gitignored,
-  only the zip versioned.
+  edges (grep DEVIATION) · error-log door (dialog UNDESIGNED).
+- OPEN (Arnar): design authority in git (unzipped design-system gitignored).
 
 ## 🚀 Active tracks
-- T3 mvp-build — brand + covers shipped to the phone; Drive retry still the
-  one open proof. Plan: conductor/tracks/T3-mvp-build/plan.md
+- T3 mvp-build — Unlock tab + list toggle on main; Drive retry the one open
+  proof. Plan: conductor/tracks/T3-mvp-build/plan.md
 - T2 landing-page — myrecibook.com registered; live 2 Sep. Channels →
   docs/marketing-channels.md (5 venues; seed accounts).
 
 ## ⚠️ Blockers
 - Drive smoke result ← Arnar retries connect on the installed build.
+- Billing 3g ← fee payment (GO given) ← Console app + product setup.
 - Proxy deploy + listed cap number ← Arnar's gcloud/billing decision.
-- Billing 3g ← Play fee ← his verdict.
 
 ## 📋 Next queue (sequence — no schedule)
-1. Arnar: retry Drive connect → save → files visible in MyReciBook/recipes
-   on Drive → kill/reopen. THEN storage smoke fully PASSED.
-2. Tests on the cover flow (schema round-trip, picker branches, delete
-   takes the cover file) — the one gap this session knowingly left.
-3. Verdict → fee $25 → billing 3g.
-4. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
-   design-authority-in-git.
-5. Claude Design turn 7 · then Arnar off-repo: T2 landing + Gate-2 venues.
-6. External: festival 12–16 Aug (QR, 12 testers) · 20 Aug 09:00 kickoff +
-   Play Console registration.
+1. Arnar: Drive retry → save → files on Drive → kill/reopen = smoke PASSED.
+2. Fresh dev.env build → S21 → eyeball pass (Unlock tab + list toggle).
+3. Cover-flow tests (the known gap).
+4. Fee $25 → Console → billing 3g (product + purchase into the Unlock
+   seam) → flip kSpreadWordEnabled when the listing is live.
+5. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
+   design-authority-in-git. Then Design turn 7 · T2 landing.
+6. D9 link spike WHEN his 5–10 real test links arrive (asked again
+   2026-08-15) — evidence before the bet is re-argued.
 
 ## 📌 Parked
-- URL/link import (Arnar raised 2026-08-10, own session, he brings test
-  links) — HEAD-ON with the bet's "not link/video scraping (permanent
-  breakage)"; needs the bet re-argued or a narrow scope, not a quiet build.
 - Proxy DEPLOY (D2: before 11 Dec) · durable cap store (4d) · Play Integrity ·
-  D9 link door · inbox strip · serving-rescale · step↔ingredient chips ·
-  camera-roll nudge · cover auto-crop tier 2 · AI covers · telemetry (D8) ·
-  arm B ocr_dump · $2.99 top-up UNCONFIRMED · handwriting UNTESTED · ADR 0001
-  graduation due · multi-image shares one recipe · token store → keystore
-  pre-prod · orphan-image GC (post-alpha) · schema-v2 read policy · full a11y
-  pass (16 Nov) · fixture superset beyond byte-identical · Dropbox production
-  approval · Play App Signing cert at first Play upload needs BOTH a Drive
-  client (rule 9) AND its reversed-id manifest entry (rule 10).
+  inbox strip · serving-rescale · step↔ingredient chips · camera-roll nudge ·
+  cover auto-crop tier 2 · AI covers · telemetry (D8) · arm B ocr_dump ·
+  $2.99 top-up UNCONFIRMED · handwriting UNTESTED · ADR 0001 graduation due ·
+  multi-image shares one recipe · token store → keystore pre-prod · orphan-
+  image GC · schema-v2 read policy · full a11y pass (16 Nov) · fixture
+  superset · Dropbox production approval · Play App Signing cert at first
+  upload needs BOTH a Drive client (rule 9) AND its manifest entry (rule 10).

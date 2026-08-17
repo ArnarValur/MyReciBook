@@ -3,12 +3,16 @@ goal: extract → save → list → open, installable alpha on closed track 2026
 gate: builds ahead of Gates 1–2 under amended constraint 4 (context.md §4,
       2026-08-06) — gates still decide whether any of this SHIPS
 opened: pulled forward 2026-08-06 (originally 21 Sep) · status: senior review
-        CLOSED 2026-08-09 (all findings fixed, 337 tests, strict analyzers);
+        CLOSED 2026-08-09 (all findings fixed, strict analyzers);
         upload-key build live on the S21 — Arnar's round 2 PROVED camera-photo
         extraction, screenshots and Dropbox connect+sync on-device; Drive
         needed TWO fixes (upload-SHA-1 client in console + reversed-client-id
         redirect, tech rules 9-10) — installed, retry pending; F5 conflict
-        fence + D2 proxy code built
+        fence + D2 proxy code built. 2026-08-15 (remote, folded to main):
+        queue tab retired — slot 2 = Unlock tab (3g pitch promoted from the
+        dev gallery, billing seam awaits 3g; queue = pushed route + Cookbook
+        strip) — and Cookbook grid ⇄ list toggle (CookbookPrefs). 344 tests;
+        neither surface on the S21 yet (needs a dev.env build)
 division: Arnar owns UI/design (sketches after festival); agent owns the engine.
           Skins replace widgets and colors, never flows (editable review, delete,
           reorder are load-bearing — architecture review 2026-08-06).
@@ -18,8 +22,10 @@ design:   skin spec = docs/design/handoff.md (full token→Flutter spec, importe
           docs/design/skin-implementation-map.md. Alpha skin BUILT 2026-08-06: 3a import sheet ·
           3c review · 3d cookbook · 3e detail (+4b empty, 4c failed) + cook mode
           3f (pure view, wired). Post-alpha screens ALSO BUILT as previews behind
-          the debug dev gallery (long-press wordmark): batch 3b · paywall 3g ·
-          storage 3h · grocery 4a · cap 4d — wire when engines land.
+          the debug dev gallery (long-press wordmark): batch 3b · storage 3h ·
+          grocery 4a · cap 4d — wire when engines land. Paywall 3g PROMOTED
+          2026-08-15 to the live Unlock tab (ui/unlock_tab.dart, shared
+          PaywallPitch; the gallery preview keeps the modal form).
 architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork session):
               all 8 proposals agreed → D2–D8 below. Draft §9 maps P# → D#.
 

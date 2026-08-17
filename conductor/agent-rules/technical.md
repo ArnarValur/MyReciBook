@@ -99,3 +99,17 @@
     screen — which reads like a regression in Drive/Dropbox, not like a
     build mistake (Hermes shipped one to the S21, 2026-08-10). Rule 6 says
     where the mirror lives; this one says the flag is never optional.
+12. Remote (web) sessions run in a bare cloud container under a DIFFERENT
+    path (/home/user/...) with NO Flutter SDK — install current stable via
+    the releases_linux.json manifest before claiming any test result. A
+    newer SDK than the repo's rewrites app/analysis_options.yaml (analyzer
+    excludes) and app/pubspec.lock (SDK-pinned transitives) on every
+    pub get/analyze/test — `git checkout --` both before committing so the
+    diff stays the feature (Hermes, remote session 2026-08-15).
+13. Suite flakes ≠ broken change: the real-IO settle() tests (grocery_flow
+    first) starve under parallel test isolates on a loaded machine — the
+    clean tree flakes identically. Verify with `flutter test --concurrency=1`
+    before blaming the diff. Corollary: one settle round advances ~ONE real-
+    IO step, and the atomic write chain (mkdir → write tmp → flush → rename)
+    needs the full default rounds — a 4-round settle lost the persistence
+    write entirely (cookbook_view test, 2026-08-15).
