@@ -74,3 +74,16 @@
     more; sizes only if he asks. Kin to rule 15 (no calendar framing) but
     stricter: "~2 nights" is as banned as "Friday". (Arnar directly, 2026-08-17:
     "Stop these time estimates, they make no sense.")
+22. Gates are not status — never report gate countdowns, "N days to Gate 2",
+    or a nearest-gate line at boot. The criteria stay written in context.md
+    §4 and surface only when a gate is actually being called, or under
+    rule 7 when scope beyond v1 is proposed. Removed from pulse and from
+    .claude/commands/conductor.md. (Arnar, 2026-08-18: "these gates are
+    also noise.")
+23. Don't raise a risk without checking whether it is live YET — the keystore
+    backup was pitched as urgent when nothing had been uploaded to Play, so
+    the risk did not exist. A queued item is not automatically a live one:
+    before surfacing it, verify its precondition holds today. Say the plain
+    fact first, keep the framing proportional, and drop it when he shows the
+    precondition is missing. (Arnar, 2026-08-18: "the app isn't on play
+    store... it's on my computer.")

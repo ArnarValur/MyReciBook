@@ -1,12 +1,12 @@
 # Pulse — MyReciBook
 *State only. REWRITTEN at every checkpoint, never appended. Cap 60 lines.*
 
-> **Updated:** 2026-08-17 late-night by checkpoint (follow-ons landed)
+> **Updated:** 2026-08-18 by checkpoint (short session — pulse hygiene only)
 ## 📍 Now
-- Phase: pre-project (kickoff 2026-08-20, 3 days); building unblocked, gates
-  decide ship/stop (context.md §4). GATE 1 PASSED; T1 closed.
-- PANTRY SHIPPED THE WHOLE WAY on branch poc/pantry-follow (= main + 4
-  commits, NOT folded — fold is Arnar's call). Proven on his S21:
+- Phase: build, unblocked. T1 closed. Gates live in context.md §4 — they are
+  not status, don't report them unless one is actually being called.
+- PANTRY SHIPPED THE WHOLE WAY and IS ON MAIN (b06affd; poc/pantry-follow
+  folded and deleted, tree clean, in sync with origin). Proven on his S21:
   collect-mode barcode scan (3s cooldown) → OFF lookup → one JSON per
   product · pantry tab on nav slot 2 (kPantryEnabled; false restores
   Unlock) · per-100g macro detail · user photo per product · ingredient
@@ -38,13 +38,16 @@
 - Turn-7 design queue: collapsing hero ratify · manual entry · edit copy ·
   batch edges · error-log door · pantry surfaces (all built minimal).
 - OPEN (Arnar): design authority in git (design-system gitignored).
+- KEYSTORE BACKUP: raised 2026-08-18, dropped as premature — nothing is
+  uploaded to Play, so a lost upload key costs nothing today. Re-raise it
+  only at the first Play upload, not before.
 
 ## 🚀 Active tracks
 - T5 nutrition — capture + linking + sync SHIPPED (see Now). Plan:
   conductor/tracks/T5-nutrition/plan.md. Next in-track: remembered links
   (N7) → unit table → nutrition badge. NO inventory tracking (named trap).
 - T3 mvp-build — billing 3g next engine seam, waiting on Play profile.
-- T2 landing-page — myrecibook.com registered; live 2 Sep (Gate 2 needs it).
+- T2 landing-page — myrecibook.com registered; not built yet.
 
 ## ⚠️ Blockers
 - Billing 3g ← Play developer profile (Arnar) → fee → Console app+product.
@@ -53,10 +56,11 @@
 ## 📋 Next queue (sequence — no schedule)
 1. Arnar: finish Play profile → pay fee → Console app + one-time product.
 2. Billing 3g: real purchase into the Unlock seam.
-3. Arnar decisions: fold poc/pantry-follow → main · proxy deploy + cap ·
-   versioning · keystore backup · design-authority-in-git.
-4. Pantry follow-ons: remembered links (N7, the coverage engine) → unit
-   table (feeds nutrition badge AND grocery package math, N8 tier 3).
+3. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
+   design-authority-in-git.
+4. Pantry follow-ons: N7 remembered links DECLINED by Arnar 2026-08-18 ("not
+   for now") — do not re-queue it. Unit table still open (feeds nutrition
+   badge AND grocery package math, N8 tier 3).
 5. Design turn 7 · T2 landing page · D9 link spike when his links arrive.
 
 ## 📌 Parked

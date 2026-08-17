@@ -197,3 +197,17 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   and the lesson is now a rule.
 - FULL SUITE 454/454, run serially — first complete run in a while.
 - Next: fold poc/pantry-follow when you say so; then remembered links.
+
+## 2026-08-18 — short session: pulse cleaned, nothing built
+- The pulse was out of date: it claimed the pantry work was still waiting on
+  a side branch for your fold call. It was already on main. Corrected.
+- You said the gates are noise. They're out of the pulse and out of the boot
+  report — the stop-rules stay written in context.md, I just won't recite
+  them at you. Graduated as behavioral rule 22.
+- You said no to N7 (remembered links) for now. Recorded, not re-queued.
+- I raised a keystore backup and oversold it as urgent. You were right that
+  it isn't — nothing is on Play yet, so a lost key costs nothing today.
+  Dropped; it comes back at the first upload.
+- I explained things badly this whole session and you told me so three
+  times. No code changed, no tests run. Nothing is broken.
+- Next: your call — Play profile / billing, landing page, or unit table.

@@ -8,6 +8,6 @@
 | T2 | landing-page | planned — live 2 Sep; channels researched → docs/marketing-channels.md | "Rescue your camera roll" page → Gate 2: 200 signups by 20 Sep |
 | T3 | mvp-build | 2026-08-17 — DRIVE SMOKE PASSED on the S21 (both connectors proven); Unlock why-card static; cover store-layer tests in, UI-tap tests dropped (Arnar) | Next: Play profile (~18 Aug) → fee → Console → billing 3g; alpha 19 Oct |
 | T4 | launch | planned — 16 Nov→11 Dec | listing (privacy page + support email on myrecibook.com), ASO, launch content → production 2026-12-11 |
-| T5 | nutrition | 2026-08-17 night — capture + linking + photos folded to main; sync case + grocery tiers 1+2 on poc/pantry-follow (unfolded); pantry now lives in the user's folder, 28 products migrated on-device; suite 454/454 | Next: remembered links (N7) → unit table → nutrition badge; NO inventory tracking (named trap) |
+| T5 | nutrition | 2026-08-18 — ALL pantry work is on main (b06affd): capture, linking, photos, pantry/ sync in the user's folder (28 products migrated on-device), grocery tiers 1+2; suite 454/454 | N7 remembered links DECLINED by Arnar 2026-08-18 — do not re-queue. Next open: unit table → nutrition badge; NO inventory tracking (named trap) |
 
 Errands (not tracks): Play Console registration — 20 Aug morning (festival budget, agreed 2026-08-05); lives in pulse ⚠️.
