@@ -1,12 +1,16 @@
 // Pantry barcode scan — poc/pantry-scan spike (2026-08-17). Live EAN/UPC
-// capture for a future pantry surface: full-screen camera with a torch
-// toggle, plus a gallery fallback that reuses the app-wide PhotoSources seam
-// (the same provider the detail screen's cover picker reads). The screen only
-// CAPTURES the digits — what a product code means is the caller's business.
+// capture: full-screen camera with a torch toggle, plus a gallery fallback
+// that reuses the app-wide PhotoSources seam (the same provider the detail
+// screen's cover picker reads). The screen only CAPTURES digits — what a
+// product code means is the caller's business.
 //
-// Hidden behind kPantryEnabled (features.dart) and wired into no navigation;
-// the wiring session does that. Push with `Navigator.push<String>`; resolves
-// to the barcode digits, or null when the user backs out.
+// Two modes (Arnar's S21 pass, same day: "scanning mode sorta speak"):
+// - collect != null — the shelf-sweep flow. Each detection hands digits to
+//   [collect], flashes its feedback over the live preview, cools down ~3 s,
+//   and keeps scanning. Back ends the session; the caller's list is already
+//   up to date because collect did the saving.
+// - collect == null — legacy one-shot: haptic + green flash, then pops the
+//   digits as a String (null when the user backs out).
 
 import 'dart:async' show unawaited;
 
@@ -20,8 +24,23 @@ import '../photo_sources.dart';
 import '../theme.dart';
 import '../widgets/skin.dart';
 
+/// What a collect-mode detection came to: one line for the flash chip.
+class ScanFeedback {
+  const ScanFeedback(this.message, {this.ok = true});
+
+  final String message;
+
+  /// false = shown in error red (not found / lookup down), true = success.
+  final bool ok;
+}
+
+typedef ScanCollect = Future<ScanFeedback> Function(String digits);
+
 class BarcodeScanScreen extends StatefulWidget {
-  const BarcodeScanScreen({super.key});
+  const BarcodeScanScreen({super.key, this.collect});
+
+  /// Collect mode: called per detection; the screen stays open and scans on.
+  final ScanCollect? collect;
 
   @override
   State<BarcodeScanScreen> createState() => _BarcodeScanScreenState();
@@ -36,9 +55,23 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
     BarcodeFormat.upcE,
   ];
 
+  /// Post-flash breather before the next detection counts.
+  static const _cooldown = Duration(seconds: 3);
+
+  /// A jar still in frame right after cooldown must not re-add itself.
+  static const _sameCodeGrace = Duration(seconds: 8);
+
   final _controller = MobileScannerController(formats: _formats);
-  String? _found; // digits once detected — drives the confirm flash
+  String? _found; // one-shot mode: digits once detected — the confirm flash
   bool _busy = false; // gallery decode in flight
+
+  // Collect-mode state: the flash chip and the detection gate.
+  String? _flash;
+  bool _flashOk = true;
+  bool _looking = false;
+  bool _cooling = false;
+  String? _lastDigits;
+  DateTime _lastAt = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   void dispose() {
@@ -56,24 +89,62 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
     return null;
   }
 
-  /// The one way out with a result: haptic + green flash, then pop.
-  Future<void> _confirm(String digits) async {
+  void _onDetect(BarcodeCapture capture) {
+    final digits = _digitsOf(capture);
+    if (digits == null) return;
+    if (widget.collect != null) {
+      unawaited(_handleCollect(digits));
+    } else {
+      unawaited(_confirmOneShot(digits));
+    }
+  }
+
+  /// Collect mode: save through the caller, flash the verdict, cool down,
+  /// keep the camera rolling — the next product needs no button press.
+  Future<void> _handleCollect(String digits) async {
+    if (_cooling || _looking) return;
+    if (digits == _lastDigits &&
+        DateTime.now().difference(_lastAt) < _sameCodeGrace) {
+      return;
+    }
+    HapticFeedback.vibrate(); // same confirm gesture as cook mode's timer
+    setState(() {
+      _looking = true;
+      _flash = 'Looking it up…';
+      _flashOk = true;
+    });
+    final fb = await widget.collect!(digits);
+    if (!mounted) return;
+    _lastDigits = digits;
+    _lastAt = DateTime.now();
+    setState(() {
+      _looking = false;
+      _cooling = true;
+      _flash = fb.message;
+      _flashOk = fb.ok;
+    });
+    await Future<void>.delayed(_cooldown);
+    if (!mounted) return;
+    setState(() {
+      _flash = null;
+      _cooling = false;
+    });
+  }
+
+  /// One-shot mode's way out with a result: haptic + green flash, then pop.
+  Future<void> _confirmOneShot(String digits) async {
     if (_found != null) return; // live frames can double-fire
     unawaited(_controller.stop());
-    HapticFeedback.vibrate(); // same confirm gesture as cook mode's timer
+    HapticFeedback.vibrate();
     setState(() => _found = digits);
     // Long enough to read the flash, short enough to feel instant.
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (mounted) Navigator.of(context).pop(digits);
   }
 
-  void _onDetect(BarcodeCapture capture) {
-    final digits = _digitsOf(capture);
-    if (digits != null) unawaited(_confirm(digits));
-  }
-
   /// Gallery fallback — screenshots of barcodes exist too. Reuses the
   /// injected picker, so tests and future platforms swap it for free.
+  /// One code per image for now (multi-barcode shelf shots: known gap).
   Future<void> _fromGallery() async {
     final photos = context.read<PhotoSources>();
     setState(() => _busy = true);
@@ -84,7 +155,11 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
           await _controller.analyzeImage(file.path, formats: _formats));
       if (!mounted) return;
       if (digits != null) {
-        await _confirm(digits);
+        if (widget.collect != null) {
+          await _handleCollect(digits);
+        } else {
+          await _confirmOneShot(digits);
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text('No barcode in that image — try a closer, '
@@ -98,6 +173,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final collectMode = widget.collect != null;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -107,7 +183,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
         systemOverlayStyle: SystemUiOverlayStyle.light,
         iconTheme: const IconThemeData(color: Colors.white),
         leading: const AppBackButton(),
-        title: Text('Scan a barcode',
+        title: Text(collectMode ? 'Collect your pantry' : 'Scan a barcode',
             style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
       ),
       body: Stack(
@@ -140,7 +216,12 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Point the camera at the product barcode',
+                    Text(
+                        collectMode
+                            ? 'Point at a barcode — each product saves as '
+                                'you go. Back when the shelf is done.'
+                            : 'Point the camera at the product barcode',
+                        textAlign: TextAlign.center,
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: Colors.white70)),
                     const SizedBox(height: 12),
@@ -176,7 +257,9 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                             : GlassPill(
                                 icon: Icons.photo_library_rounded,
                                 label: 'From a photo',
-                                onTap: _found != null ? null : _fromGallery,
+                                onTap: _found != null || _looking
+                                    ? null
+                                    : _fromGallery,
                               ),
                       ],
                     ),
@@ -185,7 +268,52 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
               ),
             ),
           ),
-          // Confirm flash: dim the preview, show the digits on success green.
+          // Collect-mode flash: verdict chip over the live preview — no dim,
+          // the user is already aiming at the next product.
+          if (_flash != null)
+            IgnorePointer(
+              child: Align(
+                alignment: const Alignment(0, -0.62),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 28),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _flashOk
+                        ? RbColors.success
+                        : theme.colorScheme.error,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_looking)
+                        const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
+                      else
+                        Icon(
+                            _flashOk
+                                ? Icons.check_rounded
+                                : Icons.error_outline_rounded,
+                            size: 18,
+                            color: Colors.white),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(_flash!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall
+                                ?.copyWith(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          // One-shot confirm flash: dim the preview, show the digits.
           if (_found != null)
             ColoredBox(
               color: Colors.black54,

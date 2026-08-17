@@ -33,42 +33,31 @@ class _PantryTabState extends State<PantryTab> {
     });
   }
 
-  Future<void> _scan() async {
-    final model = context.read<PantryModel>();
-    if (model.busy) return;
-    final digits = await Navigator.of(context).push<String>(
-      MaterialPageRoute<String>(builder: (_) => const BarcodeScanScreen()),
-    );
-    if (digits == null || !mounted) return;
-    final outcome = await model.addByBarcode(digits);
-    if (!mounted) return;
-    final messenger = ScaffoldMessenger.of(context)..removeCurrentSnackBar();
+  /// The shelf-sweep session: the scan screen stays open, saving product
+  /// after product through [_collect]; Back lands here with the list already
+  /// current (the model notified on every add).
+  Future<void> _scan() =>
+      Navigator.of(context).push<void>(MaterialPageRoute<void>(
+          builder: (_) => BarcodeScanScreen(collect: _collect)));
+
+  /// One detection → one honest flash line. The three-way outcome keeps
+  /// "OFF didn't answer" visibly different from "not in the database".
+  Future<ScanFeedback> _collect(String digits) async {
+    final outcome = await context.read<PantryModel>().addByBarcode(digits);
     switch (outcome) {
       case PantryAdded(:final product, :final wasKnown):
-        messenger.showSnackBar(SnackBar(
-            content: Text(wasKnown
-                ? '${product.name} refreshed — already on your shelf'
-                : '${product.name} added to your pantry')));
+        return ScanFeedback(wasKnown
+            ? '${product.name} — refreshed'
+            : '${product.name} — added');
       case PantryNotFound():
-        messenger.showSnackBar(const SnackBar(
-            content: Text('Not on Open Food Facts yet — the label-photo '
-                'rescue lands later. Nothing saved.')));
+        return const ScanFeedback('Not on Open Food Facts — nothing saved',
+            ok: false);
       case PantryUnavailable():
-        messenger.showSnackBar(SnackBar(
-          content: const Text('Open Food Facts didn\'t answer — nothing '
-              'saved. Worth one more try.'),
-          action: SnackBarAction(label: 'Retry', onPressed: _retry(digits)),
-        ));
+        return const ScanFeedback(
+            'Open Food Facts didn\'t answer — scan it again',
+            ok: false);
     }
   }
-
-  VoidCallback _retry(String digits) => () async {
-        final model = context.read<PantryModel>();
-        final outcome = await model.addByBarcode(digits);
-        if (!mounted || outcome is! PantryAdded) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('${outcome.product.name} added to your pantry')));
-      };
 
   Future<void> _removeSheet(PantryModel model, String id, String name) async {
     final ok = await showDestructiveConfirm(
