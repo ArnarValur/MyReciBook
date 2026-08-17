@@ -244,6 +244,14 @@ class Ingredient {
   final String? group;
   final double? confidence;
 
+  /// Link to a pantry product ([Product.id]: barcode, or name slug for manual
+  /// products) — the user's own match ("250ml Milk" → their Mellommelk),
+  /// picked by hand and remembered in the recipe file; nutrition math follows
+  /// it. Absent in JSON unless set, so untouched files round-trip
+  /// byte-identical (favorite's rule). A dangling ref (product deleted) is
+  /// display-time noise, never an error.
+  final String? productRef;
+
   const Ingredient({
     required this.raw,
     this.qty,
@@ -252,6 +260,7 @@ class Ingredient {
     this.note,
     this.group,
     this.confidence,
+    this.productRef,
   });
 
   factory Ingredient.fromJson(Map<String, dynamic> json) => Ingredient(
@@ -262,6 +271,7 @@ class Ingredient {
         note: json['note'] as String?,
         group: json['group'] as String?,
         confidence: (json['confidence'] as num?)?.toDouble(),
+        productRef: json['product_ref'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -272,9 +282,14 @@ class Ingredient {
         'note': note,
         'group': group,
         'confidence': confidence,
+        if (productRef != null) 'product_ref': productRef,
       };
 
-  Ingredient copyWith({String? raw}) => Ingredient(
+  /// `productRef:` accepts a new ref, omission (keep), or [clearProductRef]
+  /// (unlink) — cover's tri-state rule.
+  Ingredient copyWith(
+          {String? raw, String? productRef, bool clearProductRef = false}) =>
+      Ingredient(
         raw: raw ?? this.raw,
         qty: qty,
         unit: unit,
@@ -282,6 +297,7 @@ class Ingredient {
         note: note,
         group: group,
         confidence: confidence,
+        productRef: clearProductRef ? null : (productRef ?? this.productRef),
       );
 }
 

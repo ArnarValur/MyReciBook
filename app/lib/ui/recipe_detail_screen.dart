@@ -8,11 +8,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../domain/product.dart';
 import '../domain/recipe.dart';
+import '../features.dart';
 import 'cook_mode_screen.dart';
 import 'grocery_model.dart';
 import 'import_review_screen.dart';
 import 'library_model.dart';
+import 'pantry/pantry_model.dart';
 import 'photo_sources.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
@@ -40,6 +43,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     super.initState();
     _loadOriginals();
     _loadCover();
+    // Linked-row labels need the pantry list; cheap and cached after boot.
+    if (kPantryEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.read<PantryModel>().ensureLoaded();
+      });
+    }
   }
 
   @override
@@ -510,10 +519,95 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     );
   }
 
+  /// Long-press an ingredient row → pick the pantry product it means. The
+  /// user is the matcher (no AI): "250ml Milk" → their Mellommelk, saved in
+  /// the recipe file as product_ref, nutrition math follows the link.
+  Future<void> _linkSheet(int index) async {
+    final pantry = context.read<PantryModel>();
+    await pantry.ensureLoaded();
+    if (!mounted) return;
+    final ing = _recipe.ingredients[index];
+    if (pantry.products.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Your pantry is empty — scan some products on the '
+              'Pantry tab first, then link them here.')));
+      return;
+    }
+    final choice = await showModalBottomSheet<Object>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.7),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+                child: SectionLabel('Which product is "${ing.item ?? ing.raw}"?'),
+              ),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                  children: [
+                    if (ing.productRef != null)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.link_off_rounded,
+                            color: ctx.scheme.error),
+                        title: const Text('Unlink'),
+                        onTap: () => Navigator.pop(ctx, false),
+                      ),
+                    for (final p in pantry.products)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.kitchen_rounded,
+                            color: p.id == ing.productRef
+                                ? ctx.scheme.primary
+                                : ctx.scheme.onSurfaceVariant),
+                        title: Text(p.name,
+                            style: TextStyle(
+                                color: p.id == ing.productRef
+                                    ? ctx.scheme.primary
+                                    : null)),
+                        subtitle: (p.brand ?? '').isEmpty
+                            ? null
+                            : Text(p.brand!),
+                        onTap: () => Navigator.pop(ctx, p),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || choice == null) return;
+    final next = [..._recipe.ingredients];
+    if (choice is Product) {
+      next[index] = ing.copyWith(productRef: choice.id);
+      await _persist(_recipe.copyWith(ingredients: next),
+          confirmation: 'Linked to ${choice.name}');
+    } else {
+      next[index] = ing.copyWith(clearProductRef: true);
+      await _persist(_recipe.copyWith(ingredients: next),
+          confirmation: 'Unlinked');
+    }
+  }
+
   List<Widget> _ingredientRows(ThemeData theme, ColorScheme scheme) {
     final rows = <Widget>[];
     String? prevGroup;
     final rb = context.rb;
+    // Linked labels resolve against the live pantry; a dangling ref (product
+    // removed) just shows nothing — display noise, never an error.
+    final pantryProducts =
+        kPantryEnabled ? context.watch<PantryModel>().products : const <Product>[];
     for (var i = 0; i < _recipe.ingredients.length; i++) {
       final ing = _recipe.ingredients[i];
       if (ing.group != null && ing.group != prevGroup) {
@@ -526,9 +620,19 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       prevGroup = ing.group;
       final checked = _checked.contains(i);
       final last = i == _recipe.ingredients.length - 1;
+      Product? linked;
+      if (ing.productRef != null) {
+        for (final p in pantryProducts) {
+          if (p.id == ing.productRef) {
+            linked = p;
+            break;
+          }
+        }
+      }
       rows.add(InkWell(
         onTap: () => setState(
             () => checked ? _checked.remove(i) : _checked.add(i)),
+        onLongPress: kPantryEnabled ? () => _linkSheet(i) : null,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 9),
           decoration: last
@@ -556,15 +660,36 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text.rich(
-                  qtyBoldSpan(
-                    ing.raw,
-                    theme.textTheme.bodyMedium?.copyWith(
-                      decoration:
-                          checked ? TextDecoration.lineThrough : null,
-                      color: checked ? scheme.onSurfaceVariant : null,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text.rich(
+                      qtyBoldSpan(
+                        ing.raw,
+                        theme.textTheme.bodyMedium?.copyWith(
+                          decoration:
+                              checked ? TextDecoration.lineThrough : null,
+                          color: checked ? scheme.onSurfaceVariant : null,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (linked != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Row(children: [
+                          Icon(Icons.kitchen_rounded,
+                              size: 12, color: scheme.primary),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(linked.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                    color: scheme.primary, fontSize: 11.5)),
+                          ),
+                        ]),
+                      ),
+                  ],
                 ),
               ),
             ],
