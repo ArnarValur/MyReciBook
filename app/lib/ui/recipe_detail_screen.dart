@@ -599,8 +599,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                           for (final p in matches)
                             ListTile(
                               contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.kitchen_rounded,
-                                  color: p.id == ing.productRef
+                              leading: _productLeading(
+                                  pantry.imageFileOf(p),
+                                  p.id == ing.productRef
                                       ? ctx.scheme.primary
                                       : ctx.scheme.onSurfaceVariant),
                               title: Text(p.name,
@@ -635,6 +636,22 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       await _persist(_recipe.copyWith(ingredients: next),
           confirmation: 'Unlinked');
     }
+  }
+
+  /// Picker rows show the user's own product photo when one exists —
+  /// their shelf, recognizable at a glance (Arnar's ask, 2026-08-17).
+  static Widget _productLeading(File? image, Color iconColor) {
+    if (image != null && image.existsSync()) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child:
+            Image.file(image, width: 36, height: 36, fit: BoxFit.cover, cacheWidth: 108),
+      );
+    }
+    return SizedBox(
+        width: 36,
+        height: 36,
+        child: Icon(Icons.kitchen_rounded, color: iconColor));
   }
 
   List<Widget> _ingredientRows(ThemeData theme, ColorScheme scheme) {
