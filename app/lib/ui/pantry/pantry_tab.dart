@@ -59,76 +59,11 @@ class _PantryTabState extends State<PantryTab> {
     }
   }
 
-  /// Tap a row → everything its file carries, per 100 g. Read-only; the
-  /// design turn decides the real product screen. Null macros just don't
-  /// print — OFF is crowdsourced and sparse files are normal.
-  Future<void> _detailSheet(Product p) {
-    final theme = Theme.of(context);
-    final scheme = context.scheme;
-    final n = p.nutriments;
-    final rows = <(String, double?, String)>[
-      ('Energy', n?.kcal, 'kcal'),
-      ('Fat', n?.fat, 'g'),
-      ('— of which saturated', n?.saturatedFat, 'g'),
-      ('Carbohydrates', n?.carbs, 'g'),
-      ('— of which sugars', n?.sugars, 'g'),
-      ('Protein', n?.protein, 'g'),
-      ('Salt', n?.salt, 'g'),
-    ];
-    final meta = [
-      if ((p.brand ?? '').isNotEmpty) p.brand!,
-      if ((p.quantity ?? '').isNotEmpty) p.quantity!,
-    ].join(' · ');
-    return showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(p.name,
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w700)),
-            if (meta.isNotEmpty)
-              Text(meta,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: scheme.onSurfaceVariant)),
-            const SizedBox(height: 14),
-            if (rows.every((r) => r.$2 == null))
-              Text(
-                'No nutrition data on Open Food Facts for this one — the '
-                'label-photo rescue will fill it in later.',
-                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
-              )
-            else ...[
-              const SectionLabel('Per 100 g'),
-              const SizedBox(height: 4),
-              for (final (label, value, unit) in rows)
-                if (value != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: Row(children: [
-                      Expanded(
-                          child: Text(label,
-                              style: theme.textTheme.bodyMedium)),
-                      Text(
-                          '${value == value.roundToDouble() ? value.round() : value} $unit',
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w600)),
-                    ]),
-                  ),
-            ],
-            const SizedBox(height: 12),
-            Text('From Open Food Facts · barcode ${p.barcode}',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: scheme.onSurfaceVariant)),
-          ],
-        ),
-      ),
-    );
-  }
+  /// Tap a row → pushed detail page (the recipe-detail gesture; a bottom
+  /// sheet fought the device's own nav bar — Arnar's S21 pass, 2026-08-17).
+  Future<void> _openDetail(Product p) =>
+      Navigator.of(context).push<void>(MaterialPageRoute<void>(
+          builder: (_) => _ProductDetailScreen(product: p)));
 
   Future<void> _removeSheet(PantryModel model, String id, String name) async {
     final ok = await showDestructiveConfirm(
@@ -199,7 +134,7 @@ class _PantryTabState extends State<PantryTab> {
               for (final p in model.products)
                 _ProductRow(
                   product: p,
-                  onTap: () => _detailSheet(p),
+                  onTap: () => _openDetail(p),
                   onLongPress: () => _removeSheet(model, p.id, p.name),
                 ),
             if (model.skipped > 0) ...[
@@ -279,6 +214,94 @@ class _ProductRow extends StatelessWidget {
             ],
           ]),
         ),
+      ),
+    );
+  }
+}
+
+/// Product detail — everything the file carries, per 100 g, on a pushed
+/// route (covers the glass bar like every detail screen). Read-only and
+/// deliberately cover-less; the design turn decides the real look. Null
+/// macros just don't print — OFF is crowdsourced and sparse files are normal.
+class _ProductDetailScreen extends StatelessWidget {
+  const _ProductDetailScreen({required this.product});
+
+  final Product product;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    final n = product.nutriments;
+    final rows = <(String, double?, String)>[
+      ('Energy', n?.kcal, 'kcal'),
+      ('Fat', n?.fat, 'g'),
+      ('— of which saturated', n?.saturatedFat, 'g'),
+      ('Carbohydrates', n?.carbs, 'g'),
+      ('— of which sugars', n?.sugars, 'g'),
+      ('Protein', n?.protein, 'g'),
+      ('Salt', n?.salt, 'g'),
+    ];
+    final meta = [
+      if ((product.brand ?? '').isNotEmpty) product.brand!,
+      if ((product.quantity ?? '').isNotEmpty) product.quantity!,
+    ].join(' · ');
+
+    return Scaffold(
+      appBar: AppBar(leading: const AppBackButton()),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        children: [
+          Text(product.name,
+              style: theme.textTheme.headlineMedium
+                  ?.copyWith(fontSize: 24, letterSpacing: -0.3)),
+          if (meta.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(meta,
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(color: scheme.onSurfaceVariant)),
+          ],
+          const SizedBox(height: 20),
+          if (rows.every((r) => r.$2 == null))
+            Text(
+              'No nutrition data on Open Food Facts for this one — the '
+              'label-photo rescue will fill it in later.',
+              style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+            )
+          else
+            TokenCard(
+              radius: 16,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SectionLabel('Per 100 g'),
+                  const SizedBox(height: 6),
+                  for (final (label, value, unit) in rows)
+                    if (value != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(children: [
+                          Expanded(
+                              child: Text(label,
+                                  style: theme.textTheme.bodyMedium)),
+                          Text(
+                              '${value == value.roundToDouble() ? value.round() : value} $unit',
+                              style: theme.textTheme.bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600)),
+                        ]),
+                      ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 14),
+          Text(
+            'From Open Food Facts · barcode ${product.barcode}\n'
+            'Saved as its own file in your pantry folder.',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
+          ),
+        ],
       ),
     );
   }
