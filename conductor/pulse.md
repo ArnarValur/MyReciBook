@@ -1,53 +1,53 @@
 # Pulse — MyReciBook
 *State only. REWRITTEN at every checkpoint, never appended. Cap 60 lines.*
 
-> **Updated:** 2026-08-15 by checkpoint (remote session folded to main)
+> **Updated:** 2026-08-17 by checkpoint (S21 session: Drive smoke passed)
 ## 📍 Now
-- Phase: pre-project (kickoff 2026-08-20); building unblocked, gates decide
-  ship/stop (context.md §4). GATE 1 PASSED; T1 closed. Behavioral 15–20 live.
-- SHIPPED TO MAIN 2026-08-15 (Arnar's calls, remote session): ① queue tab
-  retired — slot 2 = Unlock tab (3g pitch via shared PaywallPitch, CTA
-  honestly disabled until billing 3g; queue lives on as pushed batch route +
-  Cookbook strip/badge; flags kUnlockTabEnabled · kSpreadWordEnabled) —
-  settles the turn-7 nav question. ② Cookbook grid ⇄ list toggle at the
-  filter bar's end (CookbookPrefs → 'cookbook_view', persists).
-  GIFTING IMPOSSIBLE on Play — promo codes (500/quarter, Console) at launch.
-- NOT yet on the S21 — next install needs dev.env flag (tech rule 11).
-- PLAY FEE: GO given 2026-08-15 ("I will pay… so we can publish after
-  weekend") — pays at workstation; then billing 3g wires the Unlock seam.
-- DRIVE AUTH: rule-10 fix installed; his connect retry still NOT run.
-  Drive smoke = queue head, unchanged since 2026-08-09.
-- Covers rework UNTESTED PATH — cover-flow tests still the known gap.
-  344 app + 10 proxy tests, analyzers clean; flaky under parallel isolates
-  on loaded machines (tech rule 13). Suite still unaudited by Arnar.
+- Phase: pre-project (kickoff 2026-08-20, 3 days); building unblocked, gates
+  decide ship/stop (context.md §4). GATE 1 PASSED; T1 closed.
+- DRIVE SMOKE PASSED 2026-08-17 — Arnar on a fresh dev.env build on the S21:
+  connect, save, sync, reopen all clean. Queue head since 08-09 is closed.
+  Both connectors now proven on-device (Dropbox passed 08-09).
+- S21 carries current main + today's change: the Unlock tab's "Why not a
+  subscription?" collapse is now a STATIC CARD (Arnar's call on the installed
+  build). Eyeball pass on Unlock tab + grid ⇄ list toggle PASSED.
+- Covers: STORE LAYER TESTED (6 new tests — copy-in, jpg↔png swap, remove
+  takes bytes, promote = ref not copy, delete takes cover, edit keeps it).
+  UI tap-choreography tests DROPPED 2026-08-17 (Arnar: "just drop it") —
+  do not re-queue (behavioral 16). One data wipe on the S21 agreed 08-17
+  (foreign-keystore install; tech rule 15).
+- Tests: 350 app on paper (344 + 6 new) + 10 proxy; today only touched files
+  re-ran green (recipe_store 21/21, unlock_tab 3/3). Full suite not re-run;
+  still unaudited by Arnar; flaky under parallel isolates (tech rule 13).
+- PLAY: developer profile IN PROGRESS (Arnar, preliminaries) — expected
+  ~2026-08-18. Then fee → Console app + one-time product → billing 3g wires
+  the real purchase into the Unlock seam.
 - D2 PROXY BUILT, NOT DEPLOYED (key server-side, cap strawman 100/mo);
   deploy = his gcloud call ($0 tier) + listed cap. Versioning 0.5.0+2
-  strawman awaits him.
-- Turn-7 design queue: collapsing hero · manual entry · edit copy · batch
-  edges (grep DEVIATION) · error-log door (dialog UNDESIGNED).
+  strawman awaits him. GIFTING IMPOSSIBLE on Play — promo codes at launch.
+- Turn-7 design queue: collapsing hero ratify · manual entry · edit copy ·
+  batch edges (grep DEVIATION) · error-log door (dialog UNDESIGNED).
 - OPEN (Arnar): design authority in git (unzipped design-system gitignored).
 
 ## 🚀 Active tracks
-- T3 mvp-build — Unlock tab + list toggle on main; Drive retry the one open
-  proof. Plan: conductor/tracks/T3-mvp-build/plan.md
+- T3 mvp-build — Drive smoke PASSED; billing 3g is the next engine seam,
+  waiting on the Play profile. Plan: conductor/tracks/T3-mvp-build/plan.md
 - T2 landing-page — myrecibook.com registered; live 2 Sep. Channels →
   docs/marketing-channels.md (5 venues; seed accounts).
 
 ## ⚠️ Blockers
-- Drive smoke result ← Arnar retries connect on the installed build.
-- Billing 3g ← fee payment (GO given) ← Console app + product setup.
+- Billing 3g ← Play developer profile (Arnar, ~18 Aug) → fee → Console
+  app + product setup.
 - Proxy deploy + listed cap number ← Arnar's gcloud/billing decision.
 
 ## 📋 Next queue (sequence — no schedule)
-1. Arnar: Drive retry → save → files on Drive → kill/reopen = smoke PASSED.
-2. Fresh dev.env build → S21 → eyeball pass (Unlock tab + list toggle).
-3. Cover-flow tests (the known gap).
-4. Fee $25 → Console → billing 3g (product + purchase into the Unlock
-   seam) → flip kSpreadWordEnabled when the listing is live.
-5. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
-   design-authority-in-git. Then Design turn 7 · T2 landing.
-6. D9 link spike WHEN his 5–10 real test links arrive (asked again
-   2026-08-15) — evidence before the bet is re-argued.
+1. Arnar: finish Play profile → pay fee → Console app + one-time product.
+2. Billing 3g: real purchase into the Unlock seam; flip kSpreadWordEnabled
+   when the listing is live.
+3. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
+   design-authority-in-git.
+4. Design turn 7 · T2 landing page (live 2 Sep — Gate 2 needs it).
+5. D9 link spike WHEN his 5–10 real test links arrive (asked 2026-08-15).
 
 ## 📌 Parked
 - Proxy DEPLOY (D2: before 11 Dec) · durable cap store (4d) · Play Integrity ·

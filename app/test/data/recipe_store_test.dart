@@ -157,6 +157,102 @@ void main() {
     });
   });
 
+  // The cover contract (Arnar 2026-08-10): a picked photo is copied into the
+  // user's own folder as images/<id>-cover.<ext> so it syncs and survives a
+  // reinstall; "remove" takes the bytes with it; a promoted screenshot is a
+  // ref to bytes that already live there — never a second copy.
+  group('cover', () {
+    test('picked photo → images/<id>-cover.jpg, ref in JSON, round-trips',
+        () async {
+      final photo = await tempImage('dish.jpg', [7, 7, 7]);
+      final saved = await store.save(
+          validRecipe('c1', importedAt: '2026-08-10T10:00:00Z'), const [],
+          coverImage: photo);
+
+      expect(saved.cover, 'images/c1-cover.jpg');
+      expect(await File('${root.path}/images/c1-cover.jpg').readAsBytes(),
+          [7, 7, 7]);
+      final onDisk = jsonDecode(
+          await File('${root.path}/c1.json').readAsString())
+          as Map<String, dynamic>;
+      expect(onDisk['cover'], 'images/c1-cover.jpg');
+      expect((await store.load('c1'))!.cover, 'images/c1-cover.jpg');
+    });
+
+    test('jpg → png swap deletes the stale extension', () async {
+      final jpg = await tempImage('one.jpg', [1]);
+      final png = await tempImage('two.png', [2]);
+      final first = await store.save(
+          validRecipe('c2', importedAt: '2026-08-10T10:00:00Z'), const [],
+          coverImage: jpg);
+      final second = await store.save(first, const [], coverImage: png);
+
+      expect(second.cover, 'images/c2-cover.png');
+      expect(await File('${root.path}/images/c2-cover.png').exists(), isTrue);
+      // The orphan jpg would otherwise sync forever with nothing pointing at it.
+      expect(await File('${root.path}/images/c2-cover.jpg').exists(), isFalse);
+    });
+
+    test('remove cover drops the JSON key AND the bytes', () async {
+      final photo = await tempImage('dish.jpg', [3]);
+      final withCover = await store.save(
+          validRecipe('c3', importedAt: '2026-08-10T10:00:00Z'), const [],
+          coverImage: photo);
+
+      final removed =
+          await store.save(withCover.copyWith(clearCover: true), const []);
+
+      expect(removed.cover, isNull);
+      final onDisk = jsonDecode(
+          await File('${root.path}/c3.json').readAsString())
+          as Map<String, dynamic>;
+      expect(onDisk.containsKey('cover'), isFalse);
+      expect(await File('${root.path}/images/c3-cover.jpg').exists(), isFalse);
+    });
+
+    test('promoted screenshot is a ref, never a second copy of the bytes',
+        () async {
+      final shot = await tempImage('shot.jpg', [4]);
+      final saved = await store.save(
+          validRecipe('c4', importedAt: '2026-08-10T10:00:00Z'), [shot]);
+
+      final promoted = await store
+          .save(saved.copyWith(cover: 'images/c4-1.jpg'), const []);
+
+      expect(promoted.cover, 'images/c4-1.jpg');
+      expect(await File('${root.path}/images/c4-cover.jpg').exists(), isFalse);
+      expect(await File('${root.path}/images/c4-cover.png').exists(), isFalse);
+    });
+
+    test('re-save without coverImage keeps an existing picked cover '
+        '(post-save edit path)', () async {
+      final photo = await tempImage('dish.jpg', [5]);
+      final withCover = await store.save(
+          validRecipe('c5', importedAt: '2026-08-10T10:00:00Z'), const [],
+          coverImage: photo);
+
+      final edited = await store.save(
+          withCover.copyWith(title: 'Renamed'), const []);
+
+      expect(edited.cover, 'images/c5-cover.jpg');
+      expect(await File('${root.path}/images/c5-cover.jpg').readAsBytes(), [5]);
+    });
+
+    test('delete takes the picked cover with the recipe', () async {
+      final shot = await tempImage('shot.jpg', [6]);
+      final photo = await tempImage('dish.jpg', [7]);
+      await store.save(
+          validRecipe('c6', importedAt: '2026-08-10T10:00:00Z'), [shot],
+          coverImage: photo);
+
+      await store.delete('c6');
+
+      expect(await File('${root.path}/c6.json').exists(), isFalse);
+      expect(await File('${root.path}/images/c6-cover.jpg').exists(), isFalse);
+      expect(await File('${root.path}/images/c6-1.jpg').exists(), isFalse);
+    });
+  });
+
   group('delete', () {
     test('removes JSON and its images, leaves other recipes alone', () async {
       final img1 = await tempImage('a.jpg', [1]);

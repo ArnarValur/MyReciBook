@@ -21,19 +21,11 @@ import 'widgets/skin.dart';
 /// One-time price — single source for the card and the CTA label.
 const String kUnlockPrice = '\$24.99';
 
-/// The 3g pitch: headline, price card, why-not-a-subscription expander.
+/// The 3g pitch: headline, price card, why-not-a-subscription card.
 /// Shared by [UnlockTab] and the DevGallery's PaywallPreview so the copy
 /// can never drift between the tab and the future hard-paywall route.
-class PaywallPitch extends StatefulWidget {
+class PaywallPitch extends StatelessWidget {
   const PaywallPitch({super.key});
-
-  @override
-  State<PaywallPitch> createState() => _PaywallPitchState();
-}
-
-class _PaywallPitchState extends State<PaywallPitch> {
-  // Expanded by default — the expander copy does the persuading (1e note 3).
-  bool _whyOpen = true;
 
   @override
   Widget build(BuildContext context) {
@@ -116,38 +108,22 @@ class _PaywallPitchState extends State<PaywallPitch> {
         const SizedBox(height: 12),
         TokenCard(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: InkWell(
-            onTap: () => setState(() => _whyOpen = !_whyOpen),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Why not a subscription?',
-                        style: theme.textTheme.titleSmall
-                            ?.copyWith(fontSize: 13.5)),
-                    Icon(
-                        _whyOpen
-                            ? Icons.expand_less_rounded
-                            : Icons.expand_more_rounded,
-                        size: 19,
-                        color: scheme.onSurfaceVariant),
-                  ],
-                ),
-                if (_whyOpen) ...[
-                  const SizedBox(height: 7),
-                  Text(
-                    "Because your recipe box shouldn't have a landlord. You "
-                    'buy MyReciBook like you\'d buy a good knife: once.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 12.5,
-                        height: 1.55,
-                        color: scheme.onSurfaceVariant),
-                  ),
-                ],
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Why not a subscription?',
+                  style:
+                      theme.textTheme.titleSmall?.copyWith(fontSize: 13.5)),
+              const SizedBox(height: 7),
+              Text(
+                "Because your recipe box shouldn't have a landlord. You "
+                'buy MyReciBook like you\'d buy a good knife: once.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12.5,
+                    height: 1.55,
+                    color: scheme.onSurfaceVariant),
+              ),
+            ],
           ),
         ),
       ],

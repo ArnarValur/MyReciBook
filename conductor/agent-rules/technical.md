@@ -9,9 +9,10 @@
    "gpt-4o" + fake timestamp, 2026-08-06). Metadata about an extraction — model,
    mode, timestamps, ids, paths — is stamped by our code after parsing, never
    requested from or trusted to the model.
-3. On PlutoII, `cp` is shell-aliased to interactive mode — a scripted `cp` hangs
-   on the overwrite prompt (broke a background build, 2026-08-06). In scripts use
-   `\cp -f` or write via redirection.
+3. On PlutoII, `cp` AND `rm` are shell-aliased to interactive mode — a scripted
+   call hangs or silently no-ops on the prompt (cp broke a background build
+   2026-08-06; rm left a "deleted" test file in place 2026-08-17). In scripts
+   use `\cp -f` / `\rm -f` or write via redirection.
 4. Free-tier Gemini 503s ("high demand") are transient — retry with ~45 s backoff
    succeeded on the first retry (2026-08-06). Build retry-with-backoff into any
    free-tier caller; don't debug a 503.
@@ -113,3 +114,15 @@
     IO step, and the atomic write chain (mkdir → write tmp → flush → rename)
     needs the full default rounds — a 4-round settle lost the persistence
     write entirely (cookbook_view test, 2026-08-15).
+14. testWidgets bodies run under fake-async: ANY real IO started outside
+    `tester.runAsync` (a File write/read in the test body, not just the app's
+    writes) never completes — the test HANGS silently, presenting as an empty
+    output file + a killed timeout, not a failure. Wrap every direct file op
+    in runAsync; the settle() helper only advances IO that runAsync started
+    (cover_flow test hang, 2026-08-17).
+15. Android debug keystores are PER-HOST (~/.android/debug.keystore): an APK
+    installed from another environment (remote container, other machine)
+    blocks `adb install -r` with INSTALL_FAILED_UPDATE_INCOMPATIBLE. Only fix
+    is uninstall, which WIPES app data — warn first, get the yes. Same-host
+    rebuilds thereafter keep data (S21, 2026-08-17). Kin to rule 9's
+    cert-binding: signature identity, different layer.

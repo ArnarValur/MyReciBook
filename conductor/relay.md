@@ -131,3 +131,19 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   new CookbookPrefs — the ThemeModel pattern verbatim. 344 tests green.
 - Next: your Drive retry stays the queue head; Play fee after the weekend →
   billing 3g wires the real purchase into the seam this session left.
+
+## 2026-08-17 — Drive smoke PASSED; covers' file half tested; Play profile underway
+- Phone on the cable at last: fresh dev.env build → S21. One agreed data
+  wipe on install — the old APK came from another machine's debug keystore
+  (now tech rule 15); after that, same-keystore reinstalls kept your data.
+- Your pass on the device: Unlock tab + grid ⇄ list toggle look right, and
+  Google Drive connects and syncs — the smoke heading the queue since
+  09 Aug is DONE. Both connectors are now proven on your phone.
+- Your call, shipped same hour: "Why not a subscription?" is a static card
+  now — a one-paragraph collapse had no reason to fold.
+- Covers: the file side is tested (photo copied in, jpg↔png swap cleans up,
+  remove takes the bytes, delete takes the cover, promote = ref, edit keeps
+  it — 6 tests). The tap-choreography tests hung on my bug (real IO outside
+  runAsync, tech rule 14) and you dropped them: file deleted, gap accepted.
+- Play: you're building the developer profile, expecting it ~tomorrow →
+  fee → Console → billing 3g into the seam. That's the next engine work.

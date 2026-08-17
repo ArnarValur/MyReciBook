@@ -11,8 +11,11 @@ opened: pulled forward 2026-08-06 (originally 21 Sep) · status: senior review
         fence + D2 proxy code built. 2026-08-15 (remote, folded to main):
         queue tab retired — slot 2 = Unlock tab (3g pitch promoted from the
         dev gallery, billing seam awaits 3g; queue = pushed route + Cookbook
-        strip) — and Cookbook grid ⇄ list toggle (CookbookPrefs). 344 tests;
-        neither surface on the S21 yet (needs a dev.env build)
+        strip) — and Cookbook grid ⇄ list toggle (CookbookPrefs). 2026-08-17:
+        fresh dev.env build on the S21 — Arnar's pass on both surfaces GOOD,
+        DRIVE SMOKE PASSED (both connectors now proven on-device); Unlock
+        why-card made static (his call); cover STORE tests in (350 on paper),
+        cover UI-tap tests dropped (his call — gap accepted, stays closed)
 division: Arnar owns UI/design (sketches after festival); agent owns the engine.
           Skins replace widgets and colors, never flows (editable review, delete,
           reorder are load-bearing — architecture review 2026-08-06).
@@ -170,8 +173,10 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
   app/lib/ui/widgets/logo_mark.dart draws the same paths in-app for the header
   (full mark) and the Cookbook tab (book only — the steam is mush at 22dp).
   Cover picker per D11 lives on the detail hero as the 'add cover' pill.
-  KNOWN GAP: 338 tests cover NONE of the cover flow — schema round-trip,
-  picker branches and delete-takes-the-cover-file are all unproven. Queued.
+  Cover-flow gap CLOSED 2026-08-17 at the store layer (6 tests: copy-in,
+  ext-swap cleanup, remove-takes-bytes, promote=ref, delete-takes-cover,
+  edit-keeps-cover); UI tap choreography deliberately untested (Arnar's
+  call, 2026-08-17 — do not re-queue, behavioral 16).
 - NOT done: billing 3g (behind fee) · D9 empty-state link caption ·
   on-device storage smoke (runbook Part C) · latest-APK install.
 

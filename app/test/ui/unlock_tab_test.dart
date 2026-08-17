@@ -29,19 +29,11 @@ void main() {
     }
   });
 
-  testWidgets('why-not-a-subscription expander opens by default and toggles',
-      (tester) async {
+  // Static card since 2026-08-17 (Arnar, on the installed build: no
+  // practical reason for a one-paragraph collapse).
+  testWidgets('why-not-a-subscription copy is always visible', (tester) async {
     await pump(tester);
-    expect(find.textContaining('recipe box shouldn\'t have a landlord'),
-        findsOneWidget);
-
-    await tester.tap(find.text('Why not a subscription?'));
-    await tester.pump();
-    expect(find.textContaining('recipe box shouldn\'t have a landlord'),
-        findsNothing);
-
-    await tester.tap(find.text('Why not a subscription?'));
-    await tester.pump();
+    expect(find.text('Why not a subscription?'), findsOneWidget);
     expect(find.textContaining('recipe box shouldn\'t have a landlord'),
         findsOneWidget);
   });
