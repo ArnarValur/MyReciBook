@@ -1,10 +1,19 @@
 # Pulse — MyReciBook
 *State only. REWRITTEN at every checkpoint, never appended. Cap 60 lines.*
 
-> **Updated:** 2026-08-17 late by checkpoint (pantry PoC night)
+> **Updated:** 2026-08-17 late-night by checkpoint (follow-on dispatched)
 ## 📍 Now
 - Phase: pre-project (kickoff 2026-08-20, 3 days); building unblocked, gates
   decide ship/stop (context.md §4). GATE 1 PASSED; T1 closed.
+- IN FLIGHT at checkpoint: branch poc/pantry-follow open (= main), two
+  worktree agents running — (a) pantry/ sync case incl. store-in-user-
+  folder + 28-product migration (briefed with delete-safety rules: layout
+  filter stays strict, old manifests/clients must skip pantry, never
+  "vanished"→delete); (b) grocery tiers 1+2 (staples hide qty · pantry
+  hint via productRef, hint-only). Their branches: poc/pantry-sync,
+  poc/grocery-tiers. NOT merged — sync gets a hard review first
+  (data-loss surface). Next session: collect reports → review → wire →
+  test → S21.
 - PANTRY POC LIVE ON THE S21 — FOLDED to main 2026-08-17 night (Arnar:
   "I want this in main ofc"). Working tonight, his eyes on all of it: barcode
   collect-mode scan (beep-beep, 3s cooldown) → OFF lookup → one JSON per
@@ -51,9 +60,9 @@
 2. Billing 3g: real purchase into the Unlock seam.
 3. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
    design-authority-in-git.
-4. Pantry follow-ons: pantry/ sync case → remembered links →
-   grocery tier 1+2 (staples hide qty, pantry hint) → unit table
-   (feeds nutrition badge AND package math).
+4. Pantry follow-ons: sync case + grocery tiers IN FLIGHT (see Now) →
+   then remembered links → unit table (feeds nutrition badge AND
+   package math).
 5. Design turn 7 · T2 landing page · D9 link spike when his links arrive.
 
 ## 📌 Parked

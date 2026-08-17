@@ -165,3 +165,16 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
   named trap we will not build: inventory tracking.
 - Next: your Play profile → billing 3g stays the engine seam; fold call
   on poc/pantry when you're ready.
+
+## 2026-08-17 late-night — folded, then the follow-on left the runway
+- You called the fold: the whole pantry PoC is on main (fast-forward,
+  95408ce), poc/pantry deleted. Your kitchen feature is now the app.
+- You picked the next two from the menu: the pantry/ sync case (products
+  + photos finally follow YOUR folder, with a migration for your 28) and
+  grocery tiers 1+2 ("Sugar", not "2 cups sugar" · "in your pantry" hint).
+- Both are running as parallel agents on branch poc/pantry-follow at this
+  checkpoint — nothing merged yet. The sync agent's brief carries the
+  delete-safety rules in writing; I review its work before it touches
+  anything, because a sync-layout mistake can wipe remote files.
+- Next session opens on: their two reports → hard review of sync → wire,
+  test, S21. Then remembered links.
