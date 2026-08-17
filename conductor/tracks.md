@@ -8,6 +8,6 @@
 | T2 | landing-page | planned — live 2 Sep; channels researched → docs/marketing-channels.md | "Rescue your camera roll" page → Gate 2: 200 signups by 20 Sep |
 | T3 | mvp-build | 2026-08-17 — DRIVE SMOKE PASSED on the S21 (both connectors proven); Unlock why-card static; cover store-layer tests in, UI-tap tests dropped (Arnar) | Next: Play profile (~18 Aug) → fee → Console → billing 3g; alpha 19 Oct |
 | T4 | launch | planned — 16 Nov→11 Dec | listing (privacy page + support email on myrecibook.com), ASO, launch content → production 2026-12-11 |
-| T5 | nutrition | POC BUILT 2026-08-17 night on poc/pantry (unfolded) — scan→OFF→owned files, linking, photos all proven on the S21; OFF 15/15 + 28 products | Next after fold: pantry/ sync case → remembered links → grocery product-ization; NO inventory tracking (named trap) |
+| T5 | nutrition | POC BUILT + FOLDED to main 2026-08-17 night — scan→OFF→owned files, linking, photos all proven on the S21; OFF 15/15 + 28 products | Next: pantry/ sync case → remembered links → grocery product-ization; NO inventory tracking (named trap) |
 
 Errands (not tracks): Play Console registration — 20 Aug morning (festival budget, agreed 2026-08-05); lives in pulse ⚠️.

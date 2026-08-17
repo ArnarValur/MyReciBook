@@ -5,8 +5,8 @@
 ## 📍 Now
 - Phase: pre-project (kickoff 2026-08-20, 3 days); building unblocked, gates
   decide ship/stop (context.md §4). GATE 1 PASSED; T1 closed.
-- PANTRY POC LIVE ON THE S21 — branch poc/pantry (9 commits, NOT folded;
-  fold = Arnar's call). Working tonight, his eyes on all of it: barcode
+- PANTRY POC LIVE ON THE S21 — FOLDED to main 2026-08-17 night (Arnar:
+  "I want this in main ofc"). Working tonight, his eyes on all of it: barcode
   collect-mode scan (beep-beep, 3s cooldown) → OFF lookup → one JSON per
   product in app docs · pantry tab borrows nav slot 2 (kPantryEnabled=true
   on dev; false restores Unlock) · product detail w/ per-100g macros ·
@@ -45,14 +45,13 @@
 ## ⚠️ Blockers
 - Billing 3g ← Play developer profile (Arnar) → fee → Console app+product.
 - Proxy deploy + listed cap number ← Arnar's gcloud/billing decision.
-- Pantry sync case ← fold decision on poc/pantry (Arnar).
 
 ## 📋 Next queue (sequence — no schedule)
 1. Arnar: finish Play profile → pay fee → Console app + one-time product.
 2. Billing 3g: real purchase into the Unlock seam.
-3. Arnar decisions: fold poc/pantry → main · proxy deploy + cap ·
-   versioning · keystore backup · design-authority-in-git.
-4. Pantry follow-ons (post-fold): pantry/ sync case → remembered links →
+3. Arnar decisions: proxy deploy + cap · versioning · keystore backup ·
+   design-authority-in-git.
+4. Pantry follow-ons: pantry/ sync case → remembered links →
    grocery tier 1+2 (staples hide qty, pantry hint) → unit table
    (feeds nutrition badge AND package math).
 5. Design turn 7 · T2 landing page · D9 link spike when his links arrive.

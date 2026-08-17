@@ -1,4 +1,4 @@
-# T5 — nutrition (POC BUILT 2026-08-17 night, on poc/pantry — unfolded)
+# T5 — nutrition (POC BUILT + FOLDED to main, 2026-08-17 night)
 goal: per-serving nutrition on every recipe, fed by the user's own barcode scans +
       label photos, in any country — "the meal plan becomes the food diary."
 start condition: was post-v1; Arnar pulled the capture shelf forward
@@ -160,7 +160,7 @@ stays dropped (behavioral 16). Suites run per-file as today (tech rule 13).
 1. ~~Shelf spike result → N1 order.~~ RESOLVED 2026-08-17: 15/15, OFF-first.
 2. Pack vs included → bank for T4 pricing round.
 3. Launch scope: metric-only units first, or cups from day one?
-4. Fold poc/pantry → main (then: pantry/ sync case heads the follow-ons).
+4. ~~Fold poc/pantry → main~~ DONE same night → pantry/ sync case heads the follow-ons.
 
 ## Relay note for Claude Code
 On receipt: read this file, then STOP — the track is parked; the standing
