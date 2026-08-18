@@ -50,7 +50,16 @@ class AppSettings {
     return v == 'list' ? 'list' : 'grid';
   }
 
+  /// Unit display ('as_written' / 'metric' / 'imperial'); default as-written.
+  /// Unknown values read as 'as_written' — a corrupt entry is a default, not a crash.
+  String get units {
+    final v = _data['units'];
+    return v == 'metric' || v == 'imperial' ? v as String : 'as_written';
+  }
+
   Future<void> setTreeUri(String? uri) => _write('tree_uri', uri);
+
+  Future<void> setUnits(String units) => _write('units', units);
 
   Future<void> setThemeMode(String mode) => _write('theme_mode', mode);
 

@@ -28,6 +28,7 @@ import 'domain/extractor.dart';
 import 'ui/app_shell.dart';
 import 'ui/batch_model.dart';
 import 'ui/cookbook_prefs.dart';
+import 'ui/units_model.dart';
 import 'ui/folder_gate.dart';
 import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
@@ -134,6 +135,7 @@ Future<void> main() async {
   // providers it with .value and never disposes it.
   final themeModel = ThemeModel(settings: settings);
   final cookbookPrefs = CookbookPrefs(settings: settings);
+  final unitsModel = UnitsModel(settings: settings);
 
   final picker = ImagePicker();
   final extractor = GeminiExtractor(installId: installId);
@@ -180,6 +182,7 @@ Future<void> main() async {
         storage: storage,
         themeModel: themeModel,
         cookbookPrefs: cookbookPrefs,
+        unitsModel: unitsModel,
         crashLog: crashLog,
         onGrantLost: onGrantLost,
         onChangeFolder: onChangeFolder,
@@ -207,6 +210,7 @@ Widget buildApp({
   StorageModel? storage,
   ThemeModel? themeModel,
   CookbookPrefs? cookbookPrefs,
+  UnitsModel? unitsModel,
   CrashLog? crashLog,
   VoidCallback? onGrantLost,
   VoidCallback? onChangeFolder,
@@ -233,6 +237,12 @@ Widget buildApp({
           ChangeNotifierProvider<CookbookPrefs>.value(value: cookbookPrefs)
         else
           ChangeNotifierProvider<CookbookPrefs>(create: (_) => CookbookPrefs()),
+        // Same .value rule; the inert default is stuck on as-written — the
+        // exact pre-toggle behavior, so the test seam stays unchanged.
+        if (unitsModel != null)
+          ChangeNotifierProvider<UnitsModel>.value(value: unitsModel)
+        else
+          ChangeNotifierProvider<UnitsModel>(create: (_) => UnitsModel()),
         // Plain Provider (not a notifier): the settings footer door reads it
         // on demand. Inert default keeps the test seam file-free.
         Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),

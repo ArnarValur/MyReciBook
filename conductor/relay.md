@@ -1,6 +1,13 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-18 — unit toggle shipped, keyless-build trap closed
+- Units pill in settings (As written / Metric / US): render-time math on
+  ingredients, steps and cook mode. On the S21. 495 green serially.
+- Two builds today shipped without dev.env keys — every extraction failed with
+  the generic error. app/deploy-s21.sh is now the only build path; a keyless
+  build now says "This build is broken" in-app. Nothing pending.
+
 ## 2026-08-18 — stale state cleared, unit conversion designed
 - Cleared the stale "nutrient work uncommitted" lines from pulse, relay and the
   nutrition plan — the work was already on main (21d9094).

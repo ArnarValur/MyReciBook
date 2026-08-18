@@ -13,10 +13,12 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:provider/provider.dart';
 
 import '../data/crash_log.dart';
+import '../domain/units.dart';
 import '../version.dart';
 import 'storage_model.dart';
 import 'theme.dart';
 import 'theme_model.dart';
+import 'units_model.dart';
 import 'widgets/skin.dart';
 
 class SettingsTab extends StatelessWidget {
@@ -106,6 +108,7 @@ class SettingsTab extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final themeModel = context.watch<ThemeModel>();
+    final unitsModel = context.watch<UnitsModel>();
     final storage = context.watch<StorageModel>();
 
     Widget row({
@@ -157,12 +160,14 @@ class SettingsTab extends StatelessWidget {
     // 6a segmented control: one stadium container, three segments; the active
     // segment is a white pill on light / dark pill on dark
     // (surfaceContainerLowest is exactly that) with a check icon + w600.
-    Widget themeSegment(ThemeMode mode, String label) {
-      final selected = themeModel.mode == mode;
+    Widget segment(
+        {required bool selected,
+        required String label,
+        required VoidCallback onTap}) {
       return Expanded(
         child: InkWell(
           customBorder: const StadiumBorder(),
-          onTap: () => themeModel.setMode(mode),
+          onTap: onTap,
           child: Container(
             height: 38,
             alignment: Alignment.center,
@@ -195,6 +200,16 @@ class SettingsTab extends StatelessWidget {
       );
     }
 
+    Widget themeSegment(ThemeMode mode, String label) => segment(
+        selected: themeModel.mode == mode,
+        label: label,
+        onTap: () => themeModel.setMode(mode));
+
+    Widget unitSegment(UnitSystem system, String label) => segment(
+        selected: unitsModel.system == system,
+        label: label,
+        onTap: () => unitsModel.setSystem(system));
+
     return SafeArea(
       bottom: false,
       child: Column(
@@ -221,6 +236,22 @@ class SettingsTab extends StatelessWidget {
                     themeSegment(ThemeMode.system, 'System'),
                     themeSegment(ThemeMode.light, 'Light'),
                     themeSegment(ThemeMode.dark, 'Dark'),
+                  ]),
+                ),
+                const SizedBox(height: 20),
+                // Units (Arnar 2026-08-18): three states, not a checkbox —
+                // "As written" must exist so nothing converts by default.
+                const SectionLabel('Units'),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                      color: scheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(999)),
+                  child: Row(children: [
+                    unitSegment(UnitSystem.asWritten, 'As written'),
+                    unitSegment(UnitSystem.metric, 'Metric'),
+                    unitSegment(UnitSystem.imperial, 'US'),
                   ]),
                 ),
                 const SizedBox(height: 20),

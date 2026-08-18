@@ -159,6 +159,16 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         body: 'Check your connection, then try again.'
       );
     }
+    if (e.message.startsWith('No API key')) {
+      // A keyless build (flutter build without dev.env) is OUR defect, never
+      // the user's screenshots — twice in one day (2026-08-18) it hid behind
+      // the generic copy below and burned Arnar's time. Name it.
+      return (
+        title: 'This build is broken',
+        body: 'Built without the extraction key — not your screenshots. '
+            'Rebuild with dev.env.'
+      );
+    }
     return (
       title: 'That one kept its secrets',
       body: "We read it twice and couldn't find a recipe."

@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../domain/product.dart';
 import '../domain/recipe.dart';
+import '../domain/units.dart';
 import '../features.dart';
 import 'cook_mode_screen.dart';
 import 'grocery_model.dart';
@@ -18,6 +19,7 @@ import 'library_model.dart';
 import 'pantry/pantry_model.dart';
 import 'photo_sources.dart';
 import 'theme.dart';
+import 'units_model.dart';
 import 'widgets/skin.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
@@ -335,7 +337,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                                       fontWeight: FontWeight.w700,
                                       color: scheme.primary),
                                 ),
-                                TextSpan(text: _recipe.steps[n].raw),
+                                TextSpan(
+                                    text: convertUnits(_recipe.steps[n].raw,
+                                        context.watch<UnitsModel>().system)),
                               ]),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 height: 1.55,
@@ -719,7 +723,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                   children: [
                     Text.rich(
                       qtyBoldSpan(
-                        ing.raw,
+                        convertUnits(
+                            ing.raw, context.watch<UnitsModel>().system),
                         theme.textTheme.bodyMedium?.copyWith(
                           decoration:
                               checked ? TextDecoration.lineThrough : null,

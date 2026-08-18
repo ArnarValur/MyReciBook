@@ -5,17 +5,18 @@
 
 ## 📍 Now
 - Phase: build. Extraction gate passed.
+- Unit display shipped: As written / Metric / US pill in settings; local math at
+  render on ingredient rows, step text and cook mode; recipe file never changes.
+- Cup→gram density for staples NOT done — volume stays volume until the unit table.
 - Pantry ships on main: barcode scan → Open Food Facts lookup → one JSON per product,
   pantry tab, per-100g macros, user photo per product, ingredient → product linking.
-- Pantry files live in the user's own folder and sync like recipes; 28 products
-  migrated on-device.
 - Grocery list: staple rows show bare names, linked rows show a muted "in your pantry"
   hint, two rows with the same product merge with certainty.
-- Full nutrient list saved, not seven fixed slots; kept in Open Food Facts' own
-  units, screen converts down. On main.
-- Unit conversion decided: extractor emits structured {qty, unit, name, original};
-  conversion is local math at render, never the LLM. Detail in nutrition plan.
-- Test suite ran 454 green serially at the last check. Never audited.
+- Full nutrient list saved in Open Food Facts' own units; screen converts down.
+- On-device builds go through app/deploy-s21.sh only — plain flutter build ships a
+  keyless APK where every extraction fails; that failure now names itself in-app.
+- Current S21 install: today's release build with keys, units toggle live.
+- Test suite ran 495 green serially at the last check. Never audited.
 - Known gaps: deleted product leaves a silent dangling link · one barcode per photo ·
   46 older products keep the old seven values until rescanned · Open Food Facts data
   is sometimes wrong, no product edit screen · "not measured" prints as 0.
@@ -23,9 +24,12 @@
 - Extraction proxy built, not deployed.
 
 ## 🚀 Active tracks
-- nutrition — open: unit table → nutrition badge. Metric display toggle added to plan.
+- nutrition — open: unit + density table → per-serving → nutrition badge.
   Remembered links declined by Arnar, do not re-queue. No inventory tracking.
 - mvp-build — billing seam open, unstarted.
+
+## ⚠️ Blockers
+- None.
 
 ## 📌 Parked
 - Proxy deploy · durable cap store · serving rescale · step ↔ ingredient chips ·

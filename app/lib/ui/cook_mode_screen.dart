@@ -7,10 +7,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
+import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../domain/recipe.dart';
+import '../domain/units.dart';
 import 'theme.dart';
+import 'units_model.dart';
 
 class CookModeScreen extends StatefulWidget {
   const CookModeScreen({super.key, required this.recipe});
@@ -81,7 +84,10 @@ class _CookModeScreenState extends State<CookModeScreen> {
     final scheme = context.scheme;
     final steps = widget.recipe.steps;
     final total = steps.length;
-    final text = steps[_step].raw;
+    // Display-only conversion; the timer parses minutes, which convert to
+    // themselves, so reading it off the converted text changes nothing.
+    final text =
+        convertUnits(steps[_step].raw, context.watch<UnitsModel>().system);
     final timerMin = parseTimerMinutes(text);
     final last = _step == total - 1;
 

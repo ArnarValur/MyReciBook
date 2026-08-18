@@ -13,9 +13,11 @@ import 'package:myrecibook/data/app_settings.dart';
 import 'package:myrecibook/data/crash_log.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
+import 'package:myrecibook/domain/units.dart';
 import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/settings_tab.dart';
 import 'package:myrecibook/ui/theme_model.dart';
+import 'package:myrecibook/ui/units_model.dart';
 import 'package:myrecibook/version.dart';
 
 class FakeExtractor implements Extractor {
@@ -51,12 +53,17 @@ void main() {
     }
   }
 
-  Widget app({ThemeModel? themeModel, CrashLog? crashLog}) => buildApp(
-      store: store,
-      extractor: FakeExtractor(),
-      picker: () async => const [],
-      themeModel: themeModel,
-      crashLog: crashLog);
+  Widget app(
+          {ThemeModel? themeModel,
+          UnitsModel? unitsModel,
+          CrashLog? crashLog}) =>
+      buildApp(
+          store: store,
+          extractor: FakeExtractor(),
+          picker: () async => const [],
+          themeModel: themeModel,
+          unitsModel: unitsModel,
+          crashLog: crashLog);
 
   Future<void> openSettings(WidgetTester tester) async {
     await tester.tap(find.text('Settings'));
@@ -86,13 +93,14 @@ void main() {
 
     await openSettings(tester);
     // Active segment carries the check + w600; the others stay quiet.
+    // Two checks total on the tab: one per segmented control (Theme + Units).
     expect(segmentWeight(tester, 'System'), FontWeight.w600);
     expect(segmentWeight(tester, 'Dark'), FontWeight.w500);
     expect(
         find.descendant(
             of: find.byType(SettingsTab),
             matching: find.byIcon(Icons.check_rounded)),
-        findsOneWidget);
+        findsNWidgets(2));
 
     await tester.tap(find.text('Dark'));
     await settle(tester, rounds: 8);
@@ -106,7 +114,7 @@ void main() {
         find.descendant(
             of: find.byType(SettingsTab),
             matching: find.byIcon(Icons.check_rounded)),
-        findsOneWidget); // the pill moved, it didn't multiply
+        findsNWidgets(2)); // the pill moved, it didn't multiply
 
     // Persisted: the choice survives a reload of the settings file...
     final reloaded =
@@ -122,6 +130,46 @@ void main() {
         (await tester.runAsync(() => AppSettings.load(settingsFile)))!
             .themeMode,
         'light');
+  });
+
+  testWidgets('segmented units control reacts live and persists across a '
+      'relaunch', (tester) async {
+    final settingsFile = File('${tmp.path}/settings.json');
+    final settings =
+        (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
+    final model = UnitsModel(settings: settings);
+
+    await tester.pumpWidget(app(unitsModel: model));
+    await settle(tester);
+    await openSettings(tester);
+
+    // Default: nothing converts — "As written" carries the active pill.
+    expect(segmentWeight(tester, 'As written'), FontWeight.w600);
+    expect(segmentWeight(tester, 'Metric'), FontWeight.w500);
+
+    await tester.tap(find.text('Metric'));
+    await settle(tester, rounds: 8);
+    expect(model.system, UnitSystem.metric);
+    expect(segmentWeight(tester, 'Metric'), FontWeight.w600);
+    expect(segmentWeight(tester, 'As written'), FontWeight.w500);
+
+    // Persisted: the choice survives a reload of the settings file...
+    final reloaded =
+        (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
+    expect(reloaded.units, 'metric');
+    // ...and a relaunched UnitsModel boots straight into it.
+    expect(UnitsModel(settings: reloaded).system, UnitSystem.metric);
+  });
+
+  test('inert UnitsModel (test-seam default) stays as-written', () {
+    expect(UnitsModel().system, UnitSystem.asWritten);
+  });
+
+  test('corrupt persisted units boots as as-written', () async {
+    final settingsFile = File('${tmp.path}/settings.json');
+    await settingsFile.writeAsString(jsonEncode({'units': 'cubits'}));
+    final settings = await AppSettings.load(settingsFile);
+    expect(UnitsModel(settings: settings).system, UnitSystem.asWritten);
   });
 
   testWidgets('corrupt persisted theme boots as system', (tester) async {
