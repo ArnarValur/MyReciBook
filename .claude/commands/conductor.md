@@ -12,12 +12,12 @@ Then enumerate live — never trust static copies: `git status` + `git log --one
 
 Warm files load later, via the trigger table in conductor/index.md — never at boot.
 
-Report in ~10 lines: phase · active tracks · blockers on MY side only · the queue as
-written (empty means empty — never fill it) · anything in git not reflected in pulse.
+Report in ~10 lines: phase · active tracks · blockers only if there are any ·
+anything in git not reflected in pulse. There is no queue — never propose one.
 No gates, no countdowns, no calendar framing, and nothing Arnar owns.
 
 End with the last relay entry's unfinished step, copied verbatim. Nothing pending → say so.
-Never offer options at boot — no "pick one", no recommendations. That is filling the queue.
+Never offer options at boot — no "pick one", no recommendations.
 
 All session: answer, then stop. No preamble, no recap, no closing line. Never explain
 what you are about to do. Do the work first, report it in one line after.

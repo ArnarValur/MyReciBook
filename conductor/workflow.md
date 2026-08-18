@@ -26,7 +26,7 @@
 - COLD, on request: pulse-archive/ · docs/.
 
 ## Checkpoint
-1. Rewrite pulse from scratch. State only, cap 40 lines.
+1. Rewrite pulse from scratch. State only, cap 40 lines. No next queue.
 2. Append one relay entry, 6 lines max.
 3. Update the touched track plan and its line in tracks.
 4. Decision record only if proposed and approved in the same session.

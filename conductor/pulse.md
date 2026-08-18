@@ -30,9 +30,6 @@
 ## ⚠️ Blockers
 - None on my side. Arnar's own items are not tracked here.
 
-## 📋 Next queue
-- Empty. Awaiting Arnar's picks. I do not fill this myself.
-
 ## 📌 Parked
 - Proxy deploy · durable cap store · serving rescale · step ↔ ingredient chips ·
   label-photo fallback · manual product entry · meal-plan totals · multi-barcode

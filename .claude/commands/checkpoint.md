@@ -5,7 +5,8 @@
    self-criticism, no apology. If a line does not change what gets built next, cut it.
 
 1. REWRITE conductor/pulse.md — state only, cap 40 lines, exactly these sections:
-   📍 Now · 🚀 Active tracks · ⚠️ Blockers · 📋 Next queue · 📌 Parked.
+   📍 Now · 🚀 Active tracks · ⚠️ Blockers · 📌 Parked.
+   No next queue. Never re-add one.
    History never lives in pulse.
 2. Append ONE entry to conductor/relay.md — ≤6 lines: what shipped · what broke ·
    what Arnar decided · the unfinished step. No reflection, no post-mortem.
