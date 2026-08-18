@@ -174,6 +174,19 @@ void main() {
               (e) => e.message, 'message', startsWith('no recipe data'))));
     });
 
+    test('parse failure (chunked trailers) is NOT "offline"', () async {
+      // Fastly's server-timing trailer kills dart:io's parser on every
+      // Hearst site; the copy must not blame the user's connection.
+      final extractor = LinkExtractor(
+          url: url,
+          client: MockClient((_) async => throw http.ClientException(
+              'Failed to parse HTTP, 115 does not match 13')));
+      expect(
+          () => extractor.extractContent(const <File>[]),
+          throwsA(isA<ExtractionException>().having((e) => e.message,
+              'message', startsWith('unreadable response'))));
+    });
+
     test('transport failure → offline message (retryable)', () async {
       final extractor = LinkExtractor(
           url: url,

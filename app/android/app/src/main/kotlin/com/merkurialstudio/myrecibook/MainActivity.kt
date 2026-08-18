@@ -9,6 +9,7 @@ class MainActivity : FlutterActivity() {
   private val shareBridge = ShareBridge(this)
   private val safBridge = SafBridge(this)
   private val authBridge = AuthBridge(this)
+  private val netBridge = NetBridge()
 
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
@@ -16,6 +17,7 @@ class MainActivity : FlutterActivity() {
     shareBridge.attach(messenger)
     safBridge.attach(messenger)
     authBridge.attach(messenger)
+    netBridge.attach(messenger)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {

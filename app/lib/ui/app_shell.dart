@@ -28,6 +28,7 @@ import 'package:provider/provider.dart';
 import '../features.dart';
 
 import '../data/link_extractor.dart';
+import '../data/link_fetch_client.dart';
 import '../data/share_entry.dart';
 import '../domain/extractor.dart';
 import 'batch_model.dart';
@@ -233,8 +234,8 @@ class _AppShellState extends State<AppShell> {
       Navigator.of(context).push(MaterialPageRoute<void>(
         builder: (_) => ImportReviewScreen(
           images: const [],
-          extractor:
-              widget.linkExtractor?.call(url) ?? LinkExtractor(url: url),
+          extractor: widget.linkExtractor?.call(url) ??
+              LinkExtractor(url: url, client: linkFetchClient()),
           pickMore: widget.picker,
         ),
       ));

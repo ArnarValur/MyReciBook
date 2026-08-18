@@ -50,7 +50,6 @@ dependencies:
   google_fonts: ^6.2.1
   wakelock_plus: ^1.2.8
   mobile_scanner: ^7.4.0
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

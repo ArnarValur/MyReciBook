@@ -55,6 +55,12 @@ class LinkExtractor implements Extractor {
     } on TimeoutException {
       throw ExtractionException('no response after ${timeout.inSeconds} s');
     } on http.ClientException catch (e) {
+      // A response our HTTP stack can't parse (e.g. dart:io on chunked
+      // trailers) is the site's dialect, not the user's connection — saying
+      // "offline" here burned a real debugging round (S21, 2026-08-19).
+      if (e.message.contains('Failed to parse HTTP')) {
+        throw ExtractionException('unreadable response: ${e.message}');
+      }
       throw ExtractionException('offline: ${e.message}');
     } on IOException catch (e) {
       throw ExtractionException('offline: $e');

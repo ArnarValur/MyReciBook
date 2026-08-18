@@ -167,6 +167,13 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
             'screenshot it instead.'
       );
     }
+    if (e.message.startsWith('unreadable response')) {
+      return (
+        title: "That site confused us",
+        body: 'Its reply made no sense to the app — '
+            'screenshot the recipe instead.'
+      );
+    }
     if (e.message.startsWith('the page answered')) {
       return (
         title: "The site wouldn't let us in",
