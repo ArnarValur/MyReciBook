@@ -12,6 +12,14 @@
 - No rule lists that only grow. Fix the file that caused the mistake instead.
 - No static live-state that rots (prices, versions, URLs) — check it live.
 
+## Reply rules — Arnar's words, 2026-08-18
+- No unnecessary verbosity.
+- Don't comment on anything you were not asked about.
+- Don't announce anything you were not asked to announce.
+- Don't write bullshit. Don't write random.
+- Don't speak abstractly.
+- If you can't reply normally, don't reply.
+
 ## Memory temperature
 - HOT, every boot: pulse · relay last entry · tracks · workflow · context.
 - WARM, only when work enters that area: the track plan · adr/ · the feasibility report.
