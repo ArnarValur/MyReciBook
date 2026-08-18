@@ -28,6 +28,7 @@ class ImportReviewScreen extends StatefulWidget {
     required this.images,
     required Extractor this.extractor,
     required Future<List<File>> Function() this.pickMore,
+    this.fetchCover,
   })  : editing = null,
         initialContent = null;
 
@@ -40,6 +41,7 @@ class ImportReviewScreen extends StatefulWidget {
     required Map<String, dynamic> content,
     required Extractor this.extractor,
     required Future<List<File>> Function() this.pickMore,
+    this.fetchCover,
   })  : editing = null,
         initialContent = content;
 
@@ -56,6 +58,7 @@ class ImportReviewScreen extends StatefulWidget {
         images = originals,
         extractor = null,
         pickMore = null,
+        fetchCover = null,
         initialContent = null;
 
   final List<File> images;
@@ -65,6 +68,10 @@ class ImportReviewScreen extends StatefulWidget {
 
   /// Pre-extracted content from the batch queue; null = extract on mount.
   final Map<String, dynamic>? initialContent;
+
+  /// Link imports (share-links spike): downloads content's `image_url` for
+  /// the cover toggle. Null (screenshots, tests) hides the toggle entirely.
+  final Future<File?> Function(String url)? fetchCover;
 
   @override
   State<ImportReviewScreen> createState() => _ImportReviewScreenState();
@@ -84,6 +91,11 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   // Flag dismissal is per-line UI state: confirmed or edited lines normalize.
   final Set<String> _confirmed = {};
   bool _saving = false;
+
+  // Link-import cover (share-links spike): the site's hero photo, downloaded
+  // when review seeds; the toggle defaults ON but the user decides.
+  File? _linkCover;
+  bool _useLinkCover = true;
 
   @override
   void dispose() {
@@ -212,6 +224,18 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         TextEditingController(text: (s['raw'] as String?) ?? '')
     ];
     _phase = _Phase.review;
+    final imageUrl = content['image_url'];
+    if (imageUrl is String && _linkCover == null) {
+      _fetchLinkCover(imageUrl); // fire-and-forget; the row appears if it lands
+    }
+  }
+
+  Future<void> _fetchLinkCover(String url) async {
+    final fetch = widget.fetchCover;
+    if (fetch == null) return;
+    final file = await fetch(url);
+    if (!mounted || file == null) return;
+    setState(() => _linkCover = file);
   }
 
   Future<void> _extract() async {
@@ -302,9 +326,9 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     try {
       // Edit mode: empty cachedImages keeps original_images intact (store
       // contract) — the same seam notes/favorite edits already ride.
-      saved = await context
-          .read<LibraryModel>()
-          .saveImported(recipe, _isEdit ? const [] : _images);
+      saved = await context.read<LibraryModel>().saveImported(
+          recipe, _isEdit ? const [] : _images,
+          coverImage: !_isEdit && _useLinkCover ? _linkCover : null);
     } on GrantLostException {
       // Review stays mounted — edits and extraction survive; re-pick happens
       // from the list, not by tearing down in-flight work (§7).
@@ -557,6 +581,34 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
           ],
         ),
       ),
+      // Cover toggle (share-links spike): only when the site's photo actually
+      // downloaded. The user decides — their folder, their cover.
+      if (_linkCover != null) ...[
+        const SizedBox(height: 12),
+        TokenCard(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                    width: 52,
+                    height: 52,
+                    child: Image.file(_linkCover!, fit: BoxFit.cover)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('Use their photo as the cover',
+                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 14)),
+              ),
+              Switch(
+                value: _useLinkCover,
+                onChanged: (v) => setState(() => _useLinkCover = v),
+              ),
+            ],
+          ),
+        ),
+      ],
       const SizedBox(height: 12),
       // Title card — inline editable (D6).
       TokenCard(

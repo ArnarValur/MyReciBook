@@ -237,6 +237,7 @@ class SafFolderStore implements RecipeStore {
           importedAt: recipe.source.importedAt,
           originalImages:
               imagePaths.isEmpty ? recipe.source.originalImages : imagePaths,
+          url: recipe.source.url,
           appHint: recipe.source.appHint,
         ).toJson())
         ..['cover'] = coverRef

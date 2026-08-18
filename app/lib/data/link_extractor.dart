@@ -146,6 +146,9 @@ Map<String, dynamic> _contentFromNode(Map<String, dynamic> node) {
       node['recipeIngredient'] ?? node['ingredients'] /* legacy key */);
   final steps = _instructionLines(node['recipeInstructions']);
   return {
+    // Import-time only — the review screen's cover toggle downloads it;
+    // Recipe.assemble ignores the key, so it never lands in the saved file.
+    'image_url': imageUrlFromJsonLd(node['image']),
     'title': _cleanText(node['name']) ?? '',
     'lang': node['inLanguage'] is String ? node['inLanguage'] : null,
     'servings': _servings(node['recipeYield'] ?? node['yield']),
@@ -160,6 +163,26 @@ Map<String, dynamic> _contentFromNode(Map<String, dynamic> node) {
     // Site-published data, quoted verbatim — nothing was guessed.
     'extraction': {'overall_confidence': 1.0, 'needs_review': <String>[]},
   };
+}
+
+/// schema.org `image`: a URL string, a list of crops, or an ImageObject —
+/// first usable http(s) URL wins; null when there is none.
+String? imageUrlFromJsonLd(Object? value) {
+  if (value is String) {
+    final url = value.trim();
+    return url.startsWith('http://') || url.startsWith('https://') ? url : null;
+  }
+  if (value is List) {
+    for (final e in value) {
+      final url = imageUrlFromJsonLd(e);
+      if (url != null) return url;
+    }
+    return null;
+  }
+  if (value is Map) {
+    return imageUrlFromJsonLd(value['url'] ?? value['contentUrl']);
+  }
+  return null;
 }
 
 Map<String, dynamic>? _servings(Object? yield_) {

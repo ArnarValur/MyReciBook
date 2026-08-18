@@ -27,6 +27,7 @@ import 'package:provider/provider.dart';
 
 import '../features.dart';
 
+import '../data/cover_fetcher.dart';
 import '../data/link_extractor.dart';
 import '../data/link_fetch_client.dart';
 import '../data/share_entry.dart';
@@ -237,6 +238,8 @@ class _AppShellState extends State<AppShell> {
           extractor: widget.linkExtractor?.call(url) ??
               LinkExtractor(url: url, client: linkFetchClient()),
           pickMore: widget.picker,
+          fetchCover: (imageUrl) =>
+              CoverFetcher(client: linkFetchClient()).fetch(imageUrl),
         ),
       ));
 

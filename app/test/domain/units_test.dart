@@ -30,12 +30,12 @@ void main() {
   group('US → metric, ingredient lines from the screenshot', () {
     String m(String s) => convertUnits(s, UnitSystem.metric);
 
-    test('teaspoons and tablespoons', () {
-      expect(m('2 tsp. baking powder'), '10 ml baking powder');
-      expect(m('1/2 tsp. kosher salt'), '2.5 ml kosher salt');
-      expect(m('1/4 tsp. baking soda'), '1.5 ml baking soda');
-      expect(m('2 1/2 tsp. water'), '12.5 ml water');
-      expect(m('1 Tbsp. all-purpose flour'), '15 ml all-purpose flour');
+    test('teaspoons and tablespoons stay as written — universal units', () {
+      // Arnar, 2026-08-19: spoons are the same on both sides of the ocean;
+      // "10 ml baking powder" was conversion noise.
+      expect(m('2 tsp. baking powder'), '2 tsp. baking powder');
+      expect(m('1/2 tsp. kosher salt'), '1/2 tsp. kosher salt');
+      expect(m('1 Tbsp. all-purpose flour'), '1 Tbsp. all-purpose flour');
     });
 
     test('cups, with the parenthetical weight converted too', () {
@@ -84,8 +84,8 @@ void main() {
     test('quantities inside prose convert, bare numbers do not', () {
       expect(m('Toss together 1 cup of the blueberries and remaining 1 '
               'tablespoon flour in a small bowl'),
-          'Toss together 240 ml of the blueberries and remaining 15 ml '
-          'flour in a small bowl');
+          'Toss together 240 ml of the blueberries and remaining 1 '
+          'tablespoon flour in a small bowl');
     });
 
     test('fluid ounces, pints, quarts, gallons', () {

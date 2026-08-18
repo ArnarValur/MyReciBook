@@ -142,6 +142,7 @@ class LocalFolderStore implements RecipeStore {
         type: recipe.source.type,
         importedAt: recipe.source.importedAt,
         originalImages: imagePaths.isEmpty ? recipe.source.originalImages : imagePaths,
+        url: recipe.source.url,
         appHint: recipe.source.appHint,
       ).toJson())
       ..['cover'] = coverRef

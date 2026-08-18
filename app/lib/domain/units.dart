@@ -7,6 +7,9 @@
 // flour into grams needs a per-ingredient density table — that's the plan's
 // separate open item, not this file. Unconvertible units (stick, pinch, egg)
 // pass through untouched by construction: no pattern matches them.
+// Teaspoons and tablespoons are universal across both systems (Arnar,
+// 2026-08-19 S21 pass: "tsp → 10 ml" is noise) — metric mode leaves them
+// alone; imperial mode still prints small ml AS spoons, which only adds.
 //
 // Kitchen-sane rounding, not lab math: 1 cup = 240 ml, °C snaps to 5,
 // °F snaps to the 25s an oven dial actually has.
@@ -96,8 +99,6 @@ final _inches = RegExp('($_numPattern)[-\\s](?:inch(?:es)?|in\\.)(?![A-Za-z])',
 final _usUnit = RegExp(
     '($_numPattern)\\s*'
     '(fl\\.?\\s*oz\\.?|fluid\\s+ounces?'
-    '|tablespoons?|tbsp\\.?|tbs\\.?'
-    '|teaspoons?|tsp\\.?'
     '|cups?|pints?|quarts?|gallons?|gal\\.?'
     '|ounces?|oz\\.?|pounds?|lbs?\\.?)'
     '(?![A-Za-z])',
@@ -115,8 +116,6 @@ String _toMetric(String text) => text
     .replaceAllMapped(_usUnit, (m) {
       final q = _qty(m[1]!);
       return switch (_normUs(m[2]!)) {
-        'tsp' => _ml(q * 5),
-        'tbsp' => _ml(q * 15),
         'floz' => _ml(q * 30),
         'cup' => _ml(q * 240),
         'pint' => _ml(q * 475),
@@ -131,8 +130,6 @@ String _toMetric(String text) => text
 String _normUs(String u) {
   final s = u.toLowerCase().replaceAll('.', '').replaceAll(RegExp(r'\s+'), '');
   if (s.startsWith('fl')) return 'floz';
-  if (s.startsWith('tab') || s.startsWith('tbs')) return 'tbsp';
-  if (s.startsWith('tea') || s == 'tsp') return 'tsp';
   if (s.startsWith('cup')) return 'cup';
   if (s.startsWith('pin')) return 'pint';
   if (s.startsWith('quart')) return 'quart';
