@@ -17,5 +17,5 @@
    Never "unlimited forever" — it cannot be clawed back.
 3. No backend beyond a thin extraction proxy. One JSON file (exportable in other formats) per recipe in the user's own storage. The proxy is stateless except the per-install cap counter,
    and never stores recipe content.
-6. Build order: extract → save → list → open. Paywall, sync and polish come after
+4. Build order: extract → save → list → open. Paywall, sync and polish come after
    the alpha ships.
