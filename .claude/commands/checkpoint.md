@@ -6,7 +6,6 @@
 
 1. REWRITE conductor/pulse.md — state only, cap 40 lines, exactly these sections:
    📍 Now · 🚀 Active tracks · ⚠️ Blockers · 📌 Parked.
-   A section with nothing in it is DELETED, not written as "none" or "empty".
    No next queue. Never re-add one.
    History never lives in pulse.
 2. Append ONE entry to conductor/relay.md — ≤6 lines: what shipped · what broke ·

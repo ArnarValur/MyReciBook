@@ -9,7 +9,6 @@
 ## Writing rules — apply to every conductor file
 - One fact per line. No prose paragraphs, no story, no reflection, no apology.
 - If a line does not change what gets built next, cut it.
-- A section with nothing in it is deleted, not written as "none" or "empty".
 - No rule lists that only grow. Fix the file that caused the mistake instead.
 - No static live-state that rots (prices, versions, URLs) — check it live.
 
