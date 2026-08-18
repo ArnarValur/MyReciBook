@@ -32,6 +32,45 @@ String _foundBody() => jsonEncode({
 OffClient _off(Future<http.Response> Function(http.Request) handler) =>
     OffClient(client: MockClient(handler), wait: (_) async {});
 
+/// A product file as an older build wrote it: the seven label macros only,
+/// no vitamins, plus the user's own photo — the exact shape of the 46 files
+/// already on the phone.
+void _seedOldFile(Directory dir, String barcode,
+    {String name = 'Mellommelk 2,0% fett'}) {
+  File('${dir.path}/$barcode.json').writeAsStringSync(jsonEncode({
+    'schema_version': 1,
+    'barcode': barcode,
+    'name': name,
+    'brand': 'Tine',
+    'quantity': '1 L',
+    'source': 'off',
+    'added_at': '2026-08-17T10:00:00.000Z',
+    'nutriments': {'kcal': 50.0, 'fat': 2.0, 'carbs': 4.6, 'protein': 3.5},
+    'image': 'images/$barcode.jpg',
+  }));
+}
+
+/// The same product as OFF actually answers today: macros AND the minerals
+/// and vitamins the old file never kept.
+String _richBody(String barcode) => jsonEncode({
+      'code': barcode,
+      'status': 1,
+      'product': {
+        'product_name': 'Mellommelk 2,0% fett',
+        'brands': 'Tine',
+        'quantity': '1 L',
+        'nutriments': {
+          'energy-kcal_100g': 50,
+          'fat_100g': 2,
+          'carbohydrates_100g': 4.6,
+          'proteins_100g': 3.5,
+          'calcium_100g': 0.118,
+          'vitamin-d_100g': 0.0000008,
+          'iodine_100g': 0.000019,
+        },
+      },
+    });
+
 void main() {
   late Directory dir;
   late LocalPantryStore store;
@@ -125,5 +164,144 @@ void main() {
 
     expect(model.products, isEmpty);
     expect(File('${dir.path}/7038010071751.json').existsSync(), isFalse);
+  });
+
+  group('refreshAll — the 46 already on the phone', () {
+    const code = '7038010071751';
+
+    test('an old seven-macro file gains the vitamins, keeps photo and date',
+        () async {
+      _seedOldFile(dir, code);
+      final model = PantryModel(store,
+          off: _off((_) async => http.Response(_richBody(code), 200)),
+          wait: (_) async {});
+      await model.ensureLoaded();
+      expect(model.products.single.nutriments?.values, hasLength(4));
+
+      final report = await model.refreshAll();
+
+      expect(report.updated, 1);
+      expect(report.unchanged, 0);
+      expect(report.failed, 0);
+      final n = model.products.single.nutriments!;
+      expect(n['calcium'], 0.118);
+      expect(n['vitamin_d'], 0.0000008);
+      expect(n['iodine'], 0.000019);
+      // The user's own photo and the day they added it are not OFF's to
+      // overwrite — a refresh must never cost them either.
+      expect(model.products.single.image, 'images/$code.jpg');
+      expect(model.products.single.addedAt, '2026-08-17T10:00:00.000Z');
+      // ...and it landed on disk, not just in memory.
+      final onDisk = jsonDecode(File('${dir.path}/$code.json').readAsStringSync())
+          as Map<String, dynamic>;
+      expect((onDisk['nutriments'] as Map)['calcium'], 0.118);
+    });
+
+    test('a file OFF agrees with is counted unchanged and never rewritten',
+        () async {
+      _seedOldFile(dir, code);
+      final model = PantryModel(store,
+          off: _off((_) async => http.Response(_richBody(code), 200)),
+          wait: (_) async {});
+      await model.ensureLoaded();
+      await model.refreshAll();
+      final stamp = File('${dir.path}/$code.json').lastModifiedSync();
+
+      final second = await model.refreshAll();
+
+      expect(second.unchanged, 1);
+      expect(second.updated, 0);
+      expect(File('${dir.path}/$code.json').lastModifiedSync(), stamp);
+    });
+
+    test('offline: counted failed, the file is left exactly as it was',
+        () async {
+      _seedOldFile(dir, code);
+      final model = PantryModel(store,
+          off: _off((_) async => http.Response('gateway sad', 502)),
+          wait: (_) async {});
+      await model.ensureLoaded();
+
+      final report = await model.refreshAll();
+
+      expect(report.failed, 1);
+      expect(report.updated, 0);
+      expect(model.products.single.nutriments?.values, hasLength(4));
+    });
+
+    test('barcode gone from OFF: counted missing, nothing lost', () async {
+      _seedOldFile(dir, code);
+      final model = PantryModel(store,
+          off: _off((_) async => http.Response('{"status":0}', 200)),
+          wait: (_) async {});
+      await model.ensureLoaded();
+
+      final report = await model.refreshAll();
+
+      expect(report.missing, 1);
+      expect(model.products.single.name, 'Mellommelk 2,0% fett');
+      expect(model.products.single.nutriments?.values, hasLength(4));
+    });
+
+    test('a mixed shelf: every product asked once, order kept', () async {
+      _seedOldFile(dir, '111', name: 'Alpha');
+      _seedOldFile(dir, '222', name: 'Beta');
+      _seedOldFile(dir, '333', name: 'Gamma');
+      final asked = <String>[];
+      final model = PantryModel(store, wait: (_) async {},
+          off: _off((req) async {
+        final code = req.url.pathSegments.last.replaceAll('.json', '');
+        asked.add(code);
+        // Only the middle one is still known to OFF.
+        return code == '222'
+            ? http.Response(_richBody('222'), 200)
+            : http.Response('{"status":0}', 200);
+      }));
+      await model.ensureLoaded();
+      final orderBefore = model.products.map((p) => p.id).toList();
+
+      final report = await model.refreshAll();
+
+      expect(asked.toSet(), {'111', '222', '333'});
+      expect(report.total, 3);
+      expect(report.updated, 1);
+      expect(report.missing, 2);
+      // A refresh must not reshuffle the shelf the way a fresh scan does.
+      expect(model.products.map((p) => p.id).toList(), orderBefore);
+    });
+
+    test('progress counts up and clears when the sweep ends', () async {
+      _seedOldFile(dir, '111', name: 'Alpha');
+      _seedOldFile(dir, '222', name: 'Beta');
+      final seen = <String>[];
+      final model = PantryModel(store,
+          off: _off((_) async => http.Response('{"status":0}', 200)),
+          wait: (_) async {});
+      await model.ensureLoaded();
+      model.addListener(() =>
+          seen.add('${model.refreshing}:${model.refreshDone}/${model.refreshTotal}'));
+
+      await model.refreshAll();
+
+      expect(seen.first, 'true:0/2');
+      expect(seen, contains('true:1/2'));
+      expect(seen.last, 'false:2/2');
+      expect(model.refreshing, isFalse);
+    });
+
+    test('empty shelf: no lookups, an honest zero report', () async {
+      var calls = 0;
+      final model = PantryModel(store, wait: (_) async {}, off: _off((_) async {
+        calls++;
+        return http.Response(_richBody(code), 200);
+      }));
+      await model.ensureLoaded();
+
+      final report = await model.refreshAll();
+
+      expect(calls, 0);
+      expect(report.total, 0);
+      expect(model.refreshableCount, 0);
+    });
   });
 }

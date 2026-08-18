@@ -1,35 +1,25 @@
-# Workflow — MyReciBook conductor (v3.1)
+# Workflow — MyReciBook
 
 ## The two laws
-1. **One fact, one home.** Live truth → pulse. A session's story → ONE relay entry.
-   Lessons → rules files (graduated at checkpoint). Decisions → ADR or track-plan
-   D-numbers. Project truth → context.md. Never retell — point.
-2. **An agreement binds only when it lands in a repo file.** Agent memory and chat are
-   a cache. If we agree on something and it isn't written here, it doesn't exist.
+1. **One fact, one home.** Live state → pulse. A session's story → one relay entry.
+   Project truth → context. Task detail → the track plan. Never retell — point.
+2. **An agreement binds only when it lands in a repo file.** Chat and agent memory
+   are a cache. Not written here = does not exist.
+
+## Writing rules — apply to every conductor file
+- One fact per line. No prose paragraphs, no story, no reflection, no apology.
+- If a line does not change what gets built next, cut it.
+- No rule lists that only grow. Fix the file that caused the mistake instead.
+- No static live-state that rots (prices, versions, URLs) — check it live.
 
 ## Memory temperature
-- HOT — every boot, budget 300–400 lines total: pulse.md · relay.md last entry ·
-  tracks.md one-liners · workflow.md · agent-rules/behavioral.md · context.md.
-- WARM — loaded when work enters the domain, never at boot: track plans · adr/ ·
-  agent-rules/technical.md · recipe-app-feasibility-report.md (cite §).
-- COLD — on request only: pulse-archive/ · docs/.
+- HOT, every boot: pulse · relay last entry · tracks · workflow · context.
+- WARM, only when work enters that area: the track plan · adr/ · the feasibility report.
+- COLD, on request: pulse-archive/ · docs/.
 
-## Checkpoint ceremony (detail: .claude/commands/checkpoint.md)
-1. REWRITE pulse — state only, cap 60 lines.
-2. Append ONE relay entry (≤10 lines). Guardrail: past 12 entries, trim to newest 8,
-   archive the rest.
-3. Lessons: fix the file that caused the mistake first. A new behavioral rule is
-   the exception, not the reflex — edit an existing one where it fits.
-4. Update touched track plan + its tracks.md one-liner. No metadata.json — facts live
-   in the plan header.
-5. ADR only if proposed AND approved in-session. ADR criteria: hard to reverse ·
-   consequences across tracks · a future agent would plausibly redo it wrong.
-6. Git: stage all, SHOW Arnar the file list and wait for his go, then commit
-   on main (solo repo, fold-to-main), ≤6-line confirm.
-
-## Rules that keep this alive
-- No static live-state in conductor docs (model prices, API versions, external URLs
-  that rot) — enumerate live, always.
-- Halt/recovery messages point at git history, never at commands this repo may not carry.
-- Self-improvement means fixing the broken file. Rules are a last resort — a rule
-  count that only ever goes up means the wrong thing is being fixed.
+## Checkpoint
+1. Rewrite pulse from scratch. State only, cap 40 lines.
+2. Append one relay entry, 6 lines max.
+3. Update the touched track plan and its line in tracks.
+4. Decision record only if proposed and approved in the same session.
+5. Stage all, show Arnar the file list, wait for his go, then commit on main.

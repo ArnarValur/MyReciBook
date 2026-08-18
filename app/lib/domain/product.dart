@@ -94,47 +94,89 @@ class Product {
       );
 }
 
-/// Per-100g values. All optional doubles — Open Food Facts fills whatever the
-/// crowd typed in, which is often not everything.
+/// Per-100 g values, an OPEN map — Open Food Facts sends vitamins and
+/// minerals too, and hand-corrected products can carry anything. The seven
+/// label macros keep their original JSON keys so files written by older
+/// builds round-trip unchanged; everything else is stored alongside them.
+///
+/// Units: `kcal` is kilocalories, `energy_kj` kilojoules, and every other
+/// value is GRAMS per 100 g — exactly how Open Food Facts stores them
+/// (calcium 0.118 means 118 mg). Display converts; storage never does.
 class Nutriments {
-  final double? kcal;
-  final double? fat;
-  final double? saturatedFat;
-  final double? carbs;
-  final double? sugars;
-  final double? protein;
-  final double? salt;
+  /// Canonical keys for the seven values printed on a nutrition label, in
+  /// the order a label prints them.
+  static const macroKeys = [
+    'kcal',
+    'fat',
+    'saturated_fat',
+    'carbs',
+    'sugars',
+    'protein',
+    'salt',
+  ];
 
-  const Nutriments({
-    this.kcal,
-    this.fat,
-    this.saturatedFat,
-    this.carbs,
-    this.sugars,
-    this.protein,
-    this.salt,
-  });
+  final Map<String, double> values;
 
-  static Nutriments? fromJsonOrNull(Object? json) => json is Map<String, dynamic>
-      ? Nutriments(
-          kcal: (json['kcal'] as num?)?.toDouble(),
-          fat: (json['fat'] as num?)?.toDouble(),
-          saturatedFat: (json['saturated_fat'] as num?)?.toDouble(),
-          carbs: (json['carbs'] as num?)?.toDouble(),
-          sugars: (json['sugars'] as num?)?.toDouble(),
-          protein: (json['protein'] as num?)?.toDouble(),
-          salt: (json['salt'] as num?)?.toDouble(),
-        )
-      : null;
+  /// Open construction — any key, any number of them.
+  const Nutriments.fromMap(this.values);
 
+  /// The seven label macros by name. Kept because most call sites only ever
+  /// mean these; extras go through [Nutriments.fromMap].
+  Nutriments({
+    double? kcal,
+    double? fat,
+    double? saturatedFat,
+    double? carbs,
+    double? sugars,
+    double? protein,
+    double? salt,
+  }) : values = {
+          'kcal': ?kcal,
+          'fat': ?fat,
+          'saturated_fat': ?saturatedFat,
+          'carbs': ?carbs,
+          'sugars': ?sugars,
+          'protein': ?protein,
+          'salt': ?salt,
+        };
+
+  double? operator [](String key) => values[key];
+
+  double? get kcal => values['kcal'];
+  double? get fat => values['fat'];
+  double? get saturatedFat => values['saturated_fat'];
+  double? get carbs => values['carbs'];
+  double? get sugars => values['sugars'];
+  double? get protein => values['protein'];
+  double? get salt => values['salt'];
+
+  bool get isEmpty => values.isEmpty;
+
+  /// Keys that are not one of the seven label macros — vitamins, minerals,
+  /// and anything a user typed in themselves. Sorted for a stable UI.
+  List<String> get extraKeys =>
+      (values.keys.where((k) => !macroKeys.contains(k)).toList())..sort();
+
+  /// Older files stored exactly seven nullable keys; newer ones store any
+  /// number. Both read the same way: every numeric entry is a value, nulls
+  /// are dropped.
+  static Nutriments? fromJsonOrNull(Object? json) {
+    if (json is! Map) return null;
+    final values = <String, double>{};
+    json.forEach((key, value) {
+      if (key is! String) return;
+      final number = value is num ? value.toDouble() : null;
+      if (number != null) values[key] = number;
+    });
+    return Nutriments.fromMap(values);
+  }
+
+  /// Writes every value it holds. Absent keys stay absent — no null padding,
+  /// so a product that only has calcium does not gain six empty macros.
   Map<String, dynamic> toJson() => {
-        'kcal': kcal,
-        'fat': fat,
-        'saturated_fat': saturatedFat,
-        'carbs': carbs,
-        'sugars': sugars,
-        'protein': protein,
-        'salt': salt,
+        for (final key in macroKeys)
+          if (values.containsKey(key)) key: values[key],
+        for (final key in extraKeys) key: values[key],
       };
 }
 

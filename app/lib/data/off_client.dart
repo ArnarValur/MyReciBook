@@ -20,25 +20,31 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
-/// Per-100g nutriment values. All optional — any field may be missing on OFF.
+/// Everything Open Food Facts holds per 100 g — the seven label macros AND
+/// the vitamins and minerals, which it sends for most branded products.
+///
+/// Keys are ours, not OFF's: the seven macros use the names the product file
+/// has always used, and every other nutrient keeps OFF's own name with
+/// hyphens turned into underscores (`vitamin-d` -> `vitamin_d`).
+///
+/// Units are OFF's: `kcal` in kilocalories, `energy_kj` in kilojoules,
+/// everything else in GRAMS (calcium 0.118 = 118 mg). No conversion here.
 class OffNutriments {
-  final double? energyKcal;
-  final double? fat;
-  final double? saturatedFat;
-  final double? carbohydrates;
-  final double? sugars;
-  final double? proteins;
-  final double? salt;
+  final Map<String, double> values;
 
-  const OffNutriments({
-    this.energyKcal,
-    this.fat,
-    this.saturatedFat,
-    this.carbohydrates,
-    this.sugars,
-    this.proteins,
-    this.salt,
-  });
+  const OffNutriments([this.values = const {}]);
+
+  double? operator [](String key) => values[key];
+
+  double? get energyKcal => values['kcal'];
+  double? get fat => values['fat'];
+  double? get saturatedFat => values['saturated_fat'];
+  double? get carbohydrates => values['carbs'];
+  double? get sugars => values['sugars'];
+  double? get proteins => values['protein'];
+  double? get salt => values['salt'];
+
+  bool get isEmpty => values.isEmpty;
 }
 
 /// One OFF product. Everything except [barcode] is optional — crowdsourced.
@@ -174,16 +180,49 @@ class OffClient {
       name: _string(p['product_name']),
       brands: _string(p['brands']),
       quantity: _string(p['quantity']),
-      nutriments: OffNutriments(
-        energyKcal: _number(n['energy-kcal_100g']),
-        fat: _number(n['fat_100g']),
-        saturatedFat: _number(n['saturated-fat_100g']),
-        carbohydrates: _number(n['carbohydrates_100g']),
-        sugars: _number(n['sugars_100g']),
-        proteins: _number(n['proteins_100g']),
-        salt: _number(n['salt_100g']),
-      ),
+      nutriments: OffNutriments(_parseNutriments(n)),
     );
+  }
+
+  /// OFF's nutrient name -> ours, for the ones the product file already
+  /// names. Anything not listed keeps OFF's name with '-' as '_'.
+  static const _renamed = {
+    'energy-kcal': 'kcal',
+    'saturated-fat': 'saturated_fat',
+    'carbohydrates': 'carbs',
+    'proteins': 'protein',
+    'energy-kj': 'energy_kj',
+  };
+
+  /// Not nutrients. OFF mixes scores and estimates into the same object, and
+  /// showing "nova group: 1 g" next to calcium would be nonsense.
+  static const _notNutrients = {
+    'energy', // duplicate of energy-kj, in kJ, under a name that reads as kcal
+    'nova-group',
+    'nutrition-score-fr',
+    'nutrition-score-uk',
+    'fruits-vegetables-legumes-estimate-from-ingredients',
+    'fruits-vegetables-nuts-estimate-from-ingredients',
+    'carbon-footprint-from-known-ingredients',
+    'carbon-footprint-from-known-ingredients-product',
+  };
+
+  /// Every per-100 g nutrient OFF sent, keyed our way. OFF repeats each
+  /// nutrient under several suffixes (`_serving`, `_value`, `_unit`, bare);
+  /// only the `_100g` ones are read, so serving-size numbers can never leak
+  /// in as if they were per-100 g.
+  static Map<String, double> _parseNutriments(Map<String, dynamic> n) {
+    final out = <String, double>{};
+    for (final entry in n.entries) {
+      final key = entry.key;
+      if (!key.endsWith('_100g')) continue;
+      final offName = key.substring(0, key.length - '_100g'.length);
+      if (_notNutrients.contains(offName)) continue;
+      final value = _number(entry.value);
+      if (value == null) continue;
+      out[_renamed[offName] ?? offName.replaceAll('-', '_')] = value;
+    }
+    return out;
   }
 
   static String? _string(Object? v) =>

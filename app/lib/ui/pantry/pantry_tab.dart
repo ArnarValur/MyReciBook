@@ -13,6 +13,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../domain/nutrient_display.dart';
 import '../../domain/product.dart';
 import '../photo_sources.dart';
 import '../theme.dart';
@@ -69,6 +70,30 @@ class _PantryTabState extends State<PantryTab> {
       Navigator.of(context).push<void>(MaterialPageRoute<void>(
           builder: (_) => _ProductDetailScreen(productId: p.id)));
 
+  /// Ask Open Food Facts about everything on the shelf again. Products saved
+  /// before the app kept vitamins and minerals hold only the seven macros,
+  /// and the alternative is re-scanning every pack by hand.
+  Future<void> _refreshAll(PantryModel model) async {
+    final report = await model.refreshAll();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(_refreshLine(report))));
+  }
+
+  /// One line, counted honestly — a sweep that hit the network floor says so
+  /// instead of claiming everything updated.
+  static String _refreshLine(PantryRefreshReport r) {
+    if (r.total == 0) return 'Nothing with a barcode to update.';
+    final parts = [
+      if (r.updated > 0) '${r.updated} updated',
+      if (r.unchanged > 0) '${r.unchanged} already current',
+      if (r.missing > 0) '${r.missing} no longer on Open Food Facts',
+      if (r.failed > 0) '${r.failed} couldn\'t be reached — try again',
+    ];
+    if (parts.isEmpty) return 'Nothing changed.';
+    return parts.join(' · ');
+  }
+
   Future<void> _removeSheet(PantryModel model, String id, String name) async {
     final ok = await showDestructiveConfirm(
       context,
@@ -108,6 +133,27 @@ class _PantryTabState extends State<PantryTab> {
             if (model.busy) ...[
               const SizedBox(height: 10),
               const LinearProgressIndicator(),
+            ],
+            // Products saved by an older build hold only the seven label
+            // macros; this is the route to their vitamins and minerals
+            // without re-scanning every pack by hand.
+            if (model.refreshableCount > 0) ...[
+              const SizedBox(height: 6),
+              TextButton.icon(
+                onPressed:
+                    model.busy || model.refreshing ? null : () => _refreshAll(model),
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: Text(model.refreshing
+                    ? 'Updating ${model.refreshDone} of ${model.refreshTotal}…'
+                    : 'Update nutrition data (${model.refreshableCount})'),
+              ),
+              if (model.refreshing) ...[
+                const SizedBox(height: 6),
+                LinearProgressIndicator(
+                    value: model.refreshTotal == 0
+                        ? null
+                        : model.refreshDone / model.refreshTotal),
+              ],
             ],
             const SizedBox(height: 20),
             if (model.loaded && model.products.isEmpty) ...[
@@ -312,15 +358,21 @@ class _ProductDetailScreen extends StatelessWidget {
     final imageFile = model.imageFileOf(product);
     final hasImage = imageFile != null && imageFile.existsSync();
     final n = product.nutriments;
-    final rows = <(String, double?, String)>[
-      ('Energy', n?.kcal, 'kcal'),
-      ('Fat', n?.fat, 'g'),
-      ('— of which saturated', n?.saturatedFat, 'g'),
-      ('Carbohydrates', n?.carbs, 'g'),
-      ('— of which sugars', n?.sugars, 'g'),
-      ('Protein', n?.protein, 'g'),
-      ('Salt', n?.salt, 'g'),
+    // The label macros in the order a pack prints them, then everything else
+    // Open Food Facts sent — vitamins, minerals, whatever it has.
+    // Zeros are hidden. Open Food Facts stores "nobody measured this" as a
+    // literal 0, so printing them fills the card with rows that say nothing.
+    final macroRows = [
+      if (n != null)
+        for (final key in Nutriments.macroKeys)
+          if (n[key] != null && n[key] != 0) (key, n[key]!),
     ];
+    final extraRows = [
+      if (n != null)
+        for (final key in n.extraKeys)
+          if (n[key] != 0) (key, n[key]!),
+    ];
+    final hasAnything = macroRows.isNotEmpty || extraRows.isNotEmpty;
     final meta = [
       if ((product.brand ?? '').isNotEmpty) product.brand!,
       if ((product.quantity ?? '').isNotEmpty) product.quantity!,
@@ -358,38 +410,44 @@ class _ProductDetailScreen extends StatelessWidget {
                     ?.copyWith(color: scheme.onSurfaceVariant)),
           ],
           const SizedBox(height: 20),
-          if (rows.every((r) => r.$2 == null))
+          if (!hasAnything)
             Text(
               'No nutrition data on Open Food Facts for this one — the '
               'label-photo rescue will fill it in later.',
               style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
             )
-          else
-            TokenCard(
-              radius: 16,
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SectionLabel('Per 100 g'),
-                  const SizedBox(height: 6),
-                  for (final (label, value, unit) in rows)
-                    if (value != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(children: [
-                          Expanded(
-                              child: Text(label,
-                                  style: theme.textTheme.bodyMedium)),
-                          Text(
-                              '${value == value.roundToDouble() ? value.round() : value} $unit',
-                              style: theme.textTheme.bodyMedium
-                                  ?.copyWith(fontWeight: FontWeight.w600)),
-                        ]),
-                      ),
-                ],
+          else ...[
+            if (macroRows.isNotEmpty)
+              TokenCard(
+                radius: 16,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionLabel('Per 100 g'),
+                    const SizedBox(height: 6),
+                    for (final (key, value) in macroRows)
+                      _NutrientRow(nutrientKey: key, value: value),
+                  ],
+                ),
               ),
-            ),
+            if (extraRows.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              TokenCard(
+                radius: 16,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionLabel('Vitamins and minerals'),
+                    const SizedBox(height: 6),
+                    for (final (key, value) in extraRows)
+                      _NutrientRow(nutrientKey: key, value: value),
+                  ],
+                ),
+              ),
+            ],
+          ],
           const SizedBox(height: 14),
           Text(
             'From Open Food Facts · barcode ${product.barcode}\n'
@@ -399,6 +457,32 @@ class _ProductDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// One nutrient line: name on the left, value and unit on the right. Grams
+/// step down to mg/µg so trace amounts stay readable (see nutrient_display).
+class _NutrientRow extends StatelessWidget {
+  const _NutrientRow({required this.nutrientKey, required this.value});
+
+  final String nutrientKey;
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final (shown, unit) = formatNutrient(nutrientKey, value);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(children: [
+        Expanded(
+            child: Text(nutrientLabel(nutrientKey),
+                style: theme.textTheme.bodyMedium)),
+        Text('$shown $unit',
+            style:
+                theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+      ]),
     );
   }
 }

@@ -8,6 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:myrecibook/domain/product.dart';
 
 void main() {
+  _openNutrimentsTests();
+
   final full = <String, dynamic>{
     'schema_version': 1,
     'barcode': '7038010009457',
@@ -176,6 +178,81 @@ void main() {
 
     test('no args = identical output', () {
       expect(base.copyWith().toJson(), base.toJson());
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Vitamins and minerals in the saved file. Products written before
+// 2026-08-18 hold exactly seven keys, some of them null; new ones hold
+// whatever Open Food Facts had. Both must load, and neither may lose data.
+// ---------------------------------------------------------------------------
+
+void _openNutrimentsTests() {
+  group('nutriments as an open map', () {
+    test('a file written by the old build still loads, nulls dropped', () {
+      final json = {
+        'schema_version': 1,
+        'barcode': '7038010071751',
+        'name': 'Mellommelk 2,0% fett',
+        'source': 'off',
+        'nutriments': {
+          'kcal': 50,
+          'fat': 2,
+          'saturated_fat': 1.3,
+          'carbs': 4.6,
+          'sugars': 4.6,
+          'protein': 3.5,
+          'salt': null,
+        },
+      };
+      final n = Product.fromJson(json).nutriments!;
+
+      expect(n.kcal, 50.0);
+      expect(n.saturatedFat, 1.3);
+      expect(n.salt, isNull);
+      expect(n.extraKeys, isEmpty);
+    });
+
+    test('vitamins and minerals survive save and load', () {
+      final product = Product(
+        schemaVersion: 1,
+        barcode: '7038010071751',
+        name: 'Mellommelk 2,0% fett',
+        source: 'off',
+        nutriments: const Nutriments.fromMap({
+          'kcal': 50,
+          'protein': 3.5,
+          'calcium': 0.118,
+          'vitamin_d': 8e-07,
+          'iodine': 1.67e-06,
+        }),
+      );
+
+      final reloaded = Product.fromJson(
+          jsonDecode(jsonEncode(product.toJson())) as Map<String, dynamic>);
+      final n = reloaded.nutriments!;
+
+      expect(n.kcal, 50.0);
+      expect(n['calcium'], 0.118);
+      expect(n['vitamin_d'], 8e-07);
+      expect(n['iodine'], 1.67e-06);
+      expect(n.extraKeys, ['calcium', 'iodine', 'vitamin_d']);
+    });
+
+    test('macros lead the written file, in label order', () {
+      const n = Nutriments.fromMap({
+        'calcium': 0.118,
+        'salt': 0.1,
+        'kcal': 50,
+        'fat': 2,
+      });
+      expect(n.toJson().keys.toList(), ['kcal', 'fat', 'salt', 'calcium']);
+    });
+
+    test('a product with only a mineral gains no empty macro keys', () {
+      const n = Nutriments.fromMap({'calcium': 0.118});
+      expect(n.toJson(), {'calcium': 0.118});
     });
   });
 }

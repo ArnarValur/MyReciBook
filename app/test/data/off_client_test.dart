@@ -49,6 +49,8 @@ OffClient _client(MockClient mock,
     );
 
 void main() {
+  _micronutrientTests();
+
   test('FOUND: parses product and per-100g nutriments, int and double', () async {
     late http.Request seen;
     final client = _client(MockClient((req) async {
@@ -194,5 +196,78 @@ void main() {
     expect(result.product.nutriments.proteins, 7.5); // string-typed number
     expect(result.product.nutriments.carbohydrates, isNull);
     expect(result.product.nutriments.energyKcal, isNull);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Vitamins and minerals. OFF sends them for most branded products; before
+// 2026-08-18 the client parsed seven keys and dropped the rest on the floor.
+// These are real values from Tine Mellommelk 2,0% (7038010071751).
+// ---------------------------------------------------------------------------
+
+const _milkWithMicros = '''
+{"status":1,"product":{
+  "product_name":"Mellommelk 2,0% fett",
+  "brands":"Tine",
+  "nutriments":{
+    "energy-kcal_100g":50, "energy-kj_100g":212, "energy_100g":212,
+    "fat_100g":2, "saturated-fat_100g":1.3,
+    "carbohydrates_100g":4.6, "sugars_100g":4.6,
+    "proteins_100g":3.5, "salt_100g":0.1, "sodium_100g":0.04,
+    "calcium_100g":0.118, "phosphorus_100g":0.0994, "potassium_100g":0.158,
+    "iodine_100g":1.67e-06, "biotin_100g":5.6e-06, "vitamin-d_100g":8e-07,
+    "nova-group_100g":1,
+    "calcium_serving":0.999, "calcium_value":118, "calcium_unit":"mg"
+  }}}
+''';
+
+void _micronutrientTests() {
+  test('FOUND: vitamins and minerals are kept, not just the seven macros',
+      () async {
+    final client = OffClient(
+        client: MockClient((_) async => http.Response(_milkWithMicros, 200)));
+    final result = await client.lookup('7038010071751') as OffFound;
+    final n = result.product.nutriments;
+
+    // The macros still land on their old names.
+    expect(n.energyKcal, 50.0);
+    expect(n.carbohydrates, 4.6);
+    expect(n.proteins, 3.5);
+
+    // ...and everything else OFF sent came along, in grams as OFF stores it.
+    expect(n['calcium'], 0.118);
+    expect(n['phosphorus'], 0.0994);
+    expect(n['potassium'], 0.158);
+    expect(n['sodium'], 0.04);
+    expect(n['iodine'], 1.67e-06);
+    expect(n['biotin'], 5.6e-06);
+    expect(n['vitamin_d'], 8e-07);
+    expect(n['energy_kj'], 212.0);
+  });
+
+  test('FOUND: scores and estimates are not treated as nutrients', () async {
+    final client = OffClient(
+        client: MockClient((_) async => http.Response(_milkWithMicros, 200)));
+    final result = await client.lookup('7038010071751') as OffFound;
+    final keys = result.product.nutriments.values.keys;
+
+    expect(keys, isNot(contains('nova_group')));
+    expect(keys, isNot(contains('nova-group')));
+    // Bare 'energy' is kilojoules under a name that reads like calories.
+    expect(keys, isNot(contains('energy')));
+  });
+
+  test('FOUND: per-serving and unit fields never leak in as per-100 g',
+      () async {
+    final client = OffClient(
+        client: MockClient((_) async => http.Response(_milkWithMicros, 200)));
+    final result = await client.lookup('7038010071751') as OffFound;
+    final n = result.product.nutriments;
+
+    // calcium_serving was 0.999 and calcium_value 118 — only _100g counts.
+    expect(n['calcium'], 0.118);
+    expect(n.values.keys, isNot(contains('calcium_serving')));
+    expect(n.values.keys, isNot(contains('calcium_value')));
+    expect(n.values.keys, isNot(contains('calcium_unit')));
   });
 }

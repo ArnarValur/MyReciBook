@@ -89,7 +89,7 @@ void main() {
     test('round-trips a saved product, sparse nutriments intact', () async {
       final saved = await store.save(validProduct('222', 'Skyr',
           addedAt: '2026-08-17T10:00:00Z',
-          nutriments: const Nutriments(kcal: 63, protein: 11)));
+          nutriments: Nutriments(kcal: 63, protein: 11)));
       final loaded = await store.load('222');
       expect(loaded!.toJson(), saved.toJson());
       expect(loaded.nutriments!.kcal, 63.0);
@@ -152,11 +152,11 @@ void main() {
     test('rewrites the product in place', () async {
       final saved = await store.save(validProduct('555', 'Yoghurt',
           addedAt: '2026-08-17T10:00:00Z',
-          nutriments: const Nutriments(kcal: 60)));
+          nutriments: Nutriments(kcal: 60)));
 
       final updated = await store.update(saved.copyWith(
           name: 'Greek Yoghurt',
-          nutriments: const Nutriments(kcal: 97, protein: 9)));
+          nutriments: Nutriments(kcal: 97, protein: 9)));
 
       expect(updated.id, '555');
       final loaded = await store.load('555');

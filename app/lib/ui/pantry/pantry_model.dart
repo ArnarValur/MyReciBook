@@ -37,25 +37,77 @@ class PantryUnavailable extends PantryAddOutcome {
   final String message;
 }
 
+/// What a bulk re-fetch actually did. Products saved by an older build hold
+/// only the seven label macros — Open Food Facts has vitamins and minerals
+/// for most of them, and the only way to get those into a file already on
+/// disk is to ask OFF again. Counted honestly, three ways, because "46
+/// refreshed" would be a lie the moment the phone drops off wifi.
+class PantryRefreshReport {
+  const PantryRefreshReport({
+    required this.updated,
+    required this.unchanged,
+    required this.missing,
+    required this.failed,
+  });
+
+  /// OFF answered with different data and the file was rewritten.
+  final int updated;
+
+  /// OFF answered with exactly what the file already held.
+  final int unchanged;
+
+  /// OFF no longer knows this barcode — nothing to fetch, not an error.
+  final int missing;
+
+  /// Offline, timeout or throttled. The file is untouched; try again later.
+  final int failed;
+
+  int get total => updated + unchanged + missing + failed;
+}
+
 class PantryModel extends ChangeNotifier {
-  PantryModel(this._store, {OffClient? off, DateTime Function()? clock})
-      : _off = off ?? OffClient(),
-        _clock = clock ?? DateTime.now;
+  PantryModel(
+    this._store, {
+    OffClient? off,
+    DateTime Function()? clock,
+    Future<void> Function(Duration)? wait,
+  })  : _off = off ?? OffClient(),
+        _clock = clock ?? DateTime.now,
+        _wait = wait ?? ((d) => Future<void>.delayed(d));
+
+  /// Pause between lookups in a bulk refresh. Open Food Facts asks for
+  /// restraint on their free API; 46 products back to back without it reads
+  /// as a scraper. Injectable so tests don't sleep.
+  static const refreshPause = Duration(milliseconds: 700);
 
   final ProductStore? _store;
   final OffClient _off;
   final DateTime Function() _clock;
+  final Future<void> Function(Duration) _wait;
 
   List<Product> _products = const [];
   int _skipped = 0;
   bool _loaded = false;
   bool _busy = false;
+  bool _refreshing = false;
+  int _refreshDone = 0;
+  int _refreshTotal = 0;
 
   List<Product> get products => List.unmodifiable(_products);
   bool get loaded => _loaded;
 
   /// A lookup is in flight — the tab shows progress and holds the scan CTA.
   bool get busy => _busy;
+
+  /// A bulk re-fetch is running; [refreshDone]/[refreshTotal] drive the
+  /// progress line so a 46-product sweep never looks like a hang.
+  bool get refreshing => _refreshing;
+  int get refreshDone => _refreshDone;
+  int get refreshTotal => _refreshTotal;
+
+  /// Barcoded products are the only ones OFF can be asked about again.
+  int get refreshableCount =>
+      _products.where((p) => p.barcode.isNotEmpty).length;
 
   /// Foreign/unparseable files in the pantry folder — surfaced, never fatal.
   int get skipped => _skipped;
@@ -100,6 +152,85 @@ class PantryModel extends ChangeNotifier {
       _busy = false;
       notifyListeners();
     }
+  }
+
+  /// Ask Open Food Facts about every barcoded product on the shelf again and
+  /// rewrite the files whose data changed. This is the only route to the
+  /// vitamins and minerals for products saved by a build that kept just the
+  /// seven macros — rescanning 46 packs by hand is not a plan.
+  ///
+  /// The user's own photo, the date they added it and the barcode all survive
+  /// ([Product.copyWith] carries them); only OFF's own fields are replaced.
+  /// A product OFF can't answer for is left exactly as it was.
+  Future<PantryRefreshReport> refreshAll() async {
+    final targets = [
+      for (final p in _products)
+        if (p.barcode.isNotEmpty) p
+    ];
+    _refreshing = true;
+    _refreshDone = 0;
+    _refreshTotal = targets.length;
+    notifyListeners();
+
+    var updated = 0, unchanged = 0, missing = 0, failed = 0;
+    try {
+      for (var i = 0; i < targets.length; i++) {
+        if (i > 0) await _wait(refreshPause);
+        final current = byId(targets[i].id) ?? targets[i];
+        final result = await _off.lookup(current.barcode);
+        switch (result) {
+          case OffFound(:final product):
+            final merged = _merge(current, product);
+            if (_sameAs(current, merged)) {
+              unchanged++;
+            } else {
+              await _persist(merged);
+              updated++;
+            }
+          case OffNotFound():
+            missing++;
+          case OffUnavailable():
+            failed++;
+        }
+        _refreshDone = i + 1;
+        notifyListeners();
+      }
+    } finally {
+      _refreshing = false;
+      notifyListeners();
+    }
+    return PantryRefreshReport(
+        updated: updated,
+        unchanged: unchanged,
+        missing: missing,
+        failed: failed);
+  }
+
+  /// OFF's fields onto an existing file. Absent OFF fields keep what the file
+  /// already had rather than blanking it — a name that vanished from OFF is
+  /// not a reason to lose the product's name here.
+  Product _merge(Product current, OffProduct off) {
+    final name = off.name?.trim();
+    return current.copyWith(
+      name: (name == null || name.isEmpty) ? null : name,
+      brand: off.brands,
+      quantity: off.quantity,
+      nutriments: Nutriments.fromMap(Map.of(off.nutriments.values)),
+    );
+  }
+
+  /// Nothing worth a disk write. Compared on the fields a refresh can touch.
+  bool _sameAs(Product a, Product b) =>
+      a.name == b.name &&
+      a.brand == b.brand &&
+      a.quantity == b.quantity &&
+      mapEquals(a.nutriments?.values, b.nutriments?.values);
+
+  /// Write one product in place, keeping list order — a refresh must not
+  /// reshuffle the shelf under the user's thumb the way a fresh scan does.
+  Future<void> _persist(Product product) async {
+    final saved = await _store?.save(product) ?? product;
+    _replace(saved);
   }
 
   Future<void> remove(String id) async {
@@ -156,15 +287,9 @@ class PantryModel extends ChangeNotifier {
       quantity: off.quantity,
       source: 'off',
       addedAt: _clock().toUtc().toIso8601String(),
-      nutriments: Nutriments(
-        kcal: n.energyKcal,
-        fat: n.fat,
-        saturatedFat: n.saturatedFat,
-        carbs: n.carbohydrates,
-        sugars: n.sugars,
-        protein: n.proteins,
-        salt: n.salt,
-      ),
+      // Everything OFF sent, vitamins and minerals included — the keys
+      // already match the product file's.
+      nutriments: Nutriments.fromMap(Map.of(n.values)),
     );
   }
 
