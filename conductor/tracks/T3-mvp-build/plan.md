@@ -67,7 +67,10 @@ architecture: docs/architecture-draft.md v2 — GRILLED 2026-08-06 (cowork sessi
 - D7 (P2, 2026-08-06) fair-use cap machinery: static shared secret + install_id
   frozen into the request shape from day one; the per-install counter lives in the
   proxy — constraint 3 amended to allow exactly that state (context.md §3).
-  Play Integrity only if real abuse appears.
+  Play Integrity only if real abuse appears. · 2026-08-18: the cap NUMBER is
+  now its own brief — cap-brief.md in this track (pricing researched, usage
+  logging task for Code, open research list). 100/mo stays strawman until
+  measured.
 - D8 (telemetry, 2026-08-06) none in alpha — no crash/analytics SDK. Play vitals +
   12 named testers cover the closed test. Revisit at production as its own decision.
 - D9 (2026-08-06, decided on Arnar's mockups) link-import door = post-alpha BONUS,
