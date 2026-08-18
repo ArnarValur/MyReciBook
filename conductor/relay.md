@@ -10,4 +10,4 @@
   schedule and budget sections removed; recipe files exportable in other formats.
 - Answered his two questions in the mvp-build plan: what the proxy is, what the
   Play closed test is.
-- Unfinished: the nutrient work in app/ is still uncommitted.
+- Nutrient work committed on main (21d9094). Nothing pending.

@@ -14,7 +14,7 @@
 - Grocery list: staple rows show bare names, linked rows show a muted "in your pantry"
   hint, two rows with the same product merge with certainty.
 - Full nutrient list saved, not seven fixed slots; kept in Open Food Facts' own
-  units, screen converts down. Uncommitted in the tree.
+  units, screen converts down. Committed on main.
 - Test suite ran 454 green serially at the last check. Never audited.
 - Known gaps: deleted product leaves a silent dangling link · one barcode per photo ·
   46 older products keep the old seven values until rescanned · Open Food Facts data
