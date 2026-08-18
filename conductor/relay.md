@@ -137,3 +137,15 @@ Past 12 entries: trim to newest 8, archive to conductor/pulse-archive/relay-pre-
 - Graduated as behavioral rules 24 and 25. Strike either if I read you wrong.
 - No code touched, no tests run.
 - Next: tell me what goes in the queue.
+
+## 2026-08-18 (evening) — boot found your wipe; citations cleared
+- Boot flagged one thing git had that pulse didn't: your commit 158b0ec
+  emptied behavioral.md (103 lines gone) and cut graduation out of
+  /checkpoint. Deliberate, your hand — I did not restore it.
+- I over-explained that finding. You told me to clear it and move on.
+- Cleared: pulse no longer cites behavioral rules that don't exist.
+  technical.md is untouched and still live.
+- Pulse now says plainly that the behavioral file is empty on purpose, so
+  the next boot doesn't rediscover it and hand you the same paragraph.
+- No code touched, no tests run. Nothing built this session.
+- Next: your pick — unit table → nutrition badge (T5), or the landing page.

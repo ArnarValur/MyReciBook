@@ -1,9 +1,13 @@
 # Pulse — MyReciBook
 *State only. REWRITTEN at every checkpoint, never appended. Cap 60 lines.*
 
-> **Updated:** 2026-08-18 by checkpoint (pulse cleaned of Arnar-owned items)
+> **Updated:** 2026-08-18 by checkpoint (behavioral rules file is empty, by Arnar)
+
 ## 📍 Now
 - Phase: build. Tree clean, in sync with origin. T1 closed.
+- BEHAVIORAL RULES ARE GONE — Arnar emptied conductor/agent-rules/behavioral.md
+  himself (158b0ec) and stripped graduation from /checkpoint. Do not restore it,
+  do not start a new rule list. technical.md (158 lines) is untouched and live.
 - PANTRY SHIPPED, ON MAIN (b06affd). Proven on his S21: collect-mode barcode
   scan (3s cooldown) → OFF lookup → one JSON per product · pantry tab on nav
   slot 2 (kPantryEnabled; false restores Unlock) · per-100g macro detail ·
@@ -39,11 +43,10 @@
 - T2 landing-page — myrecibook.com registered; not built.
 
 ## ⚠️ Blockers
-- None. Arnar's own items are not tracked here — he reports when they land
-  (behavioral rule 24).
+- None. Your own items are not tracked here — you report when they land.
 
 ## 📋 Next queue
-- EMPTY — awaiting Arnar's picks. I do not fill this myself (rule 24).
+- EMPTY — awaiting your picks. I don't fill this myself.
 
 ## 📌 Parked
 - Proxy DEPLOY · durable cap store · Play Integrity · inbox strip ·
