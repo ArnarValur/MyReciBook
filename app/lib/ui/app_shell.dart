@@ -27,6 +27,7 @@ import 'package:provider/provider.dart';
 
 import '../features.dart';
 
+import '../data/link_extractor.dart';
 import '../data/share_entry.dart';
 import '../domain/extractor.dart';
 import 'batch_model.dart';
@@ -62,6 +63,7 @@ class AppShell extends StatefulWidget {
     this.share,
     this.folderName,
     this.onChangeFolder,
+    this.linkExtractor,
   });
 
   final Extractor extractor;
@@ -78,6 +80,10 @@ class AppShell extends StatefulWidget {
 
   /// Deliberate folder change — routes to the existing BootGate re-pick flow.
   final VoidCallback? onChangeFolder;
+
+  /// Test seam (share-links spike): builds the extractor for a shared URL.
+  /// Null = the real LinkExtractor.
+  final Extractor Function(String url)? linkExtractor;
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -96,13 +102,14 @@ class _AppShellState extends State<AppShell> {
   // Shares arriving while an import is open wait here — hijacking an open
   // review would lose the user's edits. Also the drawer badge's real count.
   final List<File> _queuedShares = [];
+  final List<String> _queuedLinks = [];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      widget.share?.attach(_onShared);
+      widget.share?.attach(_onShared, onLink: _onSharedLink);
     });
   }
 
@@ -175,11 +182,40 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  void _onSharedLink(String url) {
+    if (!mounted || url.isEmpty) return;
+    if (_importBusy) {
+      setState(() => _queuedLinks.add(url));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Link saved for your next import')));
+      return;
+    }
+    _openSharedLink(url);
+  }
+
+  Future<void> _openSharedLink(String url) async {
+    _importBusy = true;
+    try {
+      await _pushLinkReview(url);
+    } finally {
+      _importBusy = false;
+      _drainQueuedShares();
+    }
+  }
+
   void _drainQueuedShares() {
-    if (!mounted || _queuedShares.isEmpty) return;
-    final next = [..._queuedShares];
-    setState(_queuedShares.clear);
-    _openShared(next);
+    if (!mounted) return;
+    if (_queuedShares.isNotEmpty) {
+      final next = [..._queuedShares];
+      setState(_queuedShares.clear);
+      _openShared(next);
+      return;
+    }
+    if (_queuedLinks.isEmpty) return;
+    // One link at a time — each opens its own review, the rest keep waiting.
+    final next = _queuedLinks.first;
+    setState(() => _queuedLinks.removeAt(0));
+    _openSharedLink(next);
   }
 
   Future<void> _pushReview(List<File> images) =>
@@ -187,6 +223,18 @@ class _AppShellState extends State<AppShell> {
         builder: (_) => ImportReviewScreen(
           images: images,
           extractor: widget.extractor,
+          pickMore: widget.picker,
+        ),
+      ));
+
+  /// Shared link → the same review flow, with the link extractor standing in
+  /// for the vision model. No images: the page's own data is the source.
+  Future<void> _pushLinkReview(String url) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => ImportReviewScreen(
+          images: const [],
+          extractor:
+              widget.linkExtractor?.call(url) ?? LinkExtractor(url: url),
           pickMore: widget.picker,
         ),
       ));
@@ -252,7 +300,8 @@ class _AppShellState extends State<AppShell> {
             active: _tab,
             onTab: _select,
             onFab: _import,
-            queueBadge: batch.attention + _queuedShares.length),
+            queueBadge:
+                batch.attention + _queuedShares.length + _queuedLinks.length),
       ),
     );
   }

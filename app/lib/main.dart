@@ -128,8 +128,11 @@ Future<void> main() async {
   // Constructed once, before takePending; warm shares buffer in the entry
   // until the gate resolves (bridge contract + arch §3.1).
   final intake = ShareIntake();
-  final share = ShareEntry(takePending: intake.takePending);
+  final share = ShareEntry(
+      takePending: intake.takePending,
+      takePendingLinks: intake.takePendingLinks);
   intake.onShared = share.push;
+  intake.onSharedLink = share.pushLink;
 
   // App-lifetime like storage: outlives BootGate re-entries, so buildApp
   // providers it with .value and never disposes it.
@@ -205,6 +208,7 @@ Widget buildApp({
   required ImagePick picker,
   ImagePick? camera,
   ShareEntry? share,
+  Extractor Function(String url)? linkExtractor,
   GroceryStore? grocery,
   ProductStore? pantry,
   StorageModel? storage,
@@ -285,6 +289,7 @@ Widget buildApp({
             picker: picker,
             camera: camera,
             share: share,
+            linkExtractor: linkExtractor,
             folderName: folderName,
             onChangeFolder: onChangeFolder,
           ),

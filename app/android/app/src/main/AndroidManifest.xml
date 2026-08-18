@@ -44,6 +44,13 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="image/*"/>
             </intent-filter>
+            <!-- Shared links (share-links spike): browsers and feed apps share
+                 recipe pages as text/plain; ShareBridge picks the URL out. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
             <!-- OAuth redirect (AuthBridge); singleTask → lands in onNewIntent -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>

@@ -23,6 +23,11 @@ class ShareIntake {
   /// registering could race an incoming share.
   void Function(List<File> images)? onShared;
 
+  /// Warm-path link shares (text/plain intents carrying a URL). No dedupe:
+  /// re-sharing the same link on purpose must work; the bridge only re-lists
+  /// a link when its success reply was lost, which is rare and harmless.
+  void Function(String url)? onSharedLink;
+
   /// Cold-start drain: cached share copies that still exist, deduped against
   /// anything already delivered warm.
   Future<List<File>> takePending() async {
@@ -30,7 +35,21 @@ class ShareIntake {
     return _fresh((paths ?? const []).cast<String>());
   }
 
+  /// Cold-start drain for link shares queued before the engine attached.
+  Future<List<String>> takePendingLinks() async {
+    final links =
+        await channel.invokeMethod<List<dynamic>>('takePendingSharedLinks');
+    return (links ?? const []).cast<String>();
+  }
+
   Future<Object?> _handle(MethodCall call) async {
+    if (call.method == 'onSharedLink') {
+      try {
+        final url = call.arguments as String;
+        if (url.isNotEmpty) onSharedLink?.call(url);
+      } catch (_) {} // a throw would re-queue the link (bridge contract)
+      return null;
+    }
     if (call.method != 'onSharedImages') return null;
     try {
       final files = await _fresh((call.arguments as List).cast<String>());

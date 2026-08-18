@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong
 class ShareBridge(private val activity: Activity) {
   private var channel: MethodChannel? = null
   private val pending = mutableListOf<String>() // main-thread only
+  private val pendingLinks = mutableListOf<String>() // main-thread only
   private val io = Executors.newSingleThreadExecutor()
   private val main = Handler(Looper.getMainLooper())
   private val seq = AtomicLong(0)
@@ -28,6 +29,7 @@ class ShareBridge(private val activity: Activity) {
     private const val CHANNEL = "com.merkurialstudio.myrecibook/share"
     private const val MAX_IMAGES = 10
     private const val MAX_BYTES = 25L * 1024 * 1024
+    private const val MAX_TEXT_CHARS = 100_000
   }
 
   fun attach(messenger: BinaryMessenger) {
@@ -37,6 +39,10 @@ class ShareBridge(private val activity: Activity) {
           "takePendingShared" -> {
             result.success(pending.toList())
             pending.clear()
+          }
+          "takePendingSharedLinks" -> {
+            result.success(pendingLinks.toList())
+            pendingLinks.clear()
           }
           else -> result.notImplemented()
         }
@@ -50,11 +56,45 @@ class ShareBridge(private val activity: Activity) {
     } catch (_: Exception) {
       emptyList()
     }
-    if (uris.isEmpty()) return
-    io.execute {
-      val paths = uris.take(MAX_IMAGES).mapNotNull { copyToCache(it, intent) }
-      if (paths.isNotEmpty()) main.post { deliver(paths) }
+    if (uris.isNotEmpty()) {
+      io.execute {
+        val paths = uris.take(MAX_IMAGES).mapNotNull { copyToCache(it, intent) }
+        if (paths.isNotEmpty()) main.post { deliver(paths) }
+      }
+      return
     }
+    // No image stream → a text share may carry a recipe link.
+    val link = try {
+      extractSharedLink(intent)
+    } catch (_: Exception) {
+      null
+    }
+    if (link != null) deliverLink(link)
+  }
+
+  private fun extractSharedLink(intent: Intent?): String? {
+    intent ?: return null
+    if (intent.action != Intent.ACTION_SEND) return null
+    if (intent.type?.startsWith("text/") != true) return null
+    val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null
+    if (text.length > MAX_TEXT_CHARS) return null // hostile share must no-op
+    val match = Regex("""https?://\S+""").find(text) ?: return null
+    // Shares wrap links in prose — strip trailing sentence punctuation.
+    return match.value.trimEnd('.', ',', ';', '!', '?', ')', ']', '"', '\'', '>')
+  }
+
+  private fun deliverLink(url: String) {
+    pendingLinks.add(url)
+    val ch = channel ?: return
+    ch.invokeMethod("onSharedLink", url, object : MethodChannel.Result {
+      override fun success(result: Any?) {
+        pendingLinks.remove(url)
+      }
+
+      override fun error(code: String, message: String?, details: Any?) {}
+
+      override fun notImplemented() {}
+    })
   }
 
   // Queue first; the warm-app push only un-queues on confirmed Dart delivery,

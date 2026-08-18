@@ -101,4 +101,60 @@ void main() {
     expect(reply, isNotNull);
     expect(codec.decodeEnvelope(reply!), isNull); // still a success envelope
   });
+
+  // Link shares (share-links spike) ride the same channel with their own
+  // method pair; the bridge contract (successful reply or re-queue) holds.
+  group('links', () {
+    Future<ByteData?> pushWarmLink(String url) async {
+      ByteData? reply;
+      await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .handlePlatformMessage(
+              channel.name,
+              codec.encodeMethodCall(MethodCall('onSharedLink', url)),
+              (data) => reply = data);
+      return reply;
+    }
+
+    List<String> pendingLinks = [];
+
+    setUp(() {
+      pendingLinks = [];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'takePendingSharedLinks') {
+          final out = List<String>.from(pendingLinks);
+          pendingLinks.clear();
+          return out;
+        }
+        return null;
+      });
+    });
+
+    test('warm push fires the link callback and replies success', () async {
+      final intake = ShareIntake(channel: channel);
+      String? got;
+      intake.onSharedLink = (url) => got = url;
+
+      final reply = await pushWarmLink('https://example.com/buns');
+      expect(got, 'https://example.com/buns');
+      expect(reply, isNotNull);
+      expect(codec.decodeEnvelope(reply!), isNull);
+    });
+
+    test('takePendingLinks drains the bridge queue once', () async {
+      pendingLinks = ['https://example.com/soup'];
+      final intake = ShareIntake(channel: channel);
+      expect(await intake.takePendingLinks(), ['https://example.com/soup']);
+      expect(await intake.takePendingLinks(), isEmpty);
+    });
+
+    test('link callback throw never breaks the reply', () async {
+      final intake = ShareIntake(channel: channel);
+      intake.onSharedLink = (_) => throw StateError('listener bug');
+
+      final reply = await pushWarmLink('https://example.com/x');
+      expect(reply, isNotNull);
+      expect(codec.decodeEnvelope(reply!), isNull);
+    });
+  });
 }

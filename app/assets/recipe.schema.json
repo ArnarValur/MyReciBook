@@ -12,10 +12,11 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type": { "enum": ["screenshot"] },
+        "type": { "enum": ["screenshot", "link"] },
         "imported_at": { "type": ["string", "null"], "description": "ISO 8601" },
         "original_images": { "type": ["array", "null"], "items": { "type": "string" }, "description": "ordered relative paths, e.g. images/<id>-1.jpg — images and JSON travel together; multi-screenshot recipes are one import (proven 2026-08-05)" },
-        "app_hint": { "type": ["string", "null"], "description": "guessed origin (instagram, pinterest…), display only" }
+        "url": { "type": ["string", "null"], "description": "link imports only: the shared page the recipe came from; absent on screenshot imports" },
+        "app_hint": { "type": ["string", "null"], "description": "guessed origin (instagram, pinterest…) or the link's host, display only" }
       }
     },
     "servings": {
@@ -68,7 +69,7 @@
       "type": ["object", "null"],
       "properties": {
         "model": { "type": ["string", "null"] },
-        "mode": { "enum": ["image", "ocr_text", null] },
+        "mode": { "enum": ["image", "ocr_text", "link", null] },
         "extracted_at": { "type": ["string", "null"] },
         "overall_confidence": { "type": ["number", "null"] },
         "needs_review": { "type": "array", "items": { "type": "string" }, "description": "JSON paths the review screen should highlight" }

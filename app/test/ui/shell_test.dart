@@ -84,11 +84,13 @@ void main() {
     }
   }
 
-  Widget app({ShareEntry? share}) => buildApp(
-      store: store,
-      extractor: FakeExtractor([canned()]),
-      picker: () async => [pick],
-      share: share);
+  Widget app({ShareEntry? share, Extractor Function(String url)? linkExtractor}) =>
+      buildApp(
+          store: store,
+          extractor: FakeExtractor([canned()]),
+          picker: () async => [pick],
+          share: share,
+          linkExtractor: linkExtractor);
 
   int? stackIndex(WidgetTester tester) =>
       tester.widget<IndexedStack>(find.byType(IndexedStack)).index;
@@ -190,6 +192,33 @@ void main() {
     share.push([pick]);
     await settle(tester);
     expect(find.text('Recipe rescued'), findsOneWidget);
+  });
+
+  testWidgets('shared link lands in review with the link source row',
+      (tester) async {
+    const url = 'https://example.com/best-buns';
+    final share = ShareEntry();
+    // Canned link content the way LinkExtractor stamps it: source.url set,
+    // no images anywhere.
+    final linkContent = canned(title: 'Best Buns')
+      ..['source'] = {'type': 'link', 'url': url, 'app_hint': 'example.com'};
+    await tester.pumpWidget(app(
+        share: share,
+        linkExtractor: (u) {
+          expect(u, url);
+          return FakeExtractor([linkContent]);
+        }));
+    await settle(tester);
+
+    share.pushLink(url);
+    await settle(tester);
+
+    expect(find.text('Recipe rescued'), findsOneWidget);
+    expect(find.text('Best Buns'), findsOneWidget);
+    expect(find.text('From a link'), findsOneWidget);
+    expect(find.text('example.com'), findsOneWidget);
+    // No screenshot row for a link import.
+    expect(find.text('Original screenshot'), findsNothing);
   });
 
   testWidgets(

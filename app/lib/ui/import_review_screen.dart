@@ -159,6 +159,20 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         body: 'Check your connection, then try again.'
       );
     }
+    if (e.message.startsWith('no recipe data')) {
+      // Link import (share-links spike): the page had no schema.org Recipe.
+      return (
+        title: 'No recipe in that link',
+        body: "The page doesn't share its recipe data — "
+            'screenshot it instead.'
+      );
+    }
+    if (e.message.startsWith('the page answered')) {
+      return (
+        title: "The site wouldn't let us in",
+        body: 'It refused the request — screenshot the recipe instead.'
+      );
+    }
     if (e.message.startsWith('No API key')) {
       // A keyless build (flutter build without dev.env) is OUR defect, never
       // the user's screenshots — twice in one day (2026-08-18) it hid behind
@@ -472,17 +486,32 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     final timesRaw =
         (_content['times'] is Map) ? _content['times']['raw'] : null;
 
+    // Link import (share-links spike): no screenshots — the source row names
+    // the page instead, and there are no originals to open.
+    final sourceUrl = _content['source'] is Map
+        ? (_content['source'] as Map)['url'] as String?
+        : null;
+    final fromLink = _images.isEmpty && sourceUrl != null;
+
     final children = <Widget>[
       // Source row — provenance is one tap away, always.
       InkWell(
         borderRadius: BorderRadius.circular(10),
-        onTap: _openOriginals,
+        onTap: fromLink ? null : _openOriginals,
         child: Row(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: SizedBox(
-                  width: 52, height: 76, child: CoverImage(_images.firstOrNull)),
+                  width: 52,
+                  height: 76,
+                  child: fromLink
+                      ? ColoredBox(
+                          color: scheme.surfaceContainerHigh,
+                          child: Icon(Icons.link_rounded,
+                              size: 24, color: scheme.onSurfaceVariant),
+                        )
+                      : CoverImage(_images.firstOrNull)),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -490,26 +519,34 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      _images.length > 1
-                          ? 'Original screenshots · ${_images.length}'
-                          : 'Original screenshot',
+                      fromLink
+                          ? 'From a link'
+                          : _images.length > 1
+                              ? 'Original screenshots · ${_images.length}'
+                              : 'Original screenshot',
                       style:
                           theme.textTheme.titleSmall?.copyWith(fontSize: 14)),
                   const SizedBox(height: 2),
-                  Text('tap to see what we read',
+                  Text(
+                      fromLink
+                          ? (Uri.tryParse(sourceUrl)?.host ?? sourceUrl)
+                          : 'tap to see what we read',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall
                           ?.copyWith(color: scheme.onSurfaceVariant)),
                 ],
               ),
             ),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHigh, shape: BoxShape.circle),
-              child: Icon(Icons.swap_horiz_rounded,
-                  size: 20, color: scheme.onSurfaceVariant),
-            ),
+            if (!fromLink)
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHigh, shape: BoxShape.circle),
+                child: Icon(Icons.swap_horiz_rounded,
+                    size: 20, color: scheme.onSurfaceVariant),
+              ),
           ],
         ),
       ),

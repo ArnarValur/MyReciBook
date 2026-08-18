@@ -67,10 +67,15 @@ class Recipe {
       id: id,
       title: (content['title'] as String?) ?? '',
       lang: content['lang'] as String?,
+      // Link imports (share-links spike) ride the same seam: the extractor
+      // stamps type/url into content.source; screenshot content never does.
       source: RecipeSource(
-        type: 'screenshot',
+        type: contentSource is Map
+            ? (contentSource['type'] as String? ?? 'screenshot')
+            : 'screenshot',
         importedAt: importedAt.toIso8601String(),
         originalImages: originalImages,
+        url: contentSource is Map ? contentSource['url'] as String? : null,
         appHint: contentSource is Map ? contentSource['app_hint'] as String? : null,
       ),
       servings: Servings.fromJsonOrNull(content['servings']),
@@ -175,12 +180,17 @@ class RecipeSource {
   final String type;
   final String? importedAt;
   final List<String>? originalImages;
+
+  /// Link imports only: the shared page the recipe came from. Absent in JSON
+  /// unless set, so screenshot files round-trip byte-identical.
+  final String? url;
   final String? appHint;
 
   const RecipeSource({
     required this.type,
     this.importedAt,
     this.originalImages,
+    this.url,
     this.appHint,
   });
 
@@ -190,6 +200,7 @@ class RecipeSource {
         originalImages: json['original_images'] is List
             ? [for (final p in json['original_images'] as List) p as String]
             : null,
+        url: json['url'] as String?,
         appHint: json['app_hint'] as String?,
       );
 
@@ -197,6 +208,7 @@ class RecipeSource {
         'type': type,
         'imported_at': importedAt,
         'original_images': originalImages,
+        if (url != null) 'url': url,
         'app_hint': appHint,
       };
 }
