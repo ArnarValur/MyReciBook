@@ -18,17 +18,18 @@
 1. REWRITE pulse — state only, cap 60 lines.
 2. Append ONE relay entry (≤10 lines). Guardrail: past 12 entries, trim to newest 8,
    archive the rest.
-3. Graduate lessons: technical → rules file automatically; behavioral → only with
-   Arnar's explicit yes.
+3. Lessons: fix the file that caused the mistake first. A new behavioral rule is
+   the exception, not the reflex — edit an existing one where it fits.
 4. Update touched track plan + its tracks.md one-liner. No metadata.json — facts live
    in the plan header.
 5. ADR only if proposed AND approved in-session. ADR criteria: hard to reverse ·
    consequences across tracks · a future agent would plausibly redo it wrong.
-6. Git: commit on main (solo repo, fold-to-main), ≤6-line confirm.
+6. Git: stage all, SHOW Arnar the file list and wait for his go, then commit
+   on main (solo repo, fold-to-main), ≤6-line confirm.
 
 ## Rules that keep this alive
 - No static live-state in conductor docs (model prices, API versions, external URLs
   that rot) — enumerate live, always.
 - Halt/recovery messages point at git history, never at commands this repo may not carry.
-- Self-improvement loop: checkpoint's graduation step IS the loop. A failure that
-  repeats without becoming a rule is a conductor bug — fix the conductor, not the memory.
+- Self-improvement means fixing the broken file. Rules are a last resort — a rule
+  count that only ever goes up means the wrong thing is being fixed.

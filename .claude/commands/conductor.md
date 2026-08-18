@@ -13,9 +13,9 @@ Then enumerate live — never trust static copies: `git status` + `git log --one
 
 Warm files load later, via the trigger table in conductor/index.md — never at boot.
 
-Report in ~10 lines: phase + today vs schedule · active tracks · blockers · top 3 of
-next queue · anything in git not reflected in pulse. NO gate countdowns, no
-calendar framing — gates are criteria in context.md §4, not status (Arnar 2026-08-18).
+Report in ~10 lines: phase · active tracks · blockers on MY side only · the queue as
+written (empty means empty — never fill it) · anything in git not reflected in pulse.
+No gates, no countdowns, no calendar framing, and nothing Arnar owns.
 
 Halt ONLY if conductor/ or conductor/pulse.md is missing. Recovery: restore from git
 history (`git log --diff-filter=D --oneline -- conductor/pulse.md`, then checkout the
