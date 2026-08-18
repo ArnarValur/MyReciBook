@@ -16,10 +16,15 @@ flag until wired.
 - [x] Pantry tab, product detail with per-100g macros, user photo per product
 - [x] Ingredient long-press → product link, with search and photo thumbnails
 - [x] Grocery list: bare staple rows, "in your pantry" hint, same-product merge
-- [x] Full open nutrient list saved instead of seven fixed slots (uncommitted in tree)
+- [x] Full open nutrient list saved instead of seven fixed slots
 
 ## Open
-- [ ] Unit and density table for staples
+- [ ] Unit and density table for staples. Design decision from 2026-08-18 brainstorm:
+      extractor emits structured {qty, unit, name, original}; conversion is local math
+      at render time, never the LLM; original string always kept; kitchen-sane rounding;
+      unconvertibles (stick, pinch, egg) pass through. Same parse feeds metric display,
+      serving rescale, grocery merge.
+- [ ] Metric display toggle (imperial → metric at render, incl. °F→°C in steps)
 - [ ] Per-serving calculator
 - [ ] Nutrition badge on the recipe
 - [ ] Product edit screen — Open Food Facts data is sometimes wrong and 46 older
