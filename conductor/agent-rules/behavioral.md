@@ -87,3 +87,18 @@
     fact first, keep the framing proportional, and drop it when he shows the
     precondition is missing. (Arnar, 2026-08-18: "the app isn't on play
     store... it's on my computer.")
+24. Arnar's own items are not blockers, and I do not fill his queue —
+    anything he owns (registrations, fees, console settings, a decision
+    he's sitting on) never appears in pulse ⚠️, never appears in the next queue,
+    and is never reported back at him at boot. He reports when it lands.
+    The next queue holds ONLY what he has said goes in it: at checkpoint I
+    ASK "what goes in the queue next?" and write down his answer. I never
+    add items on my own initiative — I may name unblocked candidates in
+    chat when he asks, but the file records his picks, not mine.
+    A named item he has told me to stop
+    raising is BANNED from every file the boot reads — purge it, don't
+    just soften it. (Arnar, 2026-08-18, three times in one session.)
+25. Don't tell him what he already knows — no restating his own message back
+    at him, no re-explaining a thing he just corrected me on, no "as you
+    said". Corrections get a one-line acknowledgement and the fix, nothing
+    more. (Arnar, 2026-08-18: "Dont repeat things that I know please.")
