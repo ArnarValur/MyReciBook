@@ -187,6 +187,70 @@ void main() {
               'message', startsWith('unreadable response'))));
     });
 
+    test('no JSON-LD + fallback → page text goes through the AI seam',
+        () async {
+      const page = '''
+      <html><head>
+      <meta property="og:image" content="https://example.com/hero.jpg">
+      <script>ignore me entirely</script>
+      </head><body>
+      <h1>Lemon Cake</h1><p>Mix 2 cups flour with 1 cup sugar.</p>
+      <p>Bake it well and enjoy the result with friends and family.</p>
+      <p>This bright, tender lemon cake came from my grandmother's box of
+      handwritten cards, and it has opened every summer gathering since.
+      Serve it with softly whipped cream and the ripest berries you can
+      find at the market that morning.</p>
+      </body></html>''';
+      String? seenText;
+      final extractor = LinkExtractor(
+        url: url,
+        client: MockClient((_) async => http.Response(page, 200)),
+        fallbackModel: 'fake-gemini',
+        fallback: (text) async {
+          seenText = text;
+          return {
+            'title': 'Lemon Cake',
+            'ingredients': [
+              {'raw': '2 cups flour'},
+              {'raw': '1 cup sugar'},
+            ],
+            'steps': [
+              {'raw': 'Bake it well.'},
+            ],
+          };
+        },
+      );
+      final content = await extractor.extractContent(const <File>[]);
+      expect(seenText, contains('Mix 2 cups flour'));
+      expect(seenText, isNot(contains('ignore me'))); // scripts stripped
+      expect(content['title'], 'Lemon Cake');
+      // The AI never saw the page's markup — og:image fills the cover seam.
+      expect(content['image_url'], 'https://example.com/hero.jpg');
+      expect((content['source'] as Map)['url'], url);
+      expect(extractor.modelName, 'fake-gemini'); // honest extraction stamp
+    });
+
+    test('fallback returning an empty shell still fails as "no recipe"',
+        () async {
+      final extractor = LinkExtractor(
+        url: url,
+        client: MockClient((_) async => http.Response(
+            '<html><body>${'Just a news article about food politics. ' * 20}'
+            '</body></html>',
+            200)),
+        fallback: (_) async => {
+          'title': 'Not food',
+          'ingredients': <Object?>[],
+          'steps': <Object?>[],
+        },
+      );
+      expect(
+          () => extractor.extractContent(const <File>[]),
+          throwsA(isA<ExtractionException>().having(
+              (e) => e.message, 'message', startsWith('no recipe data'))));
+      expect(extractor.modelName, 'jsonld'); // nothing was extracted by AI
+    });
+
     test('transport failure → offline message (retryable)', () async {
       final extractor = LinkExtractor(
           url: url,

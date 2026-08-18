@@ -19,11 +19,23 @@ class LinkExtractor implements Extractor {
     required this.url,
     this.timeout = const Duration(seconds: 20),
     http.Client? client,
+    this.fallback,
+    this.fallbackModel = '',
   }) : _client = client ?? http.Client();
 
   final String url;
   final Duration timeout;
   final http.Client _client;
+
+  /// No JSON-LD on the page → the page's readable text goes through this
+  /// (GeminiExtractor.extractContentFromText — an AI call, same cost as a
+  /// screenshot). Null keeps the free-path-only behavior.
+  final Future<Map<String, dynamic>> Function(String pageText)? fallback;
+
+  /// Stamped into extraction.model when [fallback] produced the content.
+  final String fallbackModel;
+
+  bool _usedFallback = false;
 
   // Plain-browser UA: default Dart UA trips the bot filters on big recipe
   // sites; the page served to a phone browser is the one with the JSON-LD.
@@ -34,7 +46,7 @@ class LinkExtractor implements Extractor {
   String get mode => 'link';
 
   @override
-  String get modelName => 'jsonld';
+  String get modelName => _usedFallback ? fallbackModel : 'jsonld';
 
   @override
   Future<Map<String, dynamic>> extractContent(List<File> images) async {
@@ -72,9 +84,10 @@ class LinkExtractor implements Extractor {
     // bodyBytes + utf8: same charset stance as GeminiExtractor — recipe text
     // is full of ½/é and a latin1 fallback mojibakes it.
     final html = utf8.decode(resp.bodyBytes, allowMalformed: true);
-    final content = recipeContentFromHtml(html);
+    var content = recipeContentFromHtml(html);
     if (content == null) {
-      throw ExtractionException('no recipe data at that link');
+      content = await _fromPageText(html);
+      _usedFallback = true;
     }
     content['source'] = {
       'type': 'link',
@@ -83,6 +96,69 @@ class LinkExtractor implements Extractor {
     };
     return content;
   }
+
+  /// News-site case (ABC 2026-08-19): the recipe lives in the prose, not in
+  /// JSON-LD. Model output is checked for an empty shell so a non-recipe page
+  /// still fails as "no recipe" instead of opening a blank review.
+  Future<Map<String, dynamic>> _fromPageText(String html) async {
+    final fb = fallback;
+    if (fb == null) throw ExtractionException('no recipe data at that link');
+    final text = readableTextFromHtml(html);
+    if (text.length < 200) {
+      throw ExtractionException('no recipe data at that link');
+    }
+    final content = await fb(text);
+    final ings = content['ingredients'] as List? ?? const [];
+    final steps = content['steps'] as List? ?? const [];
+    if (ings.length < 2 && steps.isEmpty) {
+      throw ExtractionException('no recipe data at that link');
+    }
+    // The model saw text only — og:image is the page's own cover candidate.
+    content['image_url'] ??= ogImageFromHtml(html);
+    return content;
+  }
+}
+
+/// The page's og:image (or twitter:image) URL — the hero photo a news page
+/// names even when it publishes no recipe JSON-LD.
+String? ogImageFromHtml(String html) {
+  for (final prop in ['og:image', 'twitter:image']) {
+    final m = RegExp(
+            '<meta[^>]+(?:property|name)\\s*=\\s*["\']$prop["\'][^>]*>',
+            caseSensitive: false)
+        .firstMatch(html);
+    if (m == null) continue;
+    final content =
+        RegExp('content\\s*=\\s*["\']([^"\']+)["\']').firstMatch(m[0]!);
+    final url = content?[1];
+    if (url != null && url.startsWith('http')) return _decodeEntities(url);
+  }
+  return null;
+}
+
+/// Tag-stripped, entity-decoded page text for the AI fallback: scripts,
+/// styles and svg dropped, block ends become newlines, capped at [maxChars]
+/// so a giant page can't blow up the request.
+String readableTextFromHtml(String html, {int maxChars = 40000}) {
+  var s = html
+      .replaceAll(
+          RegExp(r'<(script|style|noscript|svg)[^>]*>.*?</\1>',
+              caseSensitive: false, dotAll: true),
+          ' ')
+      .replaceAll(RegExp(r'<!--.*?-->', dotAll: true), ' ');
+  s = s.replaceAll(
+      RegExp(r'</(p|div|li|h[1-6]|tr|section|article)>|<br\s*/?>',
+          caseSensitive: false),
+      '\n');
+  s = _decodeEntities(s.replaceAll(RegExp(r'<[^>]+>'), ' '));
+  final lines = [
+    for (final line in s.split('\n'))
+      if (line.replaceAll(RegExp(r'\s+'), ' ').trim()
+          case final String t when t.isNotEmpty)
+        t
+  ];
+  final text = lines.join('\n');
+  return text.length <= maxChars ? text : text.substring(0, maxChars);
 }
 
 /// First schema.org Recipe found in the page's JSON-LD blocks, mapped to the

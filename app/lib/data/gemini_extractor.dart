@@ -52,20 +52,12 @@ class GeminiExtractor implements Extractor {
 
   @override
   Future<Map<String, dynamic>> extractContent(List<File> images) async {
-    final viaProxy = proxyUrl.isNotEmpty;
-    if (!viaProxy && apiKey.isEmpty) {
-      throw ExtractionException('No API key — build with '
-          '--dart-define=GEMINI_API_KEY=... or EXTRACTION_PROXY_URL=...');
-    }
-    var prompt = await rootBundle.loadString('assets/structure_prompt.md');
+    var prompt = await _prompt();
     if (images.length > 1) {
       prompt += '\n\nNOTE: the images are consecutive screenshots of ONE recipe, '
           'in order. Combine them into a single recipe.';
     }
-    final schema = await rootBundle.loadString('assets/recipe.schema.json');
-    prompt += '\n\nTARGET JSON SCHEMA:\n$schema';
-
-    final parts = <Map<String, dynamic>>[
+    return _generate([
       {'text': prompt},
       for (final img in images)
         {
@@ -76,8 +68,35 @@ class GeminiExtractor implements Extractor {
             'data': base64Encode(await img.readAsBytes()),
           }
         },
-    ];
+    ]);
+  }
 
+  /// Link-import fallback (share-links spike): a page with no JSON-LD recipe
+  /// goes through the same prompt as page TEXT instead of screenshots. Costs
+  /// an AI call like any screenshot import.
+  Future<Map<String, dynamic>> extractContentFromText(String pageText) async {
+    final prompt = '${await _prompt()}'
+        '\n\nNOTE: instead of screenshots, the input below is the readable '
+        'text of ONE web page containing the recipe. Ignore navigation, ads '
+        'and comments.\n\nPAGE TEXT:\n$pageText';
+    return _generate([
+      {'text': prompt}
+    ]);
+  }
+
+  Future<String> _prompt() async {
+    final base = await rootBundle.loadString('assets/structure_prompt.md');
+    final schema = await rootBundle.loadString('assets/recipe.schema.json');
+    return '$base\n\nTARGET JSON SCHEMA:\n$schema';
+  }
+
+  Future<Map<String, dynamic>> _generate(
+      List<Map<String, dynamic>> parts) async {
+    final viaProxy = proxyUrl.isNotEmpty;
+    if (!viaProxy && apiKey.isEmpty) {
+      throw ExtractionException('No API key — build with '
+          '--dart-define=GEMINI_API_KEY=... or EXTRACTION_PROXY_URL=...');
+    }
     final uri = viaProxy
         ? Uri.parse('$proxyUrl/v1beta/models/$model:generateContent')
         : Uri.parse(

@@ -28,6 +28,7 @@ import 'package:provider/provider.dart';
 import '../features.dart';
 
 import '../data/cover_fetcher.dart';
+import '../data/gemini_extractor.dart';
 import '../data/link_extractor.dart';
 import '../data/link_fetch_client.dart';
 import '../data/share_entry.dart';
@@ -230,18 +231,30 @@ class _AppShellState extends State<AppShell> {
       ));
 
   /// Shared link → the same review flow, with the link extractor standing in
-  /// for the vision model. No images: the page's own data is the source.
-  Future<void> _pushLinkReview(String url) =>
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => ImportReviewScreen(
-          images: const [],
-          extractor: widget.linkExtractor?.call(url) ??
-              LinkExtractor(url: url, client: linkFetchClient()),
-          pickMore: widget.picker,
-          fetchCover: (imageUrl) =>
-              CoverFetcher(client: linkFetchClient()).fetch(imageUrl),
-        ),
-      ));
+  /// for the vision model. No images: the page's own data is the source; a
+  /// page without JSON-LD falls back to Gemini over the page text (an AI
+  /// call, same cost as a screenshot).
+  Future<void> _pushLinkReview(String url) {
+    final gemini = widget.extractor;
+    return Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => ImportReviewScreen(
+        images: const [],
+        extractor: widget.linkExtractor?.call(url) ??
+            LinkExtractor(
+              url: url,
+              client: linkFetchClient(),
+              fallback: gemini is GeminiExtractor
+                  ? gemini.extractContentFromText
+                  : null,
+              fallbackModel:
+                  gemini is GeminiExtractor ? gemini.modelName : '',
+            ),
+        pickMore: widget.picker,
+        fetchCover: (imageUrl) =>
+            CoverFetcher(client: linkFetchClient()).fetch(imageUrl),
+      ),
+    ));
+  }
 
   // The drawer Storage row's destination: the 3h screen. Restore refreshes
   // the library through this context — the pushed route shares the scope.
