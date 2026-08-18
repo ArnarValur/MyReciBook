@@ -9,4 +9,5 @@
 - **launch** — store listing, ASO, launch content.
 
 ## Done
+- **share-links** — link import shipped 2026-08-19: share sheet → JSON-LD or Gemini text fallback → review, cover toggle. Grew from a spike, no plan file — detail in the four share-links commits.
 - **extraction** — Gate 1 passed 2026-08-06 on Arnar's own screenshots.

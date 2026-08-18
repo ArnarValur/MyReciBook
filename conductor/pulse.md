@@ -1,31 +1,36 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
 
-> **Updated:** 2026-08-18 — checkpoint
+> **Updated:** 2026-08-19 — checkpoint
 
 ## 📍 Now
 - Phase: build. Extraction gate passed.
-- Unit display shipped: As written / Metric / US pill in settings; local math at
-  render on ingredient rows, step text and cook mode; recipe file never changes.
-- Cup→gram density for staples NOT done — volume stays volume until the unit table.
-- Pantry ships on main: barcode scan → Open Food Facts lookup → one JSON per product,
-  pantry tab, per-100g macros, user photo per product, ingredient → product linking.
-- Grocery list: staple rows show bare names, linked rows show a muted "in your pantry"
-  hint, two rows with the same product merge with certainty.
-- Full nutrient list saved in Open Food Facts' own units; screen converts down.
-- On-device builds go through app/deploy-s21.sh only — plain flutter build ships a
-  keyless APK where every extraction fails; that failure now names itself in-app.
-- Current S21 install: today's release build with keys, units toggle live.
-- Test suite ran 495 green serially at the last check. Never audited.
-- Known gaps: deleted product leaves a silent dangling link · one barcode per photo ·
-  46 older products keep the old seven values until rescanned · Open Food Facts data
-  is sometimes wrong, no product edit screen · "not measured" prints as 0.
-- Fair-use cap: nothing measured yet.
+- Link import shipped: share a URL from any app → review. Free path reads the
+  page's recipe JSON-LD (no AI call); pages without it fall back to Gemini over
+  the page text (costs one AI call, same as a screenshot). Both proven on S21.
+- Link fetches ride NetBridge (platform HTTP stack) — dart:io's parser dies on
+  Fastly's chunked trailers; Cronet was rejected by AGP 9's namespace rule.
+- Cover toggle on link imports: site hero photo (JSON-LD image / og:image),
+  shrunk to 1080px JPEG, default on, user decides. Recipe files carry
+  source.type "link" + url; screenshot files unchanged byte-for-byte.
+- Unit display pill live; metric mode leaves tsp/tbsp as written (spoons are
+  universal — Arnar). Link-imported lines have no parsed qty/unit yet.
+- Pantry on main: barcode scan → Open Food Facts, pantry tab, per-100g macros,
+  ingredient → product linking. Grocery list merges with pantry hints.
+- On-device builds only via app/deploy-s21.sh; keyless builds name themselves.
+- Current S21 install: 2026-08-19 release build with keys, link import + cover
+  toggle + spoons fix live.
+- Test suite 527 green serially. Never audited.
+- Known gaps: dangling product link on delete · one barcode per photo · 46 older
+  products keep seven values until rescanned · no product edit screen ·
+  "not measured" prints as 0 · link-import failure copy is honest but final —
+  no in-review retry-as-screenshot shortcut.
+- Fair-use cap: nothing measured yet. Text fallback burns AI calls.
 - Extraction proxy built, not deployed.
 
 ## 🚀 Active tracks
-- nutrition — open: unit + density table → per-serving → nutrition badge.
-  Remembered links declined by Arnar, do not re-queue. No inventory tracking.
+- nutrition — open: density table → per-serving → nutrition badge. Link-import
+  ingredient parse added as an open item. No remembered links, no inventory.
 - mvp-build — billing seam open, unstarted.
 
 ## ⚠️ Blockers

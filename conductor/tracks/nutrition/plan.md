@@ -20,10 +20,14 @@ flag until wired.
 - [x] Unit display toggle (As written / Metric / US in settings; local math at
       render on ingredients, steps and cook mode incl. °F→°C and inches;
       recipe file untouched; stick/pinch/egg pass through) — domain/units.dart
+- [x] Metric mode leaves tsp/tbsp as written — spoons are universal
+      (Arnar 2026-08-19); imperial still prints small ml as spoons
 
 ## Open
 - [ ] Density table for staples (cup of flour → grams; volume stays volume until
       then). Same parse should feed serving rescale and grocery merge.
+- [ ] Link imports (JSON-LD path) leave qty/unit/item null — ingredient parse
+      needed before the unit toggle and nutrition math cover them.
 - [ ] Per-serving calculator
 - [ ] Nutrition badge on the recipe
 - [ ] Product edit screen — Open Food Facts data is sometimes wrong and 46 older

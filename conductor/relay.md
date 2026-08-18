@@ -1,6 +1,14 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-19 — link import shipped end-to-end
+- Share a URL → recipe: JSON-LD free path + Gemini text fallback (ABC case),
+  cover toggle from the site's photo, source.url in the file. On the S21,
+  both paths verified by Arnar. 527 green serially. Folded to main.
+- Broke twice on the way: dart:io chokes on Fastly's chunked trailers (read
+  as "offline") → NetBridge over the platform stack; AGP 9 rejected Cronet.
+- Arnar decided: spoons never convert; covers are a user toggle. Nothing pending.
+
 ## 2026-08-18 — unit toggle shipped, keyless-build trap closed
 - Units pill in settings (As written / Metric / US): render-time math on
   ingredients, steps and cook mode. On the S21. 495 green serially.
