@@ -27,9 +27,6 @@
   do not re-queue. No inventory tracking.
 - mvp-build — billing seam open, unstarted.
 
-## ⚠️ Blockers
-- None on my side. Arnar's own items are not tracked here.
-
 ## 📌 Parked
 - Proxy deploy · durable cap store · serving rescale · step ↔ ingredient chips ·
   label-photo fallback · manual product entry · meal-plan totals · multi-barcode
