@@ -95,8 +95,22 @@ void main() {
     await tester.enterText(
         find.byKey(const Key('manual-ingredients')),
         '2 cups flour\n\n 1 tsp salt \n');
+    // Let the live pantry section insert itself before targeting the steps
+    // field — its rows shift the list, and enterText must find the settled
+    // element, exactly like a real keyboard frame would.
+    await tester.pump();
     await tester.enterText(
         find.byKey(const Key('manual-steps')), 'Mix.\nBake.');
+    await tester.pump();
+
+    // The live pantry section mirrors the field: one row per non-empty line,
+    // each with an unlinked 'Link' chip (empty pantry in this seam).
+    // SectionLabel renders uppercase.
+    expect(find.text('FROM YOUR PANTRY'), findsOneWidget);
+    expect(find.text('Link'), findsNWidgets(2));
+
+    await tester.ensureVisible(find.text('Save to cookbook'));
+    await tester.pump();
     await tester.tap(find.text('Save to cookbook'));
     await settle(tester);
 
@@ -115,6 +129,15 @@ void main() {
     expect((json['servings'] as Map)['raw'], '6 loaves');
     expect([for (final i in json['ingredients'] as List) i['raw']],
         ['2 cups flour', '1 tsp salt']); // blank lines dropped, trimmed
+    // Born parsed (2026-08-19): the deterministic parse is stored at save,
+    // so the file is calorie-computable from its first write.
+    expect([for (final i in json['ingredients'] as List) i['qty']], [2, 1]);
+    expect([for (final i in json['ingredients'] as List) i['unit']],
+        ['cup', 'tsp']);
+    expect([for (final i in json['ingredients'] as List) i['item']],
+        ['flour', 'salt']);
+    expect([for (final i in json['ingredients'] as List) i['product_ref']],
+        [null, null]); // nothing linked — the key stays absent, never a lie
     expect([for (final s in json['steps'] as List) s['raw']], ['Mix.', 'Bake.']);
     expect(extractor.calls, 0); // no AI involved, ever
 
@@ -133,6 +156,9 @@ void main() {
     await openManual(tester);
     await tester.enterText(
         find.byKey(const Key('manual-ingredients')), '2 eggs\n1 cup flour');
+    await tester.pump();
+    await tester.ensureVisible(find.text('Save to cookbook'));
+    await tester.pump();
     await tester.tap(find.text('Save to cookbook'));
     // Short settle keeps the 4s snackbar alive for the assertion.
     await settle(tester, rounds: 6);

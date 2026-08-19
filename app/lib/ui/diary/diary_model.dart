@@ -197,6 +197,17 @@ class DiaryModel extends ChangeNotifier {
     return entry;
   }
 
+  /// A snapshot prepared elsewhere — the recipe sheet builds its own entry
+  /// (entryFromRecipe). The model still stamps identity and time via [relog]:
+  /// callers never invent ids or clocks.
+  Future<DiaryEntry> logEntry(DiaryEntry prepared,
+      {required String meal}) async {
+    final entry = relog(prepared,
+        id: newEntryId(), loggedAt: _clock().toUtc().toIso8601String());
+    await _apply(_day.addEntry(meal, entry));
+    return entry;
+  }
+
   Future<void> setQuantity(DiaryEntry entry, double quantity) =>
       _apply(_day.updateEntry(entry.copyWith(quantity: quantity)));
 

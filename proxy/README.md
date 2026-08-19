@@ -38,7 +38,7 @@ Gemini directly (dev mode, key on device — closed-track OK, production NO).
 | Var | Default | Meaning |
 |---|---|---|
 | `GEMINI_API_KEY` | — (required) | server-held key |
-| `ALLOWED_MODELS` | `gemini-3.6-flash` | comma-separated allowlist |
+| `ALLOWED_MODELS` | `gemini-3.5-flash-lite` | comma-separated allowlist |
 | `FREE_MONTHLY_CAP` | `100` | per-install/month backstop — strawman, Arnar sets the listed number |
 | `PORT` | `8080` | injected by Cloud Run |
 

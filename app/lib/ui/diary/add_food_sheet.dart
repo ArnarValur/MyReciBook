@@ -13,6 +13,9 @@ import 'package:provider/provider.dart';
 
 import '../../domain/diary.dart';
 import '../../domain/product.dart';
+import '../../domain/recipe.dart';
+import '../../domain/recipe_nutrition.dart';
+import '../library_model.dart';
 import '../pantry/barcode_scan_screen.dart';
 import '../pantry/manual_product_screen.dart';
 import '../pantry/pantry_model.dart';
@@ -22,11 +25,20 @@ import '../widgets/skin.dart';
 import 'diary_model.dart';
 import 'diary_tab.dart' show showAmountDialog;
 import 'log_food_sheet.dart';
+import 'log_recipe_sheet.dart';
 
 Future<void> showAddFoodSheet(BuildContext context,
     {required String meal}) async {
   final diary = context.read<DiaryModel>();
   final pantry = context.read<PantryModel>();
+  // The library is optional here: the diary must work in shells (and widget
+  // tests) that never mounted one — missing simply means no recipes to offer.
+  LibraryModel? library;
+  try {
+    library = context.read<LibraryModel>();
+  } catch (_) {
+    library = null;
+  }
   await pantry.ensureLoaded();
   await diary.ensureRecents();
   if (!context.mounted) return;
@@ -40,6 +52,8 @@ Future<void> showAddFoodSheet(BuildContext context,
       providers: [
         ChangeNotifierProvider<DiaryModel>.value(value: diary),
         ChangeNotifierProvider<PantryModel>.value(value: pantry),
+        if (library != null)
+          ChangeNotifierProvider<LibraryModel>.value(value: library),
       ],
       child: _AddFoodSheet(meal: meal),
     ),
@@ -79,9 +93,25 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     ];
   }
 
+  /// Recipes whose title contains the query — the pantry's substring rule.
+  List<Recipe> _recipeMatches(List<Recipe> recipes) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return recipes;
+    return [
+      for (final r in recipes)
+        if (r.title.toLowerCase().contains(q)) r
+    ];
+  }
+
   Future<void> _log(Product product) async {
     final logged = await showLogFoodSheet(context,
         product: product, meal: widget.meal);
+    if (logged == true && mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _logRecipe(Recipe recipe, RecipeNutrition nutrition) async {
+    final logged = await showLogRecipeSheet(context,
+        recipe: recipe, nutrition: nutrition, meal: widget.meal);
     if (logged == true && mounted) Navigator.of(context).pop();
   }
 
@@ -153,7 +183,17 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     final scheme = context.scheme;
     final pantry = context.watch<PantryModel>();
     final diary = context.watch<DiaryModel>();
+    // Same optional-library stance as showAddFoodSheet: absent means the
+    // section simply isn't drawn.
+    LibraryModel? library;
+    try {
+      library = context.watch<LibraryModel>();
+    } catch (_) {
+      library = null;
+    }
     final matches = _matches(pantry.products);
+    final recipeMatches = _recipeMatches(library?.recipes ?? const []);
+    final productsById = {for (final p in pantry.products) p.id: p};
     final searching = _query.trim().isNotEmpty;
     final media = MediaQuery.of(context);
     final insets = media.viewInsets.bottom;
@@ -240,8 +280,72 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                   imageFile: pantry.imageFileOf(product),
                   onTap: () => _log(product),
                 ),
+            if (recipeMatches.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              const SectionLabel('Your recipes'),
+              const SizedBox(height: 8),
+              for (final recipe in recipeMatches) ...[
+                _RecipeRow(
+                  recipe: recipe,
+                  nutrition: recipeNutrition(recipe, productsById),
+                  onLog: _logRecipe,
+                ),
+                const SizedBox(height: 8),
+              ],
+            ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A recipe the diary can log — title plus an honest one-line estimate.
+/// The kcal is always prefixed "~": it comes from pantry links, not a label.
+class _RecipeRow extends StatelessWidget {
+  const _RecipeRow(
+      {required this.recipe, required this.nutrition, required this.onLog});
+
+  final Recipe recipe;
+  final RecipeNutrition nutrition;
+  final void Function(Recipe, RecipeNutrition) onLog;
+
+  String get _subtitle {
+    if (nutrition.isEmpty) return 'no linked ingredients yet';
+    final perServing = nutrition.perServing;
+    if (perServing == null) {
+      return '~${(nutrition.total.kcal ?? 0).round()} kcal whole recipe';
+    }
+    return '~${(perServing.kcal ?? 0).round()} kcal per serving';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    return TokenCard(
+      radius: 14,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: InkWell(
+        onTap: () => onLog(recipe, nutrition),
+        child: Row(children: [
+          Icon(Icons.menu_book_rounded, size: 18, color: scheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(recipe.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall),
+                Text(_subtitle,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant)),
+              ],
+            ),
+          ),
+        ]),
       ),
     );
   }

@@ -7,7 +7,7 @@ import 'package:myrecibook_proxy/usage_counter.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
-const _model = 'gemini-3.6-flash';
+const _model = 'gemini-3.5-flash-lite';
 const _path = 'v1beta/models/$_model:generateContent';
 
 Request _post(String path,

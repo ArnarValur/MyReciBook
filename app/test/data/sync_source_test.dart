@@ -17,13 +17,14 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('safeName', () {
-    test('admits exactly the four layout shapes', () {
+    test('admits exactly the five layout shapes', () {
       expect(SyncSource.safeName('a.json'), isTrue);
       expect(SyncSource.safeName('notes.txt'), isTrue); // any root segment
       expect(SyncSource.safeName('images/a-1.jpg'), isTrue);
       expect(SyncSource.safeName('pantry/7038010071751.json'), isTrue);
       expect(SyncSource.safeName('pantry/plain-flour.json'), isTrue);
       expect(SyncSource.safeName('pantry/images/7038010071751.jpg'), isTrue);
+      expect(SyncSource.safeName('diary/2026-08-19.json'), isTrue);
     });
 
     test('refuses everything outside them', () {
@@ -40,6 +41,11 @@ void main() {
       expect(SyncSource.safeName('pantry/images'), isFalse); // dir aliasing
       expect(SyncSource.safeName(r'pantry/a\b.json'), isFalse);
       expect(SyncSource.safeName('meals/1.json'), isFalse); // unknown dir
+      expect(SyncSource.safeName('diary/x/y.json'), isFalse); // deeper nesting
+      expect(SyncSource.safeName('diary/notes.txt'), isFalse); // json only
+      expect(SyncSource.safeName('diary/../x.json'), isFalse);
+      expect(SyncSource.safeName('diary/'), isFalse);
+      expect(SyncSource.safeName('diary/images/x.jpg'), isFalse); // no images
     });
   });
 
@@ -217,6 +223,49 @@ void main() {
       final imagesId = fake.findId('images', parentId: pantry)!;
       expect(fake.find('111.jpg', parentId: imagesId)!.bytes, [3]);
     });
+
+    test('list maps diary/ into the layout, skips foreign strays', () async {
+      final diary = fake.seedDir('diary');
+      fake.seedFile('2026-08-19.json', utf8.encode('{"meals":[1]}'),
+          parentId: diary);
+      final foreign = fake.seedDir('other', parentId: diary);
+      fake.seedFile('deep.txt', [1], parentId: foreign); // not our layout
+
+      final listed = await source().list();
+      expect(listed.keys.toSet(), {'diary/2026-08-19.json'});
+    });
+
+    test('diary read round-trips bytes', () async {
+      final diary = fake.seedDir('diary');
+      fake.seedFile('2026-08-19.json', utf8.encode('{"meals":[]}'),
+          parentId: diary);
+      expect(await source().read('diary/2026-08-19.json'),
+          utf8.encode('{"meals":[]}'));
+    });
+
+    test('diary write creates the dir once, reuses docIds — never "x (1)"',
+        () async {
+      final src = source();
+      await src.write('diary/2026-08-19.json', utf8.encode('old'));
+      await src.write('diary/2026-08-19.json', utf8.encode('new'));
+
+      final diaryId = fake.findId('diary')!;
+      expect(fake.docs[diaryId]!.isDir, isTrue);
+      expect(fake.find('2026-08-19.json', parentId: diaryId)!.bytes,
+          utf8.encode('new'));
+      expect(fake.findId('2026-08-19 (1).json', parentId: diaryId), isNull);
+      expect(fake.findId('diary (1)'), isNull);
+    });
+
+    test('diary write into a seeded tree reuses the existing dir', () async {
+      final diary = fake.seedDir('diary');
+      fake.seedFile('2026-08-19.json', utf8.encode('old'), parentId: diary);
+
+      await source().write('diary/2026-08-19.json', utf8.encode('new'));
+      expect(fake.find('2026-08-19.json', parentId: diary)!.bytes,
+          utf8.encode('new'));
+      expect(fake.findId('diary (1)'), isNull);
+    });
   });
 
   group('LocalFolderSource', () {
@@ -264,6 +313,10 @@ void main() {
           src.write('pantry/../x.json', [1]), throwsA(isA<ArgumentError>()));
       await expectLater(
           src.write('pantry/notes.txt', [1]), throwsA(isA<ArgumentError>()));
+      await expectLater(
+          src.write('diary/../x.json', [1]), throwsA(isA<ArgumentError>()));
+      await expectLater(
+          src.write('diary/notes.txt', [1]), throwsA(isA<ArgumentError>()));
     });
 
     test('list covers pantry/ + pantry/images/, skips strays and .tmp',
@@ -288,6 +341,27 @@ void main() {
       expect(await src.read('pantry/111.json'), utf8.encode('{"p":1}'));
       expect(await src.read('pantry/images/111.jpg'), [4, 5]);
       expect(await File('${tmp.path}/pantry/images/111.jpg').exists(), isTrue);
+    });
+
+    test('list covers diary/, skips strays and .tmp', () async {
+      await Directory('${tmp.path}/diary').create();
+      await File('${tmp.path}/diary/2026-08-19.json').writeAsString('{"d":1}');
+      await File('${tmp.path}/diary/2026-08-19.json.tmp')
+          .writeAsString('partial');
+      await Directory('${tmp.path}/diary/other').create();
+      await File('${tmp.path}/diary/other/x.txt').writeAsString('no');
+
+      final listed = await LocalFolderSource(tmp).list();
+      expect(listed.keys.toSet(), {'diary/2026-08-19.json'});
+    });
+
+    test('diary write/read round-trip, dir created on demand', () async {
+      final src = LocalFolderSource(tmp);
+      await src.write('diary/2026-08-19.json', utf8.encode('{"meals":[]}'));
+      expect(await src.read('diary/2026-08-19.json'),
+          utf8.encode('{"meals":[]}'));
+      expect(
+          await File('${tmp.path}/diary/2026-08-19.json').exists(), isTrue);
     });
   });
 }

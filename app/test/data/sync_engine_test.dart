@@ -438,6 +438,45 @@ void main() {
     expect(remote.files.keys.toSet(), {pantryJson}); // .txt refused (§7)
   });
 
+  // Diary layout: diary/<date>.json travels like a pantry product — JSON
+  // only, no images subdir (Arnar, 2026-08-19).
+
+  const diaryJson = 'diary/2026-08-19.json';
+
+  test('diary day files mirror up; deleting a day deletes its remote copy',
+      () async {
+    await put(diaryJson, '{"meals":[1]}');
+    final e = engine();
+    await e.syncUp();
+    expect(remote.files.keys.toSet(), {diaryJson}); // _ownedName says ours
+    expect(utf8.decode(remote.files[diaryJson]!), '{"meals":[1]}');
+
+    await File('${folder.path}/$diaryJson').delete();
+    await e.syncUp();
+    expect(remote.deletes, 1); // owned name — deletion propagates
+    expect(remote.files, isEmpty);
+  });
+
+  test('restoreDown pulls diary day files back into diary/', () async {
+    remote.files[diaryJson] = utf8.encode('{"meals":[1]}');
+
+    final e = engine();
+    expect(await e.restoreDown(), 1);
+    expect(await File('${folder.path}/$diaryJson').readAsString(),
+        '{"meals":[1]}');
+
+    // Recorded as landed: the next pass pushes nothing back.
+    await e.syncUp();
+    expect(remote.uploads, 0);
+  });
+
+  test('foreign names under diary/ are never uploaded', () async {
+    await put(diaryJson, '{"meals":[]}');
+    await put('diary/notes.txt', 'not a day file');
+    await engine().syncUp();
+    expect(remote.files.keys.toSet(), {diaryJson}); // .txt refused (§7)
+  });
+
   // Safety (b): a manifest written by a PRE-PANTRY app version tracks names
   // as flat relative paths, and that version could never have uploaded (so
   // never tracked) a pantry/ name. "Vanished → remote delete" only fires for

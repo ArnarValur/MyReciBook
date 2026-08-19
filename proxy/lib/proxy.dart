@@ -24,7 +24,7 @@ import 'usage_counter.dart';
 class ProxyConfig {
   const ProxyConfig({
     required this.geminiApiKey,
-    this.allowedModels = const {'gemini-3.6-flash'},
+    this.allowedModels = const {'gemini-3.5-flash-lite'},
     this.monthlyCapPerInstall = 100,
     this.maxBodyBytes = 25 * 1024 * 1024,
     this.upstreamBase = 'https://generativelanguage.googleapis.com',

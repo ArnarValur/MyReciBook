@@ -1,6 +1,6 @@
 // Cloud Run entrypoint. All config via env:
 //   GEMINI_API_KEY     required — refuses to boot without it
-//   ALLOWED_MODELS     comma-separated, default gemini-3.6-flash
+//   ALLOWED_MODELS     comma-separated, default gemini-3.5-flash-lite
 //   FREE_MONTHLY_CAP   per-install per-month, default 100
 //   PORT               injected by Cloud Run, default 8080
 
@@ -17,7 +17,7 @@ Future<void> main() async {
     stderr.writeln('GEMINI_API_KEY is not set — refusing to start.');
     exit(1);
   }
-  final models = (Platform.environment['ALLOWED_MODELS'] ?? 'gemini-3.6-flash')
+  final models = (Platform.environment['ALLOWED_MODELS'] ?? 'gemini-3.5-flash-lite')
       .split(',')
       .map((m) => m.trim())
       .where((m) => m.isNotEmpty)

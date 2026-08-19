@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../domain/product.dart';
 import '../domain/recipe.dart';
+import '../domain/recipe_nutrition.dart';
 import '../domain/units.dart';
 import '../features.dart';
 import 'cook_mode_screen.dart';
@@ -276,6 +277,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final originals = _originals;
+    // Same live pantry list the linked ingredient rows watch — the badge
+    // recomputes the moment a link is made or a product changes. Hidden
+    // entirely when nothing is covered: a card promising numbers it doesn't
+    // have is a dead end, not a feature (Arnar, 2026-08-19).
+    final nutrition = kPantryEnabled
+        ? recipeNutrition(_recipe,
+            {for (final p in context.watch<PantryModel>().products) p.id: p})
+        : null;
 
     return Scaffold(
       // Collapsing hero (Arnar's S21 pass, 2026-08-06): the cover must NOT
@@ -310,6 +319,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                             label: _recipe.servings!.raw!),
                     ],
                   ),
+                  if (nutrition != null && !nutrition.isEmpty) ...[
+                    const SizedBox(height: 14),
+                    const SectionLabel('Nutrition'),
+                    const SizedBox(height: 8),
+                    _nutritionCard(theme, scheme, nutrition),
+                  ],
                   const SizedBox(height: 14),
                   const SectionLabel('Ingredients'),
                   const SizedBox(height: 8),
@@ -419,6 +434,58 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Nutrition badge, fed by the pantry links. Per serving when the recipe
+  /// says how many it serves; otherwise the whole-recipe sum, labelled as
+  /// such — dividing by an invented count would be a lie with decimals. The
+  /// '~' and the "N of M" line are the honesty contract: a partial sum is a
+  /// hint, never the truth (Arnar, 2026-08-19).
+  Widget _nutritionCard(ThemeData theme, ColorScheme scheme, RecipeNutrition n) {
+    final per = n.perServing;
+    final shown = per ?? n.total;
+    // Rounded display values; '~' on every number unless every ingredient
+    // is covered — completeness is the only claim to exactness we can make.
+    String fmt(double v) => '${n.isComplete ? '' : '~'}${v.round()}';
+    final kcal = shown['kcal'];
+    final headline = kcal == null
+        ? null
+        : per != null
+            ? '${fmt(kcal)} kcal per serving'
+            : '${fmt(kcal)} kcal whole recipe — no serving count on the recipe';
+    final macros = [
+      for (final key in const ['fat', 'carbs', 'protein'])
+        if (shown[key] != null) '${fmt(shown[key]!)} g $key',
+    ];
+    return TokenCard(
+      key: const Key('nutrition-card'),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (headline != null)
+            Text(headline,
+                style: theme.textTheme.bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.w600)),
+          if (macros.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(top: headline == null ? 0 : 4),
+              child: Text(macros.join('  ·  '),
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: scheme.onSurfaceVariant)),
+            ),
+          const SizedBox(height: 6),
+          Text(
+            n.isComplete
+                ? 'From all ${n.ingredientCount} ingredients'
+                : 'Estimated from ${n.covered} of ${n.ingredientCount} '
+                    'ingredients',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: scheme.onSurfaceVariant),
+          ),
+        ],
       ),
     );
   }

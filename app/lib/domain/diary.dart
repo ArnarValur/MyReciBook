@@ -15,6 +15,8 @@
 // the user picked ("2 × 1 dl").
 
 import 'product.dart';
+import 'recipe.dart';
+import 'recipe_nutrition.dart';
 
 /// Where an entry's numbers came from. Open like Product.source — a future
 /// kind must not make an old file unreadable.
@@ -340,6 +342,32 @@ DiaryEntry entryFromProduct(
           (product.nutriments ?? Nutriments()).scaled(serving.grams / 100),
       loggedAt: loggedAt,
     );
+
+/// Log-time snapshot of a recipe's pantry-link estimate. When the recipe
+/// says how many it serves, one serving is the unit; otherwise the whole
+/// recipe is — dividing by an invented 4 would be a lie with decimals
+/// (recipe_nutrition.dart's rule, carried into the diary unchanged).
+/// servingGrams stays null: a recipe portion has no honest weight.
+DiaryEntry entryFromRecipe({
+  required Recipe recipe,
+  required RecipeNutrition nutrition,
+  required double quantity,
+  required String id,
+  String? loggedAt,
+}) {
+  final perServing = nutrition.perServing;
+  return DiaryEntry(
+    id: id,
+    name: recipe.title,
+    source: DiarySources.recipe,
+    ref: recipe.id,
+    servingLabel: perServing == null ? 'whole recipe' : 'serving',
+    servingGrams: null,
+    quantity: quantity,
+    perServing: perServing ?? nutrition.total,
+    loggedAt: loggedAt,
+  );
+}
 
 /// MFP's Quick Add: calories now, details never. Macros optional.
 DiaryEntry quickAddEntry({

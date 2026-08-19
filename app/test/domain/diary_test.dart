@@ -5,6 +5,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myrecibook/domain/diary.dart';
 import 'package:myrecibook/domain/product.dart';
+import 'package:myrecibook/domain/recipe.dart';
+import 'package:myrecibook/domain/recipe_nutrition.dart';
 
 Product oats() => Product(
       schemaVersion: 1,
@@ -20,6 +22,28 @@ Product oats() => Product(
 DiaryEntry oatsEntry({double quantity = 2, String id = 'e1'}) =>
     entryFromProduct(oats(), oats().servings.first,
         quantity: quantity, id: id);
+
+/// One covered ingredient (200 g oats → 740 kcal), one honestly uncovered.
+Recipe porridge({Servings? servings}) => Recipe(
+      schemaVersion: 1,
+      id: 'r-porridge',
+      title: 'Porridge',
+      source: const RecipeSource(type: 'screenshot'),
+      servings: servings,
+      ingredients: [
+        Ingredient(
+            raw: '200 g oats',
+            qty: 200,
+            unit: 'g',
+            item: 'oats',
+            productRef: oats().id),
+        const Ingredient(raw: '1 pinch salt'),
+      ],
+      steps: const [],
+    );
+
+RecipeNutrition porridgeNutrition({Servings? servings}) =>
+    recipeNutrition(porridge(servings: servings), {oats().id: oats()});
 
 void main() {
   group('serving options', () {
@@ -109,6 +133,55 @@ void main() {
       expect(entry.ref, isNull);
       expect(entry.grams, isNull);
       expect(entry.source, DiarySources.quick);
+    });
+  });
+
+  group('logging a recipe', () {
+    test('with servings, one serving is the unit', () {
+      final nutrition = porridgeNutrition(servings: const Servings(amount: 4));
+      final entry = entryFromRecipe(
+          recipe: porridge(), nutrition: nutrition, quantity: 2, id: 'r1');
+      // 200 g oats at 370 kcal/100 g = 740 kcal, over 4 servings = 185.
+      expect(entry.perServing.kcal, closeTo(185, 0.001));
+      expect(entry.total.kcal, closeTo(370, 0.001));
+      expect(entry.servingLabel, 'serving');
+      expect(entry.source, DiarySources.recipe);
+      expect(entry.ref, 'r-porridge');
+      expect(entry.name, 'Porridge');
+      // A recipe portion has no honest weight — grams stay unknown.
+      expect(entry.servingGrams, isNull);
+      expect(entry.grams, isNull);
+    });
+
+    test('without servings, the whole recipe is the unit — never a made-up 4',
+        () {
+      final nutrition = porridgeNutrition();
+      final entry = entryFromRecipe(
+          recipe: porridge(), nutrition: nutrition, quantity: 0.5, id: 'r2');
+      expect(entry.servingLabel, 'whole recipe');
+      expect(entry.perServing.kcal, closeTo(740, 0.001));
+      expect(entry.total.kcal, closeTo(370, 0.001));
+      expect(entry.servingSummary, '0.5 × whole recipe');
+    });
+
+    test('a recipe entry round-trips through the day file', () {
+      final nutrition = porridgeNutrition(servings: const Servings(amount: 4));
+      final day = DiaryDay.empty('2026-08-19').addEntry(
+          'Breakfast',
+          entryFromRecipe(
+              recipe: porridge(),
+              nutrition: nutrition,
+              quantity: 2,
+              id: 'r1'));
+      final back = DiaryDay.fromJson(day.toJson());
+      final entry = back.meal('Breakfast')!.entries.single;
+      expect(entry.source, DiarySources.recipe);
+      expect(entry.ref, 'r-porridge');
+      expect(entry.servingLabel, 'serving');
+      expect(entry.servingSummary, '2 × serving');
+      expect(back.total.kcal, closeTo(370, 0.001));
+      // The snapshot rule holds: no product or recipe needed to read it back.
+      expect(entry.toJson().containsKey('serving_grams'), isFalse);
     });
   });
 

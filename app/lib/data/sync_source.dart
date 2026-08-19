@@ -1,10 +1,10 @@
 // What sync mirrors: the user's folder, addressed by the relative layout —
-// one segment at the root ('<id>.json'), 'images/<segment>', and the pantry
-// twins 'pantry/<segment>.json' + 'pantry/images/<segment>'. Exactly the
-// RecipeStore + ProductStore shapes (arch §4); sources read it for
-// hashing/upload and write it only on restore. Name confinement (§7):
-// anything outside those four shapes is refused, so a hostile remote can
-// never write outside the folder.
+// one segment at the root ('<id>.json'), 'images/<segment>', the pantry
+// twins 'pantry/<segment>.json' + 'pantry/images/<segment>', and the diary
+// days 'diary/<segment>.json'. Exactly the RecipeStore + ProductStore +
+// DiaryStore shapes (arch §4); sources read it for hashing/upload and write
+// it only on restore. Name confinement (§7): anything outside those five
+// shapes is refused, so a hostile remote can never write outside the folder.
 
 import 'dart:io';
 
@@ -27,10 +27,11 @@ abstract class SyncSource {
   Future<List<int>> read(String name);
   Future<void> write(String name, List<int> bytes);
 
-  /// One segment ('x.json'), `images/segment`, `pantry/segment.json` or
-  /// `pantry/images/segment` — the whole sync layout. Exactly these four
-  /// shapes; everything else (traversal, deeper nesting, unknown dirs,
-  /// non-JSON pantry root files) is refused by design (§7).
+  /// One segment ('x.json'), `images/segment`, `pantry/segment.json`,
+  /// `pantry/images/segment` or `diary/segment.json` — the whole sync
+  /// layout. Exactly these five shapes; everything else (traversal, deeper
+  /// nesting, unknown dirs, non-JSON pantry/diary root files) is refused by
+  /// design (§7).
   static bool safeName(String name) {
     bool seg(String s) =>
         s.isNotEmpty &&
@@ -45,6 +46,11 @@ abstract class SyncSource {
     if (name.startsWith('pantry/')) {
       final s = name.substring('pantry/'.length);
       // Pantry root mirrors product files only — '<stem>.json', nothing else.
+      return s.endsWith('.json') && seg(s);
+    }
+    if (name.startsWith('diary/')) {
+      final s = name.substring('diary/'.length);
+      // Diary is JSON-only — day files, no images subdir (Arnar, 2026-08-19).
       return s.endsWith('.json') && seg(s);
     }
     return seg(name);
@@ -82,6 +88,7 @@ class LocalFolderSource implements SyncSource {
     await addDir('images/', Directory('${root.path}/images'));
     await addDir('pantry/', Directory('${root.path}/pantry'));
     await addDir('pantry/images/', Directory('${root.path}/pantry/images'));
+    await addDir('diary/', Directory('${root.path}/diary'));
     return entries;
   }
 
@@ -125,6 +132,8 @@ class SafFolderSource implements SyncSource {
   Map<String, String>? _pantryFiles; // name → docId inside pantry/
   String? _pantryImagesDirId;
   Map<String, String>? _pantryImageFiles; // name → docId inside pantry/images/
+  String? _diaryDirId;
+  Map<String, String>? _diaryFiles; // name → docId inside diary/
 
   // The real bridge creates a directory through createDocument with this
   // exact mime (DocumentsContract.Document.MIME_TYPE_DIR) — how createFile
@@ -163,12 +172,14 @@ class SafFolderSource implements SyncSource {
     final rootFiles = <String, String>{};
     String? imagesDirId;
     String? pantryDirId;
+    String? diaryDirId;
     for (final row in await _listChildren(null)) {
       final name = row['name'] as String? ?? '';
       final docId = row['docId'] as String? ?? '';
       if (row['isDir'] == true) {
         if (name == 'images') imagesDirId = docId;
         if (name == 'pantry') pantryDirId = docId;
+        if (name == 'diary') diaryDirId = docId;
       } else {
         rootFiles[name] = docId;
       }
@@ -195,6 +206,7 @@ class SafFolderSource implements SyncSource {
       if (name == 'images') pantryImagesDirId = docId;
     });
     final pantryImageFiles = await files(pantryImagesDirId);
+    final diaryFiles = await files(diaryDirId);
     _rootFiles = rootFiles;
     _imagesDirId = imagesDirId;
     _imageFiles = imageFiles;
@@ -202,6 +214,8 @@ class SafFolderSource implements SyncSource {
     _pantryFiles = pantryFiles;
     _pantryImagesDirId = pantryImagesDirId;
     _pantryImageFiles = pantryImageFiles;
+    _diaryDirId = diaryDirId;
+    _diaryFiles = diaryFiles;
     return {
       for (final name in rootFiles.keys)
         name: SourceEntry(name: name, size: -1),
@@ -212,6 +226,8 @@ class SafFolderSource implements SyncSource {
       for (final name in pantryImageFiles.keys)
         'pantry/images/$name':
             SourceEntry(name: 'pantry/images/$name', size: -1),
+      for (final name in diaryFiles.keys)
+        'diary/$name': SourceEntry(name: 'diary/$name', size: -1),
     };
   }
 
@@ -220,6 +236,7 @@ class SafFolderSource implements SyncSource {
     if (name.startsWith('pantry/images/')) return _pantryImageFiles!;
     if (name.startsWith('pantry/')) return _pantryFiles!;
     if (name.startsWith('images/')) return _imageFiles!;
+    if (name.startsWith('diary/')) return _diaryFiles!;
     return _rootFiles!;
   }
 
@@ -266,6 +283,12 @@ class SafFolderSource implements SyncSource {
     } else if (name.startsWith('pantry/')) {
       final pantryDirId = await _ensurePantryDir();
       docId = _pantryFiles![leaf] ??= await create(pantryDirId);
+    } else if (name.startsWith('diary/')) {
+      // Diary is a plain root-level dir like images/ — day files only, no
+      // images subdir to nest under it (Arnar, 2026-08-19).
+      _diaryDirId ??= await _invoke<String>(
+          'createDir', {'treeUri': treeUri, 'name': 'diary'});
+      docId = _diaryFiles![leaf] ??= await create(_diaryDirId!);
     } else if (name.startsWith('images/')) {
       _imagesDirId ??= await _invoke<String>(
           'createDir', {'treeUri': treeUri, 'name': 'images'});

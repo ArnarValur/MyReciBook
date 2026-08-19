@@ -3,6 +3,12 @@
 // file (schema-additive — old files unaffected) and saves through the same
 // LibraryModel seam as imports, so grocery/storage integration rides along.
 //
+// Born parsed (Arnar, 2026-08-19): each ingredient line runs through the
+// deterministic parseIngredientLine at save, and a live "From your pantry"
+// section lets lines be hand-linked to pantry products — so a typed-in
+// recipe is calorie-computable from its first save. Manual save only; this
+// rule never rewrites imported files.
+//
 // DEVIATION (for Arnar to ratify): no hi-fi mockup exists for this screen —
 // 5b names the promise, 4c/4d name the door. Assembled from the 3c review
 // patterns: title card, section-labeled cards with one line per
@@ -13,10 +19,14 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/saf_store.dart';
+import '../domain/ingredient_parse.dart';
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
+import '../features.dart';
 import 'library_model.dart';
+import 'pantry/pantry_model.dart';
 import 'theme.dart';
+import 'widgets/product_row.dart';
 import 'widgets/skin.dart';
 
 class ManualEntryScreen extends StatefulWidget {
@@ -34,6 +44,18 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final _times = TextEditingController();
   bool _saving = false;
 
+  /// Pantry links, keyed by the TRIMMED line text → product id. Text is the
+  /// identity on purpose (Arnar, 2026-08-19): editing a line simply loses its
+  /// link — honest and simple, no index bookkeeping across field edits.
+  final Map<String, String> _links = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // The "From your pantry" section mirrors the field live, line by line.
+    _ingredients.addListener(() => setState(() {}));
+  }
+
   @override
   void dispose() {
     _title.dispose();
@@ -49,6 +71,104 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           if (l.trim().isNotEmpty) l.trim()
       ];
 
+  Ingredient _ingredientFromLine(String line) {
+    final parsed = parseIngredientLine(line);
+    return Ingredient(
+      raw: line,
+      qty: parsed.qty,
+      unit: parsed.unit,
+      item: parsed.item.isEmpty ? null : parsed.item,
+      productRef: _links[line],
+    );
+  }
+
+  /// Pantry the screen can reach, or null: flag off, or no model above
+  /// (bare harness) — either way the section degrades to nothing.
+  PantryModel? _pantry() {
+    if (!kPantryEnabled) return null;
+    try {
+      return context.read<PantryModel>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// "2 dl" / "2" — the parsed quantity as a muted prefix; null when the
+  /// line has no leading number.
+  static String? _qtyPrefix(ParsedQty parsed) {
+    final qty = parsed.qty;
+    if (qty == null) return null;
+    final n = qty == qty.roundToDouble() ? qty.round().toString() : qty.toString();
+    return parsed.unit == null ? n : '$n ${parsed.unit}';
+  }
+
+  /// MetaChip's label has no ellipsis of its own; a long product name would
+  /// overflow the row, so trim it here.
+  static String _chipLabel(String name) =>
+      name.length <= 20 ? name : '${name.substring(0, 19).trimRight()}…';
+
+  Future<void> _pickLink(String line, PantryModel pantry) async {
+    await pantry.ensureLoaded();
+    if (!mounted) return;
+    final parsed = parseIngredientLine(line);
+    final choice = await showModalBottomSheet<_LinkChoice>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      // Separate route: the model must be handed down explicitly, same as
+      // the add-food sheet does.
+      builder: (_) => ChangeNotifierProvider<PantryModel>.value(
+        value: pantry,
+        child: _LinkPickerSheet(item: parsed.item.isEmpty ? line : parsed.item),
+      ),
+    );
+    if (choice == null || !mounted) return; // dismissed — no change
+    setState(() {
+      final id = choice.productId;
+      if (id == null) {
+        _links.remove(line);
+      } else {
+        _links[line] = id;
+      }
+    });
+  }
+
+  Widget _pantryLineRow(String line, PantryModel pantry) {
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    final parsed = parseIngredientLine(line);
+    final ref = _links[line];
+    // A product deleted mid-session resolves to null → the chip honestly
+    // falls back to 'Link' (dangling refs are display noise, never errors).
+    final linked = ref == null ? null : pantry.byId(ref);
+    final prefix = _qtyPrefix(parsed);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          if (prefix != null) ...[
+            Text(prefix,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: scheme.onSurfaceVariant)),
+            const SizedBox(width: 6),
+          ],
+          Expanded(
+            child: Text(parsed.item.isEmpty ? line : parsed.item,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium),
+          ),
+          const SizedBox(width: 8),
+          MetaChip(
+            icon: linked == null ? Icons.link_rounded : null,
+            label: linked == null ? 'Link' : _chipLabel(linked.name),
+            onTap: () => _pickLink(line, pantry),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _save() async {
     final servings = _servings.text.trim();
     final times = _times.text.trim();
@@ -62,7 +182,12 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           type: 'manual', importedAt: DateTime.now().toIso8601String()),
       servings: servings.isEmpty ? null : Servings(raw: servings),
       times: times.isEmpty ? null : RecipeTimes(raw: times),
-      ingredients: [for (final l in _lines(_ingredients)) Ingredient(raw: l)],
+      // Born parsed (Arnar, 2026-08-19: recipes calorie-computable from
+      // birth): the deterministic parse and any hand-picked pantry link are
+      // stored on manual save only — imported files stay untouched by this.
+      ingredients: [
+        for (final l in _lines(_ingredients)) _ingredientFromLine(l)
+      ],
       steps: [for (final l in _lines(_steps)) RecipeStep(raw: l)],
     );
 
@@ -131,6 +256,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
+    final pantry = _pantry();
+    final ingredientLines = _lines(_ingredients);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -207,6 +334,16 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                           hintText: 'One ingredient per line'),
                     ),
                   ),
+                  // Live pantry mirror of the field above: one compact row
+                  // per line, link chip to a pantry product. Linked lines are
+                  // what makes the saved recipe's calories countable.
+                  if (pantry != null && ingredientLines.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    const SectionLabel('From your pantry'),
+                    const SizedBox(height: 6),
+                    for (final line in ingredientLines)
+                      _pantryLineRow(line, pantry),
+                  ],
                   const SizedBox(height: 14),
                   const SectionLabel('Steps'),
                   const SizedBox(height: 8),
@@ -240,6 +377,85 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Sheet result: a product id, or null for the 'No product' unlink row —
+/// distinct from dismissing the sheet (no _LinkChoice at all, no change).
+class _LinkChoice {
+  const _LinkChoice(this.productId);
+  final String? productId;
+}
+
+class _LinkPickerSheet extends StatelessWidget {
+  const _LinkPickerSheet({required this.item});
+
+  /// The parsed item of the line being linked — names the question.
+  final String item;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    final pantry = context.watch<PantryModel>();
+    final media = MediaQuery.of(context);
+    final insets = media.viewInsets.bottom;
+    // Add-food's gesture-bar rule: the last row must clear the system bar.
+    final systemBar = insets > 0 ? 0.0 : media.viewPadding.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: insets),
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        maxChildSize: 0.95,
+        builder: (_, controller) => ListView(
+          controller: controller,
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + systemBar),
+          children: [
+            SectionLabel('Which product is "$item"?'),
+            const SizedBox(height: 8),
+            // Plain unlink row on top — always available, so a wrong link is
+            // one tap from gone.
+            InkWell(
+              key: const Key('link-no-product'),
+              onTap: () =>
+                  Navigator.of(context).pop(const _LinkChoice(null)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(children: [
+                  Icon(Icons.link_off_rounded,
+                      size: 20, color: scheme.onSurfaceVariant),
+                  const SizedBox(width: 12),
+                  Text('No product', style: theme.textTheme.bodyLarge),
+                ]),
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (pantry.products.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                child: Text(
+                  'Your pantry is empty. Scan a barcode or create a food on '
+                  'the Pantry tab first, then link it here.',
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
+                ),
+              )
+            else
+              // The same card the Pantry tab shows, photo included.
+              // ProductRow carries its own bottom gap, so no spacer here.
+              for (final product in pantry.products)
+                ProductRow(
+                  product: product,
+                  imageFile: pantry.imageFileOf(product),
+                  onTap: () =>
+                      Navigator.of(context).pop(_LinkChoice(product.id)),
+                ),
           ],
         ),
       ),

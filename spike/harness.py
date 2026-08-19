@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parent
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 # Model names drift -- override with --model if these 404.
-DEFAULTS = {"gemini": "gemini-3.6-flash", "openai": "gpt-4o-mini"}
+DEFAULTS = {"gemini": "gemini-3.5-flash-lite", "openai": "gpt-4o-mini"}
 
 
 def b64(path: Path) -> tuple[str, str]:
