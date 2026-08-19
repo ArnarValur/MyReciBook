@@ -66,17 +66,23 @@ recipes and pantry.
 - [x] Product tags: 20 suggestions + custom on create/edit, filter pills on
       the shelf; open list in the file, schema-additive
 - [x] 602 green serially, on the S21 2026-08-19
+- [x] Diary sync case: diary/<date>.json in the layout, both sources + engine
+- [x] Per-serving calculator (domain/recipe_nutrition.dart) + deterministic
+      ingredient parse at compute time — link imports covered without rewrites
+- [x] Log a recipe from Add food: per-serving snapshot, whole-recipe fallback,
+      honest "estimated from N of M" basis line
+- [x] Nutrition card on recipe detail, hidden until something is linked
+- [x] Manual entry revamp v1: live parse + link pantry products while
+      composing; recipes born with qty/unit/item/productRef
+- [x] Model swap finished everywhere it bites (proxy allowlist!, spike, docs)
+- [x] 637 green serially + proxy 10, on the S21 2026-08-19
 
 ## Open
-- [ ] The sync case: the layout confines to root *.json + images/ + pantry/, so
-      day files do not travel to Drive or Dropbox yet. Biggest gap.
+- [ ] Density table is ~30 staples — a volume line that misses it stays
+      uncovered by design; grow the table from real recipes, not guesses
+- [ ] Manual-entry links die when a line is edited (keyed by line text) —
+      fine for v1, revisit if it annoys
 - [ ] Meal names editable in settings (the engine already reads them; no UI)
-- [ ] Log a recipe by servings — needs the nutrition track's per-serving
-      calculator first
-- [ ] Manual recipe entry revamp (Arnar 2026-08-19): compose a recipe FROM
-      pantry items — pick a product per ingredient while writing, so the
-      recipe is calorie-computable from birth instead of linked afterwards.
-      Same calculator dependency; design turn is Arnar's (no mockup covers it).
 - [ ] "Copy to date" in the UI (`DiaryModel.copyMealFrom` exists, no door)
 - [ ] Nutrition detail for a day: the full nutrient table, not just the macros
 - [ ] Water, and a weight log, if Arnar ever wants them — not scheduled

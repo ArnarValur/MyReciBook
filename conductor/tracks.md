@@ -2,8 +2,8 @@
 *One line each. Detail lives in tracks/<name>/plan.md.*
 
 ## Active
-- **nutrition** — pantry, linking and unit display shipped. Open: density table → per-serving → nutrition badge. → tracks/nutrition/plan.md
-- **diary** — MFP-style meal diary on branch `diary`, on the S21: day files, servings, snapshot entries, the day screen, food picker, create-a-food, daily goal. Open: the sync case. → tracks/diary/plan.md
+- **nutrition** — pantry, linking, units shipped; density table, per-serving calculator and nutrition badge landed via the diary track 2026-08-19. Open: grocery package-size math, label-photo fallback. → tracks/nutrition/plan.md
+- **diary** — full MFP food-logging chain on branch `diary`, on the S21: diary + servings + tags + per-serving calculator + recipe logging + diary sync + pantry-born manual recipes. → tracks/diary/plan.md
 - **mvp-build** — engine complete through sync. Billing seam open, unstarted. → tracks/mvp-build/plan.md
 
 ## Not open yet
