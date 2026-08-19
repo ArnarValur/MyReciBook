@@ -327,6 +327,12 @@ class PantryModel extends ChangeNotifier {
     ];
   }
 
+  /// Create or overwrite a product the user typed in themselves — the
+  /// no-barcode door (manual_product_screen.dart) and the edit door for a
+  /// scanned product Open Food Facts got wrong. Upsert by file stem, like a
+  /// re-scan: one product, one file, never a duplicate.
+  Future<Product> upsert(Product product) => _save(product);
+
   Future<Product> _save(Product product) async {
     final saved = await _store?.save(product) ?? product;
     _products = [

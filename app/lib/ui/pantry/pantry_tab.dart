@@ -22,7 +22,11 @@ import 'barcode_scan_screen.dart';
 import 'pantry_model.dart';
 
 class PantryTab extends StatefulWidget {
-  const PantryTab({super.key});
+  const PantryTab({super.key, this.header});
+
+  /// Drawn above the title — the Diary/Pantry segmented control when the tab
+  /// is hosted in slot 3. Null on a standalone route.
+  final Widget? header;
 
   @override
   State<PantryTab> createState() => _PantryTabState();
@@ -117,6 +121,10 @@ class _PantryTabState extends State<PantryTab> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 110),
           children: [
+            if (widget.header != null) ...[
+              widget.header!,
+              const SizedBox(height: 16),
+            ],
             Text('Pantry',
                 style: theme.textTheme.headlineMedium
                     ?.copyWith(fontSize: 26, letterSpacing: -0.4)),

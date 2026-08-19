@@ -152,7 +152,7 @@ void main() {
       content: content,
       originalImages: ['images/abc-123-1.jpg', 'images/abc-123-2.png'],
       importedAt: importedAt,
-      extractorModel: 'gemini-3.6-flash',
+      extractorModel: 'gemini-3.5-flash-lite',
       extractorMode: 'image',
     );
 
@@ -164,7 +164,7 @@ void main() {
       expect(r.source.originalImages,
           ['images/abc-123-1.jpg', 'images/abc-123-2.png']);
       expect(r.source.appHint, 'instagram');
-      expect(r.extraction!.model, 'gemini-3.6-flash');
+      expect(r.extraction!.model, 'gemini-3.5-flash-lite');
       expect(r.extraction!.mode, 'image');
       expect(r.extraction!.extractedAt, importedAt.toIso8601String());
       expect(r.extraction!.overallConfidence, 0.87);

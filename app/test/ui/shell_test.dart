@@ -55,10 +55,13 @@ Map<String, dynamic> canned({String title = 'Pancakes'}) => {
       'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
     };
 
-/// Nav slot 2's label follows the flags: Pantry (PoC, dev builds) → Unlock →
-/// Queue. Tests tap the one that is actually there.
-final String kSlot2Label =
-    kPantryEnabled ? 'Pantry' : (kUnlockTabEnabled ? 'Unlock' : 'Queue');
+/// Nav slot 2's label follows the flags: Food (Diary + Pantry) → Pantry →
+/// Unlock → Queue. Tests tap the one that is actually there.
+final String kSlot2Label = kDiaryEnabled
+    ? 'Food'
+    : kPantryEnabled
+        ? 'Pantry'
+        : (kUnlockTabEnabled ? 'Unlock' : 'Queue');
 
 void main() {
   late Directory tmp;
@@ -92,8 +95,10 @@ void main() {
           share: share,
           linkExtractor: linkExtractor);
 
+  // .first: the shell's own tab stack. The Food tab nests a second
+  // IndexedStack for its Diary/Pantry segments.
   int? stackIndex(WidgetTester tester) =>
-      tester.widget<IndexedStack>(find.byType(IndexedStack)).index;
+      tester.widget<IndexedStack>(find.byType(IndexedStack).first).index;
 
   testWidgets('nav bar switches tabs; cookbook survives offstage',
       (tester) async {
@@ -113,7 +118,14 @@ void main() {
     await tester.tap(find.text(kSlot2Label));
     await tester.pump();
     expect(stackIndex(tester), 2);
-    if (kPantryEnabled) {
+    if (kDiaryEnabled) {
+      // Slot 2 opens on the diary; the pantry is behind the segmented pill.
+      expect(find.text('Diary'), findsWidgets);
+      expect(find.text('BREAKFAST'), findsOneWidget); // SectionLabel uppercases
+      await tester.tap(find.text('Pantry').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Scan a product'), findsOneWidget);
+    } else if (kPantryEnabled) {
       expect(find.text('Pantry'), findsWidgets);
       expect(find.text('Scan a product'), findsOneWidget);
     } else {

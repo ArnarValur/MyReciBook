@@ -18,7 +18,11 @@ import 'package:http/http.dart' as http;
 import '../domain/extractor.dart';
 
 class GeminiExtractor implements Extractor {
-  static const _defaultModel = 'gemini-3.6-flash';
+  // Flash-Lite for cost (Arnar 2026-08-19): same multimodal input, a
+  // fraction of the price per extraction, and the fair-use cap in the
+  // listing is what this bill has to fit inside. Still vision-capable —
+  // screenshots go straight in, unchanged.
+  static const _defaultModel = 'gemini-3.5-flash-lite';
   static const _apiKey = String.fromEnvironment('GEMINI_API_KEY');
   static const _proxyUrl = String.fromEnvironment('EXTRACTION_PROXY_URL');
 

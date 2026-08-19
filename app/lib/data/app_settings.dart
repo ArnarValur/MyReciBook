@@ -57,7 +57,52 @@ class AppSettings {
     return v == 'metric' || v == 'imperial' ? v as String : 'as_written';
   }
 
+  /// Daily calorie target for the diary. Null = no goal set, and the diary
+  /// says "no goal yet" instead of measuring you against a number nobody
+  /// chose. Zero or negative reads as unset.
+  double? get calorieGoal {
+    final v = _data['calorie_goal'];
+    if (v is! num || v <= 0) return null;
+    return v.toDouble();
+  }
+
+  /// Daily macro targets in grams, same stance: absent means the diary shows
+  /// the number without a bar behind it.
+  double? macroGoal(String key) {
+    final v = (_data['macro_goals'] as Map?)?[key];
+    if (v is! num || v <= 0) return null;
+    return v.toDouble();
+  }
+
+  /// Meal headings in order. Defaults to the four the diary ships with;
+  /// a corrupt or empty list reads as the defaults, never an empty day.
+  List<String> get mealNames {
+    final v = _data['meal_names'];
+    if (v is! List) return const [];
+    final names = [
+      for (final n in v)
+        if (n is String && n.trim().isNotEmpty) n.trim()
+    ];
+    return names.isEmpty ? const [] : names;
+  }
+
   Future<void> setTreeUri(String? uri) => _write('tree_uri', uri);
+
+  Future<void> setCalorieGoal(double? kcal) =>
+      _write('calorie_goal', kcal != null && kcal > 0 ? kcal : null);
+
+  Future<void> setMacroGoal(String key, double? grams) async {
+    final goals = Map<String, dynamic>.from(
+        (_data['macro_goals'] as Map?)?.cast<String, dynamic>() ?? {});
+    if (grams != null && grams > 0) {
+      goals[key] = grams;
+    } else {
+      goals.remove(key);
+    }
+    await _write('macro_goals', goals.isEmpty ? null : goals);
+  }
+
+  Future<void> setMealNames(List<String> names) => _write('meal_names', names);
 
   Future<void> setUnits(String units) => _write('units', units);
 

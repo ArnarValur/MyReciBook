@@ -13,8 +13,11 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:provider/provider.dart';
 
 import '../data/crash_log.dart';
+import '../features.dart';
 import '../domain/units.dart';
 import '../version.dart';
+import 'diary/diary_goal_screen.dart';
+import 'diary/diary_model.dart';
 import 'storage_model.dart';
 import 'theme.dart';
 import 'theme_model.dart';
@@ -255,6 +258,23 @@ class SettingsTab extends StatelessWidget {
                   ]),
                 ),
                 const SizedBox(height: 20),
+                if (kDiaryEnabled) ...[
+                  const SectionLabel('Diary'),
+                  const SizedBox(height: 8),
+                  row(
+                    icon: Icons.flag_outlined,
+                    title: 'Daily goal',
+                    caption: context.watch<DiaryModel>().goalSummary,
+                    onTap: () =>
+                        Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                            builder: (_) => ChangeNotifierProvider<DiaryModel>
+                                .value(
+                              value: context.read<DiaryModel>(),
+                              child: const DiaryGoalScreen(),
+                            ))),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 const SectionLabel('Storage'),
                 const SizedBox(height: 8),
                 row(

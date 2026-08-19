@@ -12,12 +12,14 @@ import 'package:provider/provider.dart';
 
 import 'data/app_settings.dart';
 import 'data/crash_log.dart';
+import 'data/diary_store.dart';
 import 'data/gemini_extractor.dart';
 import 'data/grocery_store.dart';
 import 'data/install_id.dart';
 import 'data/oauth.dart';
 import 'data/product_store.dart';
 import 'data/recipe_store.dart';
+import 'data/saf_diary_store.dart';
 import 'data/sha256.dart';
 import 'data/share_entry.dart';
 import 'data/share_intake.dart';
@@ -32,6 +34,7 @@ import 'ui/units_model.dart';
 import 'ui/folder_gate.dart';
 import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
+import 'ui/diary/diary_model.dart';
 import 'ui/pantry/pantry_model.dart';
 import 'ui/storage_model.dart';
 import 'ui/photo_sources.dart';
@@ -182,6 +185,9 @@ Future<void> main() async {
         // BootGate built beside the recipe store, and the sync layout's
         // pantry/ case mirrors it like everything else.
         pantry: pantry,
+        // Same tree as the recipes and the pantry: <tree>/diary/.
+        diary: SafDiaryStore(treeUri: store.treeUri),
+        settings: settings,
         storage: storage,
         themeModel: themeModel,
         cookbookPrefs: cookbookPrefs,
@@ -211,6 +217,8 @@ Widget buildApp({
   Extractor Function(String url)? linkExtractor,
   GroceryStore? grocery,
   ProductStore? pantry,
+  DiaryStore? diary,
+  AppSettings? settings,
   StorageModel? storage,
   ThemeModel? themeModel,
   CookbookPrefs? cookbookPrefs,
@@ -266,6 +274,11 @@ Widget buildApp({
         // Same stance for the pantry POC: null store (test seam) degrades to
         // in-memory; the real OffClient only fires on an actual scan.
         ChangeNotifierProvider(create: (_) => PantryModel(pantry)),
+        // The diary reads and writes one day file at a time; a null store
+        // (widget-test seam, or a build with no folder picked) degrades to
+        // in-memory exactly like the pantry does.
+        ChangeNotifierProvider(
+            create: (_) => DiaryModel(diary, settings: settings)),
         // Session batch queue (D5): lives above the shell so it survives tab
         // switches and pushed routes; dies with the app. Saves ride the
         // LibraryModel seam, so grocery/storage glue comes along for free.

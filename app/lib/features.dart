@@ -46,6 +46,11 @@ const bool kUnlockTabEnabled = true;
 /// pantry folder needs its own sync case before it travels.
 const bool kPantryEnabled = true;
 
+/// Meal diary (`ui/diary/`) — day files, servings, snapshot entries. Shares
+/// nav slot 3 with the pantry behind a Diary/Pantry segmented control
+/// (Arnar's call, 2026-08-19). Off restores the pantry tab untouched.
+const bool kDiaryEnabled = true;
+
 /// "Spread the word" rows on the Unlock tab (rate on Google Play · share
 /// with a friend). Both need a live destination — the Play listing for
 /// rating, at least the landing page (live 2 Sep) for the share link — so

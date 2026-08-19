@@ -99,8 +99,12 @@ class GlassNavBar extends StatelessWidget {
                       // (2026-08-15, Arnar: sell the app here; the queue
                       // lives on as the pushed batch route + Cookbook strip)
                       // → Pantry POC borrowing the slot on dev builds
-                      // (2026-08-17, kPantryEnabled).
-                      if (kPantryEnabled)
+                      // (2026-08-17, kPantryEnabled) → "Food": the diary and
+                      // the pantry behind one segmented control
+                      // (2026-08-19, kDiaryEnabled).
+                      if (kDiaryEnabled)
+                        item(2, Icons.restaurant_rounded, 'Food')
+                      else if (kPantryEnabled)
                         item(2, Icons.kitchen_rounded, 'Pantry')
                       else if (kUnlockTabEnabled)
                         item(2, Icons.lock_open_rounded, 'Unlock')

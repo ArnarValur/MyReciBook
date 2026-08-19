@@ -212,7 +212,7 @@ void main() {
         }));
     expect(await ex.extractContent([img]), {'title': 'x'});
     expect(seen.url.toString(),
-        'https://proxy.example/v1beta/models/gemini-3.6-flash:generateContent');
+        'https://proxy.example/v1beta/models/gemini-3.5-flash-lite:generateContent');
     expect(seen.headers['X-Install-Id'], 'install-1234');
     expect(seen.headers.keys.map((k) => k.toLowerCase()),
         isNot(contains('x-goog-api-key')));

@@ -35,6 +35,7 @@ import '../data/share_entry.dart';
 import '../domain/extractor.dart';
 import 'batch_model.dart';
 import 'batch_queue_screen.dart';
+import 'diary/food_tab.dart';
 import 'grocery_tab.dart';
 import 'import_review_screen.dart';
 import 'import_sheet.dart';
@@ -291,7 +292,10 @@ class _AppShellState extends State<AppShell> {
             // then the Unlock pitch — or, with both flags off, the queue
             // tab in its embedded form (no Hide/Done — a tab has nothing to
             // pop back to).
-            if (kPantryEnabled)
+            if (kDiaryEnabled)
+              // Slot 3 hosts Diary + Pantry behind one segmented control.
+              _built[2] ? const FoodTab() : const SizedBox.shrink()
+            else if (kPantryEnabled)
               _built[2] ? const PantryTab() : const SizedBox.shrink()
             else if (kUnlockTabEnabled)
               _built[2] ? const UnlockTab() : const SizedBox.shrink()
