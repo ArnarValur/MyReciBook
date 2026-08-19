@@ -55,12 +55,23 @@ class OffProduct {
   final String? quantity; // e.g. '1 L'
   final OffNutriments nutriments;
 
+  /// The pack's own portion as printed, e.g. '30 g' or '1 cup (240 ml)' —
+  /// display text, never parsed (the raw-field stance).
+  final String? servingSize; // serving_size
+
+  /// Grams in one serving, OFF's normalised number. This is the loggable
+  /// half: nutriments are per 100 g, so grams-per-serving is what turns
+  /// "1 serving" into real calories (diary.dart).
+  final double? servingGrams; // serving_quantity
+
   const OffProduct({
     required this.barcode,
     this.name,
     this.brands,
     this.quantity,
     this.nutriments = const OffNutriments(),
+    this.servingSize,
+    this.servingGrams,
   });
 }
 
@@ -102,7 +113,8 @@ class OffClient {
         _wait = wait ?? ((d) => Future<void>.delayed(d));
 
   static const _base = 'https://world.openfoodfacts.org/api/v2/product';
-  static const _fields = 'product_name,brands,quantity,nutriments';
+  static const _fields =
+      'product_name,brands,quantity,nutriments,serving_size,serving_quantity';
 
   /// OFF requires an identifying UA — anonymous clients get blocked.
   static const userAgent = 'MyReciBook/0.5 (arnarvalurjonsson@gmail.com)';
@@ -181,6 +193,13 @@ class OffClient {
       brands: _string(p['brands']),
       quantity: _string(p['quantity']),
       nutriments: OffNutriments(_parseNutriments(n)),
+      servingSize: _string(p['serving_size']),
+      // OFF sends serving_quantity as a number OR a numeric string, and
+      // some products carry a 0 or a negative — none of those is a portion.
+      servingGrams: switch (_number(p['serving_quantity'])) {
+        final g? when g > 0 => g,
+        _ => null,
+      },
     );
   }
 

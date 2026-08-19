@@ -216,6 +216,12 @@ class PantryModel extends ChangeNotifier {
       brand: off.brands,
       quantity: off.quantity,
       nutriments: Nutriments.fromMap(Map.of(off.nutriments.values)),
+      // Servings the user typed in are theirs — a refresh only FILLS an
+      // empty list, it never overwrites a portion they measured themselves.
+      servings: current.servings.isEmpty ? _offServings(off) : null,
+      defaultServing: current.servings.isEmpty && _offServings(off).isNotEmpty
+          ? 0
+          : null,
     );
   }
 
@@ -224,7 +230,16 @@ class PantryModel extends ChangeNotifier {
       a.name == b.name &&
       a.brand == b.brand &&
       a.quantity == b.quantity &&
-      mapEquals(a.nutriments?.values, b.nutriments?.values);
+      mapEquals(a.nutriments?.values, b.nutriments?.values) &&
+      _sameServings(a.servings, b.servings);
+
+  static bool _sameServings(List<Serving> a, List<Serving> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].label != b[i].label || a[i].grams != b[i].grams) return false;
+    }
+    return true;
+  }
 
   /// Write one product in place, keeping list order — a refresh must not
   /// reshuffle the shelf under the user's thumb the way a fresh scan does.
@@ -290,7 +305,26 @@ class PantryModel extends ChangeNotifier {
       // Everything OFF sent, vitamins and minerals included — the keys
       // already match the product file's.
       nutriments: Nutriments.fromMap(Map.of(n.values)),
+      servings: _offServings(off),
+      // The pack's own portion is what a label reader expects preselected;
+      // 100 g is always still one tap away (Product.servingOptions).
+      defaultServing: _offServings(off).isEmpty ? null : 0,
     );
+  }
+
+  /// OFF's serving fields as a loggable portion. Only a portion with real
+  /// grams survives: `serving_size` alone ("1 cup") cannot be costed against
+  /// per-100 g nutriments, and a portion with no weight is a lie in a diary.
+  static List<Serving> _offServings(OffProduct off) {
+    final grams = off.servingGrams;
+    if (grams == null || grams <= 0) return const [];
+    final printed = off.servingSize?.trim();
+    return [
+      Serving(
+        label: (printed == null || printed.isEmpty) ? '1 serving' : printed,
+        grams: grams,
+      )
+    ];
   }
 
   Future<Product> _save(Product product) async {

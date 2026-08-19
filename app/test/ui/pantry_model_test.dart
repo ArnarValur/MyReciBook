@@ -304,4 +304,53 @@ void main() {
       expect(model.refreshableCount, 0);
     });
   });
+
+  group('servings from Open Food Facts', () {
+    test('a scanned pack arrives with its own portion preselected', () async {
+      final model = PantryModel(
+          null,
+          off: _off((_) async => http.Response(
+              jsonEncode({
+                'code': '1',
+                'status': 1,
+                'product': {
+                  'product_name': 'Havregryn',
+                  'serving_size': '1 dl (35 g)',
+                  'serving_quantity': 35,
+                  'nutriments': {'energy-kcal_100g': 370},
+                },
+              }),
+              200)));
+
+      final outcome = await model.addByBarcode('1');
+      final product = (outcome as PantryAdded).product;
+
+      expect(product.servings.single.label, '1 dl (35 g)');
+      expect(product.servings.single.grams, 35);
+      expect(product.preferredServing.grams, 35);
+      // 100 g stays one tap away.
+      expect(product.servingOptions.map((s) => s.grams), [35, 100]);
+    });
+
+    test('a pack with no serving weight still logs at 100 g', () async {
+      final model = PantryModel(
+          null,
+          off: _off((_) async => http.Response(
+              jsonEncode({
+                'code': '1',
+                'status': 1,
+                'product': {
+                  'product_name': 'Havregryn',
+                  'nutriments': {'energy-kcal_100g': 370},
+                },
+              }),
+              200)));
+
+      final product = (await model.addByBarcode('1') as PantryAdded).product;
+      expect(product.servings, isEmpty);
+      expect(product.defaultServing, isNull);
+      expect(product.preferredServing.grams, 100);
+    });
+  });
+
 }

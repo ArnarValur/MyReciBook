@@ -255,4 +255,66 @@ void _openNutrimentsTests() {
       expect(n.toJson(), {'calcium': 0.118});
     });
   });
+
+  group('servings — the portion a diary entry is logged at', () {
+    test('a file from before servings gains no keys', () {
+      final json = Product(
+        schemaVersion: 1,
+        barcode: '123',
+        name: 'Milk',
+        source: 'off',
+      ).toJson();
+      expect(json.containsKey('servings'), isFalse);
+      expect(json.containsKey('default_serving'), isFalse);
+    });
+
+    test('portions round-trip with their weights', () {
+      final p = Product(
+        schemaVersion: 1,
+        barcode: '123',
+        name: 'Havregryn',
+        source: 'off',
+        servings: const [
+          Serving(label: '1 dl', grams: 35),
+          Serving(label: '1 portion', grams: 80),
+        ],
+        defaultServing: 1,
+      );
+      final back = Product.fromJson(p.toJson());
+      expect(back.servings.map((s) => s.label), ['1 dl', '1 portion']);
+      expect(back.servings.last.grams, 80);
+      expect(back.preferredServing.label, '1 portion');
+      expect(jsonEncode(Product.fromJson(back.toJson()).toJson()),
+          jsonEncode(back.toJson()));
+    });
+
+    test('a malformed portion is dropped, the file still loads', () {
+      final back = Product.fromJson({
+        'schema_version': 1,
+        'barcode': '123',
+        'name': 'Havregryn',
+        'source': 'off',
+        'servings': [
+          {'label': '1 dl', 'grams': 35},
+          {'label': '', 'grams': 10},
+          {'label': 'no weight'},
+          {'label': 'zero', 'grams': 0},
+          'not an object',
+        ],
+      });
+      expect(back.servings.map((s) => s.label), ['1 dl']);
+    });
+
+    test('copyWith keeps portions it was not asked about', () {
+      final p = Product(
+        schemaVersion: 1,
+        barcode: '123',
+        name: 'Havregryn',
+        source: 'off',
+        servings: const [Serving(label: '1 dl', grams: 35)],
+      );
+      expect(p.copyWith(name: 'Oats').servings.single.label, '1 dl');
+    });
+  });
+
 }

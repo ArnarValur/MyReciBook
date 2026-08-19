@@ -25,6 +25,16 @@ class Product {
   final String? addedAt;
   final Nutriments? nutriments;
 
+  /// Named portions the user can log, e.g. "1 dl" = 35 g, "1 medium" = 182 g.
+  /// The MFP mechanic: pick a serving, type how many. Empty is fine — every
+  /// product still offers 100 g and a free gram amount ([servingOptions]).
+  /// Absent from JSON when empty, so pre-serving files round-trip unchanged.
+  final List<Serving> servings;
+
+  /// Index into [servings] that the log sheet should preselect. Out-of-range
+  /// or absent falls back to the first option.
+  final int? defaultServing;
+
   /// User's own photo of the product, relative like `images/<id>.jpg` —
   /// the recipe cover convention applied to the pantry. Absent in JSON
   /// unless set, so pre-photo files round-trip byte-identical.
@@ -40,6 +50,8 @@ class Product {
     this.addedAt,
     this.nutriments,
     this.image,
+    this.servings = const [],
+    this.defaultServing,
   });
 
   /// Store identity and filename stem: the barcode when scanned, else a slug
@@ -57,6 +69,8 @@ class Product {
         addedAt: json['added_at'] as String?,
         nutriments: Nutriments.fromJsonOrNull(json['nutriments']),
         image: json['image'] as String?,
+        servings: Serving.listFromJson(json['servings']),
+        defaultServing: (json['default_serving'] as num?)?.toInt(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -69,6 +83,9 @@ class Product {
         'added_at': addedAt,
         'nutriments': nutriments?.toJson(),
         if (image != null) 'image': image,
+        if (servings.isNotEmpty)
+          'servings': [for (final s in servings) s.toJson()],
+        if (defaultServing != null) 'default_serving': defaultServing,
       };
 
   /// `image:` accepts a new ref, omission (keep), or [clearImage] (remove) —
@@ -80,6 +97,8 @@ class Product {
     Nutriments? nutriments,
     String? image,
     bool clearImage = false,
+    List<Serving>? servings,
+    int? defaultServing,
   }) =>
       Product(
         schemaVersion: schemaVersion,
@@ -91,7 +110,71 @@ class Product {
         addedAt: addedAt,
         nutriments: nutriments ?? this.nutriments,
         image: clearImage ? null : (image ?? this.image),
+        servings: servings ?? this.servings,
+        defaultServing: defaultServing ?? this.defaultServing,
       );
+
+  /// What the log sheet offers: the product's own portions first, then the
+  /// universal 100 g. Never empty — a bare scanned product is still loggable,
+  /// which is the whole point of "add the fruit that has no barcode".
+  List<Serving> get servingOptions {
+    final options = [for (final s in servings) s];
+    if (!options.any((s) => s.grams == 100)) {
+      options.add(const Serving(label: '100 g', grams: 100));
+    }
+    return options;
+  }
+
+  /// The preselected portion — [defaultServing] when it points somewhere
+  /// real, else the first option.
+  Serving get preferredServing {
+    final options = servingOptions;
+    final i = defaultServing;
+    if (i != null && i >= 0 && i < options.length) return options[i];
+    return options.first;
+  }
+}
+
+/// One named portion of a product: a label a human recognises and the grams
+/// it weighs. Grams are the bridge — nutriments are stored per 100 g, so any
+/// portion with a weight can be costed exactly (diary.dart's snapshot).
+class Serving {
+  final String label;
+  final double grams;
+
+  const Serving({required this.label, required this.grams});
+
+  factory Serving.fromJson(Map<String, dynamic> json) => Serving(
+        label: json['label'] as String,
+        grams: (json['grams'] as num).toDouble(),
+      );
+
+  Map<String, dynamic> toJson() => {'label': label, 'grams': grams};
+
+  /// Tolerant list read: a malformed entry is dropped, never fatal (§7).
+  static List<Serving> listFromJson(Object? json) {
+    if (json is! List) return const [];
+    final out = <Serving>[];
+    for (final row in json) {
+      if (row is! Map) continue;
+      final label = row['label'];
+      final grams = row['grams'];
+      if (label is! String || label.isEmpty) continue;
+      if (grams is! num || grams <= 0) continue;
+      out.add(Serving(label: label, grams: grams.toDouble()));
+    }
+    return out;
+  }
+
+  /// "125 g" — the free-form amount the log sheet builds when the user types
+  /// grams instead of picking a portion.
+  factory Serving.grams(double grams) =>
+      Serving(label: '${_trimGrams(grams)} g', grams: grams);
+
+  static String _trimGrams(double v) {
+    if (v == v.roundToDouble()) return v.round().toString();
+    return v.toStringAsFixed(1).replaceFirst(RegExp(r'\.0$'), '');
+  }
 }
 
 /// Per-100 g values, an OPEN map — Open Food Facts sends vitamins and
@@ -151,6 +234,21 @@ class Nutriments {
   double? get salt => values['salt'];
 
   bool get isEmpty => values.isEmpty;
+
+  /// Every value times [factor] — per-100 g to per-serving, or a serving to a
+  /// row total. Linear by construction: nutrition labels scale, so the diary
+  /// never needs to re-fetch anything.
+  Nutriments scaled(double factor) => Nutriments.fromMap({
+        for (final e in values.entries) e.key: e.value * factor,
+      });
+
+  /// Key-wise sum. A key only one side carries is kept — see
+  /// diary.dart's sumNutriments for why that is the honest choice.
+  Nutriments plus(Nutriments other) {
+    final merged = Map<String, double>.from(values);
+    other.values.forEach((k, v) => merged[k] = (merged[k] ?? 0) + v);
+    return Nutriments.fromMap(merged);
+  }
 
   /// Keys that are not one of the seven label macros — vitamins, minerals,
   /// and anything a user typed in themselves. Sorted for a stable UI.

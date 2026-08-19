@@ -63,7 +63,7 @@ void main() {
 
     expect(seen.method, 'GET');
     expect(seen.url.toString(),
-        'https://world.openfoodfacts.org/api/v2/product/7038010013966.json?fields=product_name%2Cbrands%2Cquantity%2Cnutriments');
+        'https://world.openfoodfacts.org/api/v2/product/7038010013966.json?fields=product_name%2Cbrands%2Cquantity%2Cnutriments%2Cserving_size%2Cserving_quantity');
     // OFF requires an identifying UA on every request.
     expect(seen.headers['User-Agent'],
         'MyReciBook/0.5 (arnarvalurjonsson@gmail.com)');
@@ -270,4 +270,46 @@ void _micronutrientTests() {
     expect(n.values.keys, isNot(contains('calcium_value')));
     expect(n.values.keys, isNot(contains('calcium_unit')));
   });
+
+  group('serving size — the loggable portion', () {
+    Future<OffProduct> parse(String body) async {
+      final client = _client(MockClient((req) async =>
+          http.Response.bytes(utf8.encode(body), 200,
+              headers: {'content-type': 'application/json'})));
+      final result = await client.lookup('123');
+      return (result as OffFound).product;
+    }
+
+    String bodyWith(String serving) => '''
+{"status":1,"product":{"product_name":"Havregryn","brands":"Axa",$serving,
+ "nutriments":{"energy-kcal_100g":370}}}
+''';
+
+    test('the printed label and the normalised grams both come through',
+        () async {
+      final p = await parse(
+          bodyWith('"serving_size":"1 dl (35 g)","serving_quantity":35'));
+      expect(p.servingSize, '1 dl (35 g)');
+      expect(p.servingGrams, 35);
+    });
+
+    test('a string-typed quantity parses — OFF sends both', () async {
+      final p =
+          await parse(bodyWith('"serving_size":"30 g","serving_quantity":"30"'));
+      expect(p.servingGrams, 30);
+    });
+
+    test('a zero or missing quantity is no portion at all', () async {
+      expect((await parse(bodyWith('"serving_quantity":0'))).servingGrams,
+          isNull);
+      expect((await parse(bodyWith('"product_code":"x"'))).servingGrams, isNull);
+    });
+
+    test('a label with no grams behind it is still not loggable', () async {
+      final p = await parse(bodyWith('"serving_size":"1 cup"'));
+      expect(p.servingSize, '1 cup');
+      expect(p.servingGrams, isNull);
+    });
+  });
+
 }
