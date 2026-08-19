@@ -92,24 +92,42 @@ void main() {
     await tester.enterText(
         find.byKey(const Key('manual-title')), "Nan's bread");
     await tester.enterText(find.byKey(const Key('manual-servings')), ' 6 loaves ');
+    // Row editor (2026-08-19): one field per ingredient, Enter grows the
+    // list; enterText + a manual add stand in for the Enter key here.
     await tester.enterText(
-        find.byKey(const Key('manual-ingredients')),
-        '2 cups flour\n\n 1 tsp salt \n');
-    // Let the live pantry section insert itself before targeting the steps
-    // field — its rows shift the list, and enterText must find the settled
-    // element, exactly like a real keyboard frame would.
+        find.byKey(const Key('manual-ing-0')), '2 cups flour');
+    await tester.pump();
+    await tester.tap(find.text('Add ingredient'));
     await tester.pump();
     await tester.enterText(
-        find.byKey(const Key('manual-steps')), 'Mix.\nBake.');
+        find.byKey(const Key('manual-ing-1')), ' 1 tsp salt ');
     await tester.pump();
 
-    // The live pantry section mirrors the field: one row per non-empty line,
-    // each with an unlinked 'Link' chip (empty pantry in this seam).
-    // SectionLabel renders uppercase.
-    expect(find.text('FROM YOUR PANTRY'), findsOneWidget);
+    // Each typed row structures itself: parse chips + an unlinked 'Link'
+    // chip (empty pantry in this seam).
+    expect(find.text('cup'), findsOneWidget);
+    expect(find.text('flour'), findsOneWidget);
+    expect(find.text('tsp'), findsOneWidget);
+    expect(find.text('salt'), findsOneWidget);
     expect(find.text('Link'), findsNWidgets(2));
 
-    await tester.ensureVisible(find.text('Save to cookbook'));
+    // ListView materializes lazily — scroll the step row into existence
+    // before targeting it (ensureVisible needs a live element).
+    await tester.scrollUntilVisible(find.byKey(const Key('manual-step-0')), 120,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('manual-step-0')), 'Mix.');
+    await tester.pump();
+    await tester.tap(find.text('Add step'));
+    await tester.pump();
+    // Steps number themselves as rows are added.
+    expect(find.text('1.'), findsOneWidget);
+    expect(find.text('2.'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('manual-step-1')), 'Bake.');
+    await tester.pump();
+
+    await tester.scrollUntilVisible(find.text('Save to cookbook'), 120,
+        scrollable: find.byType(Scrollable).first);
     await tester.pump();
     await tester.tap(find.text('Save to cookbook'));
     await settle(tester);
@@ -128,7 +146,7 @@ void main() {
     expect(json['title'], "Nan's bread");
     expect((json['servings'] as Map)['raw'], '6 loaves');
     expect([for (final i in json['ingredients'] as List) i['raw']],
-        ['2 cups flour', '1 tsp salt']); // blank lines dropped, trimmed
+        ['2 cups flour', '1 tsp salt']); // rows trimmed, empty rows dropped
     // Born parsed (2026-08-19): the deterministic parse is stored at save,
     // so the file is calorie-computable from its first write.
     expect([for (final i in json['ingredients'] as List) i['qty']], [2, 1]);
@@ -154,10 +172,10 @@ void main() {
     await settle(tester);
 
     await openManual(tester);
-    await tester.enterText(
-        find.byKey(const Key('manual-ingredients')), '2 eggs\n1 cup flour');
+    await tester.enterText(find.byKey(const Key('manual-ing-0')), '2 eggs');
     await tester.pump();
-    await tester.ensureVisible(find.text('Save to cookbook'));
+    await tester.scrollUntilVisible(find.text('Save to cookbook'), 120,
+        scrollable: find.byType(Scrollable).first);
     await tester.pump();
     await tester.tap(find.text('Save to cookbook'));
     // Short settle keeps the 4s snackbar alive for the assertion.
