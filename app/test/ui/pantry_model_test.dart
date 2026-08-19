@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:myrecibook/data/off_client.dart';
 import 'package:myrecibook/data/product_store.dart';
+import 'package:myrecibook/domain/product.dart';
 import 'package:myrecibook/ui/pantry/pantry_model.dart';
 
 String _foundBody() => jsonEncode({
@@ -36,7 +37,7 @@ OffClient _off(Future<http.Response> Function(http.Request) handler) =>
 /// no vitamins, plus the user's own photo — the exact shape of the 46 files
 /// already on the phone.
 void _seedOldFile(Directory dir, String barcode,
-    {String name = 'Mellommelk 2,0% fett'}) {
+    {String name = 'Mellommelk 2,0% fett', bool edited = false}) {
   File('${dir.path}/$barcode.json').writeAsStringSync(jsonEncode({
     'schema_version': 1,
     'barcode': barcode,
@@ -47,6 +48,7 @@ void _seedOldFile(Directory dir, String barcode,
     'added_at': '2026-08-17T10:00:00.000Z',
     'nutriments': {'kcal': 50.0, 'fat': 2.0, 'carbs': 4.6, 'protein': 3.5},
     'image': 'images/$barcode.jpg',
+    if (edited) 'user_edited': true,
   }));
 }
 
@@ -302,6 +304,99 @@ void main() {
       expect(calls, 0);
       expect(report.total, 0);
       expect(model.refreshableCount, 0);
+    });
+  });
+
+  group('userEdited — a hand-save outranks the bulk refresh', () {
+    const code = '7038010071751';
+
+    test('upsert marks the file as the user\'s and it round-trips', () async {
+      final model = PantryModel(store,
+          off: _off((_) async => http.Response('unused', 500)));
+      await model.ensureLoaded();
+
+      final saved = await model.upsert(const Product(
+        schemaVersion: Product.currentSchemaVersion,
+        barcode: code,
+        name: 'Mellommelk, corrected by hand',
+        source: 'manual',
+      ));
+
+      expect(saved.userEdited, isTrue);
+      // ...and the flag survives the disk round-trip, not just this session.
+      final reloaded = PantryModel(store,
+          off: _off((_) async => http.Response('unused', 500)));
+      await reloaded.ensureLoaded();
+      expect(reloaded.products.single.userEdited, isTrue);
+    });
+
+    test('refreshAll walks past an edited file: untouched, counted nowhere',
+        () async {
+      _seedOldFile(dir, '111', name: 'Alpha', edited: true);
+      _seedOldFile(dir, '222', name: 'Beta');
+      final asked = <String>[];
+      final model = PantryModel(store, wait: (_) async {},
+          off: _off((req) async {
+        asked.add(req.url.pathSegments.last.replaceAll('.json', ''));
+        return http.Response(_richBody('222'), 200);
+      }));
+      await model.ensureLoaded();
+      expect(model.refreshableCount, 1);
+      expect(model.editedCount, 1);
+      final stamp = File('${dir.path}/111.json').lastModifiedSync();
+
+      final report = await model.refreshAll();
+
+      expect(asked, ['222']);
+      // The edited product lands in NO bucket — "1 skipped" is the dialog's
+      // job before the sweep, not the report's after it.
+      expect(report.total, 1);
+      expect(report.updated, 1);
+      expect(File('${dir.path}/111.json').lastModifiedSync(), stamp);
+      expect(model.byId('111')!.name, 'Alpha');
+    });
+
+    test('refreshOne is the deliberate door: overwrites and clears the flag',
+        () async {
+      _seedOldFile(dir, code, edited: true);
+      final model = PantryModel(store,
+          off: _off((_) async => http.Response(_richBody(code), 200)));
+      await model.ensureLoaded();
+
+      final outcome = await model.refreshOne(code);
+
+      expect(outcome, isA<PantryAdded>());
+      expect((outcome as PantryAdded).wasKnown, isTrue);
+      expect(outcome.product.userEdited, isFalse);
+      expect(outcome.product.nutriments?['calcium'], 0.118);
+      // The cleared flag is on disk too — the NEXT bulk refresh may touch it.
+      final onDisk = jsonDecode(
+              File('${dir.path}/$code.json').readAsStringSync())
+          as Map<String, dynamic>;
+      expect(onDisk['user_edited'], isNull);
+      expect(model.refreshableCount, 1);
+    });
+
+    test('refreshOne on a barcodeless product: PantryUnavailable, no lookup',
+        () async {
+      var calls = 0;
+      final model = PantryModel(store, off: _off((_) async {
+        calls++;
+        return http.Response(_richBody(code), 200);
+      }));
+      await model.ensureLoaded();
+      final saved = await model.upsert(const Product(
+        schemaVersion: Product.currentSchemaVersion,
+        barcode: '',
+        name: 'Homemade bread',
+        source: 'manual',
+      ));
+
+      final outcome = await model.refreshOne(saved.id);
+
+      expect(outcome, isA<PantryUnavailable>());
+      expect((outcome as PantryUnavailable).message, contains('no barcode'));
+      expect(calls, 0);
     });
   });
 

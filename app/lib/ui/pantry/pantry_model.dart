@@ -105,9 +105,15 @@ class PantryModel extends ChangeNotifier {
   int get refreshDone => _refreshDone;
   int get refreshTotal => _refreshTotal;
 
-  /// Barcoded products are the only ones OFF can be asked about again.
+  /// Barcoded products are the only ones OFF can be asked about again — and
+  /// hand-edited files are off the table too: the bulk sweep must never undo
+  /// a correction the user typed in (Arnar, 2026-08-19).
   int get refreshableCount =>
-      _products.where((p) => p.barcode.isNotEmpty).length;
+      _products.where((p) => p.barcode.isNotEmpty && !p.userEdited).length;
+
+  /// Hand-edited products on the shelf — the confirm dialog names how many
+  /// files the bulk refresh will leave alone.
+  int get editedCount => _products.where((p) => p.userEdited).length;
 
   /// Foreign/unparseable files in the pantry folder — surfaced, never fatal.
   int get skipped => _skipped;
@@ -161,11 +167,13 @@ class PantryModel extends ChangeNotifier {
   ///
   /// The user's own photo, the date they added it and the barcode all survive
   /// ([Product.copyWith] carries them); only OFF's own fields are replaced.
-  /// A product OFF can't answer for is left exactly as it was.
+  /// A product OFF can't answer for is left exactly as it was, and a product
+  /// the user edited by hand is never asked about at all — [refreshOne] is
+  /// the deliberate door for those.
   Future<PantryRefreshReport> refreshAll() async {
     final targets = [
       for (final p in _products)
-        if (p.barcode.isNotEmpty) p
+        if (p.barcode.isNotEmpty && !p.userEdited) p
     ];
     _refreshing = true;
     _refreshDone = 0;
@@ -241,11 +249,42 @@ class PantryModel extends ChangeNotifier {
     return true;
   }
 
+  /// Ask OFF about ONE product again, deliberately — the only path that may
+  /// overwrite a hand-edited file, and doing so hands the file back to OFF:
+  /// the userEdited flag clears (Arnar, 2026-08-19). Outcomes mirror
+  /// [addByBarcode] so the detail screen shows the same honest three-way.
+  Future<PantryAddOutcome> refreshOne(String id) async {
+    _busy = true;
+    notifyListeners();
+    try {
+      final current = byId(id);
+      if (current == null || current.barcode.isEmpty) {
+        return PantryUnavailable(
+            'This product has no barcode — nothing to look up.');
+      }
+      final result = await _off.lookup(current.barcode);
+      switch (result) {
+        case OffFound(:final product):
+          final saved =
+              await _persist(_merge(current, product).copyWith(userEdited: false));
+          return PantryAdded(saved, wasKnown: true);
+        case OffNotFound():
+          return PantryNotFound(current.barcode);
+        case OffUnavailable(:final message):
+          return PantryUnavailable(message);
+      }
+    } finally {
+      _busy = false;
+      notifyListeners();
+    }
+  }
+
   /// Write one product in place, keeping list order — a refresh must not
   /// reshuffle the shelf under the user's thumb the way a fresh scan does.
-  Future<void> _persist(Product product) async {
+  Future<Product> _persist(Product product) async {
     final saved = await _store?.save(product) ?? product;
     _replace(saved);
+    return saved;
   }
 
   Future<void> remove(String id) async {
@@ -330,8 +369,10 @@ class PantryModel extends ChangeNotifier {
   /// Create or overwrite a product the user typed in themselves — the
   /// no-barcode door (manual_product_screen.dart) and the edit door for a
   /// scanned product Open Food Facts got wrong. Upsert by file stem, like a
-  /// re-scan: one product, one file, never a duplicate.
-  Future<Product> upsert(Product product) => _save(product);
+  /// re-scan: one product, one file, never a duplicate. Every hand-save marks
+  /// the file as the user's — [refreshAll] keeps its hands off it after this.
+  Future<Product> upsert(Product product) =>
+      _save(product.copyWith(userEdited: true));
 
   Future<Product> _save(Product product) async {
     final saved = await _store?.save(product) ?? product;

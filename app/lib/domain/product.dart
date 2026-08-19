@@ -35,6 +35,17 @@ class Product {
   /// or absent falls back to the first option.
   final int? defaultServing;
 
+  /// The user typed or corrected this product's data by hand. A bulk
+  /// Open Food Facts refresh must never overwrite it (Arnar, 2026-08-19);
+  /// only a deliberate per-product refresh may, and that clears the flag.
+  /// Absent from JSON when false, so older files round-trip unchanged.
+  final bool userEdited;
+
+  /// User-chosen groups — "Dairy", "Wine", anything. Free strings, never an
+  /// enum: [productTagSuggestions] seeds the picker, custom tags are equals.
+  /// Absent from JSON when empty.
+  final List<String> tags;
+
   /// User's own photo of the product, relative like `images/<id>.jpg` —
   /// the recipe cover convention applied to the pantry. Absent in JSON
   /// unless set, so pre-photo files round-trip byte-identical.
@@ -52,6 +63,8 @@ class Product {
     this.image,
     this.servings = const [],
     this.defaultServing,
+    this.userEdited = false,
+    this.tags = const [],
   });
 
   /// Store identity and filename stem: the barcode when scanned, else a slug
@@ -71,6 +84,11 @@ class Product {
         image: json['image'] as String?,
         servings: Serving.listFromJson(json['servings']),
         defaultServing: (json['default_serving'] as num?)?.toInt(),
+        userEdited: json['user_edited'] as bool? ?? false,
+        tags: [
+          for (final t in (json['tags'] as List? ?? []))
+            if (t is String && t.trim().isNotEmpty) t
+        ],
       );
 
   Map<String, dynamic> toJson() => {
@@ -86,6 +104,8 @@ class Product {
         if (servings.isNotEmpty)
           'servings': [for (final s in servings) s.toJson()],
         if (defaultServing != null) 'default_serving': defaultServing,
+        if (userEdited) 'user_edited': true,
+        if (tags.isNotEmpty) 'tags': tags,
       };
 
   /// `image:` accepts a new ref, omission (keep), or [clearImage] (remove) —
@@ -99,6 +119,8 @@ class Product {
     bool clearImage = false,
     List<Serving>? servings,
     int? defaultServing,
+    bool? userEdited,
+    List<String>? tags,
   }) =>
       Product(
         schemaVersion: schemaVersion,
@@ -112,6 +134,8 @@ class Product {
         image: clearImage ? null : (image ?? this.image),
         servings: servings ?? this.servings,
         defaultServing: defaultServing ?? this.defaultServing,
+        userEdited: userEdited ?? this.userEdited,
+        tags: tags ?? this.tags,
       );
 
   /// What the log sheet offers: the product's own portions first, then the
@@ -277,6 +301,31 @@ class Nutriments {
         for (final key in extraKeys) key: values[key],
       };
 }
+
+/// Seed tags for the pantry's tag picker — the groups people actually shelve
+/// by, not a food-science taxonomy. Users add their own beside these.
+const List<String> productTagSuggestions = [
+  'Dairy',
+  'Cheese',
+  'Meat',
+  'Chicken',
+  'Fish',
+  'Produce',
+  'Fruit',
+  'Bread',
+  'Pasta & grains',
+  'Rice',
+  'Breakfast',
+  'Snacks',
+  'Sweets',
+  'Drinks',
+  'Coffee & tea',
+  'Wine & beer',
+  'Frozen',
+  'Canned',
+  'Spices',
+  'Sauces',
+];
 
 /// Filesystem-safe stem for manual products: lowercase, non-alphanumeric runs
 /// collapse to one '-'. Never empty — an all-symbol name still gets a valid

@@ -317,4 +317,53 @@ void _openNutrimentsTests() {
     });
   });
 
+
+  group('user_edited and tags — the hand-typed data contract', () {
+    test('defaults write no keys — pre-tag files round-trip unchanged', () {
+      final json = Product(
+        schemaVersion: 1,
+        barcode: '123',
+        name: 'Milk',
+        source: 'off',
+      ).toJson();
+      expect(json.containsKey('user_edited'), isFalse);
+      expect(json.containsKey('tags'), isFalse);
+    });
+
+    test('both survive the round trip', () {
+      final p = Product(
+        schemaVersion: 1,
+        barcode: '123',
+        name: 'Milk',
+        source: 'off',
+        userEdited: true,
+        tags: const ['Dairy', 'Breakfast'],
+      );
+      final back = Product.fromJson(p.toJson());
+      expect(back.userEdited, isTrue);
+      expect(back.tags, ['Dairy', 'Breakfast']);
+    });
+
+    test('copyWith flips the flag without touching the rest', () {
+      final p = Product(
+          schemaVersion: 1, barcode: '123', name: 'Milk', source: 'off');
+      final edited = p.copyWith(userEdited: true, tags: const ['Dairy']);
+      expect(edited.userEdited, isTrue);
+      expect(edited.copyWith(name: 'Whole milk').userEdited, isTrue,
+          reason: 'an unrelated edit must not clear the mark');
+      expect(p.userEdited, isFalse);
+    });
+
+    test('corrupt tags entries are dropped, never fatal', () {
+      final back = Product.fromJson({
+        'schema_version': 1,
+        'barcode': '123',
+        'name': 'Milk',
+        'source': 'off',
+        'tags': ['Dairy', 7, '', '  ', null],
+      });
+      expect(back.tags, ['Dairy']);
+    });
+  });
+
 }

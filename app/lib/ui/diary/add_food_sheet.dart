@@ -17,6 +17,7 @@ import '../pantry/barcode_scan_screen.dart';
 import '../pantry/manual_product_screen.dart';
 import '../pantry/pantry_model.dart';
 import '../theme.dart';
+import '../widgets/product_row.dart';
 import '../widgets/skin.dart';
 import 'diary_model.dart';
 import 'diary_tab.dart' show showAmountDialog;
@@ -230,10 +231,15 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                 ),
               )
             else
-              for (final product in matches) ...[
-                _PantryRow(product: product, onTap: () => _log(product)),
-                const SizedBox(height: 8),
-              ],
+              // The same card the Pantry tab shows, photo included (Arnar,
+              // 2026-08-19: same card, same purpose). ProductRow carries its
+              // own bottom gap, so no spacer here.
+              for (final product in matches)
+                ProductRow(
+                  product: product,
+                  imageFile: pantry.imageFileOf(product),
+                  onTap: () => _log(product),
+                ),
           ],
         ),
       ),
@@ -275,62 +281,6 @@ class _RecentRow extends StatelessWidget {
           ),
           Text('${(entry.total.kcal ?? 0).round()} kcal',
               style: theme.textTheme.labelMedium),
-        ]),
-      ),
-    );
-  }
-}
-
-class _PantryRow extends StatelessWidget {
-  const _PantryRow({required this.product, required this.onTap});
-
-  final Product product;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = context.scheme;
-    final kcal = product.nutriments?.kcal;
-    final meta = [
-      if ((product.brand ?? '').isNotEmpty) product.brand!,
-      if (kcal != null) '${kcal.round()} kcal / 100 g',
-    ].join(' · ');
-
-    return TokenCard(
-      radius: 14,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: InkWell(
-        onTap: onTap,
-        child: Row(children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(11)),
-            child: Icon(Icons.kitchen_rounded,
-                size: 18, color: scheme.onSecondaryContainer),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(product.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall),
-                if (meta.isNotEmpty)
-                  Text(meta,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant)),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
         ]),
       ),
     );

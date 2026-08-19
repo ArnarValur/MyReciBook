@@ -68,6 +68,10 @@ recipes and pantry.
 - [ ] Meal names editable in settings (the engine already reads them; no UI)
 - [ ] Log a recipe by servings — needs the nutrition track's per-serving
       calculator first
+- [ ] Manual recipe entry revamp (Arnar 2026-08-19): compose a recipe FROM
+      pantry items — pick a product per ingredient while writing, so the
+      recipe is calorie-computable from birth instead of linked afterwards.
+      Same calculator dependency; design turn is Arnar's (no mockup covers it).
 - [ ] "Copy to date" in the UI (`DiaryModel.copyMealFrom` exists, no door)
 - [ ] Nutrition detail for a day: the full nutrient table, not just the macros
 - [ ] Water, and a weight log, if Arnar ever wants them — not scheduled

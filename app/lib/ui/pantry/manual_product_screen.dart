@@ -60,11 +60,16 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
 
   bool _saving = false;
 
+  /// Selected tags, in the order they were picked. A list, not a set: the
+  /// order a person chose is the order the shelf should show.
+  final _tags = <String>[];
+
   @override
   void initState() {
     super.initState();
     final initial = widget.initial;
     if (initial == null) return;
+    _tags.addAll(initial.tags);
     _name.text = initial.name;
     _brand.text = initial.brand ?? '';
     if (initial.servings.isNotEmpty) {
@@ -97,6 +102,55 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
     final cleaned = raw.trim().replaceAll(',', '.');
     if (cleaned.isEmpty) return null;
     return double.tryParse(cleaned);
+  }
+
+  /// The pills on offer: the stock suggestions first, then anything selected
+  /// that isn't among them — an edited product's old custom tags, or one just
+  /// typed — appended sorted so they have a stable home.
+  List<String> get _tagOptions {
+    final extras = _tags.where((t) => !productTagSuggestions.contains(t))
+        .toList()
+      ..sort();
+    return [...productTagSuggestions, ...extras];
+  }
+
+  void _toggleTag(String tag) {
+    setState(() {
+      if (!_tags.remove(tag)) _tags.add(tag);
+    });
+  }
+
+  Future<void> _addOwnTag() async {
+    final controller = TextEditingController();
+    final raw = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add a tag'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(hintText: 'Wine, spices…'),
+          onSubmitted: (v) => Navigator.of(context).pop(v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    final tag = raw?.trim() ?? '';
+    if (tag.isEmpty) return;
+    setState(() {
+      if (!_tags.contains(tag)) _tags.add(tag);
+    });
   }
 
   Future<void> _save() async {
@@ -143,6 +197,7 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
             nutriments: Nutriments.fromMap(values),
             servings: servings,
             defaultServing: servings.isEmpty ? null : 0,
+            tags: List.of(_tags),
           )
         : initial.copyWith(
             name: name,
@@ -150,6 +205,7 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
             nutriments: Nutriments.fromMap(values),
             servings: servings,
             defaultServing: servings.isEmpty ? null : 0,
+            tags: List.of(_tags),
           );
 
     final saved = await context.read<PantryModel>().upsert(product);
@@ -233,6 +289,33 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
             ]),
             const SizedBox(height: 24),
 
+            const SectionLabel('Tags'),
+            const SizedBox(height: 6),
+            Text(
+              'Group your shelf — dairy, wine, whatever fits.',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final tag in _tagOptions)
+                  _TagPill(
+                    label: tag,
+                    selected: _tags.contains(tag),
+                    onTap: () => _toggleTag(tag),
+                  ),
+                ActionChip(
+                  avatar: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text('Add your own'),
+                  onPressed: _addOwnTag,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
             const SectionLabel('Per 100 g'),
             const SizedBox(height: 6),
             Text(
@@ -259,6 +342,38 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
               label: Text(editing ? 'Save changes' : 'Save to pantry'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A selectable pill — same look as the log sheet's serving picker, copied
+/// locally rather than shared across features while there are only two.
+class _TagPill extends StatelessWidget {
+  const _TagPill(
+      {required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? scheme.primary : scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: selected ? scheme.onPrimary : scheme.onSurface),
         ),
       ),
     );
