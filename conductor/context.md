@@ -15,7 +15,8 @@
    Play Store one-time purchase. Local files + Drive + Dropbox, no iCloud.
 2. Pay-once, hard paywall, stated fair-use AI cap in the listing from day one.
    Never "unlimited forever" — it cannot be clawed back.
-3. No backend beyond a thin extraction proxy. One JSON file (exportable in other formats) per recipe in the user's own storage. The proxy is stateless except the per-install cap counter,
-   and never stores recipe content.
+3. No backend beyond a thin extraction proxy. One JSON file (exportable in other formats) per recipe in the user's own storage. The proxy is stateless except the per-purchase cap counter
+   (keyed to a hash of the Play purchase token — agreed 2026-08-19, design in
+   docs/ai-cap-mechanics.md), and never stores recipe content.
 4. Build order: extract → save → list → open. Paywall, sync and polish come after
    the alpha ships.

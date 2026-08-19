@@ -46,21 +46,31 @@ recipes and pantry.
 - [x] `data/diary_store.dart` — LocalDiaryStore, one file per day, recents walk
 - [x] Open Food Facts `serving_size` + `serving_quantity` → the pack portion
 - [x] 51 tests, whole suite 578 green serially
+- [x] `SafDiaryStore` — diary lives at `<tree>/diary/`, beside recipes and pantry
+- [x] Day screen: day walker, totals card, four meal sections, row edit sheet
+      (change amount / move meal / remove) — `ui/diary/diary_tab.dart`
+- [x] Nav slot 3 is "Food": Diary + Pantry behind a segmented control
+      (Arnar 2026-08-19), behind `kDiaryEnabled`
+- [x] Add food: pantry search · Recent · Scan · Create food · Quick add
+- [x] Log sheet: portion chips + "Weigh it" + how many, live numbers, pinned CTA
+- [x] Create a food by hand — the no-barcode door, saves a normal product file;
+      doubles as the product edit screen (`ManualProductScreen(initial:)`)
+- [x] Daily goal in Settings → Diary: kcal + macro grams, all optional
+- [x] Gemini model → `gemini-3.5-flash-lite` for cost (Arnar 2026-08-19)
+- [x] On the S21, release build with keys, 2026-08-19
+- [x] 594 green serially
 
 ## Open
-- [ ] SAF diary store + the sync case (the sync layout confines to root *.json +
-      images/ — pantry needed its own case, diary needs one too)
-- [ ] Manual product entry — name, brand, portions, per-100 g numbers. The
-      no-barcode path. Was parked; the diary makes it load-bearing.
-- [ ] Daily goal in settings: kcal + macro grams. Without it the day total has
-      nothing to be measured against.
-- [ ] Meal names in settings, defaulting to MFP's four
-- [ ] DiaryModel + the day screen, the log sheet, the food picker
-      (Pantry search · Recent · Scan · Create food · Recipes)
-- [ ] Where the diary lives in the nav — Arnar's call, four slots are taken
+- [ ] The sync case: the layout confines to root *.json + images/ + pantry/, so
+      day files do not travel to Drive or Dropbox yet. Biggest gap.
+- [ ] Reach the create/edit-food screen from the pantry too — it only opens from
+      the diary's Add food today
+- [ ] Meal names editable in settings (the engine already reads them; no UI)
 - [ ] Log a recipe by servings — needs the nutrition track's per-serving
       calculator first
-- [ ] Product edit screen, so a wrong OFF portion can be corrected
+- [ ] "Copy to date" in the UI (`DiaryModel.copyMealFrom` exists, no door)
+- [ ] Nutrition detail for a day: the full nutrient table, not just the macros
+- [ ] Water, and a weight log, if Arnar ever wants them — not scheduled
 
 ## Not doing — say no out loud
 - Exercise, weight, water, steps. That is a fitness tracker, not a recipe app.

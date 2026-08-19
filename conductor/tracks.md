@@ -3,7 +3,7 @@
 
 ## Active
 - **nutrition** — pantry, linking and unit display shipped. Open: density table → per-serving → nutrition badge. → tracks/nutrition/plan.md
-- **diary** — MFP-style meal diary. Engine on branch `diary`: day files, servings, snapshot entries. Open: manual foods, goals, the screens, the nav slot. → tracks/diary/plan.md
+- **diary** — MFP-style meal diary on branch `diary`, on the S21: day files, servings, snapshot entries, the day screen, food picker, create-a-food, daily goal. Open: the sync case. → tracks/diary/plan.md
 - **mvp-build** — engine complete through sync. Billing seam open, unstarted. → tracks/mvp-build/plan.md
 
 ## Not open yet
