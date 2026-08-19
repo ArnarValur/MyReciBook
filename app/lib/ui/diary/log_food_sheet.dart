@@ -108,7 +108,13 @@ class _LogFoodSheetState extends State<_LogFoodSheet> {
     final logged = serving == null
         ? Nutriments()
         : per100.scaled(serving.grams / 100 * _quantity);
-    final insets = MediaQuery.of(context).viewInsets.bottom;
+    final media = MediaQuery.of(context);
+    final insets = media.viewInsets.bottom;
+    // A modal sheet gets no SafeArea of its own: without this the pinned CTA
+    // sits under the S21's gesture bar (Arnar, 2026-08-19). When the keyboard
+    // is up, viewPadding is already covered by viewInsets — take the larger,
+    // never both.
+    final systemBar = insets > 0 ? 0.0 : media.viewPadding.bottom;
 
     return Padding(
       padding: EdgeInsets.only(bottom: insets),
@@ -262,7 +268,7 @@ class _LogFoodSheetState extends State<_LogFoodSheet> {
             ],
           )),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            padding: EdgeInsets.fromLTRB(20, 8, 20, 20 + systemBar),
             child: SizedBox(
               width: double.infinity,
               child: FilledButton.icon(

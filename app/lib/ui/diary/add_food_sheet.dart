@@ -154,7 +154,10 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     final diary = context.watch<DiaryModel>();
     final matches = _matches(pantry.products);
     final searching = _query.trim().isNotEmpty;
-    final insets = MediaQuery.of(context).viewInsets.bottom;
+    final media = MediaQuery.of(context);
+    final insets = media.viewInsets.bottom;
+    // Same gesture-bar rule as the log sheet: the last row must clear it.
+    final systemBar = insets > 0 ? 0.0 : media.viewPadding.bottom;
 
     return Padding(
       padding: EdgeInsets.only(bottom: insets),
@@ -164,7 +167,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
         maxChildSize: 0.95,
         builder: (_, controller) => ListView(
           controller: controller,
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + systemBar),
           children: [
             Text('Add to ${widget.meal.toLowerCase()}',
                 style: theme.textTheme.headlineMedium
