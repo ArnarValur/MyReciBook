@@ -1,6 +1,20 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-19 — the meal diary, end to end, and the thread that doesn't hold yet
+- MFP-style diary shipped to the S21 at 0.6.0+3: day files, servings, tags,
+  snapshot entries, per-serving calculator, recipe logging, diary sync,
+  pantry-born manual recipes. 637 green serially. Built with parallel agents.
+- Arnar's catches drove three fixes mid-session: a duplicated product card
+  (extracted to one ProductRow), a bulk refresh that would silently revert
+  hand edits (user_edited flag + confirm), and free-text recipe entry that
+  didn't match how recipes read (now row editor with self-structuring lines).
+- Versioning is now step 4 of the checkpoint ceremony — Arnar asked for it.
+- UNFINISHED: the recipe→pantry→diary thread holds only for recipes born in
+  the new editor. Edit-recipe has no linking, recipes sit below the whole
+  pantry in Add food, and no end-to-end test covers the chain. Diagnosed in
+  pulse blockers; that is where the next session starts.
+
 ## 2026-08-19 — link import shipped end-to-end
 - Share a URL → recipe: JSON-LD free path + Gemini text fallback (ABC case),
   cover toggle from the site's photo, source.url in the file. On the S21,

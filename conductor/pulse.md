@@ -4,40 +4,47 @@
 > **Updated:** 2026-08-19 — checkpoint
 
 ## 📍 Now
-- Phase: build. Extraction gate passed.
-- Link import shipped: share a URL from any app → review. Free path reads the
-  page's recipe JSON-LD (no AI call); pages without it fall back to Gemini over
-  the page text (costs one AI call, same as a screenshot). Both proven on S21.
-- Link fetches ride NetBridge (platform HTTP stack) — dart:io's parser dies on
-  Fastly's chunked trailers; Cronet was rejected by AGP 9's namespace rule.
-- Cover toggle on link imports: site hero photo (JSON-LD image / og:image),
-  shrunk to 1080px JPEG, default on, user decides. Recipe files carry
-  source.type "link" + url; screenshot files unchanged byte-for-byte.
-- Unit display pill live; metric mode leaves tsp/tbsp as written (spoons are
-  universal — Arnar). Link-imported lines have no parsed qty/unit yet.
-- Pantry on main: barcode scan → Open Food Facts, pantry tab, per-100g macros,
-  ingredient → product linking. Grocery list merges with pantry hints.
-- On-device builds only via app/deploy-s21.sh; keyless builds name themselves.
-- Current S21 install: 2026-08-19 release build with keys, link import + cover
-  toggle + spoons fix live.
-- Test suite 527 green serially. Never audited.
-- Known gaps: dangling product link on delete · one barcode per photo · 46 older
-  products keep seven values until rescanned · no product edit screen ·
-  "not measured" prints as 0 · link-import failure copy is honest but final —
-  no in-review retry-as-screenshot shortcut.
-- Fair-use cap: nothing measured yet. Text fallback burns AI calls.
-- Extraction proxy built, not deployed.
+- Phase: build. Version 0.6.0+3, on the S21, release build with keys.
+- Meal diary shipped end to end: nav slot 3 is "Food" (Diary | Pantry behind a
+  segmented control), day walker, totals vs goal, four meals, add/edit/remove,
+  quick add, recents, copy-meal engine.
+- One JSON per logged day at <tree>/diary/<YYYY-MM-DD>.json. Diary now rides
+  the sync layout, so days travel to Drive/Dropbox like recipes and pantry.
+- Diary entries SNAPSHOT their nutrition — correcting a product later never
+  rewrites a day already lived. `ref` is for re-logging, never arithmetic.
+- Products gained servings (label + grams), tags, and a user_edited flag.
+  Bulk OFF refresh skips hand-edited products and confirms with counts; the
+  detail page has a per-product refresh that may override, and an edit door.
+- Per-serving calculator lands: deterministic ingredient parse at compute
+  time + a ~35-entry density table (Norwegian keys included). Nutrition card
+  on recipe detail, hidden until something is linked.
+- Manual entry is a row editor: lines structure themselves into qty/unit/item
+  chips (tappable to correct), a pantry Link chip per row, numbered steps.
+- Gemini model is gemini-3.5-flash-lite everywhere that bites — app, proxy
+  allowlist, spike harness, docs.
+- Test suite 637 green serially, plus proxy 10. Never audited.
 
 ## 🚀 Active tracks
-- nutrition — open: density table → per-serving → nutrition badge. Link-import
-  ingredient parse added as an open item. No remembered links, no inventory.
+- diary — the food-logging chain is on the phone. Open: the recipe→diary
+  thread does not hold for older recipes (see blockers).
+- nutrition — density table, calculator and badge landed via diary. Open:
+  grocery package-size math, label-photo fallback.
 - mvp-build — billing seam open, unstarted.
 
 ## ⚠️ Blockers
-- None.
+- The recipe→pantry→diary thread only holds for recipes born in the new row
+  editor with links tapped. Diagnosed 2026-08-19, unfixed:
+  · "Edit recipe" goes to ImportReviewScreen.edit, which has NO pantry
+    linking — so an imported recipe can never get links. It preserves
+    productRef on save (copyWith), but editing a line keeps the OLD
+    qty/unit/item, leaving a stale parse behind the new text.
+  · Recipes render BELOW the whole pantry list in Add food — a very long
+    scroll on a real shelf.
+  · Result Arnar saw: a recipe logged to Breakfast with no nutrition.
+- No end-to-end test covers recipe-with-links → picker → logged entry.
 
 ## 📌 Parked
-- Proxy deploy · durable cap store · serving rescale · step ↔ ingredient chips ·
-  label-photo fallback · manual product entry · meal-plan totals · multi-barcode
-  per image · orphan image cleanup · accessibility pass · Dropbox production
-  approval · Play signing key backup.
+- Proxy deploy · durable cap store · serving rescale · step ↔ ingredient chips
+  · label-photo fallback · meal names UI · copy-to-date UI · day nutrient
+  table · row reorder in manual entry · multi-barcode per image · orphan image
+  cleanup · accessibility pass · Dropbox production approval · Play key backup.

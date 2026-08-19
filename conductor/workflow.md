@@ -22,5 +22,9 @@
 1. Rewrite pulse from scratch. State only, cap 40 lines. No next queue.
 2. Append one relay entry, 6 lines max.
 3. Update the touched track plan and its line in tracks.
-4. Decision record only if proposed and approved in the same session.
-5. Stage all, show Arnar the file list, wait for his go, then commit on main.
+4. Bump the version when the session finished something a user would notice —
+   app/pubspec.yaml AND app/lib/version.dart together (version_sync_test pins
+   the pair). Minor for a feature, patch for fixes; build number always +1.
+   Say the new number in the relay entry. Arnar asked for this 2026-08-19.
+5. Decision record only if proposed and approved in the same session.
+6. Stage all, show Arnar the file list, wait for his go, then commit on main.
