@@ -59,12 +59,17 @@ recipes and pantry.
 - [x] Gemini model → `gemini-3.5-flash-lite` for cost (Arnar 2026-08-19)
 - [x] On the S21, release build with keys, 2026-08-19
 - [x] 594 green serially
+- [x] One ProductRow card for pantry list AND picker — photos in both
+- [x] user_edited flag: hand-saves marked, bulk refresh skips them + confirms
+      with counts; per-product OFF refresh on detail (may override, clears mark)
+- [x] Edit door from the pantry detail page (closes that open item)
+- [x] Product tags: 20 suggestions + custom on create/edit, filter pills on
+      the shelf; open list in the file, schema-additive
+- [x] 602 green serially, on the S21 2026-08-19
 
 ## Open
 - [ ] The sync case: the layout confines to root *.json + images/ + pantry/, so
       day files do not travel to Drive or Dropbox yet. Biggest gap.
-- [ ] Reach the create/edit-food screen from the pantry too — it only opens from
-      the diary's Add food today
 - [ ] Meal names editable in settings (the engine already reads them; no UI)
 - [ ] Log a recipe by servings — needs the nutrition track's per-serving
       calculator first
