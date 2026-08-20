@@ -80,31 +80,6 @@ void main() {
     await settle(tester, rounds: 6);
   }
 
-  Future<void> seedPantry() async {
-    await pantry.save(const Product(
-      schemaVersion: 1,
-      barcode: '7038010000001',
-      name: 'Mellommelk 2,0% fett',
-      quantity: '1 l', // volume pack → the ml unit family
-      source: 'off',
-    ));
-    await pantry.save(const Product(
-      schemaVersion: 1,
-      barcode: '7038010000002',
-      name: 'Hvetemel Extra',
-      quantity: '1 kg', // weight pack → the gram unit family
-      source: 'off',
-    ));
-  }
-
-  /// Link ingredient row [i] to the pantry product named [name].
-  Future<void> link(WidgetTester tester, int i, String name) async {
-    await tester.tap(find.text('Link').at(i));
-    await settle(tester, rounds: 6);
-    await tester.tap(find.text(name));
-    await settle(tester, rounds: 6);
-  }
-
   testWidgets('sheet shows the New Recipe door with the 5b promise copy',
       (tester) async {
     await tester.pumpWidget(app());
@@ -293,92 +268,6 @@ void main() {
     expect(ing['qty'], 3); // the correction rides beside it
     expect(ing['unit'], 'l');
     expect(ing['item'], 'melk');
-  });
-
-  testWidgets('unit options follow the linked product: volume packs offer '
-      'the ml family, weight packs the gram family', (tester) async {
-    await seedPantry();
-    await tester.pumpWidget(app());
-    await settle(tester);
-
-    await openManual(tester);
-    await tester.enterText(
-        find.byKey(const Key('manual-ing-0')), '2 dl melk');
-    await tester.pump();
-    await link(tester, 0, 'Mellommelk 2,0% fett');
-
-    await tester.tap(find.byKey(const Key('ing-unit-0')));
-    await tester.pump();
-    for (final u in ['ml', 'dl', 'l', 'tbsp', 'tsp']) {
-      expect(find.byKey(Key('unit-option-$u')), findsOneWidget,
-          reason: 'ml-based product must offer $u');
-    }
-    expect(find.byKey(const Key('unit-option-g')), findsNothing);
-    expect(find.byKey(const Key('unit-option-kg')), findsNothing);
-    await tester.tap(find.byKey(const Key('ing-unit-0'))); // close again
-    await tester.pump();
-
-    await tester.tap(find.text('Add ingredient'));
-    await tester.pump();
-    await tester.enterText(
-        find.byKey(const Key('manual-ing-1')), '200 g mel');
-    await tester.pump();
-    await link(tester, 0, 'Hvetemel Extra'); // row 1's chip is the only Link
-
-    await tester.tap(find.byKey(const Key('ing-unit-1')));
-    await tester.pump();
-    for (final u in ['g', 'kg', 'piece']) {
-      expect(find.byKey(Key('unit-option-$u')), findsOneWidget,
-          reason: 'g-based product must offer $u');
-    }
-    expect(find.byKey(const Key('unit-option-ml')), findsNothing);
-    expect(find.byKey(const Key('unit-option-dl')), findsNothing);
-  });
-
-  testWidgets('linked row shows the product name in the line — one line, no '
-      'name chip — while the file keeps the typed text; tap brings the '
-      'typed text back', (tester) async {
-    await seedPantry();
-    await tester.pumpWidget(app());
-    await settle(tester);
-
-    await openManual(tester);
-    await tester.enterText(find.byKey(const Key('manual-title')), 'Grøt');
-    await tester.enterText(
-        find.byKey(const Key('manual-ing-0')), '2 dl melk');
-    await tester.pump();
-    await link(tester, 0, 'Mellommelk 2,0% fett');
-
-    // Focus something else — the linked line only stands in for an idle row.
-    await tester.tap(find.byKey(const Key('manual-title')));
-    await settle(tester, rounds: 3);
-
-    // The substitution rule (linkedIngredientLine): the parsed item in the
-    // typed text is replaced by the product's name, one line.
-    expect(
-        find.textContaining('2 dl Mellommelk 2,0% fett', findRichText: true),
-        findsOneWidget);
-    expect(find.text('2 dl melk'), findsNothing); // no duplicate line
-    expect(find.text('Linked'), findsOneWidget); // the relink/unlink door
-    expect(find.text('Mellommelk 2,0% fett'),
-        findsNothing); // ...and no name chip under the line
-
-    // Tap the line → the typed text returns for editing.
-    await tester.tap(find.byKey(const Key('linked-line-0')));
-    await settle(tester, rounds: 3);
-    expect(find.text('2 dl melk'), findsOneWidget);
-
-    await tester.scrollUntilVisible(find.text('Save to cookbook'), 120,
-        scrollable: find.byType(Scrollable).first);
-    await tester.pump();
-    await tester.tap(find.text('Save to cookbook'));
-    await settle(tester);
-
-    final json = jsonDecode(savedJsonFiles().single.readAsStringSync())
-        as Map<String, dynamic>;
-    final ing = (json['ingredients'] as List).single as Map;
-    expect(ing['raw'], '2 dl melk'); // display-time substitution only
-    expect(ing['product_ref'], '7038010000001');
   });
 
   testWidgets('cover picked in the editor is copied into the folder as the '

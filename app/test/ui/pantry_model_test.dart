@@ -12,6 +12,7 @@ import 'package:http/testing.dart';
 import 'package:myrecibook/data/off_client.dart';
 import 'package:myrecibook/data/product_store.dart';
 import 'package:myrecibook/domain/product.dart';
+import 'package:myrecibook/domain/starter_foods.dart';
 import 'package:myrecibook/ui/pantry/pantry_model.dart';
 
 String _foundBody() => jsonEncode({
@@ -448,4 +449,121 @@ void main() {
     });
   });
 
+  group('auto-category from Open Food Facts', () {
+    String milkWithGroups(String barcode) => jsonEncode({
+          'code': barcode,
+          'status': 1,
+          'product': {
+            'product_name': 'Mellommelk 2,0% fett',
+            'brands': 'Tine',
+            'nutriments': {'energy-kcal_100g': 50},
+            'food_groups_tags': [
+              'en:milk-and-dairy-products',
+              'en:milk-and-yogurt'
+            ],
+            'categories_tags': ['en:dairies', 'en:milks'],
+          },
+        });
+
+    test('a scanned milk arrives already wearing Dairy', () async {
+      final model = PantryModel(store,
+          off: _off((_) async =>
+              http.Response(milkWithGroups('7038010071751'), 200)),
+          clock: () => DateTime.utc(2026, 8, 20));
+      await model.ensureLoaded();
+
+      final outcome = await model.addByBarcode('7038010071751');
+
+      expect((outcome as PantryAdded).product.tags, ['Dairy']);
+      final onDisk = jsonDecode(
+              File('${dir.path}/7038010071751.json').readAsStringSync())
+          as Map<String, dynamic>;
+      expect(onDisk['tags'], ['Dairy']);
+    });
+
+    test('a scan OFF has no classification for saves with no tag', () async {
+      final model = PantryModel(store,
+          off: _off((_) async => http.Response(_foundBody(), 200)),
+          clock: () => DateTime.utc(2026, 8, 20));
+      await model.ensureLoaded();
+
+      final outcome = await model.addByBarcode('7038010071751');
+
+      expect((outcome as PantryAdded).product.tags, isEmpty);
+    });
+
+    test('refreshAll fills the tag on an old untagged file', () async {
+      _seedOldFile(dir, '7038010071751');
+      final model = PantryModel(store,
+          off: _off((_) async =>
+              http.Response(milkWithGroups('7038010071751'), 200)),
+          wait: (_) async {});
+      await model.ensureLoaded();
+
+      final report = await model.refreshAll();
+
+      expect(report.updated, 1);
+      expect(model.byId('7038010071751')!.tags, ['Dairy']);
+    });
+
+    test('refreshAll never touches tags the user already chose', () async {
+      _seedOldFile(dir, '7038010071751');
+      final store2 = LocalPantryStore(dir);
+      final seeded = PantryModel(store2, off: _off((_) async => fail('no')));
+      await seeded.ensureLoaded();
+      // Tag it by hand THROUGH the store, then clear the edited flag so the
+      // sweep still visits the file — isolating the tag-fill rule itself.
+      await store2.save(seeded
+          .byId('7038010071751')!
+          .copyWith(tags: ['Breakfast'], userEdited: false));
+
+      final model = PantryModel(store,
+          off: _off((_) async =>
+              http.Response(milkWithGroups('7038010071751'), 200)),
+          wait: (_) async {});
+      await model.ensureLoaded();
+      await model.refreshAll();
+
+      expect(model.byId('7038010071751')!.tags, ['Breakfast']);
+    });
+  });
+
+  group('starter foods', () {
+    test('import adds files; a re-import skips everything', () async {
+      final model = PantryModel(store,
+          off: _off((_) async => fail('no lookup')),
+          clock: () => DateTime.utc(2026, 8, 20));
+      await model.ensureLoaded();
+      final pack = starterPackages[0];
+
+      final first = await model.addStarterFoods(pack.foods);
+      expect(first.added, pack.foods.length);
+      expect(first.skipped, 0);
+      expect(File('${dir.path}/carrot.json').existsSync(), isTrue);
+
+      final second = await model.addStarterFoods(pack.foods);
+      expect(second.added, 0);
+      expect(second.skipped, pack.foods.length);
+    });
+
+    test('an existing food is never overwritten by the import', () async {
+      final model = PantryModel(store,
+          off: _off((_) async => fail('no lookup')),
+          clock: () => DateTime.utc(2026, 8, 20));
+      await model.ensureLoaded();
+      // The user's own Carrot, hand-made before the import.
+      await model.upsert(Product(
+          schemaVersion: 1,
+          barcode: '',
+          name: 'Carrot',
+          source: 'manual',
+          nutriments: Nutriments(kcal: 99)));
+
+      await model.addStarterFoods(starterPackages[0].foods);
+
+      final carrot = model.byId('carrot')!;
+      expect(carrot.nutriments?.kcal, 99);
+      expect(carrot.userEdited, isTrue);
+    });
+  });
 }

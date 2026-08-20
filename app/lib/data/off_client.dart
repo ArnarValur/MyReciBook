@@ -64,6 +64,12 @@ class OffProduct {
   /// "1 serving" into real calories (diary.dart).
   final double? servingGrams; // serving_quantity
 
+  /// OFF's PNNS food groups, broad-first ("en:milk-and-dairy-products",
+  /// "en:cheese"), and the deep category taxonomy ("en:berries"). Both feed
+  /// categoryForOff (domain/product_categories.dart) — never shown raw.
+  final List<String> foodGroupsTags; // food_groups_tags
+  final List<String> categoriesTags; // categories_tags
+
   const OffProduct({
     required this.barcode,
     this.name,
@@ -72,6 +78,8 @@ class OffProduct {
     this.nutriments = const OffNutriments(),
     this.servingSize,
     this.servingGrams,
+    this.foodGroupsTags = const [],
+    this.categoriesTags = const [],
   });
 }
 
@@ -114,7 +122,8 @@ class OffClient {
 
   static const _base = 'https://world.openfoodfacts.org/api/v2/product';
   static const _fields =
-      'product_name,brands,quantity,nutriments,serving_size,serving_quantity';
+      'product_name,brands,quantity,nutriments,serving_size,serving_quantity,'
+      'food_groups_tags,categories_tags';
 
   /// OFF requires an identifying UA — anonymous clients get blocked.
   static const userAgent = 'MyReciBook/0.5 (arnarvalurjonsson@gmail.com)';
@@ -200,8 +209,18 @@ class OffClient {
         final g? when g > 0 => g,
         _ => null,
       },
+      foodGroupsTags: _stringList(p['food_groups_tags']),
+      categoriesTags: _stringList(p['categories_tags']),
     );
   }
+
+  /// Tolerant tag-list read: non-list, non-string and empty entries drop.
+  static List<String> _stringList(Object? v) => v is List
+      ? [
+          for (final e in v)
+            if (e is String && e.isNotEmpty) e
+        ]
+      : const [];
 
   /// OFF's nutrient name -> ours, for the ones the product file already
   /// names. Anything not listed keeps OFF's name with '-' as '_'.

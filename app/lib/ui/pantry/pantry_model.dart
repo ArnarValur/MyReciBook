@@ -13,6 +13,8 @@ import 'package:flutter/foundation.dart';
 import '../../data/off_client.dart';
 import '../../data/product_store.dart';
 import '../../domain/product.dart';
+import '../../domain/product_categories.dart';
+import '../../domain/starter_foods.dart';
 
 sealed class PantryAddOutcome {}
 
@@ -219,6 +221,7 @@ class PantryModel extends ChangeNotifier {
   /// not a reason to lose the product's name here.
   Product _merge(Product current, OffProduct off) {
     final name = off.name?.trim();
+    final autoTag = _categoryOf(off);
     return current.copyWith(
       name: (name == null || name.isEmpty) ? null : name,
       brand: off.brands,
@@ -230,6 +233,9 @@ class PantryModel extends ChangeNotifier {
       defaultServing: current.servings.isEmpty && _offServings(off).isNotEmpty
           ? 0
           : null,
+      // Same fill-only stance for the shelf category: tags the user chose
+      // stay theirs; only a bare product gets the auto one.
+      tags: current.tags.isEmpty && autoTag != null ? [autoTag] : null,
     );
   }
 
@@ -239,7 +245,8 @@ class PantryModel extends ChangeNotifier {
       a.brand == b.brand &&
       a.quantity == b.quantity &&
       mapEquals(a.nutriments?.values, b.nutriments?.values) &&
-      _sameServings(a.servings, b.servings);
+      _sameServings(a.servings, b.servings) &&
+      listEquals(a.tags, b.tags);
 
   static bool _sameServings(List<Serving> a, List<Serving> b) {
     if (a.length != b.length) return false;
@@ -348,8 +355,19 @@ class PantryModel extends ChangeNotifier {
       // The pack's own portion is what a label reader expects preselected;
       // 100 g is always still one tap away (Product.servingOptions).
       defaultServing: _offServings(off).isEmpty ? null : 0,
+      // Shelf category from OFF's classification — the first milk scanned
+      // arrives already wearing "Dairy". No match → no tag, never a guess.
+      tags: switch (_categoryOf(off)) {
+        final c? => [c],
+        null => const [],
+      },
     );
   }
+
+  static String? _categoryOf(OffProduct off) => categoryForOff(
+        categoriesTags: off.categoriesTags,
+        foodGroupsTags: off.foodGroupsTags,
+      );
 
   /// OFF's serving fields as a loggable portion. Only a portion with real
   /// grams survives: `serving_size` alone ("1 cup") cannot be costed against
@@ -364,6 +382,34 @@ class PantryModel extends ChangeNotifier {
         grams: grams,
       )
     ];
+  }
+
+  /// Tags only, userEdited untouched: picking a shelf category is shelving,
+  /// not a data correction — it must not shield the file from bulk refresh
+  /// (whose _merge already never overwrites a non-empty tag list).
+  Future<void> setTags(String id, List<String> tags) async {
+    final current = byId(id);
+    if (current == null) return;
+    await _persist(current.copyWith(tags: tags));
+  }
+
+  /// Import a starter package: every food lands as its own normal product
+  /// file. A food whose id is already on the shelf is SKIPPED, never
+  /// overwritten — the user's version of "Carrot" outranks the bundled one.
+  Future<({int added, int skipped})> addStarterFoods(
+      List<StarterFood> foods) async {
+    var added = 0, skipped = 0;
+    final stamp = _clock().toUtc().toIso8601String();
+    for (final food in foods) {
+      final product = food.toProduct(addedAt: stamp);
+      if (byId(product.id) != null) {
+        skipped++;
+        continue;
+      }
+      await _save(product);
+      added++;
+    }
+    return (added: added, skipped: skipped);
   }
 
   /// Create or overwrite a product the user typed in themselves — the

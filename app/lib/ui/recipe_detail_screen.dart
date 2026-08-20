@@ -21,6 +21,7 @@ import 'pantry/pantry_model.dart';
 import 'photo_sources.dart';
 import 'theme.dart';
 import 'units_model.dart';
+import 'widgets/product_picker_sheet.dart';
 import 'widgets/skin.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
@@ -605,125 +606,24 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               'Pantry tab first, then link them here.')));
       return;
     }
-    var query = '';
-    final choice = await showModalBottomSheet<Object>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheet) {
-          final q = query.toLowerCase();
-          final matches = [
-            for (final p in pantry.products)
-              if (q.isEmpty ||
-                  p.name.toLowerCase().contains(q) ||
-                  (p.brand ?? '').toLowerCase().contains(q))
-                p
-          ];
-          return SafeArea(
-            child: Padding(
-              // Keep the field above the keyboard while typing.
-              padding:
-                  EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(ctx).size.height * 0.7),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-                      child: SectionLabel(
-                          'Which product is "${ing.item ?? ing.raw}"?'),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
-                      child: TextField(
-                        autofocus: false,
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.search_rounded),
-                          hintText: 'Search your pantry',
-                          isDense: true,
-                        ),
-                        onChanged: (v) => setSheet(() => query = v),
-                      ),
-                    ),
-                    Flexible(
-                      child: ListView(
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                        children: [
-                          if (ing.productRef != null && q.isEmpty)
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.link_off_rounded,
-                                  color: ctx.scheme.error),
-                              title: const Text('Unlink'),
-                              onTap: () => Navigator.pop(ctx, false),
-                            ),
-                          if (matches.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Text('Nothing in your pantry matches '
-                                  '"$query".'),
-                            ),
-                          for (final p in matches)
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: _productLeading(
-                                  pantry.imageFileOf(p),
-                                  p.id == ing.productRef
-                                      ? ctx.scheme.primary
-                                      : ctx.scheme.onSurfaceVariant),
-                              title: Text(p.name,
-                                  style: TextStyle(
-                                      color: p.id == ing.productRef
-                                          ? ctx.scheme.primary
-                                          : null)),
-                              subtitle: (p.brand ?? '').isEmpty
-                                  ? null
-                                  : Text(p.brand!),
-                              onTap: () => Navigator.pop(ctx, p),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+    final pick = await showProductPickerSheet(
+      context,
+      pantry: pantry,
+      title: 'Which product is "${ing.item ?? ing.raw}"?',
+      allowUnlink: ing.productRef != null,
     );
-    if (!mounted || choice == null) return;
+    if (!mounted || pick == null) return;
     final next = [..._recipe.ingredients];
-    if (choice is Product) {
-      next[index] = ing.copyWith(productRef: choice.id);
+    final chosen = pick.product;
+    if (chosen != null) {
+      next[index] = ing.copyWith(productRef: chosen.id);
       await _persist(_recipe.copyWith(ingredients: next),
-          confirmation: 'Linked to ${choice.name}');
+          confirmation: 'Linked to ${chosen.name}');
     } else {
       next[index] = ing.copyWith(clearProductRef: true);
       await _persist(_recipe.copyWith(ingredients: next),
           confirmation: 'Unlinked');
     }
-  }
-
-  /// Picker rows show the user's own product photo when one exists —
-  /// their shelf, recognizable at a glance (Arnar's ask, 2026-08-17).
-  static Widget _productLeading(File? image, Color iconColor) {
-    if (image != null && image.existsSync()) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child:
-            Image.file(image, width: 36, height: 36, fit: BoxFit.cover, cacheWidth: 108),
-      );
-    }
-    return SizedBox(
-        width: 36,
-        height: 36,
-        child: Icon(Icons.kitchen_rounded, color: iconColor));
   }
 
   List<Widget> _ingredientRows(ThemeData theme, ColorScheme scheme) {

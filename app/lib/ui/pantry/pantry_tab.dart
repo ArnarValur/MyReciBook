@@ -15,13 +15,16 @@ import 'package:provider/provider.dart';
 
 import '../../domain/nutrient_display.dart';
 import '../../domain/product.dart';
+import '../../domain/product_categories.dart';
 import '../photo_sources.dart';
 import '../theme.dart';
+import '../widgets/category_chips.dart';
 import '../widgets/product_row.dart';
 import '../widgets/skin.dart';
 import 'barcode_scan_screen.dart';
 import 'manual_product_screen.dart';
 import 'pantry_model.dart';
+import 'starter_foods_screen.dart';
 
 class PantryTab extends StatefulWidget {
   const PantryTab({super.key, this.header});
@@ -145,19 +148,27 @@ class _PantryTabState extends State<PantryTab> {
     final scheme = context.scheme;
     final model = context.watch<PantryModel>();
 
-    // Sorted union of every product's tags. Recomputed each build so pills
-    // appear/vanish with the products; a filter whose tag was edited away
+    // Category chips with counts, recomputed each build so they appear and
+    // vanish with the products; a filter whose category was edited away
     // silently falls back to All instead of stranding an empty list.
-    final allTags = <String>{for (final p in model.products) ...p.tags}
-        .toList()
-      ..sort();
-    final activeTag = allTags.contains(_tagFilter) ? _tagFilter : null;
-    final visible = activeTag == null
-        ? model.products
-        : [
-            for (final p in model.products)
-              if (p.tags.contains(activeTag)) p
-          ];
+    // "Other" is render-only — untagged files stay untagged on disk.
+    final counts = categoryCounts(model.products);
+    final activeTag = counts.containsKey(_tagFilter) ? _tagFilter : null;
+    final visible = switch (activeTag) {
+      null => model.products,
+      otherCategory => [
+          for (final p in model.products)
+            if (p.tags.isEmpty) p
+        ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())),
+      final tag => [
+          for (final p in model.products)
+            if (p.tags.contains(tag)) p
+        ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())),
+    };
+    // The chips only earn their row once something is actually categorised —
+    // a shelf that is 100% "Other" gets no filter UI to click into nothing.
+    final showChips =
+        counts.keys.any((c) => c != otherCategory) && model.products.isNotEmpty;
 
     return Scaffold(
       body: SafeArea(
@@ -169,9 +180,28 @@ class _PantryTabState extends State<PantryTab> {
               widget.header!,
               const SizedBox(height: 16),
             ],
-            Text('Pantry',
-                style: theme.textTheme.headlineMedium
-                    ?.copyWith(fontSize: 26, letterSpacing: -0.4)),
+            // Title row — the bulk refresh lives up here compressed
+            // (Arnar, 2026-08-20): an icon and the count, not a banner.
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text('Pantry',
+                      style: theme.textTheme.headlineMedium
+                          ?.copyWith(fontSize: 26, letterSpacing: -0.4)),
+                ),
+                if (model.refreshableCount > 0)
+                  TextButton.icon(
+                    onPressed: model.busy || model.refreshing
+                        ? null
+                        : () => _refreshAll(model),
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: Text(model.refreshing
+                        ? '${model.refreshDone}/${model.refreshTotal}'
+                        : '${model.refreshableCount}'),
+                  ),
+              ],
+            ),
             const SizedBox(height: 2),
             Text(model.caption,
                 style: theme.textTheme.bodySmall
@@ -182,52 +212,35 @@ class _PantryTabState extends State<PantryTab> {
               icon: const Icon(Icons.barcode_reader),
               label: Text(model.busy ? 'Looking it up…' : 'Scan a product'),
             ),
+            const SizedBox(height: 6),
+            // The un-barcoded door: fresh produce and spices come built in
+            // (starter_foods.dart) — nothing edible needs a barcode.
+            TextButton.icon(
+              onPressed: () =>
+                  Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                      builder: (_) => const StarterFoodsScreen())),
+              icon: const Icon(Icons.eco_rounded, size: 18),
+              label: const Text('Add starter foods — veggies, fruit, spices'),
+            ),
             if (model.busy) ...[
               const SizedBox(height: 10),
               const LinearProgressIndicator(),
             ],
-            // Products saved by an older build hold only the seven label
-            // macros; this is the route to their vitamins and minerals
-            // without re-scanning every pack by hand.
-            if (model.refreshableCount > 0) ...[
-              const SizedBox(height: 6),
-              TextButton.icon(
-                onPressed:
-                    model.busy || model.refreshing ? null : () => _refreshAll(model),
-                icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: Text(model.refreshing
-                    ? 'Updating ${model.refreshDone} of ${model.refreshTotal}…'
-                    : 'Update nutrition data (${model.refreshableCount})'),
-              ),
-              if (model.refreshing) ...[
-                const SizedBox(height: 6),
-                LinearProgressIndicator(
-                    value: model.refreshTotal == 0
-                        ? null
-                        : model.refreshDone / model.refreshTotal),
-              ],
+            if (model.refreshing) ...[
+              const SizedBox(height: 10),
+              LinearProgressIndicator(
+                  value: model.refreshTotal == 0
+                      ? null
+                      : model.refreshDone / model.refreshTotal),
             ],
-            // Tag pills — only once something is tagged (dead-end rule: an
-            // untagged shelf gets no filter UI to click into nothing).
-            if (allTags.isNotEmpty) ...[
+            // Category chips — only once something is categorised (dead-end
+            // rule: an all-"Other" shelf gets no filter UI).
+            if (showChips) ...[
               const SizedBox(height: 14),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(children: [
-                  _FilterPill(
-                    label: 'All',
-                    selected: activeTag == null,
-                    onTap: () => setState(() => _tagFilter = null),
-                  ),
-                  for (final tag in allTags) ...[
-                    const SizedBox(width: 8),
-                    _FilterPill(
-                      label: tag,
-                      selected: activeTag == tag,
-                      onTap: () => setState(() => _tagFilter = tag),
-                    ),
-                  ],
-                ]),
+              CategoryChipRow(
+                counts: counts,
+                active: activeTag,
+                onSelect: (c) => setState(() => _tagFilter = c),
               ),
             ],
             const SizedBox(height: 20),
@@ -255,7 +268,29 @@ class _PantryTabState extends State<PantryTab> {
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
               ),
-            ] else
+            ] else if (activeTag == null && showChips)
+              // The grouped shelf: category sections, alphabetical inside —
+              // never the scan sequence. Headers only when there IS more
+              // than one way to shelve things (showChips).
+              for (final (category, members) in groupByCategory(model.products)) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8, top: 6),
+                  child: Text(
+                    '${categoryLabel(category)} · ${members.length}',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        letterSpacing: 0.3),
+                  ),
+                ),
+                for (final p in members)
+                  ProductRow(
+                    product: p,
+                    imageFile: model.imageFileOf(p),
+                    onTap: () => _openDetail(p),
+                    onLongPress: () => _removeSheet(model, p.id, p.name),
+                  ),
+              ]
+            else
               for (final p in visible)
                 ProductRow(
                   product: p,
@@ -273,38 +308,6 @@ class _PantryTabState extends State<PantryTab> {
               ),
             ],
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// The tag filter pill — same look as the manual screen's tag picker pill
-/// (primary fill when chosen), so "pick a tag" reads the same on both ends.
-class _FilterPill extends StatelessWidget {
-  const _FilterPill(
-      {required this.label, required this.selected, required this.onTap});
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.scheme;
-    return InkWell(
-      borderRadius: BorderRadius.circular(999),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? scheme.primary : scheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: selected ? scheme.onPrimary : scheme.onSurface),
         ),
       ),
     );
@@ -378,6 +381,49 @@ class _ProductDetailScreen extends StatelessWidget {
   Future<void> _edit(BuildContext context, Product product) =>
       Navigator.of(context).push<Product?>(MaterialPageRoute<Product?>(
           builder: (_) => ManualProductScreen(initial: product)));
+
+  /// Shelve it without the trip through Edit (Arnar, 2026-08-20: tagging
+  /// was buried). The canonical pills, toggled live — every tap saves.
+  /// Custom tags still live on the edit screen; this is the fast path.
+  Future<void> _tagSheet(BuildContext context, String productId) async {
+    final model = context.read<PantryModel>();
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          final tags = model.byId(productId)?.tags ?? const [];
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SectionLabel('Category'),
+                  const SizedBox(height: 10),
+                  Wrap(spacing: 8, runSpacing: 8, children: [
+                    for (final c in productCategories)
+                      _CategoryToggle(
+                        label: categoryLabel(c),
+                        selected: tags.contains(c),
+                        onTap: () async {
+                          final next = tags.contains(c)
+                              ? [for (final t in tags) if (t != c) t]
+                              : [...tags, c];
+                          await model.setTags(productId, next);
+                          setSheet(() {});
+                        },
+                      ),
+                  ]),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   /// Ask OFF about this ONE product again. Hand-edited files warn first —
   /// this is the only path that overwrites edits, and the confirm says
@@ -474,7 +520,23 @@ class _ProductDetailScreen extends StatelessWidget {
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: scheme.onSurfaceVariant)),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          // Shelving, right here on the product — one tap to the category
+          // pills, no trip through Edit (Arnar, 2026-08-20).
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            for (final tag in product.tags)
+              _CategoryToggle(
+                label: categoryLabel(tag),
+                selected: true,
+                onTap: () => _tagSheet(context, product.id),
+              ),
+            _CategoryToggle(
+              label: product.tags.isEmpty ? '+ Category' : '+',
+              selected: false,
+              onTap: () => _tagSheet(context, product.id),
+            ),
+          ]),
+          const SizedBox(height: 16),
           if (!hasAnything)
             Text(
               'No nutrition data on Open Food Facts for this one — the '
@@ -540,6 +602,38 @@ class _ProductDetailScreen extends StatelessWidget {
                 ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The category pill on the product page and its tag sheet — the chip-row
+/// look (category_chips.dart), toggling instead of filtering.
+class _CategoryToggle extends StatelessWidget {
+  const _CategoryToggle(
+      {required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? scheme.primary : scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: selected ? scheme.onPrimary : scheme.onSurface),
+        ),
       ),
     );
   }

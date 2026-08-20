@@ -37,7 +37,7 @@ import 'pantry/pantry_model.dart';
 import 'recipe_detail_screen.dart' show linkedIngredientLine;
 import 'theme.dart';
 import 'widgets/editor_fields.dart';
-import 'widgets/product_row.dart';
+import 'widgets/product_picker_sheet.dart';
 import 'widgets/skin.dart';
 
 class ManualEntryScreen extends StatefulWidget {
@@ -265,20 +265,15 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     await pantry.ensureLoaded();
     if (!mounted) return;
     final item = row.parsed.item;
-    final choice = await showModalBottomSheet<_LinkChoice>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      // Separate route: the model must be handed down explicitly, same as
-      // the add-food sheet does.
-      builder: (_) => ChangeNotifierProvider<PantryModel>.value(
-        value: pantry,
-        child: _LinkPickerSheet(
-            item: item.isEmpty ? row.text.text : item, allowUnlink: true),
-      ),
+    final name = item.isEmpty ? row.text.text : item;
+    final pick = await showProductPickerSheet(
+      context,
+      pantry: pantry,
+      title: 'Which product is "$name"?',
+      allowUnlink: true,
     );
-    if (choice == null || !mounted) return; // dismissed — no change
-    setState(() => row.productRef = choice.productId);
+    if (pick == null || !mounted) return; // dismissed — no change
+    setState(() => row.productRef = pick.product?.id);
   }
 
   /// "+ Add from pantry": pick first, then the row arrives pre-linked with
@@ -286,16 +281,12 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   Future<void> _addFromPantry(PantryModel pantry) async {
     await pantry.ensureLoaded();
     if (!mounted) return;
-    final choice = await showModalBottomSheet<_LinkChoice>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) => ChangeNotifierProvider<PantryModel>.value(
-        value: pantry,
-        child: const _LinkPickerSheet(item: null, allowUnlink: false),
-      ),
+    final pick = await showProductPickerSheet(
+      context,
+      pantry: pantry,
+      title: 'Add which product?',
     );
-    final id = choice?.productId;
+    final id = pick?.product?.id;
     if (id == null || !mounted) return;
     final product = pantry.byId(id);
     if (product == null) return;
@@ -996,88 +987,3 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   }
 }
 
-/// Sheet result: a product id, or null for the 'No product' unlink row —
-/// distinct from dismissing the sheet (no _LinkChoice at all, no change).
-class _LinkChoice {
-  const _LinkChoice(this.productId);
-  final String? productId;
-}
-
-class _LinkPickerSheet extends StatelessWidget {
-  const _LinkPickerSheet({required this.item, required this.allowUnlink});
-
-  /// The parsed item of the line being linked — names the question. Null
-  /// for "Add from pantry", where there is no line yet.
-  final String? item;
-
-  /// The 'No product' row only makes sense when a link can be removed.
-  final bool allowUnlink;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = context.scheme;
-    final pantry = context.watch<PantryModel>();
-    final media = MediaQuery.of(context);
-    final insets = media.viewInsets.bottom;
-    // Add-food's gesture-bar rule: the last row must clear the system bar.
-    final systemBar = insets > 0 ? 0.0 : media.viewPadding.bottom;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: insets),
-      child: DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        maxChildSize: 0.95,
-        builder: (_, controller) => ListView(
-          controller: controller,
-          padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + systemBar),
-          children: [
-            SectionLabel(
-                item == null ? 'Add which product?' : 'Which product is "$item"?'),
-            const SizedBox(height: 8),
-            if (allowUnlink) ...[
-              // Plain unlink row on top — always available, so a wrong link
-              // is one tap from gone.
-              InkWell(
-                key: const Key('link-no-product'),
-                onTap: () =>
-                    Navigator.of(context).pop(const _LinkChoice(null)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Row(children: [
-                    Icon(Icons.link_off_rounded,
-                        size: 20, color: scheme.onSurfaceVariant),
-                    const SizedBox(width: 12),
-                    Text('No product', style: theme.textTheme.bodyLarge),
-                  ]),
-                ),
-              ),
-              const SizedBox(height: 8),
-            ],
-            if (pantry.products.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                child: Text(
-                  'Your pantry is empty. Scan a barcode or create a food on '
-                  'the Pantry tab first, then link it here.',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
-                ),
-              )
-            else
-              // The same card the Pantry tab shows, photo included.
-              // ProductRow carries its own bottom gap, so no spacer here.
-              for (final product in pantry.products)
-                ProductRow(
-                  product: product,
-                  imageFile: pantry.imageFileOf(product),
-                  onTap: () =>
-                      Navigator.of(context).pop(_LinkChoice(product.id)),
-                ),
-          ],
-        ),
-      ),
-    );
-  }
-}

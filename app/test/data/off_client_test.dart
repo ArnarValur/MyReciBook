@@ -63,7 +63,7 @@ void main() {
 
     expect(seen.method, 'GET');
     expect(seen.url.toString(),
-        'https://world.openfoodfacts.org/api/v2/product/7038010013966.json?fields=product_name%2Cbrands%2Cquantity%2Cnutriments%2Cserving_size%2Cserving_quantity');
+        'https://world.openfoodfacts.org/api/v2/product/7038010013966.json?fields=product_name%2Cbrands%2Cquantity%2Cnutriments%2Cserving_size%2Cserving_quantity%2Cfood_groups_tags%2Ccategories_tags');
     // OFF requires an identifying UA on every request.
     expect(seen.headers['User-Agent'],
         'MyReciBook/0.5 (arnarvalurjonsson@gmail.com)');

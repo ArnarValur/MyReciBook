@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/product.dart';
+import '../../domain/product_categories.dart';
 import '../theme.dart';
 import '../widgets/skin.dart';
 import 'pantry_model.dart';
@@ -104,14 +105,15 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
     return double.tryParse(cleaned);
   }
 
-  /// The pills on offer: the stock suggestions first, then anything selected
-  /// that isn't among them — an edited product's old custom tags, or one just
-  /// typed — appended sorted so they have a stable home.
+  /// The pills on offer: the canonical shelf categories (the SAME list the
+  /// chips and auto-tagging use — one source, never a parallel copy), then
+  /// anything selected that isn't among them — an edited product's old
+  /// custom tags, or one just typed — appended sorted for a stable home.
   List<String> get _tagOptions {
-    final extras = _tags.where((t) => !productTagSuggestions.contains(t))
+    final extras = _tags.where((t) => !productCategories.contains(t))
         .toList()
       ..sort();
-    return [...productTagSuggestions, ...extras];
+    return [...productCategories, ...extras];
   }
 
   void _toggleTag(String tag) {

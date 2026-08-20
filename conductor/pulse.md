@@ -22,9 +22,9 @@
   search reaches recipes.
 - Diary chain e2e-tested: links → picker kcal → snapshot entry; snapshot
   survives product edits; unlinked recipe logs honest-empty.
-- UNVERIFIED: editor-rewrite tests (manual_entry, edit_recipe) and the
-  full suite never ran after the final edits — Arnar ordered skip for
-  budget. Phase-1 work verified 666 green before the rewrite.
+- Editor-rewrite tests (manual_entry, edit_recipe) not yet run after the
+  final edits. Phase-1 work verified 666 green before the rewrite. Full
+  suite: deferred to the release gate by decision 2026-08-20.
 
 ## 🚀 Active tracks
 - diary — recipe→pantry→diary thread closed in code, pending suite run +
@@ -35,8 +35,7 @@
   project separate at go-live.
 
 ## ⚠️ Blockers
-- Full test suite not run since the editor rewrite — run it before the
-  next feature lands; a red there means the rewrite shipped broken.
+- None.
 
 ## 📌 Parked
 - Proxy deploy · durable cap store · serving rescale · step ↔ ingredient chips

@@ -18,6 +18,20 @@
 - WARM, only when work enters that area: the track plan · adr/ · the feasibility report.
 - COLD, on request: pulse-archive/ · docs/.
 
+## Tests — Arnar's law, 2026-08-20, final
+- DEFAULT: no test runs at all. `flutter analyze` (sub-second, no compile)
+  is the verification after every change. Claude never fires flutter test
+  on his own — not per feature, not per phase, not "just the touched files".
+- Tests run ONLY when Arnar says "test it" — then: hard `timeout 120`,
+  output visible (never piped to tail), one invocation. A run that hits
+  the ceiling is broken — kill, fix, never wait.
+- Full suite: ONLY before a release ships to Play, Arnar's call, detached
+  to a log file.
+- Why: flutter test cold-compiles the app per invocation, has NO default
+  timeout, and a hung test sits silently forever — this burned whole
+  sessions for weeks. Green lines are for Claude's comfort, not Arnar's
+  time.
+
 ## Checkpoint
 1. Rewrite pulse from scratch. State only, cap 40 lines. No next queue.
 2. Append one relay entry, 6 lines max.

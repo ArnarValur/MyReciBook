@@ -51,6 +51,11 @@ class Product {
   /// unless set, so pre-photo files round-trip byte-identical.
   final String? image;
 
+  /// Search aliases — "Paprika" finds Bell Pepper. Starter foods ship with
+  /// Norwegian names here; hand-created products may carry any. Absent from
+  /// JSON when empty (schema-additive).
+  final List<String> synonyms;
+
   const Product({
     required this.schemaVersion,
     required this.barcode,
@@ -65,6 +70,7 @@ class Product {
     this.defaultServing,
     this.userEdited = false,
     this.tags = const [],
+    this.synonyms = const [],
   });
 
   /// Store identity and filename stem: the barcode when scanned, else a slug
@@ -89,6 +95,10 @@ class Product {
           for (final t in (json['tags'] as List? ?? []))
             if (t is String && t.trim().isNotEmpty) t
         ],
+        synonyms: [
+          for (final s in (json['synonyms'] as List? ?? []))
+            if (s is String && s.trim().isNotEmpty) s
+        ],
       );
 
   Map<String, dynamic> toJson() => {
@@ -106,6 +116,7 @@ class Product {
         if (defaultServing != null) 'default_serving': defaultServing,
         if (userEdited) 'user_edited': true,
         if (tags.isNotEmpty) 'tags': tags,
+        if (synonyms.isNotEmpty) 'synonyms': synonyms,
       };
 
   /// `image:` accepts a new ref, omission (keep), or [clearImage] (remove) —
@@ -121,6 +132,7 @@ class Product {
     int? defaultServing,
     bool? userEdited,
     List<String>? tags,
+    List<String>? synonyms,
   }) =>
       Product(
         schemaVersion: schemaVersion,
@@ -136,6 +148,7 @@ class Product {
         defaultServing: defaultServing ?? this.defaultServing,
         userEdited: userEdited ?? this.userEdited,
         tags: tags ?? this.tags,
+        synonyms: synonyms ?? this.synonyms,
       );
 
   /// What the log sheet offers: the product's own portions first, then the
@@ -301,31 +314,6 @@ class Nutriments {
         for (final key in extraKeys) key: values[key],
       };
 }
-
-/// Seed tags for the pantry's tag picker — the groups people actually shelve
-/// by, not a food-science taxonomy. Users add their own beside these.
-const List<String> productTagSuggestions = [
-  'Dairy',
-  'Cheese',
-  'Meat',
-  'Chicken',
-  'Fish',
-  'Produce',
-  'Fruit',
-  'Bread',
-  'Pasta & grains',
-  'Rice',
-  'Breakfast',
-  'Snacks',
-  'Sweets',
-  'Drinks',
-  'Coffee & tea',
-  'Wine & beer',
-  'Frozen',
-  'Canned',
-  'Spices',
-  'Sauces',
-];
 
 /// Filesystem-safe stem for manual products: lowercase, non-alphanumeric runs
 /// collapse to one '-'. Never empty — an all-symbol name still gets a valid

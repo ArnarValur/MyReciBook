@@ -15,6 +15,7 @@ import 'package:provider/provider.dart';
 
 import '../../domain/diary.dart';
 import '../../domain/product.dart';
+import '../../domain/product_categories.dart';
 import '../../domain/recipe.dart';
 import '../../domain/recipe_nutrition.dart';
 import '../library_model.dart';
@@ -22,6 +23,7 @@ import '../pantry/barcode_scan_screen.dart';
 import '../pantry/manual_product_screen.dart';
 import '../pantry/pantry_model.dart';
 import '../theme.dart';
+import '../widgets/category_chips.dart';
 import '../widgets/product_row.dart';
 import '../widgets/skin.dart';
 import 'diary_model.dart';
@@ -75,6 +77,10 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
   final _search = TextEditingController();
   String _query = '';
 
+  /// The pantry list narrowed to one category — the shelf's filter, in the
+  /// picker. Composes with search; Recent and recipes are never narrowed.
+  String? _categoryFilter;
+
   /// Collapsed size of the recipes strip: enough to recognise your own
   /// cooking, small enough that the pantry is never pushed off-screen.
   static const _recipePreview = 3;
@@ -86,16 +92,18 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     super.dispose();
   }
 
-  /// Everything on the shelf whose name or brand contains the query. No
-  /// fuzzy matching: the user's own pantry is small enough that substring
-  /// search is honest and instant.
+  /// Everything on the shelf whose name, brand or synonym contains the
+  /// query — synonyms are how "Paprika" finds Bell Pepper (starter foods
+  /// carry Norwegian names there). No fuzzy matching: the user's own pantry
+  /// is small enough that substring search is honest and instant.
   List<Product> _matches(List<Product> products) {
     final q = _query.trim().toLowerCase();
     if (q.isEmpty) return products;
     return [
       for (final p in products)
         if (p.name.toLowerCase().contains(q) ||
-            (p.brand ?? '').toLowerCase().contains(q))
+            (p.brand ?? '').toLowerCase().contains(q) ||
+            p.synonyms.any((s) => s.toLowerCase().contains(q)))
           p
     ];
   }
@@ -198,7 +206,22 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     } catch (_) {
       library = null;
     }
-    final matches = _matches(pantry.products);
+    // Chips mirror the shelf: counts over the WHOLE pantry (not the search
+    // hits, so the row doesn't jump while typing), gone when nothing is
+    // categorised. A stale selection falls back to All, never a dead end.
+    final counts = categoryCounts(pantry.products);
+    final showChips = counts.keys.any((c) => c != otherCategory) &&
+        pantry.products.isNotEmpty;
+    final activeCategory =
+        counts.containsKey(_categoryFilter) ? _categoryFilter : null;
+    final matches = [
+      for (final p in _matches(pantry.products))
+        if (activeCategory == null ||
+            (activeCategory == otherCategory
+                ? p.tags.isEmpty
+                : p.tags.contains(activeCategory)))
+          p
+    ];
     final recipeMatches = _recipeMatches(library?.recipes ?? const []);
     final productsById = {for (final p in pantry.products) p.id: p};
     final searching = _query.trim().isNotEmpty;
@@ -251,6 +274,14 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                   label: 'Quick add',
                   onTap: _quickAdd),
             ]),
+            if (showChips) ...[
+              const SizedBox(height: 12),
+              CategoryChipRow(
+                counts: counts,
+                active: activeCategory,
+                onSelect: (c) => setState(() => _categoryFilter = c),
+              ),
+            ],
             const SizedBox(height: 20),
             if (!searching && diary.recents.isNotEmpty) ...[
               const SectionLabel('Recent'),

@@ -91,6 +91,43 @@ recipes and pantry.
       product edits (test/ui/recipe_diary_chain_test.dart)
 - [x] Phase-1 work verified 666 green; post-rewrite suite NOT run
 
+## Pantry categories — phased, one phase per session go (Arnar 2026-08-20)
+Design: no Settings page; auto-tag is the engine, hand-tag on product edit
+is only the correction path. `user_edited` tags are never overwritten.
+- [x] **Phase 1 — auto-tag engine** (2026-08-20). 22 canonical categories
+      in domain/product_categories.dart; four-tier match: category
+      overrides (Berries/Chicken/Wine/Oils) → PNNS fine → PNNS broad →
+      broad category taxonomy (Nordic products often have EMPTY
+      food_groups_tags — live-verified on kjøttboller). Applied on scan
+      and refreshAll; fill-only, user tags never touched. 50 green on
+      touched files. Untagged renders as "Other" (phase 2, render-only).
+- [ ] **Phase 2 — shelf UI.** Refresh button compressed to an icon+count
+      on the "Pantry" title row. Freed space → horizontally scrolling chip
+      row: All + categories-with-counts that exist in the pantry. Tap chip
+      = filter to that category. "All" = grouped sections, alphabetical
+      inside, sticky small headers. Untagged renders under "Other".
+      NO icons/colours yet — Arnar owns that design and is researching it;
+      build the chips/rows plain, colour lands as its own later pass.
+- [x] **Phase 3 — picker drawer** (2026-08-20). Shared CategoryChipRow
+      (ui/widgets/category_chips.dart) under the Add-food search; filter
+      composes with search, counts stay whole-pantry, Recent/recipes
+      untouched. Shelf swapped to the same widget. Emoji on canonical
+      chips + shelf headers via categoryLabel — Android's system emoji
+      IS Noto Color Emoji, zero assets (Arnar's icon call).
+- [x] **Phase 4 — starter food packages** (2026-08-20, built; values
+      UNVERIFIED). domain/starter_foods.dart: Vegetables 65 · Fruits &
+      Berries 49 (doc's duplicate maracuja folded into Passion Fruit) ·
+      Spices & Herbs 35, transcribed from docs/gemini-categories.md with
+      Norwegian synonyms corrected. USDA carbs stored raw; toProduct
+      subtracts fiber → files land EU-convention. Import door on the
+      pantry tab → StarterFoodsScreen; existing foods skipped, never
+      overwritten. Products gained optional `synonyms` (schema-additive);
+      picker search matches them ("Paprika" finds Bell Pepper).
+      OPEN before this ships in a release: USDA verification agent run
+      over the table's values (Arnar owns the run; file is the one place
+      to patch). Packages stay produce/spices only — bakery/butcher/deli
+      rejected, those carry labels or barcodes (Arnar in the doc).
+
 ## Open — NEXT SESSION STARTS HERE
 - [ ] Run the full suite — never ran after the unified-editor rewrite
       (Arnar skipped it 2026-08-20 for session budget). Then S21 eyes on:

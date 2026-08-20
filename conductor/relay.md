@@ -7,7 +7,8 @@
   7-test diary-chain e2e. 0.7.0+4.
 - Editor agent burned heavy tokens busy-wait polling; killed, tail hand-finished.
 - Arnar decided: linked name replaces typed text at render only; skip final
-  test run for budget. UNFINISHED: full suite after the editor rewrite.
+  test run for budget. Full suite deferred to the release gate (2026-08-20).
+  Nothing pending.
 
 ## 2026-08-19 — the meal diary, end to end, and the thread that doesn't hold yet
 - MFP-style diary shipped to the S21 at 0.6.0+3: day files, servings, tags,
