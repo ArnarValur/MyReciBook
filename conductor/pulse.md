@@ -4,7 +4,7 @@
 > **Updated:** 2026-08-20 — checkpoint
 
 ## 📍 Now
-- Phase: build. Version 0.7.0+4, deploying to the S21.
+- Phase: build. Version 0.7.0+4 on the S21, release build with keys, eyes-verify pending.
 - Unified recipe editor: ONE row-editor screen for New and Edit ("New
   Recipe", not "Type it in yourself"). Edit pre-fills, saves in place,
   keeps the original-screenshot pane; ImportReviewScreen is import-review
