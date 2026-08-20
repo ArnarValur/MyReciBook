@@ -1,6 +1,14 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-20 — unified editor, five agents, budget burn
+- Five parallel agents: unified New/Edit row editor, inline units (popup dead),
+  product name on linked rows, servings/time/cover widgets, picker reorder,
+  7-test diary-chain e2e. 0.7.0+4.
+- Editor agent burned heavy tokens busy-wait polling; killed, tail hand-finished.
+- Arnar decided: linked name replaces typed text at render only; skip final
+  test run for budget. UNFINISHED: full suite after the editor rewrite.
+
 ## 2026-08-19 — the meal diary, end to end, and the thread that doesn't hold yet
 - MFP-style diary shipped to the S21 at 0.6.0+3: day files, servings, tags,
   snapshot entries, per-serving calculator, recipe logging, diary sync,

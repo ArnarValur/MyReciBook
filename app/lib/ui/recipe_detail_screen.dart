@@ -15,8 +15,8 @@ import '../domain/units.dart';
 import '../features.dart';
 import 'cook_mode_screen.dart';
 import 'grocery_model.dart';
-import 'import_review_screen.dart';
 import 'library_model.dart';
+import 'manual_entry_screen.dart';
 import 'pantry/pantry_model.dart';
 import 'photo_sources.dart';
 import 'theme.dart';
@@ -243,14 +243,15 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // D6 as amended: the saved recipe reopens in the review screen and saves
-  // back. If the recipe feeds the grocery list, its contributions re-sync
-  // (the list is a view, never a snapshot — §6.3); the receipt banner on the
-  // grocery tab carries the change notice.
+  // The saved recipe reopens in the row editor (one editor for New and Edit,
+  // 2026-08-20 — pantry links and parse corrections work there too) and
+  // saves back in place. If the recipe feeds the grocery list, its
+  // contributions re-sync (the list is a view, never a snapshot — §6.3);
+  // the receipt banner on the grocery tab carries the change notice.
   Future<void> _edit() async {
     final saved = await Navigator.of(context).push<Recipe>(MaterialPageRoute(
       builder: (_) =>
-          ImportReviewScreen.edit(recipe: _recipe, originals: _originals),
+          ManualEntryScreen(initial: _recipe, originals: _originals),
     ));
     if (saved == null || !mounted) return;
     setState(() => _recipe = saved);
@@ -785,37 +786,37 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text.rich(
-                      qtyBoldSpan(
-                        convertUnits(
-                            ing.raw, context.watch<UnitsModel>().system),
-                        theme.textTheme.bodyMedium?.copyWith(
-                          decoration:
-                              checked ? TextDecoration.lineThrough : null,
-                          color: checked ? scheme.onSurfaceVariant : null,
-                        ),
+                // Linked rows show the PRODUCT's name inline as the
+                // ingredient name — one line, no sub-line (Arnar 2026-08-20).
+                // Display-time substitution only: ing.raw in the file is
+                // never touched, so unlink and re-import stay clean. The
+                // trailing kitchen icon keeps the sub-line's linked marker.
+                child: Text.rich(
+                  TextSpan(children: [
+                    qtyBoldSpan(
+                      convertUnits(
+                          linked == null
+                              ? ing.raw
+                              : linkedIngredientLine(ing, linked.name),
+                          context.watch<UnitsModel>().system),
+                      theme.textTheme.bodyMedium?.copyWith(
+                        decoration:
+                            checked ? TextDecoration.lineThrough : null,
+                        color: checked ? scheme.onSurfaceVariant : null,
                       ),
                     ),
-                    if (linked != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Row(children: [
-                          Icon(Icons.kitchen_rounded,
-                              size: 12, color: scheme.primary),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(linked.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                    color: scheme.primary, fontSize: 11.5)),
-                          ),
-                        ]),
+                    if (linked != null) ...[
+                      const WidgetSpan(child: SizedBox(width: 5)),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Icon(Icons.kitchen_rounded,
+                            size: 12,
+                            color: checked
+                                ? scheme.onSurfaceVariant
+                                : scheme.primary),
                       ),
-                  ],
+                    ],
+                  ]),
                 ),
               ),
             ],
@@ -825,4 +826,38 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     }
     return rows;
   }
+}
+
+/// Display line for a pantry-linked ingredient row (Arnar 2026-08-20):
+/// qty + unit + the PRODUCT's name stand in for the typed ingredient name.
+/// Pure display-time substitution — never written back to the recipe file.
+///
+/// Rule, first match wins:
+/// 1. `item` parsed and found in `raw` (case-insensitive) — replace that
+///    first occurrence with the product name; the typed qty/unit/notes
+///    around it survive verbatim ("2 dl milk, warm" -> "2 dl Mellommelk
+///    2,0% fett, warm").
+/// 2. else `qty` parsed — rebuild as "qty[ unit] productName".
+/// 3. else — the product name alone.
+///
+/// The result feeds the same convertUnits + qtyBoldSpan pipeline as an
+/// unlinked row, so the units toggle keeps working on the shown qty/unit.
+/// Lives here for now; the manual-entry editor can lift the same rule.
+String linkedIngredientLine(Ingredient ing, String productName) {
+  final item = ing.item;
+  if (item != null && item.isNotEmpty) {
+    final at = ing.raw.toLowerCase().indexOf(item.toLowerCase());
+    if (at >= 0) {
+      return ing.raw.replaceRange(at, at + item.length, productName);
+    }
+  }
+  final qty = ing.qty;
+  if (qty != null) {
+    final q = qty == qty.round() ? '${qty.round()}' : '$qty';
+    final unit = ing.unit;
+    return unit == null || unit.isEmpty
+        ? '$q $productName'
+        : '$q $unit $productName';
+  }
+  return productName;
 }

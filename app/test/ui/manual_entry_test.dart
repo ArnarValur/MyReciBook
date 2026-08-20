@@ -1,14 +1,19 @@
-// Manual entry (5b promise): sheet door → form → saved file shape. The file
-// must be source.type "manual", no extraction, no images — and round-trip
-// through the store scan back into the cookbook grid.
+// The row editor's create mode ("New Recipe", the 5b promise): sheet door →
+// row editor → saved file shape. The file must be source.type "manual", no
+// extraction, no images — and round-trip through the store scan back into
+// the cookbook grid. Structured metadata (stepper/duration/cover), inline
+// parse corrections, and pantry-linked rows are covered here too.
 
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
+import 'package:myrecibook/data/product_store.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
+import 'package:myrecibook/domain/product.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
 
@@ -32,11 +37,13 @@ class ExplodingExtractor implements Extractor {
 void main() {
   late Directory tmp;
   late LocalFolderStore store;
+  late LocalPantryStore pantry;
   late ExplodingExtractor extractor;
 
   setUp(() async {
     tmp = await Directory.systemTemp.createTemp('myrecibook_manual');
     store = LocalFolderStore(Directory('${tmp.path}/recipes'));
+    pantry = LocalPantryStore(Directory('${tmp.path}/pantry'));
     extractor = ExplodingExtractor();
   });
 
@@ -44,8 +51,11 @@ void main() {
     await tmp.delete(recursive: true);
   });
 
-  Widget app() => buildApp(
-      store: store, extractor: extractor, picker: () async => const []);
+  Widget app({List<File> Function()? gallery}) => buildApp(
+      store: store,
+      extractor: extractor,
+      pantry: pantry,
+      picker: () async => gallery == null ? const [] : gallery());
 
   Future<void> settle(WidgetTester tester, {int rounds = 32}) async {
     for (var i = 0; i < rounds; i++) {
@@ -70,28 +80,63 @@ void main() {
     await settle(tester, rounds: 6);
   }
 
-  testWidgets('sheet shows the manual door with the 5b promise copy',
+  Future<void> seedPantry() async {
+    await pantry.save(const Product(
+      schemaVersion: 1,
+      barcode: '7038010000001',
+      name: 'Mellommelk 2,0% fett',
+      quantity: '1 l', // volume pack → the ml unit family
+      source: 'off',
+    ));
+    await pantry.save(const Product(
+      schemaVersion: 1,
+      barcode: '7038010000002',
+      name: 'Hvetemel Extra',
+      quantity: '1 kg', // weight pack → the gram unit family
+      source: 'off',
+    ));
+  }
+
+  /// Link ingredient row [i] to the pantry product named [name].
+  Future<void> link(WidgetTester tester, int i, String name) async {
+    await tester.tap(find.text('Link').at(i));
+    await settle(tester, rounds: 6);
+    await tester.tap(find.text(name));
+    await settle(tester, rounds: 6);
+  }
+
+  testWidgets('sheet shows the New Recipe door with the 5b promise copy',
       (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
     await tester.tap(find.byType(FloatingActionButton));
     await settle(tester, rounds: 6);
 
-    expect(find.text('Type it in yourself'), findsOneWidget);
+    expect(find.text('New Recipe'), findsOneWidget);
     expect(find.text('no AI, no cap — always unlimited'), findsOneWidget);
   });
 
-  testWidgets('typed recipe saves as source.type manual, no extraction, '
-      'no images, and lands in the cookbook', (tester) async {
+  testWidgets('typed recipe saves as source.type manual with structured '
+      'servings/times, no extraction, no images, and lands in the cookbook',
+      (tester) async {
     await tester.pumpWidget(app());
     await settle(tester);
 
     await openManual(tester);
-    expect(find.text('Type it in yourself'), findsOneWidget);
+    expect(find.text('New Recipe'), findsOneWidget);
 
     await tester.enterText(
         find.byKey(const Key('manual-title')), "Nan's bread");
-    await tester.enterText(find.byKey(const Key('manual-servings')), ' 6 loaves ');
+    // Stepper starts at 4 — two taps up says "6 servings", and exactly that
+    // label is what the file's raw stores.
+    await tester.tap(find.byKey(const Key('servings-plus')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('servings-plus')));
+    await tester.pump();
+    expect(find.text('6 servings'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('duration-value')), '25');
+    await tester.pump();
+
     // Row editor (2026-08-19): one field per ingredient, Enter grows the
     // list; enterText + a manual add stand in for the Enter key here.
     await tester.enterText(
@@ -104,7 +149,8 @@ void main() {
     await tester.pump();
 
     // Each typed row structures itself: parse chips + an unlinked 'Link'
-    // chip (empty pantry in this seam).
+    // chip (empty pantry in this seam... the products exist but nothing is
+    // linked, so both rows still say Link).
     expect(find.text('cup'), findsOneWidget);
     expect(find.text('flour'), findsOneWidget);
     expect(find.text('tsp'), findsOneWidget);
@@ -144,7 +190,12 @@ void main() {
     expect((json['source'] as Map)['original_images'], isNull);
     expect(json['extraction'], isNull);
     expect(json['title'], "Nan's bread");
-    expect((json['servings'] as Map)['raw'], '6 loaves');
+    // Structured from the first save (editor_fields): amount feeds the
+    // nutrition math, raw is exactly the label the stepper displayed.
+    expect((json['servings'] as Map)['amount'], 6);
+    expect((json['servings'] as Map)['raw'], '6 servings');
+    expect((json['times'] as Map)['total_min'], 25);
+    expect((json['times'] as Map)['raw'], '25 min');
     expect([for (final i in json['ingredients'] as List) i['raw']],
         ['2 cups flour', '1 tsp salt']); // rows trimmed, empty rows dropped
     // Born parsed (2026-08-19): the deterministic parse is stored at save,
@@ -183,6 +234,181 @@ void main() {
 
     expect(find.text('empty title'), findsOneWidget);
     expect(savedJsonFiles(), isEmpty);
-    expect(find.text('Type it in yourself'), findsOneWidget); // did not pop
+    expect(find.text('New Recipe'), findsOneWidget); // did not pop
+  });
+
+  testWidgets('inline chips: qty edits in place, the unit chip opens the '
+      'inline option row — no dialog — and the correction is what saves',
+      (tester) async {
+    await tester.pumpWidget(app());
+    await settle(tester);
+
+    await openManual(tester);
+    await tester.enterText(find.byKey(const Key('manual-title')), 'Chips');
+    await tester.enterText(
+        find.byKey(const Key('manual-ing-0')), '2 dl melk');
+    await tester.pump();
+
+    // Qty chip → tiny in-place field. Commit via the keyboard's done.
+    await tester.tap(find.byKey(const Key('ing-qty-0')));
+    await tester.pump();
+    expect(find.byKey(const Key('qty-edit-0')), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing); // the popup is dead
+    await tester.enterText(find.byKey(const Key('qty-edit-0')), '3');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    expect(find.byKey(const Key('qty-edit-0')), findsNothing);
+    expect(
+        find.descendant(
+            of: find.byKey(const Key('ing-qty-0')),
+            matching: find.text('3')),
+        findsOneWidget);
+
+    // Unit chip → inline option row (unlinked: the full common set).
+    await tester.tap(find.byKey(const Key('ing-unit-0')));
+    await tester.pump();
+    for (final u in ['g', 'kg', 'ml', 'dl', 'l', 'tsp', 'tbsp', 'cup']) {
+      expect(find.byKey(Key('unit-option-$u')), findsOneWidget);
+    }
+    expect(find.byKey(const Key('unit-option-none')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('unit-option-l')));
+    await tester.pump();
+    expect(find.byKey(const Key('unit-option-l')), findsNothing); // closed
+    expect(
+        find.descendant(
+            of: find.byKey(const Key('ing-unit-0')),
+            matching: find.text('l')),
+        findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Save to cookbook'), 120,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pump();
+    await tester.tap(find.text('Save to cookbook'));
+    await settle(tester);
+
+    final json = jsonDecode(savedJsonFiles().single.readAsStringSync())
+        as Map<String, dynamic>;
+    final ing = (json['ingredients'] as List).single as Map;
+    expect(ing['raw'], '2 dl melk'); // the typed line is never rewritten
+    expect(ing['qty'], 3); // the correction rides beside it
+    expect(ing['unit'], 'l');
+    expect(ing['item'], 'melk');
+  });
+
+  testWidgets('unit options follow the linked product: volume packs offer '
+      'the ml family, weight packs the gram family', (tester) async {
+    await seedPantry();
+    await tester.pumpWidget(app());
+    await settle(tester);
+
+    await openManual(tester);
+    await tester.enterText(
+        find.byKey(const Key('manual-ing-0')), '2 dl melk');
+    await tester.pump();
+    await link(tester, 0, 'Mellommelk 2,0% fett');
+
+    await tester.tap(find.byKey(const Key('ing-unit-0')));
+    await tester.pump();
+    for (final u in ['ml', 'dl', 'l', 'tbsp', 'tsp']) {
+      expect(find.byKey(Key('unit-option-$u')), findsOneWidget,
+          reason: 'ml-based product must offer $u');
+    }
+    expect(find.byKey(const Key('unit-option-g')), findsNothing);
+    expect(find.byKey(const Key('unit-option-kg')), findsNothing);
+    await tester.tap(find.byKey(const Key('ing-unit-0'))); // close again
+    await tester.pump();
+
+    await tester.tap(find.text('Add ingredient'));
+    await tester.pump();
+    await tester.enterText(
+        find.byKey(const Key('manual-ing-1')), '200 g mel');
+    await tester.pump();
+    await link(tester, 0, 'Hvetemel Extra'); // row 1's chip is the only Link
+
+    await tester.tap(find.byKey(const Key('ing-unit-1')));
+    await tester.pump();
+    for (final u in ['g', 'kg', 'piece']) {
+      expect(find.byKey(Key('unit-option-$u')), findsOneWidget,
+          reason: 'g-based product must offer $u');
+    }
+    expect(find.byKey(const Key('unit-option-ml')), findsNothing);
+    expect(find.byKey(const Key('unit-option-dl')), findsNothing);
+  });
+
+  testWidgets('linked row shows the product name in the line — one line, no '
+      'name chip — while the file keeps the typed text; tap brings the '
+      'typed text back', (tester) async {
+    await seedPantry();
+    await tester.pumpWidget(app());
+    await settle(tester);
+
+    await openManual(tester);
+    await tester.enterText(find.byKey(const Key('manual-title')), 'Grøt');
+    await tester.enterText(
+        find.byKey(const Key('manual-ing-0')), '2 dl melk');
+    await tester.pump();
+    await link(tester, 0, 'Mellommelk 2,0% fett');
+
+    // Focus something else — the linked line only stands in for an idle row.
+    await tester.tap(find.byKey(const Key('manual-title')));
+    await settle(tester, rounds: 3);
+
+    // The substitution rule (linkedIngredientLine): the parsed item in the
+    // typed text is replaced by the product's name, one line.
+    expect(
+        find.textContaining('2 dl Mellommelk 2,0% fett', findRichText: true),
+        findsOneWidget);
+    expect(find.text('2 dl melk'), findsNothing); // no duplicate line
+    expect(find.text('Linked'), findsOneWidget); // the relink/unlink door
+    expect(find.text('Mellommelk 2,0% fett'),
+        findsNothing); // ...and no name chip under the line
+
+    // Tap the line → the typed text returns for editing.
+    await tester.tap(find.byKey(const Key('linked-line-0')));
+    await settle(tester, rounds: 3);
+    expect(find.text('2 dl melk'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Save to cookbook'), 120,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pump();
+    await tester.tap(find.text('Save to cookbook'));
+    await settle(tester);
+
+    final json = jsonDecode(savedJsonFiles().single.readAsStringSync())
+        as Map<String, dynamic>;
+    final ing = (json['ingredients'] as List).single as Map;
+    expect(ing['raw'], '2 dl melk'); // display-time substitution only
+    expect(ing['product_ref'], '7038010000001');
+  });
+
+  testWidgets('cover picked in the editor is copied into the folder as the '
+      'saved recipe\'s cover', (tester) async {
+    final photo = File('${tmp.path}/pick.jpg')
+      ..writeAsBytesSync(img.encodeJpg(img.Image(width: 4, height: 4)));
+    await tester.pumpWidget(app(gallery: () => [photo]));
+    await settle(tester);
+
+    await openManual(tester);
+    expect(find.text('Add a cover photo'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('cover-field')));
+    await settle(tester, rounds: 6);
+    await tester.tap(find.byKey(const Key('cover-field-gallery')));
+    await settle(tester, rounds: 6);
+    expect(find.text('Add a cover photo'), findsNothing); // slot filled
+
+    await tester.enterText(find.byKey(const Key('manual-title')), 'Kake');
+    await tester.enterText(find.byKey(const Key('manual-ing-0')), '2 egg');
+    await tester.pump();
+    await tester.scrollUntilVisible(find.text('Save to cookbook'), 120,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pump();
+    await tester.tap(find.text('Save to cookbook'));
+    await settle(tester);
+
+    final json = jsonDecode(savedJsonFiles().single.readAsStringSync())
+        as Map<String, dynamic>;
+    final cover = json['cover'] as String;
+    expect(cover, 'images/${json['id']}-cover.jpg');
+    expect(File('${store.root.path}/$cover').existsSync(), isTrue);
   });
 }

@@ -76,17 +76,26 @@ recipes and pantry.
       composing; recipes born with qty/unit/item/productRef
 - [x] Model swap finished everywhere it bites (proxy allowlist!, spike, docs)
 - [x] 637 green serially + proxy 10, on the S21 2026-08-19
+- [x] Unified recipe editor 2026-08-20: one row-editor screen for New+Edit
+      ("New Recipe"), edit pre-fills + saves in place + keeps screenshot
+      pane, re-parse on line edit, ImportReviewScreen import-only
+- [x] Inline unit select from linked product's base unit; "Fix the
+      reading" popup removed
+- [x] Linked rows render the product name inline (linkedIngredientLine),
+      typed text preserved in the file — editor and detail
+- [x] Servings stepper · min/hr duration · cover picker w/ camera
+      (ui/widgets/editor_fields.dart); manual recipes store structured
+      servings/time
+- [x] Add food: Recent → recipes strip → pantry; search reaches recipes
+- [x] 7-test e2e: links → picker kcal → snapshot entry; snapshot survives
+      product edits (test/ui/recipe_diary_chain_test.dart)
+- [x] Phase-1 work verified 666 green; post-rewrite suite NOT run
 
 ## Open — NEXT SESSION STARTS HERE
-- [ ] The thread does not hold for older recipes. Three parts:
-      1. "Edit recipe" (ImportReviewScreen.edit) has no pantry linking, so an
-         imported or screenshot recipe can never get productRefs. It keeps
-         existing refs on save, but an edited line keeps its OLD qty/unit/item
-         — stale parse behind new text. Re-parse on edit + add link chips.
-      2. Add food renders recipes BELOW the entire pantry list — put the
-         recipes section above the pantry, or make the search reach them.
-      3. No end-to-end test: recipe with linked ingredients → picker shows
-         kcal → logged entry carries nutrition. Write it first, it fails.
+- [ ] Run the full suite — never ran after the unified-editor rewrite
+      (Arnar skipped it 2026-08-20 for session budget). Then S21 eyes on:
+      edit an imported recipe, link a line, log it, see numbers.
+- [ ] Picker collapse chip ("Show all N") untested with >3 recipes
 - [ ] Row reorder (drag) in the manual entry editor
 - [ ] Density table is ~30 staples — a volume line that misses it stays
       uncovered by design; grow the table from real recipes, not guesses

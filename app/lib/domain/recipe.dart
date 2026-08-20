@@ -148,9 +148,14 @@ class Recipe {
 
   /// `cover:` accepts a new ref, omission (keep), or [clearCover] (remove) —
   /// a plain `cover: null` can't say "remove" and "leave alone" apart.
+  /// `times:` follows the same tri-state via [clearTimes] (the row editor's
+  /// duration field can be emptied on purpose).
   Recipe copyWith({
     String? title,
     String? notes,
+    Servings? servings,
+    RecipeTimes? times,
+    bool clearTimes = false,
     List<Ingredient>? ingredients,
     List<RecipeStep>? steps,
     List<String>? tags,
@@ -164,8 +169,8 @@ class Recipe {
         title: title ?? this.title,
         lang: lang,
         source: source,
-        servings: servings,
-        times: times,
+        servings: servings ?? this.servings,
+        times: clearTimes ? null : (times ?? this.times),
         ingredients: ingredients ?? this.ingredients,
         steps: steps ?? this.steps,
         tags: tags ?? this.tags,

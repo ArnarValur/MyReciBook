@@ -8,7 +8,9 @@
 // - 3a draws no manual-entry door — the promise lives on 4c/4d/5b ("Typing
 //   recipes in yourself is always unlimited"). Placed as a third row in the
 //   sheet's own language (camera-row pattern, edit icon); copy drafted here:
-//   "Type it in yourself / no AI, no cap — always unlimited".
+//   "New Recipe / no AI, no cap — always unlimited" (renamed from "Type it
+//   in yourself" 2026-08-20, when the row editor became the one screen for
+//   creating AND editing).
 // - screenshots-tile caption redrafted ("one recipe or a whole pile — you
 //   decide next"): the old "pick every shot of one recipe" line became untrue
 //   the moment batch landed.
@@ -199,7 +201,7 @@ class _ImportSheetState extends State<_ImportSheet> {
           scheme,
           key: const Key('import-manual-tile'),
           icon: Icons.edit_rounded,
-          title: 'Type it in yourself',
+          title: 'New Recipe',
           caption: 'no AI, no cap — always unlimited',
           onTap: () => Navigator.pop(context, const ImportManual()),
         ),

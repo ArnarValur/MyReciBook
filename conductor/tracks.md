@@ -3,7 +3,7 @@
 
 ## Active
 - **nutrition** — pantry, linking, units shipped; density table, per-serving calculator and nutrition badge landed via the diary track 2026-08-19. Open: grocery package-size math, label-photo fallback. → tracks/nutrition/plan.md
-- **diary** — full MFP food-logging chain on branch `diary`, on the S21: diary + servings + tags + per-serving calculator + recipe logging + diary sync + pantry-born manual recipes. → tracks/diary/plan.md
+- **diary** — unified New/Edit row editor, inline units, picker reorder, diary-chain e2e shipped 2026-08-20; the recipe→pantry→diary thread closed in code. Open: post-rewrite suite run + S21 verify. → tracks/diary/plan.md
 - **mvp-build** — engine complete through sync. Billing seam open, unstarted. → tracks/mvp-build/plan.md
 
 ## Not open yet

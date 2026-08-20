@@ -1,17 +1,25 @@
-// Manual entry — the 5b promise "Typing recipes in yourself is always
-// unlimited": no AI, no cap, no images. Builds a source.type "manual" recipe
-// file (schema-additive — old files unaffected) and saves through the same
-// LibraryModel seam as imports, so grocery/storage integration rides along.
+// The recipe row editor — ONE screen for creating ("New Recipe", the 5b
+// promise: no AI, no cap) and editing (every recipe, imported or typed).
 //
-// Row editor (Arnar's turn, 2026-08-19, replacing the free-text v1): one row
-// per ingredient that structures itself as you type — the deterministic
-// parse shows as chips under the line, tappable to correct, with a pantry
-// link chip per row — and numbered step rows. A typed-in recipe is
-// calorie-computable from its first save. Manual save only; this rule never
-// rewrites imported files.
+// Row editor (Arnar's turn, 2026-08-19): one row per ingredient that
+// structures itself as you type — the deterministic parse shows as chips
+// under the line, inline-editable (qty and item swap to tiny fields, the
+// unit chip opens an inline option row), with a pantry link chip per row —
+// and numbered step rows.
+//
+// Edit mode (2026-08-20, replacing ImportReviewScreen.edit): the saved
+// recipe opens here with its stored parse and links intact, and saves back
+// over the same file — envelope (id, source, extraction stamps, notes,
+// favorite) untouched. When a line's text changes, the parse re-runs so
+// qty/unit/item always match the visible text; the pantry link survives the
+// rewording. Linked rows display the product's name via the detail screen's
+// linkedIngredientLine rule — display-time substitution only, the file keeps
+// the typed text.
 //
 // DEVIATION (for Arnar to ratify on the S21): no hi-fi mockup exists for
 // this screen — the row design was picked from ASCII options 2026-08-19.
+
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,24 +27,37 @@ import 'package:uuid/uuid.dart';
 
 import '../data/saf_store.dart';
 import '../domain/ingredient_parse.dart';
+import '../domain/product.dart';
 import '../domain/recipe.dart';
+import '../domain/recipe_nutrition.dart';
 import '../domain/validate.dart';
 import '../features.dart';
 import 'library_model.dart';
 import 'pantry/pantry_model.dart';
+import 'recipe_detail_screen.dart' show linkedIngredientLine;
 import 'theme.dart';
+import 'widgets/editor_fields.dart';
 import 'widgets/product_row.dart';
 import 'widgets/skin.dart';
 
 class ManualEntryScreen extends StatefulWidget {
-  const ManualEntryScreen({super.key});
+  const ManualEntryScreen({super.key, this.initial, this.originals = const []});
+
+  /// Edit mode when set: pre-fills everything and saves back over the same
+  /// file (ManualProductScreen's `initial:` idiom).
+  final Recipe? initial;
+
+  /// Hydrated original screenshots for the provenance pane — the detail
+  /// screen already holds them; display-only here.
+  final List<File> originals;
 
   @override
   State<ManualEntryScreen> createState() => _ManualEntryScreenState();
 }
 
 /// One editable row — an ingredient or a step. Ingredients also carry their
-/// pantry link and, when the user corrected a bad parse, the override.
+/// pantry link, the origin ingredient when editing a saved recipe, and, when
+/// the user corrected the parse by hand, the override.
 class _EntryRow {
   _EntryRow([String initial = ''])
       : text = TextEditingController(text: initial);
@@ -45,8 +66,17 @@ class _EntryRow {
   final FocusNode focus = FocusNode();
   String? productRef;
 
-  /// Hand-corrected parse. Cleared the moment the line's text changes —
-  /// a correction belongs to the text it corrected, never to new text.
+  /// The saved ingredient this row edits — carries note/group/confidence
+  /// through a save untouched. Null for freshly added rows.
+  Ingredient? origin;
+
+  /// The saved step this row edits — carries confidence through a save.
+  RecipeStep? originStep;
+
+  /// Hand-corrected (or file-stored) parse. Cleared the moment the line's
+  /// text changes — a correction belongs to the text it corrected, never to
+  /// new text; the live parse takes over so the parse always matches what
+  /// the row shows.
   ParsedQty? override;
 
   ParsedQty get parsed => override ?? parseIngredientLine(text.text);
@@ -59,21 +89,122 @@ class _EntryRow {
 
 class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final _title = TextEditingController();
-  final _servings = TextEditingController();
-  final _times = TextEditingController();
-  final List<_EntryRow> _ings = [_EntryRow()];
-  final List<_EntryRow> _steps = [_EntryRow()];
+  final List<_EntryRow> _ings = [];
+  final List<_EntryRow> _steps = [];
   bool _saving = false;
+
+  // Structured metadata (editor_fields). Touched-tracking keeps an edited
+  // recipe's original servings/times raw ("6 loaves", "ca. 1 time") intact
+  // until the user actually changes the value — raw is never destroyed by a
+  // save that didn't touch it.
+  int _servingsValue = 4;
+  bool _servingsTouched = false;
+  int? _minutes;
+  bool _timesTouched = false;
+
+  // Cover: the shown file, and whether the user changed it this session.
+  File? _coverFile;
+  bool _coverTouched = false;
+
+  // Inline chip editing — at most one editor open across all rows.
+  int? _qtyEditRow;
+  int? _itemEditRow;
+  int? _unitPickerRow;
+  TextEditingController? _inlineCtrl;
+
+  /// Linked rows show a display line instead of their TextField; tapping it
+  /// sets this row index to bring the field (and focus) back.
+  int? _textEditRow;
+
+  bool get _isEdit => widget.initial != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initial;
+    if (initial != null) {
+      _title.text = initial.title;
+      _servingsValue = (servingsAmount(initial)?.round() ?? 4).clamp(1, 99);
+      _minutes = _initialMinutes(initial.times);
+      for (final ing in initial.ingredients) {
+        final row = _makeRow(ing.raw)
+          ..productRef = ing.productRef
+          ..origin = ing;
+        // The file's parse (extractor's or a previous save's) rides in as
+        // the override: preserved verbatim until the text changes.
+        if (ing.qty != null || ing.unit != null || ing.item != null) {
+          row.override =
+              ParsedQty(qty: ing.qty, unit: ing.unit, item: ing.item ?? '');
+        }
+        _ings.add(row);
+      }
+      for (final step in initial.steps) {
+        _steps.add(_makeRow(step.raw)..originStep = step);
+      }
+      if (initial.cover != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _loadCover());
+      }
+    }
+    if (_ings.isEmpty) _ings.add(_makeRow());
+    if (_steps.isEmpty) _steps.add(_makeRow());
+  }
 
   @override
   void dispose() {
     _title.dispose();
-    _servings.dispose();
-    _times.dispose();
+    _inlineCtrl?.dispose();
     for (final r in [..._ings, ..._steps]) {
       r.dispose();
     }
     super.dispose();
+  }
+
+  _EntryRow _makeRow([String initial = '']) {
+    final row = _EntryRow(initial);
+    row.focus.addListener(() {
+      if (!mounted) return;
+      setState(() {
+        // A linked row whose field lost focus goes back to its display line.
+        final t = _textEditRow;
+        if (t != null && t < _ings.length && !_ings[t].focus.hasFocus) {
+          _textEditRow = null;
+        }
+      });
+    });
+    return row;
+  }
+
+  Future<void> _loadCover() async {
+    final initial = widget.initial;
+    if (initial == null) return;
+    File? file;
+    try {
+      file = await context.read<LibraryModel>().coverFor(initial);
+    } catch (_) {} // lost grant: the empty slot stands in
+    // Never clobber a cover the user already picked this session.
+    if (mounted && !_coverTouched) setState(() => _coverFile = file);
+  }
+
+  /// Pre-fill for the duration pill: the structured total when the file has
+  /// one, else a light read of the raw ("25 min", "1 hr 30 min", "1,5 hr").
+  static int? _initialMinutes(RecipeTimes? times) {
+    if (times == null) return null;
+    final total = times.totalMin;
+    if (total != null && total > 0) return total.round();
+    final raw = times.raw?.toLowerCase();
+    if (raw == null || raw.isEmpty) return null;
+    num sum = 0;
+    final h = RegExp(r'(\d+(?:[.,]\d+)?)\s*(?:hours?|hrs?|hr|h|timer?)(?![a-z])')
+        .firstMatch(raw);
+    final m = RegExp(r'(\d+(?:[.,]\d+)?)\s*min').firstMatch(raw);
+    if (h != null) sum += num.parse(h.group(1)!.replaceAll(',', '.')) * 60;
+    if (m != null) sum += num.parse(m.group(1)!.replaceAll(',', '.'));
+    if (h == null && m == null) {
+      final n = RegExp(r'\d+(?:[.,]\d+)?').firstMatch(raw);
+      if (n != null) sum = num.parse(n.group(0)!.replaceAll(',', '.'));
+    }
+    final r = sum.round();
+    return r < 1 ? null : r;
   }
 
   /// Pantry the screen can reach, or null: flag off, or no model above
@@ -90,7 +221,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   // --- row plumbing, shared by both lists ---
 
   void _addRow(List<_EntryRow> rows) {
-    setState(() => rows.add(_EntryRow()));
+    setState(() => rows.add(_makeRow()));
     // Focus the new row on the next frame — it has no element yet.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) rows.last.focus.requestFocus();
@@ -99,10 +230,11 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
   void _removeRow(List<_EntryRow> rows, int i) {
     setState(() {
+      _closeInlineEditors();
       final gone = rows.removeAt(i);
       // Dispose after the frame — the field may still be unmounting.
       WidgetsBinding.instance.addPostFrameCallback((_) => gone.dispose());
-      if (rows.isEmpty) rows.add(_EntryRow());
+      if (rows.isEmpty) rows.add(_makeRow());
     });
   }
 
@@ -112,6 +244,18 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       _addRow(rows);
     } else {
       rows[i + 1].focus.requestFocus();
+    }
+  }
+
+  /// Any open inline chip editor closes uncommitted. Call inside setState.
+  void _closeInlineEditors() {
+    _qtyEditRow = null;
+    _itemEditRow = null;
+    _unitPickerRow = null;
+    final ctrl = _inlineCtrl;
+    _inlineCtrl = null;
+    if (ctrl != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => ctrl.dispose());
     }
   }
 
@@ -158,11 +302,14 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     setState(() {
       // Reuse a trailing empty row instead of stranding it above the new one.
       final row = _ings.last.text.text.trim().isEmpty ? _ings.last : null;
-      final target = row ?? _EntryRow();
+      final target = row ?? _makeRow();
       if (row == null) _ings.add(target);
       target.text.text = product.name;
       target.productRef = id;
       target.override = null;
+      // Open the field straight away — the linked display line would
+      // otherwise swallow the "type the amount in front" invitation.
+      _textEditRow = _ings.length - 1;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -173,68 +320,97 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     });
   }
 
-  /// Tap a parse chip: correct the three parts by hand. The raw line is
-  /// untouched — the correction rides beside it, exactly like extraction
-  /// parses ride beside raw in the file.
-  Future<void> _correctParse(_EntryRow row) async {
-    final parsed = row.parsed;
-    final qty = TextEditingController(
-        text: parsed.qty == null ? '' : _trimNum(parsed.qty!));
-    final unit = TextEditingController(text: parsed.unit ?? '');
-    final item = TextEditingController(text: parsed.item);
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Fix the reading'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(children: [
-              Expanded(
-                child: TextField(
-                  controller: qty,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Amount'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: unit,
-                  decoration: const InputDecoration(labelText: 'Unit'),
-                ),
-              ),
-            ]),
-            const SizedBox(height: 10),
-            TextField(
-              controller: item,
-              decoration: const InputDecoration(labelText: 'Ingredient'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel')),
-          FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Save')),
-        ],
-      ),
-    );
-    if (ok == true && mounted) {
-      setState(() {
-        row.override = ParsedQty(
-          qty: num.tryParse(qty.text.trim().replaceAll(',', '.')),
-          unit: unit.text.trim().isEmpty ? null : unit.text.trim().toLowerCase(),
-          item: item.text.trim(),
-        );
-      });
-    }
-    qty.dispose();
-    unit.dispose();
-    item.dispose();
+  // --- inline parse corrections (the "Fix the reading" dialog, dissolved
+  //     into the chips themselves) ---
+
+  void _openQtyEdit(int i) {
+    final parsed = _ings[i].parsed;
+    setState(() {
+      _closeInlineEditors();
+      _qtyEditRow = i;
+      _inlineCtrl = TextEditingController(
+          text: parsed.qty == null ? '' : _trimNum(parsed.qty!));
+    });
+  }
+
+  void _commitQty(int i, String text) {
+    if (_qtyEditRow != i) return; // already committed/closed
+    final row = _ings[i];
+    final cur = row.parsed;
+    setState(() {
+      row.override = ParsedQty(
+        qty: num.tryParse(text.trim().replaceAll(',', '.')),
+        unit: cur.unit,
+        item: cur.item,
+      );
+      _closeInlineEditors();
+    });
+  }
+
+  void _openItemEdit(int i) {
+    setState(() {
+      _closeInlineEditors();
+      _itemEditRow = i;
+      _inlineCtrl = TextEditingController(text: _ings[i].parsed.item);
+    });
+  }
+
+  void _commitItem(int i, String text) {
+    if (_itemEditRow != i) return;
+    final row = _ings[i];
+    final cur = row.parsed;
+    setState(() {
+      row.override =
+          ParsedQty(qty: cur.qty, unit: cur.unit, item: text.trim());
+      _closeInlineEditors();
+    });
+  }
+
+  void _toggleUnitPicker(int i) {
+    setState(() {
+      final wasOpen = _unitPickerRow == i;
+      _closeInlineEditors();
+      if (!wasOpen) _unitPickerRow = i;
+    });
+  }
+
+  void _setUnit(int i, String? unit) {
+    final row = _ings[i];
+    final cur = row.parsed;
+    setState(() {
+      row.override = ParsedQty(qty: cur.qty, unit: unit, item: cur.item);
+      _closeInlineEditors();
+    });
+  }
+
+  /// Unit options for a row. Linked rows offer the units that make sense on
+  /// the product's base: volume products get the ml family (+ the spoons),
+  /// weight products the gram family (+ piece). Unlinked rows get the full
+  /// common set. Canonical tokens only ("ss"/"ts"/"stk" typed in a line
+  /// already parse to tbsp/tsp/piece — the file and the chips speak
+  /// canonical, so the menu does too).
+  List<String> _unitOptions(_EntryRow row, PantryModel? pantry) {
+    final linked =
+        row.productRef == null ? null : pantry?.byId(row.productRef!);
+    if (linked == null) return _commonUnits;
+    return _isMlBased(linked) ? _mlUnits : _gUnits;
+  }
+
+  static const _mlUnits = ['ml', 'dl', 'l', 'tbsp', 'tsp'];
+  static const _gUnits = ['g', 'kg', 'piece'];
+  static const _commonUnits = [
+    'g', 'kg', 'ml', 'cl', 'dl', 'l', 'tsp', 'tbsp', 'cup', 'piece',
+    'pinch', 'can', // the parse's canonical names (domain/ingredient_parse)
+  ];
+
+  /// A product measured in millilitres: its pack quantity ("1 l", "33 cl")
+  /// or any named portion ("1 dl") says so. No volume token anywhere reads
+  /// as a weight product — the honest default for food.
+  static bool _isMlBased(Product p) {
+    final hay = [p.quantity ?? '', for (final s in p.servings) s.label]
+        .join(' ')
+        .toLowerCase();
+    return RegExp(r'(^|\d|\s)(ml|cl|dl|l)\b').hasMatch(hay);
   }
 
   static String _trimNum(num v) =>
@@ -247,36 +423,66 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
   Ingredient _ingredientOf(_EntryRow row) {
     final parsed = row.parsed;
+    final origin = row.origin;
     return Ingredient(
       raw: row.text.text.trim(),
+      // The parse (or its correction) is stored as-is: what the chips show
+      // is what the file says — never a stale parse behind new text.
       qty: parsed.qty,
       unit: parsed.unit,
       item: parsed.item.isEmpty ? null : parsed.item,
+      // Fields the row editor doesn't touch ride through from the file.
+      note: origin?.note,
+      group: origin?.group,
+      confidence: origin?.confidence,
       productRef: row.productRef,
     );
   }
 
+  RecipeStep _stepOf(_EntryRow row) {
+    final raw = row.text.text.trim();
+    final origin = row.originStep;
+    return origin == null ? RecipeStep(raw: raw) : origin.copyWith(raw: raw);
+  }
+
   Future<void> _save() async {
-    final servings = _servings.text.trim();
-    final times = _times.text.trim();
-    final recipe = Recipe(
-      schemaVersion: Recipe.currentSchemaVersion,
-      id: const Uuid().v4(),
-      title: _title.text.trim(),
-      // No extraction envelope, no images: nothing was extracted (rule 2 —
-      // metadata is stamped by our code only when it is true).
-      source: RecipeSource(
-          type: 'manual', importedAt: DateTime.now().toIso8601String()),
-      servings: servings.isEmpty ? null : Servings(raw: servings),
-      times: times.isEmpty ? null : RecipeTimes(raw: times),
-      // Born parsed (Arnar, 2026-08-19): the parse — or the user's
-      // correction of it — and the pantry link are stored on manual save
-      // only; imported files stay untouched by this.
-      ingredients: [for (final r in _filled(_ings)) _ingredientOf(r)],
-      steps: [
-        for (final r in _filled(_steps)) RecipeStep(raw: r.text.text.trim())
-      ],
-    );
+    final initial = widget.initial;
+    final Recipe recipe;
+    if (initial == null) {
+      recipe = Recipe(
+        schemaVersion: Recipe.currentSchemaVersion,
+        id: const Uuid().v4(),
+        title: _title.text.trim(),
+        // No extraction envelope, no images: nothing was extracted (rule 2 —
+        // metadata is stamped by our code only when it is true).
+        source: RecipeSource(
+            type: 'manual', importedAt: DateTime.now().toIso8601String()),
+        // Structured from the first save: amount + raw exactly as displayed
+        // (what recipe_nutrition prefers).
+        servings: ServingsStepper.servingsOf(_servingsValue),
+        times: DurationField.timesOf(_minutes),
+        // Born parsed (Arnar, 2026-08-19): the parse — or the user's
+        // correction of it — and the pantry link are stored on save.
+        ingredients: [for (final r in _filled(_ings)) _ingredientOf(r)],
+        steps: [for (final r in _filled(_steps)) _stepOf(r)],
+      );
+    } else {
+      // Save-in-place: same id and file; source, extraction stamps, notes,
+      // favorite, tags all ride through copyWith untouched. Servings/times
+      // only change when the user touched them — an untouched "6 loaves"
+      // raw survives the save.
+      recipe = initial.copyWith(
+        title: _title.text.trim(),
+        ingredients: [for (final r in _filled(_ings)) _ingredientOf(r)],
+        steps: [for (final r in _filled(_steps)) _stepOf(r)],
+        servings: _servingsTouched
+            ? ServingsStepper.servingsOf(_servingsValue)
+            : null,
+        times: _timesTouched ? DurationField.timesOf(_minutes) : null,
+        clearTimes: _timesTouched && _minutes == null,
+        clearCover: _coverTouched && _coverFile == null,
+      );
+    }
 
     final blocking =
         fileProblems(recipe.toJson()).where(isSaveBlocking).toList();
@@ -287,8 +493,14 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     }
 
     setState(() => _saving = true);
+    final Recipe saved;
     try {
-      await context.read<LibraryModel>().saveImported(recipe, const []);
+      // Empty cachedImages keeps original_images intact (store contract).
+      // The cover file only travels when this session picked one — passing
+      // the already-stored file back would just copy it onto itself.
+      saved = await context.read<LibraryModel>().saveImported(
+          recipe, const [],
+          coverImage: _coverTouched ? _coverFile : null);
     } on GrantLostException {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -303,69 +515,76 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           .showSnackBar(SnackBar(content: Text('Save failed: $e')));
       return;
     }
-    if (mounted) Navigator.of(context).pop();
+    // Pops with the saved Recipe — the detail screen awaits it in edit mode.
+    if (mounted) Navigator.of(context).pop(saved);
   }
 
   // --- widgets ---
 
-  Widget _pillInput(
-      {required Key key,
-      required TextEditingController controller,
-      required IconData icon,
-      required String hint}) {
-    final scheme = context.scheme;
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 13),
-      decoration: BoxDecoration(
-        border: Border.all(color: context.rb.hairline),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: scheme.primary),
-          const SizedBox(width: 6),
-          Expanded(
-            child: TextField(
-              key: key,
-              controller: controller,
-              style: Theme.of(context).textTheme.labelMedium,
-              decoration: InputDecoration(
-                  isCollapsed: true,
-                  border: InputBorder.none,
-                  hintText: hint),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// A tiny muted parse chip — the structure the line was read as.
-  Widget _parseChip(String label, VoidCallback onTap) {
+  /// A tiny muted parse chip — the structure the line was read as. Tap to
+  /// correct it in place.
+  Widget _parseChip(String label, VoidCallback onTap,
+      {Key? key, bool active = false}) {
     final scheme = context.scheme;
     return InkWell(
+      key: key,
       borderRadius: BorderRadius.circular(999),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
         decoration: BoxDecoration(
-          color: scheme.surfaceContainerHigh,
+          color:
+              active ? scheme.secondaryContainer : scheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(label,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall
-                ?.copyWith(color: scheme.onSurfaceVariant)),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: active
+                    ? scheme.onSecondaryContainer
+                    : scheme.onSurfaceVariant)),
       ),
     );
   }
 
-  /// MetaChip's label has no ellipsis of its own; a long product name would
-  /// overflow the row, so trim it here.
-  static String _chipLabel(String name) =>
-      name.length <= 20 ? name : '${name.substring(0, 19).trimRight()}…';
+  /// The tiny in-place field a qty/item chip becomes when tapped.
+  Widget _inlineEdit({
+    required Key fieldKey,
+    required double width,
+    TextInputType? keyboardType,
+    required ValueChanged<String> onDone,
+  }) {
+    final ctrl = _inlineCtrl!;
+    final scheme = context.scheme;
+    return Container(
+      width: width,
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: scheme.primary, width: 1),
+      ),
+      child: TextField(
+        key: fieldKey,
+        controller: ctrl,
+        autofocus: true,
+        keyboardType: keyboardType,
+        style: Theme.of(context).textTheme.labelSmall,
+        decoration: const InputDecoration(
+            isCollapsed: true, border: InputBorder.none),
+        onSubmitted: onDone,
+        onTapOutside: (_) => onDone(ctrl.text),
+      ),
+    );
+  }
+
+  Widget _unitOptionChip(int i, String? unit, {required bool selected}) {
+    return _parseChip(
+      unit ?? 'none',
+      () => _setUnit(i, unit),
+      key: Key('unit-option-${unit ?? 'none'}'),
+      active: selected,
+    );
+  }
 
   Widget _ingredientRow(int i, PantryModel? pantry) {
     final row = _ings[i];
@@ -376,6 +595,55 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     final linked =
         row.productRef == null ? null : pantry?.byId(row.productRef!);
     final onlyEmptyRow = _ings.length == 1 && !hasText;
+    // Linked rows show the product's name in the line (the detail screen's
+    // substitution rule) — the typed text comes back the moment the row is
+    // tapped for editing, and stays what the file stores.
+    final showLinkedLine = linked != null &&
+        hasText &&
+        !row.focus.hasFocus &&
+        _textEditRow != i;
+
+    final Widget line;
+    if (showLinkedLine) {
+      line = InkWell(
+        key: Key('linked-line-$i'),
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => setState(() => _textEditRow = i),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Text.rich(
+            TextSpan(children: [
+              TextSpan(
+                  text: linkedIngredientLine(_ingredientOf(row), linked.name)),
+              const WidgetSpan(child: SizedBox(width: 5)),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: Icon(Icons.kitchen_rounded,
+                    size: 12, color: context.scheme.primary),
+              ),
+            ]),
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      );
+    } else {
+      line = TextField(
+        key: Key('manual-ing-$i'),
+        controller: row.text,
+        focusNode: row.focus,
+        autofocus: _textEditRow == i,
+        textInputAction: TextInputAction.next,
+        onSubmitted: (_) => _submitRow(_ings, i),
+        // Re-parse on every keystroke: the override belonged to the old
+        // text. The pantry link survives the rewording (productRef stays).
+        onChanged: (_) => setState(() => row.override = null),
+        style: Theme.of(context).textTheme.bodyMedium,
+        decoration: const InputDecoration(
+            isCollapsed: true,
+            border: InputBorder.none,
+            hintText: 'e.g. 2 dl melk'),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -385,21 +653,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              Expanded(
-                child: TextField(
-                  key: Key('manual-ing-$i'),
-                  controller: row.text,
-                  focusNode: row.focus,
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (_) => _submitRow(_ings, i),
-                  onChanged: (_) => setState(() => row.override = null),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  decoration: const InputDecoration(
-                      isCollapsed: true,
-                      border: InputBorder.none,
-                      hintText: 'e.g. 2 dl melk'),
-                ),
-              ),
+              Expanded(child: line),
               if (!onlyEmptyRow)
                 IconButton(
                   visualDensity: VisualDensity.compact,
@@ -416,20 +670,53 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 runSpacing: 6,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  _parseChip(
-                      parsed.qty == null ? '?' : _trimNum(parsed.qty!),
-                      () => _correctParse(row)),
-                  if (parsed.unit != null)
-                    _parseChip(parsed.unit!, () => _correctParse(row)),
-                  if (parsed.item.isNotEmpty)
-                    _parseChip(parsed.item, () => _correctParse(row)),
+                  if (_qtyEditRow == i)
+                    _inlineEdit(
+                      fieldKey: Key('qty-edit-$i'),
+                      width: 56,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
+                      onDone: (t) => _commitQty(i, t),
+                    )
+                  else
+                    _parseChip(
+                        parsed.qty == null ? '?' : _trimNum(parsed.qty!),
+                        () => _openQtyEdit(i),
+                        key: Key('ing-qty-$i')),
+                  _parseChip(parsed.unit ?? 'unit?', () => _toggleUnitPicker(i),
+                      key: Key('ing-unit-$i'), active: _unitPickerRow == i),
+                  if (_itemEditRow == i)
+                    _inlineEdit(
+                      fieldKey: Key('item-edit-$i'),
+                      width: 120,
+                      onDone: (t) => _commitItem(i, t),
+                    )
+                  else
+                    _parseChip(parsed.item.isEmpty ? '?' : parsed.item,
+                        () => _openItemEdit(i),
+                        key: Key('ing-item-$i')),
                   if (pantry != null)
                     MetaChip(
-                      icon: linked == null ? Icons.link_rounded : null,
-                      label:
-                          linked == null ? 'Link' : _chipLabel(linked.name),
+                      icon: linked == null
+                          ? Icons.link_rounded
+                          : Icons.kitchen_rounded,
+                      // The product's name lives in the line now — the chip
+                      // is just the door to relink/unlink.
+                      label: linked == null ? 'Link' : 'Linked',
                       onTap: () => _pickLink(row, pantry),
                     ),
+                ],
+              ),
+            ],
+            if (_unitPickerRow == i) ...[
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final u in _unitOptions(row, pantry))
+                    _unitOptionChip(i, u, selected: parsed.unit == u),
+                  _unitOptionChip(i, null, selected: parsed.unit == null),
                 ],
               ),
             ],
@@ -511,11 +798,85 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     );
   }
 
+  /// Provenance pane for edited imports — the same "tap to see what we
+  /// read" door the import review has, because the original never stops
+  /// mattering while the text is being changed.
+  Widget _sourcePane(ThemeData theme, ColorScheme scheme) {
+    final sourceUrl = widget.initial?.source.url;
+    final originals = widget.originals;
+    final fromLink = originals.isEmpty && sourceUrl != null;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        key: const Key('edit-originals-pane'),
+        borderRadius: BorderRadius.circular(10),
+        onTap: fromLink || originals.isEmpty
+            ? null
+            : () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => OriginalsViewer(images: originals))),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                  width: 52,
+                  height: 76,
+                  child: fromLink
+                      ? ColoredBox(
+                          color: scheme.surfaceContainerHigh,
+                          child: Icon(Icons.link_rounded,
+                              size: 24, color: scheme.onSurfaceVariant),
+                        )
+                      : CoverImage(originals.firstOrNull)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                      fromLink
+                          ? 'From a link'
+                          : originals.length > 1
+                              ? 'Original screenshots · ${originals.length}'
+                              : 'Original screenshot',
+                      style:
+                          theme.textTheme.titleSmall?.copyWith(fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(
+                      fromLink
+                          ? (Uri.tryParse(sourceUrl)?.host ?? sourceUrl)
+                          : 'tap to see what we read',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                ],
+              ),
+            ),
+            if (!fromLink)
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHigh,
+                    shape: BoxShape.circle),
+                child: Icon(Icons.swap_horiz_rounded,
+                    size: 20, color: scheme.onSurfaceVariant),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final pantry = _pantry();
+    final showSourcePane = _isEdit &&
+        (widget.originals.isNotEmpty || widget.initial?.source.url != null);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -525,7 +886,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               child: Row(
                 children: [
                   const AppBackButton(),
-                  Text('Type it in yourself', style: theme.textTheme.titleLarge),
+                  Text(_isEdit ? 'Edit recipe' : 'New Recipe',
+                      style: theme.textTheme.titleLarge),
                 ],
               ),
             ),
@@ -533,6 +895,15 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                 children: [
+                  if (showSourcePane) _sourcePane(theme, scheme),
+                  CoverPickerField(
+                    file: _coverFile,
+                    onChanged: (f) => setState(() {
+                      _coverFile = f;
+                      _coverTouched = true;
+                    }),
+                  ),
+                  const SizedBox(height: 12),
                   TokenCard(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
@@ -558,19 +929,24 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: _pillInput(
-                            key: const Key('manual-servings'),
-                            controller: _servings,
-                            icon: Icons.restaurant_rounded,
-                            hint: '4 servings'),
+                        child: ServingsStepper(
+                          value: _servingsValue,
+                          onChanged: (v) => setState(() {
+                            _servingsValue = v;
+                            _servingsTouched = true;
+                          }),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: _pillInput(
-                            key: const Key('manual-times'),
-                            controller: _times,
-                            icon: Icons.schedule_rounded,
-                            hint: '25 min'),
+                        child: DurationField(
+                          key: const Key('manual-duration'),
+                          initialMinutes: _minutes,
+                          onChanged: (m) => setState(() {
+                            _minutes = m;
+                            _timesTouched = true;
+                          }),
+                        ),
                       ),
                     ],
                   ),
@@ -596,16 +972,19 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                   for (var i = 0; i < _steps.length; i++) _stepRow(i),
                   _addButton('Add step', () => _addRow(_steps)),
                   const SizedBox(height: 16),
-                  Text(
-                    'Typed-in recipes are always unlimited — no AI involved.',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 12, color: scheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: 8),
+                  if (!_isEdit) ...[
+                    Text(
+                      'Typed-in recipes are always unlimited — no AI involved.',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 12, color: scheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   FilledButton(
                     onPressed: _saving ? null : _save,
-                    child: const Text('Save to cookbook'),
+                    child: Text(
+                        _isEdit ? 'Save changes' : 'Save to cookbook'),
                   ),
                 ],
               ),

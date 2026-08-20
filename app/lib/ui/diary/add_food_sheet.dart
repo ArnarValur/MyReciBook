@@ -1,9 +1,11 @@
 // "Add food" — the picker, MFP's food search in this app's idiom.
 //
-// Four doors, in the order a real week uses them: what you ate recently, your
-// own shelf, a barcode you haven't scanned yet, and a food you type in
-// yourself (the fruit-and-veg door — nothing edible has to have a barcode).
-// Quick add sits at the bottom for the meal out you'll never itemise.
+// Doors in the order a real week uses them: what you ate recently, your own
+// recipes, your own shelf, a barcode you haven't scanned yet, and a food you
+// type in yourself (the fruit-and-veg door — nothing edible has to have a
+// barcode). Quick add sits at the bottom for the meal out you'll never
+// itemise. Recipes sit ABOVE the pantry as a collapsed strip: a real shelf
+// is a long scroll, and a section below it is a section nobody finds.
 //
 // Picking a food opens the log sheet; the log sheet is where the serving and
 // the amount are chosen, so nothing is ever logged by a single stray tap.
@@ -72,6 +74,11 @@ class _AddFoodSheet extends StatefulWidget {
 class _AddFoodSheetState extends State<_AddFoodSheet> {
   final _search = TextEditingController();
   String _query = '';
+
+  /// Collapsed size of the recipes strip: enough to recognise your own
+  /// cooking, small enough that the pantry is never pushed off-screen.
+  static const _recipePreview = 3;
+  bool _showAllRecipes = false;
 
   @override
   void dispose() {
@@ -218,7 +225,9 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
               controller: _search,
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
-                hintText: 'Search your pantry',
+                hintText: library == null
+                    ? 'Search your pantry'
+                    : 'Search pantry and recipes',
                 prefixIcon: const Icon(Icons.search_rounded),
                 filled: true,
                 fillColor: scheme.surfaceContainerHigh,
@@ -252,6 +261,39 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
               ],
               const SizedBox(height: 12),
             ],
+            if (recipeMatches.isNotEmpty) ...[
+              SectionLabel(searching
+                  ? 'Recipes · ${recipeMatches.length} match'
+                      '${recipeMatches.length == 1 ? '' : 'es'}'
+                  : 'Your recipes'),
+              const SizedBox(height: 8),
+              // A collapsed strip unless expanded — searching always shows
+              // every hit, since a search that hides matches is a lie.
+              for (final recipe in (searching || _showAllRecipes)
+                  ? recipeMatches
+                  : recipeMatches.take(_recipePreview)) ...[
+                _RecipeRow(
+                  recipe: recipe,
+                  nutrition: recipeNutrition(recipe, productsById),
+                  onLog: _logRecipe,
+                ),
+                const SizedBox(height: 8),
+              ],
+              if (!searching && recipeMatches.length > _recipePreview)
+                Row(children: [
+                  MetaChip(
+                    icon: _showAllRecipes
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    label: _showAllRecipes
+                        ? 'Show fewer'
+                        : 'Show all ${recipeMatches.length}',
+                    onTap: () =>
+                        setState(() => _showAllRecipes = !_showAllRecipes),
+                  ),
+                ]),
+              const SizedBox(height: 12),
+            ],
             SectionLabel(searching
                 ? 'Pantry · ${matches.length} match'
                     '${matches.length == 1 ? '' : 'es'}'
@@ -280,19 +322,6 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                   imageFile: pantry.imageFileOf(product),
                   onTap: () => _log(product),
                 ),
-            if (recipeMatches.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              const SectionLabel('Your recipes'),
-              const SizedBox(height: 8),
-              for (final recipe in recipeMatches) ...[
-                _RecipeRow(
-                  recipe: recipe,
-                  nutrition: recipeNutrition(recipe, productsById),
-                  onLog: _logRecipe,
-                ),
-                const SizedBox(height: 8),
-              ],
-            ],
           ],
         ),
       ),
