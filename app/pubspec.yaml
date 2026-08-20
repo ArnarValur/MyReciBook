@@ -24,7 +24,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 #   the suite if lib/version.dart drifts) · 0.MINOR.PATCH until production,
 #   1.0.0 reserved for launch · +N = Play versionCode, bump on EVERY upload.
 # The drift guard is decision-neutral and stands whatever scheme he picks.
-version: 0.8.0+5
+version: 0.10.0+8
 
 environment:
   sdk: ^3.12.0
@@ -51,6 +51,8 @@ dependencies:
   wakelock_plus: ^1.2.8
   mobile_scanner: ^7.4.0
   image: ^4.8.0
+  pdf: ^3.13.0
+  printing: ^5.15.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

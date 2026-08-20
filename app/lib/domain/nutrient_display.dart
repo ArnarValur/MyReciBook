@@ -6,6 +6,8 @@
 // arrives as 0.118 and vitamin D as 0.0000008, which are unreadable as
 // written. Only the display converts, and only downward: g -> mg -> µg.
 
+import 'recipe_nutrition.dart';
+
 /// English names for the nutrients Open Food Facts sends most often. A key
 /// that isn't here still shows — [nutrientLabel] makes a readable name out of
 /// the key itself, so a new OFF field or a hand-typed one is never hidden.
@@ -100,4 +102,45 @@ String _trim(double v) {
     s = s.replaceFirst(RegExp(r'\.$'), '');
   }
   return s;
+}
+
+/// The exact three lines the nutrition badge shows — lifted out of the screen
+/// so the PDF export prints the SAME words. Two renderings of one honesty
+/// contract would drift apart the first time either is edited.
+///
+/// [headline] is null when the covered products carry no energy value.
+/// [macros] is empty when none of fat/carbs/protein are known.
+/// [note] always states the coverage: it is what makes a '~' number readable
+/// as a hint instead of a claim.
+class NutritionWords {
+  final String? headline;
+  final String macros;
+  final String note;
+
+  const NutritionWords(this.headline, this.macros, this.note);
+
+  /// Nothing worth printing: no energy line and no macros.
+  bool get isEmpty => headline == null && macros.isEmpty;
+}
+
+NutritionWords nutritionWords(RecipeNutrition n) {
+  final per = n.perServing;
+  final shown = per ?? n.total;
+  // '~' on every number unless every ingredient is covered — completeness is
+  // the only claim to exactness we can make.
+  String fmt(double v) => '${n.isComplete ? '' : '~'}${v.round()}';
+  final kcal = shown['kcal'];
+  final headline = kcal == null
+      ? null
+      : per != null
+          ? '${fmt(kcal)} kcal per serving'
+          : '${fmt(kcal)} kcal whole recipe — no serving count on the recipe';
+  final macros = [
+    for (final key in const ['fat', 'carbs', 'protein'])
+      if (shown[key] != null) '${fmt(shown[key]!)} g $key',
+  ].join('  ·  ');
+  final note = n.isComplete
+      ? 'From all ${n.ingredientCount} ingredients'
+      : 'Estimated from ${n.covered} of ${n.ingredientCount} ingredients';
+  return NutritionWords(headline, macros, note);
 }

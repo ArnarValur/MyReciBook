@@ -18,27 +18,32 @@
 - WARM, only when work enters that area: the track plan · adr/ · the feasibility report.
 - COLD, on request: pulse-archive/ · docs/.
 
-## Tests — Arnar's law, 2026-08-20, final
-- DEFAULT: no test runs at all. `flutter analyze` (sub-second, no compile)
-  is the verification after every change. Claude never fires flutter test
-  on his own — not per feature, not per phase, not "just the touched files".
-- Tests run ONLY when Arnar says "test it" — then: hard `timeout 120`,
-  output visible (never piped to tail), one invocation. A run that hits
-  the ceiling is broken — kill, fix, never wait.
-- Full suite: ONLY before a release ships to Play, Arnar's call, detached
-  to a log file.
-- Why: flutter test cold-compiles the app per invocation, has NO default
-  timeout, and a hung test sits silently forever — this burned whole
-  sessions for weeks. Green lines are for Claude's comfort, not Arnar's
-  time.
+## Tests — how we decide, together
+- Nothing runs on Claude's initiative. Before any test run Claude says: which
+  file, why now, what it would prove. Arnar decides. That is the whole rule.
+- Between changes the default check is `flutter analyze` — sub-second, no compile.
+- Agreed run: hard `timeout 120`, output visible, one invocation. Ceiling hit
+  means broken — kill it, say so, never sit and wait.
+- Full suite: only before a release ships, Arnar's call, detached to a log.
+- Known-bad tests get named out loud, not silently dodged: three link-picker
+  files (manual_entry, edit_recipe, recipe_detail_link) point at a deleted
+  drawer and will hang. Fix or delete them — do not "just try" them.
+- Why the caution: flutter test cold-compiles per invocation and has no default
+  timeout, so a hung test sits silent forever.
 
 ## Checkpoint
 1. Rewrite pulse from scratch. State only, cap 40 lines. No next queue.
 2. Append one relay entry, 6 lines max.
 3. Update the touched track plan and its line in tracks.
-4. Bump the version when the session finished something a user would notice —
-   app/pubspec.yaml AND app/lib/version.dart together (version_sync_test pins
-   the pair). Minor for a feature, patch for fixes; build number always +1.
-   Say the new number in the relay entry. Arnar asked for this 2026-08-19.
+4. Version by what changed, never by "a checkpoint happened" (Arnar, repeated;
+   written down 2026-08-20 after minor was bumped three checkpoints running).
+   - minor — a capability a user would name out loud (diary, categories)
+   - patch — fixes or polish to something that already exists
+   - no bump — refactors, tests, conductor edits, anything invisible to a user
+   - +build — ONLY when an APK is actually built for the device. It counts
+     installs, not sessions.
+   - 1.0.0 — the first paid release on Play. Nothing gets there by calendar.
+   app/pubspec.yaml AND app/lib/version.dart move together (version_sync_test
+   pins the pair). Say the new number in the relay entry.
 5. Decision record only if proposed and approved in the same session.
 6. Stage all, show Arnar the file list, wait for his go, then commit on main.

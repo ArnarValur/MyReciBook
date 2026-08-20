@@ -301,6 +301,27 @@ class StorageModel extends ChangeNotifier {
     } catch (_) {} // the count is a nicety — never fail a good pass over it
   }
 
+  /// Drive is connected AND usable: the export door on recipe detail hides
+  /// itself entirely when this is false (export track D1) — an option that
+  /// only ever errors is worse than no option.
+  bool get driveConnected =>
+      _active == drive && _flow != null && _tokenStore != null;
+
+  /// An authed Drive client for one-off calls that are NOT sync — today the
+  /// Google Docs export. Null unless [driveConnected].
+  AuthedClient? driveClient() {
+    final flow = _flow;
+    final tokenStore = _tokenStore;
+    if (!driveConnected || flow == null || tokenStore == null) return null;
+    return AuthedClient(
+      provider: _providerConfig(drive),
+      flow: flow,
+      tokenStore: tokenStore,
+      tokenKey: drive,
+      client: _client,
+    );
+  }
+
   RemoteStore? _buildRemote(String provider) {
     final flow = _flow;
     final tokenStore = _tokenStore;

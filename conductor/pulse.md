@@ -4,40 +4,36 @@
 > **Updated:** 2026-08-20 — checkpoint
 
 ## 📍 Now
-- Phase: build. 0.8.0+5 in the tree; the S21 runs the phase-1-3 build
-  (pre-starter-foods) — redeploy pending Arnar's go.
-- Pantry categories live end to end: OFF auto-tag on scan + bulk refresh
-  (domain/product_categories.dart, four-tier match; Nordic products often
-  ship empty food_groups_tags — covered), chip row + grouped shelf,
-  category filter in the Add-food drawer, emoji labels via system Noto.
-- ONE product picker (ui/widgets/product_picker_sheet.dart) serves recipe
-  detail + editor linking: search, synonyms, category chips. Old ad-hoc
-  drawers deleted. Edit-screen tag pills = productCategories, one list.
-- Quick category pills on the product page; setTags keeps userEdited as-is.
-- Starter foods built: 149 curated items in 3 packages (Veggies 65,
-  Fruits & Berries 49, Spices 35), domain/starter_foods.dart, import door
-  on the pantry tab, EU-carb conversion in code, Product.synonyms
-  searchable in pickers. VALUES UNVERIFIED against USDA — Arnar owns the
-  verification agent run; patch that one file.
-- TEST LAW (workflow.md): no flutter test runs unless Arnar says "test
-  it"; flutter analyze is the default check. Full suite only at release
-  gate. Runs he orders: timeout 120, visible output.
+- Phase: build. 0.10.0+8 on the S21.
+- Export live: one share button, PDF always, Google Docs when Drive is
+  connected. Detail in tracks/export/plan.md.
+- Docs door UNVERIFIED on the phone — needs Arnar with Drive connected.
+- Nutrition wording lives once (domain/nutrient_display.dart nutritionWords):
+  badge, PDF and Doc print identical lines, coverage note included.
+- pdf 3.13.0 + printing 5.15.0 build clean under AGP 9.0.1 / Gradle 9.1.0.
+- Starter foods VALUES UNVERIFIED vs USDA — Arnar owns that run; patch
+  domain/starter_foods.dart only.
+- workflow.md rules rewritten: version by what changed (+build only when an
+  APK ships); tests get proposed, Arnar decides; one yes covers the whole
+  request — never re-ask per step.
 
 ## 🚀 Active tracks
-- diary — categories phases 1-4 in code; open: S21 verify of 2-4,
-  starter-value verification, three test files still pinned to the
-  deleted link drawer (manual_entry, edit_recipe, recipe_detail_link).
+- export — PDF + Docs shipped. Open: Arnar's S21 verify of the Docs door;
+  collection/meal-plan export still unasked, do not build blind.
+- diary — categories 1-4 in code. Open: S21 verify of 2-4, starter values,
+  three link-picker test files pinned to the deleted drawer.
 - nutrition — open: grocery package-size math, label-photo fallback.
-- mvp-build — billing seam open, unstarted. Dev GCP project exists
-  (MyReciBook-Dev, gen-lang-client-0166122901).
+- mvp-build — billing seam open, unstarted. Dev GCP project
+  MyReciBook-Dev (gen-lang-client-0166122901).
 
 ## ⚠️ Blockers
 - None.
 
 ## 📌 Parked
-- Category icon/colour pass (Arnar researching; emoji placeholder live) ·
-  proxy deploy · durable cap store · serving rescale · step ↔ ingredient
-  chips · label-photo fallback · meal names UI · copy-to-date UI · day
-  nutrient table · row reorder · multi-barcode per image · orphan image
-  cleanup · accessibility pass · Dropbox production approval · Play key
-  backup.
+- i18n, parked until paid v1 (docs/i18n-report.md; only the stored-key /
+  display-label split gets dearer with time) · Crashlytics · user feedback
+  channel · category icons/colours · proxy deploy · durable cap store ·
+  serving rescale · step ↔ ingredient chips · label-photo fallback · meal
+  names UI · copy-to-date UI · day nutrient table · row reorder ·
+  multi-barcode per image · orphan image cleanup · accessibility pass ·
+  Dropbox production approval · Play key backup.

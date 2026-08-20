@@ -237,7 +237,8 @@ class StorageScreen extends StatelessWidget {
             providerCard(StorageModel.dropbox),
             const DashedInfoCard(
                 text: 'Move, export or leave anytime. If MyReciBook vanished '
-                    'tomorrow, your recipes wouldn\'t.'),
+                    'tomorrow, your recipes wouldn\'t. Each one is a plain '
+                    'text file — JSON, if that means something to you.'),
           ],
         ),
       ),

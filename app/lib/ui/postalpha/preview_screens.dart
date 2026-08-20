@@ -195,7 +195,7 @@ class StoragePreview extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('MyReciBook/recipes/creamy-garlic-pasta.json',
+                        Text('MyReciBook/recipes/creamy-garlic-pasta',
                             style: TextStyle(
                                 color: scheme.primary,
                                 fontWeight: FontWeight.w600)),

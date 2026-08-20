@@ -4,6 +4,7 @@
 ## Active
 - **nutrition** — pantry, linking, units shipped; density table, per-serving calculator and nutrition badge landed via the diary track 2026-08-19. Open: grocery package-size math, label-photo fallback. → tracks/nutrition/plan.md
 - **diary** — pantry categories end to end 2026-08-20: OFF auto-tag, chips + grouped shelf, drawer filter, one shared product picker, starter foods (149, values unverified). Open: S21 verify, USDA value check, three link-picker test files. → tracks/diary/plan.md
+- **export** — PDF + Google Docs shipped 2026-08-20 at 0.10.0+8: share sheet, per-serving nutrition with its coverage note, Docs door when Drive is connected. Open: Arnar's S21 verify of the Docs door. → tracks/export/plan.md
 - **mvp-build** — engine complete through sync. Billing seam open, unstarted. → tracks/mvp-build/plan.md
 
 ## Not open yet

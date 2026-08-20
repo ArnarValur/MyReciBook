@@ -2,9 +2,6 @@
 // cached picks, D5) → suggest-and-confirm review. D6 pre-save scope: title +
 // any raw line; parsed fields stay untouched. Flagged lines get the warning
 // treatment + a confirm chip — never silently auto-saved (§6.3).
-//
-// The hi-fi's delete-screenshot toggle ships OFF-by-default per review note 1;
-// it is omitted entirely until the engine can delete gallery originals.
 
 import 'dart:io';
 

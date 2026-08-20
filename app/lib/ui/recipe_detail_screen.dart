@@ -6,9 +6,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
+import '../data/drive_docs.dart';
+import '../data/recipe_pdf.dart';
 import '../domain/product.dart';
+import '../domain/nutrient_display.dart';
 import '../domain/recipe.dart';
 import '../domain/recipe_nutrition.dart';
 import '../domain/units.dart';
@@ -19,6 +24,7 @@ import 'library_model.dart';
 import 'manual_entry_screen.dart';
 import 'pantry/pantry_model.dart';
 import 'photo_sources.dart';
+import 'storage_model.dart';
 import 'theme.dart';
 import 'units_model.dart';
 import 'widgets/product_picker_sheet.dart';
@@ -249,6 +255,158 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   // saves back in place. If the recipe feeds the grocery list, its
   // contributions re-sync (the list is a view, never a snapshot — §6.3);
   // the receipt banner on the grocery tab carries the change notice.
+  /// Recipe → PDF → the system share sheet (export track D1). Built from the
+  /// SAME display strings the screen shows, so the units toggle and
+  /// pantry-linked product names carry into the page exactly as rendered.
+  /// Android's sheet gives mail, print and Save to Drive for free.
+  Future<void> _sharePdf() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final data = await _exportData();
+    try {
+      final bytes = await buildRecipePdf(data);
+      await Printing.sharePdf(bytes: bytes, filename: '${_pdfName()}.pdf');
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(
+          content: Text("Couldn't build the PDF — try again")));
+    }
+  }
+
+  /// The export model both doors read: PDF and Google Docs print the same
+  /// content, so a field can never appear in one and go missing from the
+  /// other.
+  Future<RecipePdfData> _exportData() async {
+    final system = context.read<UnitsModel>().system;
+    final pantryProducts = kPantryEnabled
+        ? context.read<PantryModel>().products
+        : const <Product>[];
+
+    final lines = <String>[];
+    final groups = <int, String>{};
+    String? prevGroup;
+    for (final ing in _recipe.ingredients) {
+      if (ing.group != null && ing.group != prevGroup) {
+        groups[lines.length] = ing.group!;
+      }
+      prevGroup = ing.group;
+      Product? linked;
+      if (ing.productRef != null) {
+        for (final p in pantryProducts) {
+          if (p.id == ing.productRef) {
+            linked = p;
+            break;
+          }
+        }
+      }
+      lines.add(convertUnits(
+          linked == null ? ing.raw : linkedIngredientLine(ing, linked.name),
+          system));
+    }
+
+    Uint8List? coverBytes;
+    final coverFile = _cover;
+    if (coverFile != null && coverFile.existsSync()) {
+      coverBytes = await coverFile.readAsBytes();
+    }
+
+    final url = _recipe.source.url;
+
+    // Nutrition rides along only when there is something honest to say: at
+    // least one covered ingredient, and words worth printing. The coverage
+    // note travels with it — a printed page cannot be tapped for the caveat.
+    final n = kPantryEnabled
+        ? recipeNutrition(
+            _recipe, {for (final p in pantryProducts) p.id: p})
+        : null;
+    NutritionBlock? block;
+    if (n != null && !n.isEmpty) {
+      final words = nutritionWords(n);
+      if (!words.isEmpty) {
+        block = NutritionBlock(
+          headline: words.headline ?? 'Per serving',
+          macros: words.macros,
+          note: words.note,
+        );
+      }
+    }
+
+    return RecipePdfData(
+      title: _recipe.title,
+      ingredients: lines,
+      groupBefore: groups,
+      steps: [
+        for (final s in _recipe.steps) convertUnits(s.raw, system),
+      ],
+      servings: _recipe.servings?.raw,
+      time: _recipe.times?.raw,
+      notes: _notes.text,
+      sourceLine: url == null || url.isEmpty ? null : 'Source: $url',
+      cover: coverBytes,
+      nutrition: block,
+    );
+  }
+
+  /// Google Docs door — shown only when Drive is already connected
+  /// (export track D1). Uploads the recipe as HTML with the Docs conversion
+  /// mimeType, then opens the document in the browser.
+  Future<void> _openInDocs() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final client = context.read<StorageModel>().driveClient();
+    if (client == null) return;
+    final data = await _exportData();
+    messenger.showSnackBar(
+        const SnackBar(content: Text('Making a Google Doc…')));
+    try {
+      final link = await exportRecipeToGoogleDocs(client, data);
+      await const MethodChannel('com.merkurialstudio.myrecibook/auth')
+          .invokeMethod<void>('launchUrl', link);
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(
+          content: Text("Couldn't reach Drive — the PDF still works")));
+    }
+  }
+
+  /// Tap the share button: straight to the PDF unless Drive is connected,
+  /// in which case the user picks. No menu with one live option in it.
+  Future<void> _share() async {
+    if (!context.read<StorageModel>().driveConnected) return _sharePdf();
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('share-as-pdf'),
+              leading: const Icon(Icons.picture_as_pdf_rounded),
+              title: const Text('Share as PDF'),
+              subtitle: const Text('Mail, print, or save anywhere'),
+              onTap: () => Navigator.of(sheetContext).pop('pdf'),
+            ),
+            ListTile(
+              key: const Key('open-in-docs'),
+              leading: const Icon(Icons.article_rounded),
+              title: const Text('Open in Google Docs'),
+              subtitle: const Text('Saved in your MyReciBook folder'),
+              onTap: () => Navigator.of(sheetContext).pop('docs'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (choice == 'pdf') await _sharePdf();
+    if (choice == 'docs') await _openInDocs();
+  }
+
+  /// Filename the user sees in the share sheet: their title, safe for any
+  /// filesystem. Empty after stripping (emoji-only title) → 'recipe'.
+  String _pdfName() {
+    final slug = _recipe.title
+        .toLowerCase()
+        .replaceAll(RegExp(r"[^a-z0-9\u00c0-\u024f]+"), '-')
+        .replaceAll(RegExp(r'^-+|-+$'), '');
+    return slug.isEmpty ? 'recipe' : slug;
+  }
+
   Future<void> _edit() async {
     final saved = await Navigator.of(context).push<Recipe>(MaterialPageRoute(
       builder: (_) =>
@@ -446,21 +604,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   /// '~' and the "N of M" line are the honesty contract: a partial sum is a
   /// hint, never the truth (Arnar, 2026-08-19).
   Widget _nutritionCard(ThemeData theme, ColorScheme scheme, RecipeNutrition n) {
-    final per = n.perServing;
-    final shown = per ?? n.total;
-    // Rounded display values; '~' on every number unless every ingredient
-    // is covered — completeness is the only claim to exactness we can make.
-    String fmt(double v) => '${n.isComplete ? '' : '~'}${v.round()}';
-    final kcal = shown['kcal'];
-    final headline = kcal == null
-        ? null
-        : per != null
-            ? '${fmt(kcal)} kcal per serving'
-            : '${fmt(kcal)} kcal whole recipe — no serving count on the recipe';
-    final macros = [
-      for (final key in const ['fat', 'carbs', 'protein'])
-        if (shown[key] != null) '${fmt(shown[key]!)} g $key',
-    ];
+    // Wording lives in domain/nutrient_display.dart so the PDF export prints
+    // the identical lines — one honesty contract, one place to edit it.
+    final words = nutritionWords(n);
+    final headline = words.headline;
+    final macros = words.macros;
     return TokenCard(
       key: const Key('nutrition-card'),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -474,16 +622,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           if (macros.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: headline == null ? 0 : 4),
-              child: Text(macros.join('  ·  '),
+              child: Text(macros,
                   style: theme.textTheme.bodyMedium
                       ?.copyWith(color: scheme.onSurfaceVariant)),
             ),
           const SizedBox(height: 6),
           Text(
-            n.isComplete
-                ? 'From all ${n.ingredientCount} ingredients'
-                : 'Estimated from ${n.covered} of ${n.ingredientCount} '
-                    'ingredients',
+            words.note,
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: scheme.onSurfaceVariant),
           ),
@@ -523,6 +668,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         ),
       ),
       actions: [
+        GlassCircle(
+          key: const Key('share-pdf-button'),
+          icon: Icons.ios_share_rounded,
+          tooltip: 'Share as PDF',
+          onTap: _share,
+        ),
+        const SizedBox(width: 8),
         GlassCircle(
           key: const Key('edit-button'),
           icon: Icons.edit_rounded,
