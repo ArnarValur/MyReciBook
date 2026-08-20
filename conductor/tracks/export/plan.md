@@ -25,7 +25,7 @@ Google verification round.
   (settings, storage, the site) — never as the first thing a newcomer reads.
   Arnar's splash site already frames it this way.
 
-## Built and on the S21 (0.9.1+7, Arnar verified)
+## Built and on the S21 (0.10.0+8, Arnar verified)
 - [x] pdf 3.13.0 + printing 5.15.0 build clean under AGP 9.0.1 / Gradle 9.1.0
 - [x] A4 page: cover, servings/time, ingredients with group headings,
       numbered method, notes, source line, footer
@@ -41,10 +41,10 @@ Google verification round.
 - [x] JSON wording per D2: the preview filename lost its extension, storage
       says "a plain text file — JSON, if that means something to you"
 
+- [x] Docs door verified on the S21 by Arnar, Drive connected
+
 ## Steps
-1. Arnar verifies the Docs door on the S21 with Drive connected — the only
-   path no test can prove.
-2. Open question for later, do not build blind: export a whole collection or
+1. Open question for later, do not build blind: export a whole collection or
    the week's meal plan as one document. Ask Arnar first.
 
 ## Risks

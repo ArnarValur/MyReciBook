@@ -7,7 +7,8 @@
 - Phase: build. 0.10.0+8 on the S21.
 - Export live: one share button, PDF always, Google Docs when Drive is
   connected. Detail in tracks/export/plan.md.
-- Docs door UNVERIFIED on the phone — needs Arnar with Drive connected.
+- Export track done: both doors verified on the S21. Collection/meal-plan
+  export stays unasked — do not build it blind.
 - Nutrition wording lives once (domain/nutrient_display.dart nutritionWords):
   badge, PDF and Doc print identical lines, coverage note included.
 - pdf 3.13.0 + printing 5.15.0 build clean under AGP 9.0.1 / Gradle 9.1.0.
@@ -18,8 +19,6 @@
   request — never re-ask per step.
 
 ## 🚀 Active tracks
-- export — PDF + Docs shipped. Open: Arnar's S21 verify of the Docs door;
-  collection/meal-plan export still unasked, do not build blind.
 - diary — categories 1-4 in code. Open: S21 verify of 2-4, starter values,
   three link-picker test files pinned to the deleted drawer.
 - nutrition — open: grocery package-size math, label-photo fallback.

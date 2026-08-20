@@ -17,7 +17,7 @@
 - Answered: i18n is parked until paid v1 — docs/i18n-report.md.
 - Arnar, twice: one "yes please" covers the whole request. Stop re-asking at
   every step — it reads as not listening, and it cost him the session's mood.
-- UNFINISHED: Arnar verifies the Docs door on the S21 with Drive connected.
+- Both doors verified on the S21 by Arnar. Nothing pending.
 
 ## 2026-08-20 — pantry categories end to end, one picker, test law
 - Shipped: OFF auto-categories (scan + refresh), chip row + grouped shelf,
