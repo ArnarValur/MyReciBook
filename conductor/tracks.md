@@ -3,7 +3,7 @@
 
 ## Active
 - **nutrition** — pantry, linking, units shipped; density table, per-serving calculator and nutrition badge landed via the diary track 2026-08-19. Open: grocery package-size math, label-photo fallback. → tracks/nutrition/plan.md
-- **diary** — unified New/Edit row editor, inline units, picker reorder, diary-chain e2e shipped 2026-08-20; the recipe→pantry→diary thread closed in code. Open: post-rewrite suite run + S21 verify. → tracks/diary/plan.md
+- **diary** — pantry categories end to end 2026-08-20: OFF auto-tag, chips + grouped shelf, drawer filter, one shared product picker, starter foods (149, values unverified). Open: S21 verify, USDA value check, three link-picker test files. → tracks/diary/plan.md
 - **mvp-build** — engine complete through sync. Billing seam open, unstarted. → tracks/mvp-build/plan.md
 
 ## Not open yet

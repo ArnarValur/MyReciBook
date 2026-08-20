@@ -128,10 +128,22 @@ is only the correction path. `user_edited` tags are never overwritten.
       to patch). Packages stay produce/spices only — bakery/butcher/deli
       rejected, those carry labels or barcodes (Arnar in the doc).
 
+## Consolidation shipped 2026-08-20 (after phase 4)
+- [x] ONE product picker (ui/widgets/product_picker_sheet.dart): search +
+      synonyms + category chips; recipe detail + editor link sheets use
+      it, both old ad-hoc drawers deleted.
+- [x] Edit-screen tag pills seed from productCategories — the old
+      productTagSuggestions list is gone; one category list everywhere.
+- [x] Quick category pills on the product detail page; PantryModel.setTags
+      saves tags without flipping userEdited.
+- [ ] Three test files still target the deleted drawer: manual_entry,
+      edit_recipe, recipe_detail_link. Rewrite against the shared sheet
+      WHEN Arnar orders a test pass — one hung 9m40 on 2026-08-20.
+
 ## Open — NEXT SESSION STARTS HERE
-- [ ] Run the full suite — never ran after the unified-editor rewrite
-      (Arnar skipped it 2026-08-20 for session budget). Then S21 eyes on:
-      edit an imported recipe, link a line, log it, see numbers.
+- [ ] Redeploy to the S21 (it runs the phase-1-3 build; starter foods and
+      the picker consolidation are newer). Then Arnar's eyes on: chips,
+      grouped shelf, starter import, "Paprika" search, quick tags.
 - [ ] Picker collapse chip ("Show all N") untested with >3 recipes
 - [ ] Row reorder (drag) in the manual entry editor
 - [ ] Density table is ~30 staples — a volume line that misses it stays

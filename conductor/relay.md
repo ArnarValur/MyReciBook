@@ -1,6 +1,15 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-20 — pantry categories end to end, one picker, test law
+- Shipped: OFF auto-categories (scan + refresh), chip row + grouped shelf,
+  drawer filter, ONE shared product picker, quick tags on product page,
+  149 starter foods in 3 packages (values unverified vs USDA). 0.8.0+5.
+- Broke: a 4-file test run hung 9m40 — tests pinned to the deleted drawer.
+- Arnar decided: NO test runs unless he orders one; analyzer is the check
+  (workflow.md law). Icons/colours his; emoji placeholder live.
+- UNFINISHED: redeploy to S21; three link-picker test files need rewrite.
+
 ## 2026-08-20 — unified editor, five agents, budget burn
 - Five parallel agents: unified New/Edit row editor, inline units (popup dead),
   product name on linked rows, servings/time/cover widgets, picker reorder,
