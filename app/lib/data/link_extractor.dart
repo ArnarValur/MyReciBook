@@ -380,6 +380,17 @@ const _namedEntities = {
   'frac34': '¾',
 };
 
+/// U+FFFD. A page that names a code point outside Unicode still imports —
+/// the character is replaced, never the recipe (audit H3, 2026-08-21).
+const _replacementChar = '�';
+
+/// True for anything [String.fromCharCode] must not be handed: above the
+/// Unicode maximum (it throws RangeError — an Error, so the extractor's typed
+/// catch ladder never sees it) or a lone surrogate half (no scalar value, and
+/// it corrupts every string it lands in).
+bool _isInvalidCodePoint(int code) =>
+    code < 0 || code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF);
+
 String _decodeEntities(String text) => text.replaceAllMapped(
       RegExp(r'&(#x?[0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]*);'),
       (m) {
@@ -388,7 +399,12 @@ String _decodeEntities(String text) => text.replaceAllMapped(
           final code = body.startsWith('#x') || body.startsWith('#X')
               ? int.tryParse(body.substring(2), radix: 16)
               : int.tryParse(body.substring(1));
-          return code == null ? m.group(0)! : String.fromCharCode(code);
+          // Unparseable (overflows int64) is left verbatim like a stray
+          // named entity; parseable-but-invalid becomes the replacement char.
+          if (code == null) return m.group(0)!;
+          return _isInvalidCodePoint(code)
+              ? _replacementChar
+              : String.fromCharCode(code);
         }
         return _namedEntities[body] ?? m.group(0)!;
       },

@@ -3,8 +3,8 @@
 
 ## Active
 - **nutrition** — pantry, linking, units shipped; density table, per-serving calculator and nutrition badge landed via the diary track 2026-08-19. Open: grocery package-size math, label-photo fallback. → tracks/nutrition/plan.md
-- **diary** — pantry categories end to end 2026-08-20: OFF auto-tag, chips + grouped shelf, drawer filter, one shared product picker, starter foods (149, values unverified). Open: S21 verify, USDA value check, three link-picker test files. → tracks/diary/plan.md
-- **mvp-build** — engine complete through sync. Billing seam open, unstarted. → tracks/mvp-build/plan.md
+- **diary** — pantry categories end to end 2026-08-20: OFF auto-tag, chips + grouped shelf, drawer filter, one shared product picker, starter foods (149, values unverified). Open: device verify, USDA value check. (The three link-picker test files were checked 2026-08-21 and pass.) → tracks/diary/plan.md
+- **mvp-build** — engine complete through sync. Proxy hardened 2026-08-21 (durable Firestore ledger, App Check, rate limit, breaker) but never deployed; privacy policy and Data Safety unwritten. Billing seam open, unstarted. → tracks/mvp-build/plan.md
 
 ## Not open yet
 - **launch** — store listing, ASO, launch content.

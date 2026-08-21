@@ -9,7 +9,10 @@ environment:
   sdk: ^3.5.0
 
 dependencies:
+  googleapis: ^16.0.0
+  googleapis_auth: ^2.3.3
   http: ^1.2.0
+  jose: ^0.3.5+2
   shelf: ^1.4.0
 
 dev_dependencies:

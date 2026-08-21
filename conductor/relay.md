@@ -1,6 +1,26 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-21 — the pre-launch audit, and the night we closed the billing hole
+
+- Audited the whole codebase before selling it. App code is strong; the risk
+  was in the proxy and the paperwork. Report: docs/pre-launch-audit-2026-08-21.md.
+- Fixed a CONFIRMED crash (a bad HTML entity killed link import for a whole
+  site), stopped swallowing every async error, and added opt-in Crashlytics —
+  default OFF, still Arnar's call, one constant flips it.
+- Rebuilt the proxy: Firestore ledger (the old in-memory count evaporated on
+  every cold start, so the advertised cap was unenforceable), App Check via
+  Play Integrity, rate limit, daily breaker, refund on failure. 25 green.
+- Arnar registered App Check and created Firestore live during the session,
+  and called out that his GCP identifiers had been "noted" many times without
+  ever landing in a file — now docs/gcp-project-facts.md.
+- Arnar corrected a wrong call of mine: the two-week free window IS the offer,
+  not a pre-billing artefact. Set to 14 days. He then caught the real gap —
+  nothing stopped a user draining it — so a 50/bucket/day governor went in.
+- UNFINISHED: nothing deployed — gcloud is not installed, so the proxy has
+  never run against a live project. Privacy policy and Data Safety untouched.
+  Branch harden/pre-launch-bake is NOT folded to main.
+
 ## 2026-08-20 — export shipped (PDF + Docs), and three rules rewritten
 
 - Shipped: recipe → PDF → share sheet (cover, ingredients with groups,

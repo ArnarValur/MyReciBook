@@ -21,6 +21,13 @@ plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "9.0.1" apply false
     id("org.jetbrains.kotlin.android") version "2.3.20" apply false
+    // Declared here, APPLIED conditionally in app/build.gradle.kts — both
+    // plugins hard-fail the build when google-services.json is missing, and
+    // that file is a Firebase Console download (see
+    // docs/runbook-dev-deploy.md). Declaring without applying keeps a fresh
+    // clone building with no Firebase set up at all.
+    id("com.google.gms.google-services") version "4.4.4" apply false
+    id("com.google.firebase.crashlytics") version "3.0.8" apply false
 }
 
 include(":app")

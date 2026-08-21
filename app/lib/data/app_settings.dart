@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'atomic_file.dart';
+import 'crash_reporter.dart' show kCrashReportingDefaultOn;
 
 class AppSettings {
   AppSettings._(this._file, this._data);
@@ -49,6 +50,13 @@ class AppSettings {
     final v = _data['cookbook_view'];
     return v == 'list' ? 'list' : 'grid';
   }
+
+  /// Send crash reports off the device. Absent — nobody has touched the
+  /// toggle — falls back to [kCrashReportingDefaultOn], so flipping that one
+  /// constant moves the default for fresh installs without overriding anyone
+  /// who already chose. The local crash log runs regardless of this.
+  bool get crashReportingEnabled =>
+      _data['crash_reporting'] as bool? ?? kCrashReportingDefaultOn;
 
   /// Unit display ('as_written' / 'metric' / 'imperial'); default as-written.
   /// Unknown values read as 'as_written' — a corrupt entry is a default, not a crash.
@@ -114,6 +122,9 @@ class AppSettings {
       _write('active_connector', provider);
 
   Future<void> setMigrationDone(bool done) => _write('migration_done', done);
+
+  Future<void> setCrashReportingEnabled(bool on) =>
+      _write('crash_reporting', on);
 
   Future<void> _write(String key, Object? value) async {
     _data[key] = value;

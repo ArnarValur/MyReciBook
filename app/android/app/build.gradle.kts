@@ -6,6 +6,23 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Crash reporting is opt-in at BUILD time as well as at run time. Both Google
+// plugins abort the build if google-services.json is absent, so they are
+// applied only when Arnar has actually dropped the Firebase Console download
+// into android/app/. Without it the app still builds and runs — it just has no
+// remote crash sink, and CrashReporter falls back to the local ring buffer
+// alone. Adding the file is the whole switch; nothing else changes.
+val googleServicesFile = file("google-services.json")
+val hasFirebase = googleServicesFile.exists()
+if (hasFirebase) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
+} else {
+    logger.lifecycle(
+        "MyReciBook: android/app/google-services.json absent — building " +
+            "WITHOUT Crashlytics. Local crash log still records everything.")
+}
+
 // Upload-key signing (Play App Signing holds the app key; this one is
 // rotatable via Play Console if lost). key.properties is gitignored — absent
 // (CI, fresh clone) the release build falls back to debug signing so

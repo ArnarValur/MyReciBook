@@ -5,8 +5,10 @@
 // + the centered version footer.
 //
 // Deliberately absent, per the 6a annotation — don't let them creep in:
-// accounts (never), telemetry, notification toggles, and the link-import
-// switch (post-alpha).
+// accounts (never), notification toggles, and the link-import switch
+// (post-alpha). The telemetry ban has ONE recorded exception since 2026-08-21:
+// an opt-in crash-report switch, off by default (audit H1). Analytics is still
+// never.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
@@ -16,6 +18,7 @@ import '../data/crash_log.dart';
 import '../features.dart';
 import '../domain/units.dart';
 import '../version.dart';
+import 'crash_reporting_model.dart';
 import 'diary/diary_goal_screen.dart';
 import 'diary/diary_model.dart';
 import 'storage_model.dart';
@@ -285,6 +288,36 @@ class SettingsTab extends StatelessWidget {
                   caption: storage.settingsSummary(),
                   onTap: onOpenStorage,
                 ),
+                const SizedBox(height: 8),
+                // The 6a annotation banned telemetry toggles. This is the one
+                // deliberate exception, added when the app stopped being
+                // Arnar-only (audit H1): a crash nobody can see is a crash
+                // nobody fixes. It is opt-in, it is a switch, and the local
+                // error log below keeps working either way.
+                const SectionLabel('Crash reports'),
+                const SizedBox(height: 8),
+                Builder(builder: (context) {
+                  final crash = context.watch<CrashReportingModel>();
+                  return SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('Send crash reports',
+                        style: theme.textTheme.bodyLarge),
+                    subtitle: Text(
+                      crash.hasSink
+                          ? 'Anonymous error reports, so a crash gets fixed '
+                              'instead of forgotten. Never your recipes.'
+                          // Honest rather than silently inert: no Firebase in
+                          // this build, so the switch has nowhere to send.
+                          : 'Not available in this build. Errors are still '
+                              'recorded on this device.',
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                    value: crash.enabled && crash.hasSink,
+                    onChanged:
+                        crash.hasSink ? (v) => crash.setEnabled(v) : null,
+                  );
+                }),
                 const SizedBox(height: 8),
                 const SectionLabel('About'),
                 const SizedBox(height: 8),

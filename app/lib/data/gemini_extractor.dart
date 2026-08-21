@@ -30,9 +30,15 @@ class GeminiExtractor implements Extractor {
   final String apiKey;
   final String proxyUrl;
 
-  /// Anonymous per-install id (install_id.dart) — the proxy's counter key.
-  /// Only sent in proxy mode.
+  /// Anonymous per-install id (install_id.dart) — the proxy's counter KEY,
+  /// never its proof of identity. Only sent in proxy mode.
   final String installId;
+
+  /// Supplies the App Check token that proves this is really our app on a
+  /// real device (audit B1). Null — no Firebase in this build — means the
+  /// header is simply absent, which the proxy accepts only while it runs
+  /// unenforced. Returning null per call is equally survivable.
+  final Future<String?> Function()? appCheckToken;
 
   final Duration timeout;
   final http.Client _client;
@@ -42,6 +48,7 @@ class GeminiExtractor implements Extractor {
       String? apiKey,
       String? proxyUrl,
       this.installId = '',
+      this.appCheckToken,
       this.timeout = const Duration(seconds: 120),
       http.Client? client})
       : apiKey = apiKey ?? _apiKey,
@@ -105,6 +112,10 @@ class GeminiExtractor implements Extractor {
         ? Uri.parse('$proxyUrl/v1beta/models/$model:generateContent')
         : Uri.parse(
             'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey');
+    // Fetched per call, but the Firebase SDK caches and pre-refreshes, so
+    // this is a memory read in the common case. Only the proxy path needs it:
+    // Gemini direct is a dev-only mode and has no App Check.
+    final token = viaProxy ? await appCheckToken?.call() : null;
     final http.Response resp;
     try {
       resp = await _client
@@ -112,6 +123,7 @@ class GeminiExtractor implements Extractor {
               headers: {
                 'Content-Type': 'application/json',
                 if (viaProxy) 'X-Install-Id': installId,
+                'X-Firebase-AppCheck': ?token,
               },
               body: jsonEncode({
                 'contents': [
