@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "213431165631",
+    "project_id": "gen-lang-client-0166122901",
+    "storage_bucket": "gen-lang-client-0166122901.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:213431165631:android:faa441c80b5076d0249c0a",
+        "android_client_info": {
+          "package_name": "com.merkurialstudio.myrecibook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAh0aZ8fEb_F4T1cfGxpL3o_AGoNmPTyS8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
