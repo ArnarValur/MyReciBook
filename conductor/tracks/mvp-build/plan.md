@@ -3,6 +3,16 @@
 **Goal:** the shippable v1 engine — extract → save → list → open, then sync and paywall.
 
 ## Done
+- [x] Extraction server DEPLOYED 2026-08-21 to Cloud Run europe-west1 (Firestore
+      is the European multi-region, so a Nordic region would have been a
+      cross-region hop). Verified end to end: real Gemini call, ledger
+      persisted, rate limiter refusing calls past the minute limit.
+- [x] Gemini key out of the app. Secret Manager only; a release build was taken
+      apart and contains no key. app/dev.env carries the server URL.
+- [x] google-services.json in app/android/app/ — pulled from the Firebase API,
+      committed. Crash reporting and the app-proof check compile in.
+- [x] Build 9 installed on a phone and uploaded to Firebase App Distribution
+      for tester installs. No testers added yet.
 - [x] Extraction, on-device OCR plus cloud structuring
 - [x] Save: one JSON per recipe in the user's own folder
 - [x] List and open
@@ -23,21 +33,21 @@
       and the privacy-policy jurisdiction).
 
 ## Open
-- [ ] Budgets + prepay credits — Arnar's, and the only real ceiling on spend.
-- [x] Extraction proxy DEPLOYED 2026-08-21 to Cloud Run europe-west1 (Firestore
-      is eur3, so europe-north1 would have been cross-region). Verified end to
-      end: real Gemini call, ledger persisted, rate limiter live. Gemini key in
-      Secret Manager only; release APK carries no key.
-- [ ] google-services.json into app/android/app/ — a Firebase Console download.
-      Until it lands, builds have no Crashlytics and send no App Check token.
-- [ ] Flip APP_CHECK_ENFORCE once a token-carrying build is on the internal
-      track. Until then the proxy trusts a header the client invents.
-- [ ] Play App Signing SHA-256 into App Check, right after the first upload —
-      Play re-signs, so neither the upload nor debug fingerprint covers it.
-- [ ] Privacy policy URL + Play Data Safety form. Nothing written; blocks
+- [ ] Spend budgets + prepay credits. Arnar's, and the only real ceiling on
+      what this can cost. Everything else is a speed bump.
+- [ ] Privacy policy URL + Play data safety form. Nothing written; blocks
       submission. Five things leave the device and all must be declared.
-- [ ] Measure real extraction usage — nothing measured yet. The ledger records
-      it from the first deployed call.
+- [ ] Import a recipe on a phone. Nothing has been imported since extraction
+      moved to the server — the last unverified link in the chain.
+- [ ] Require the app-proof check on the server once a build carrying tokens is
+      on the internal track. Until then the server trusts a header the client
+      invents. Sideloaded builds cannot attest — Play Integrity only vouches
+      for installs that came from Play.
+- [ ] Play's own signing fingerprint into the app-proof registration, right
+      after the first upload — Play re-signs, so neither the upload nor the
+      debug fingerprint covers it.
+- [ ] Measure real usage. The ledger records it from the first live call;
+      nothing meaningful collected yet.
 - [ ] Closed-test build on the Play track — Google makes a new personal developer
       account run a closed test, 12 testers for 14 unbroken days, before it will
       grant production access. So an installable alpha has to go up on Play's

@@ -46,4 +46,6 @@
    app/pubspec.yaml AND app/lib/version.dart move together (version_sync_test
    pins the pair). Say the new number in the relay entry.
 5. Decision record only if proposed and approved in the same session.
-6. Stage all, show Arnar the file list, wait for his go, then commit on main.
+6. Stage all, commit on main, then show Arnar the file list. Do NOT ask for a
+   go — his original yes covered the session (corrected 2026-08-21, twice in
+   one night). Ask only if something in the diff contradicts what he asked for.
