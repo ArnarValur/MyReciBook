@@ -26,7 +26,11 @@
       upload + debug fingerprints added (Arnar, 2026-08-21).
 - [x] Firestore (default) database created on MyReciBook-Dev (Arnar, 2026-08-21).
 - [x] Crash reporting wired: local ring buffer always, Crashlytics on consent,
-      recipe text scrubbed. Default OFF — flipping it is Arnar's open call.
+      recipe text scrubbed. Ships ON 2026-08-22 (Arnar) — Settings switch turns
+      it off; "Send test report" behind the version footer proves the pipe,
+      non-fatal so it does not dent crash-free users.
+- [x] Both import doors verified on a phone through the live server 2026-08-22
+      (Arnar): screenshot rescue and URL share each fetch the recipe.
 - [x] Play developer account live and verified 2026-08-21 — personal account,
       developer name **Merkurial-Studio**, contact email and phone both verified,
       website avj.info. Merchant/legal country Norway (drives Play VAT, payouts,
@@ -35,8 +39,6 @@
 ## Open
 - [ ] Privacy policy URL + Play data safety form. Nothing written; blocks
       submission. Five things leave the device and all must be declared.
-- [ ] Import a recipe on a phone. Nothing has been imported since extraction
-      moved to the server — the last unverified link in the chain.
 - [ ] Require the app-proof check on the server once a build carrying tokens is
       on the internal track. Until then the server trusts a header the client
       invents. Sideloaded builds cannot attest — Play Integrity only vouches

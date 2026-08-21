@@ -1,10 +1,10 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
 
-> **Updated:** 2026-08-21 — checkpoint
+> **Updated:** 2026-08-22 — checkpoint
 
 ## 📍 Now
-- Phase: build. 0.10.1+9 on main. Only main exists, local and remote.
+- Phase: build. 0.10.2+10 on main. Only main exists, local and remote.
 - Extraction server is live: myrecibook-proxy, Cloud Run europe-west1.
   Verified end to end — real Gemini call, ledger persisted, rate limiter live.
 - Both import doors verified on the phone through the live server 2026-08-22:
@@ -13,8 +13,8 @@
   app/dev.env carries the server URL instead.
 - Offer in code: two weeks free, then 1200 a year. Limits 10/min and 50/day per
   buyer, 2000/day overall.
-- Crash reporting: nothing swallowed. Local log always, upload on consent,
-  recipe text scrubbed. Ships off — the default is Arnar's call.
+- Crash reporting ships ON. Switch in Settings turns it off, recipe text is
+  scrubbed, and "Send test report" behind the version footer proves the pipe.
 - Build 9 on the phone and on the tester link (App Distribution), no testers
   added. Full suite 697 green.
 - Audit: docs/pre-launch-audit-2026-08-21.md. Hand-work: runbook-dev-deploy.md.

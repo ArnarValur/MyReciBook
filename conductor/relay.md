@@ -1,6 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-22 — crash reports on by default, both import doors proven on a phone
+
+- Screenshot rescue and URL share both verified on the phone against the live
+  Cloud Run server (Arnar). The last unfinished step from 2026-08-21 is closed.
+- Crash reporting now ships ON — 0.10.2+10. The Settings switch still turns it
+  off, everything uploaded is scrubbed, and "Send test report" behind the
+  version footer makes the pipe visible before a real crash ever lands.
+- Arnar: dormant crash reporting defeated the point, and that "open question" a
+  previous session recorded was never his. Spend budgets and credits are his to
+  manage — conductor stopped tracking them.
+- Nothing pending.
+
 ## 2026-08-21 — audited before selling, then took the server live
 
 - Audited the codebase pre-sale (docs/pre-launch-audit-2026-08-21.md): fixed a
