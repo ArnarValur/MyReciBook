@@ -91,6 +91,38 @@ void main() {
           ['Chop & mix.', 'Warm the shells at 180°C.']);
     });
 
+    // Audit H3 (2026-08-21): String.fromCharCode throws RangeError above
+    // U+10FFFF. RangeError is an Error, so extractContent's typed catch
+    // ladder never caught it and one malformed entity killed the whole
+    // import for that site. Invalid code points now decode to U+FFFD.
+    test('out-of-range numeric entity does not kill the import', () {
+      final content = recipeContentFromHtml(page('''
+      {
+        "@type": "Recipe",
+        "name": "Tasty &#x110000; Buns",
+        "recipeIngredient": ["1 cup &#99999999999; flour"],
+        "recipeInstructions": ["Bake &#xD800; well."]
+      }'''))!;
+      expect(content['title'], 'Tasty � Buns');
+      // Parses fine (int64 holds it), just far past U+10FFFF → replaced.
+      expect((content['ingredients'] as List).first['raw'], '1 cup � flour');
+      // Lone surrogate half: parseable, no scalar value → replaced.
+      expect((content['steps'] as List).first['raw'], 'Bake � well.');
+    });
+
+    test('entity too big to parse is left verbatim, not replaced', () {
+      // Overflows int64 → int.tryParse returns null. Nothing was decoded, so
+      // the source text survives untouched like a stray named entity.
+      final content = recipeContentFromHtml(page('''
+      {
+        "@type": "Recipe",
+        "name": "Buns &#999999999999999999999999; here",
+        "recipeIngredient": ["flour"],
+        "recipeInstructions": ["Bake."]
+      }'''))!;
+      expect(content['title'], 'Buns &#999999999999999999999999; here');
+    });
+
     test('skips a broken JSON-LD block and reads the next one', () {
       final html = '''
       <script type="application/ld+json">{not json at all</script>

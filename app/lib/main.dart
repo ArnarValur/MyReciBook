@@ -10,8 +10,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'data/app_check.dart';
 import 'data/app_settings.dart';
 import 'data/crash_log.dart';
+import 'data/crash_reporter.dart';
+import 'data/crashlytics_sink.dart';
 import 'data/diary_store.dart';
 import 'data/gemini_extractor.dart';
 import 'data/grocery_store.dart';
@@ -30,6 +33,7 @@ import 'domain/extractor.dart';
 import 'ui/app_shell.dart';
 import 'ui/batch_model.dart';
 import 'ui/cookbook_prefs.dart';
+import 'ui/crash_reporting_model.dart';
 import 'ui/units_model.dart';
 import 'ui/folder_gate.dart';
 import 'ui/grocery_model.dart';
@@ -80,27 +84,35 @@ Future<void> main() async {
     loadInstallId(File('${support.path}/install_id')),
   ).wait;
 
-  // Uncaught errors → local ring-buffer (crash story without telemetry, D8).
-  // Both hooks log and move on: for a consumer app a degraded frame beats a
-  // process death, and the evidence survives for the tester to copy out.
+  // Uncaught errors → the reporter, which records locally ALWAYS and uploads
+  // only when the user has crash reporting on (crash_reporter.dart).
+  // Nothing is swallowed any more: an invisible crash is a crash nobody ever
+  // fixes, and we are about to have users who are not Arnar (audit H1).
+  final crashReporter = CrashReporter(
+    log: crashLog,
+    sink: await buildCrashSink(),
+    enabled: settings.crashReportingEnabled,
+  );
   FlutterError.onError = (details) {
-    FlutterError.presentError(details); // keep the default console dump
     String? context;
     try {
       context = details.context?.toDescription();
     } catch (_) {} // a throwing DiagnosticsNode must not break the hook
-    crashLog.record(details.exception, details.stack, context: context);
+    crashReporter.record(details.exception, details.stack, context: context);
+    FlutterError.presentError(details); // the framework's own dump, unchanged
   };
   PlatformDispatcher.instance.onError = (error, stack) {
-    // Keep logcat visibility — recording alone would make async failures
-    // invisible outside the long-press door during development.
-    debugPrint('Uncaught async error: $error\n$stack');
-    crashLog.record(error, stack);
-    // Trade-off, eyes open: true keeps the app alive but also keeps these
-    // out of Play Console vitals. During closed test the local log IS the
-    // crash story; revisit for production if vitals ever matter.
-    return true; // handled: logged locally
+    crashReporter.record(error, stack);
+    // false = NOT handled. The error carries on to the VM's default handler
+    // and into logcat instead of stopping here. Note the honest limit: this
+    // alone does not put a Dart error into Play vitals — Flutter does not
+    // kill the process for one — the Crashlytics sink is what makes a crash
+    // visible off-device. Both layers, neither sufficient alone.
+    return false;
   };
+  final crashReporting =
+      CrashReportingModel(settings: settings, reporter: crashReporter);
+
   // THE one OAuthFlow app-wide — its constructor claims the auth channel
   // handler; a second instance would silently steal redirects.
   final oauthFlow = OAuthFlow();
@@ -144,7 +156,14 @@ Future<void> main() async {
   final unitsModel = UnitsModel(settings: settings);
 
   final picker = ImagePicker();
-  final extractor = GeminiExtractor(installId: installId);
+  // App Check proves to the proxy that this really is our app on a real
+  // device (audit B1). Null in any build without Firebase — the header is
+  // then absent, which the proxy accepts only while it runs unenforced.
+  final appCheck = await AppCheckTokens.activate();
+  final extractor = GeminiExtractor(
+    installId: installId,
+    appCheckToken: appCheck?.token,
+  );
   Future<List<File>> pickImages() async =>
       [for (final x in await picker.pickMultiImage()) File(x.path)];
   Future<List<File>> snapPage() async {
@@ -193,6 +212,7 @@ Future<void> main() async {
         cookbookPrefs: cookbookPrefs,
         unitsModel: unitsModel,
         crashLog: crashLog,
+        crashReporting: crashReporting,
         onGrantLost: onGrantLost,
         onChangeFolder: onChangeFolder,
         folderName: folderDisplayName(settings.treeUri),
@@ -224,6 +244,7 @@ Widget buildApp({
   CookbookPrefs? cookbookPrefs,
   UnitsModel? unitsModel,
   CrashLog? crashLog,
+  CrashReportingModel? crashReporting,
   VoidCallback? onGrantLost,
   VoidCallback? onChangeFolder,
   String? folderName,
@@ -258,6 +279,16 @@ Widget buildApp({
         // Plain Provider (not a notifier): the settings footer door reads it
         // on demand. Inert default keeps the test seam file-free.
         Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),
+        // Same .value rule as the models above; the inert default has no
+        // settings and no reporter, so it reads the compiled-in default and
+        // reports no sink — the Settings row then renders its "not available
+        // in this build" state, which is exactly right for tests.
+        if (crashReporting != null)
+          ChangeNotifierProvider<CrashReportingModel>.value(
+              value: crashReporting)
+        else
+          ChangeNotifierProvider<CrashReportingModel>(
+              create: (_) => CrashReportingModel()),
         // Same stance: the cover picker on the pushed detail route reads these
         // on demand instead of being threaded down through list and card.
         Provider<PhotoSources>.value(

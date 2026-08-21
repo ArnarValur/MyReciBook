@@ -33,6 +33,18 @@ class FakeExtractor implements Extractor {
 }
 
 void main() {
+  // The footer is the LAST thing in a scrolling ListView, so it is not built
+  // until it is scrolled into view. Adding the crash-report block above it
+  // (2026-08-21) pushed it off a 360dp screen — hence this, not a hidden
+  // regression in the door itself.
+  Future<Finder> footer(WidgetTester tester) async {
+    final f = find.text('MyReciBook $kAppVersion');
+    await tester.scrollUntilVisible(f, 120,
+        scrollable: find.byType(Scrollable).last);
+    await tester.pump();
+    return f;
+  }
+
   late Directory tmp;
   late LocalFolderStore store;
 
@@ -202,7 +214,7 @@ void main() {
     await settle(tester);
     await openSettings(tester);
 
-    expect(find.text('MyReciBook $kAppVersion'), findsOneWidget);
+    expect(await footer(tester), findsOneWidget);
     expect(find.textContaining('you own this copy'), findsNothing);
 
     await tester.tap(find.text('Open-source licenses'));
@@ -216,7 +228,7 @@ void main() {
     await settle(tester);
     await openSettings(tester);
 
-    await tester.longPress(find.text('MyReciBook $kAppVersion'));
+    await tester.longPress(await footer(tester));
     await settle(tester, rounds: 8);
     expect(find.text('Error log'), findsOneWidget);
     expect(find.text('No captured errors.'), findsOneWidget);
@@ -233,7 +245,7 @@ void main() {
     await settle(tester);
     await openSettings(tester);
 
-    await tester.longPress(find.text('MyReciBook $kAppVersion'));
+    await tester.longPress(await footer(tester));
     await settle(tester, rounds: 8);
     expect(find.text('Error log (1)'), findsOneWidget);
     expect(find.text('NullPointerException: sky fell'), findsOneWidget);
@@ -242,7 +254,7 @@ void main() {
     await settle(tester, rounds: 8);
     expect(log.count, 0);
     // reopened: honest empty state
-    await tester.longPress(find.text('MyReciBook $kAppVersion'));
+    await tester.longPress(await footer(tester));
     await settle(tester, rounds: 8);
     expect(find.text('No captured errors.'), findsOneWidget);
   });

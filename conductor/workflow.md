@@ -25,9 +25,9 @@
 - Agreed run: hard `timeout 120`, output visible, one invocation. Ceiling hit
   means broken — kill it, say so, never sit and wait.
 - Full suite: only before a release ships, Arnar's call, detached to a log.
-- Known-bad tests get named out loud, not silently dodged: three link-picker
-  files (manual_entry, edit_recipe, recipe_detail_link) point at a deleted
-  drawer and will hang. Fix or delete them — do not "just try" them.
+- Known-bad tests get named out loud, not silently dodged. None open right now:
+  the three link-picker files were checked 2026-08-21 — manual_entry (5) and
+  edit_recipe (4) both pass, recipe_detail_link no longer exists.
 - Why the caution: flutter test cold-compiles per invocation and has no default
   timeout, so a hung test sits silent forever.
 

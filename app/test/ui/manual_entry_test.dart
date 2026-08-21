@@ -13,7 +13,6 @@ import 'package:image/image.dart' as img;
 import 'package:myrecibook/data/product_store.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
-import 'package:myrecibook/domain/product.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
 

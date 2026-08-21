@@ -1,6 +1,35 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-21 — the pre-launch audit, and the night we closed the billing hole
+
+- Audited the whole codebase before selling it. App code is strong; the risk
+  was in the proxy and the paperwork. Report: docs/pre-launch-audit-2026-08-21.md.
+- Fixed a CONFIRMED crash (a bad HTML entity killed link import for a whole
+  site), stopped swallowing every async error, and added opt-in Crashlytics —
+  default OFF, still Arnar's call, one constant flips it.
+- Rebuilt the proxy: Firestore ledger (the old in-memory count evaporated on
+  every cold start, so the advertised cap was unenforceable), App Check via
+  Play Integrity, rate limit, daily breaker, refund on failure. 25 green.
+- Arnar registered App Check and created Firestore live during the session,
+  and called out that his GCP identifiers had been "noted" many times without
+  ever landing in a file — now docs/gcp-project-facts.md.
+- Arnar corrected a wrong call of mine: the two-week free window IS the offer,
+  not a pre-billing artefact. Set to 14 days. He then caught the real gap —
+  nothing stopped a user draining it — so a 50/bucket/day governor went in.
+- gcloud turned out to be installed, just off PATH — so the proxy went LIVE on
+  Cloud Run and was proven end to end: real Gemini call, ledger persisted in
+  Firestore, rate limiter refusing calls 11-13. Two traps found only by
+  deploying: Cloud Run reserves /healthz, and it does NOT set
+  GOOGLE_CLOUD_PROJECT, which had silently downgraded revision 1 to the
+  in-memory ledger — the exact fail-open B2 exists to stop. It now refuses to
+  boot instead.
+- Gemini key moved out of dev.env into Secret Manager; a release APK was built
+  and verified to carry no key.
+- UNFINISHED: privacy policy and Data Safety untouched. App Check registered
+  but not enforced and the app sends no token — google-services.json missing.
+  Branch harden/pre-launch-bake is NOT folded to main.
+
 ## 2026-08-20 — export shipped (PDF + Docs), and three rules rewritten
 
 - Shipped: recipe → PDF → share sheet (cover, ingredients with groups,
