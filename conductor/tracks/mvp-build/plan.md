@@ -33,8 +33,6 @@
       and the privacy-policy jurisdiction).
 
 ## Open
-- [ ] Spend budgets + prepay credits. Arnar's, and the only real ceiling on
-      what this can cost. Everything else is a speed bump.
 - [ ] Privacy policy URL + Play data safety form. Nothing written; blocks
       submission. Five things leave the device and all must be declared.
 - [ ] Import a recipe on a phone. Nothing has been imported since extraction
@@ -53,6 +51,11 @@
       grant production access. So an installable alpha has to go up on Play's
       closed track well before launch.
 - [ ] Billing — one-time purchase, hard paywall. Seam exists, nothing built.
+
+## Arnar's, not tracked here
+- Spend budgets, prepay credits, API key management. He manages these. Steps
+  are in docs/runbook-dev-deploy.md for reference only — do not raise them,
+  list them, or treat them as blockers.
 
 ## Fair-use cap
 - The listing must state a number from day one, and it cannot be raised back down.

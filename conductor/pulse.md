@@ -29,7 +29,6 @@
 
 ## ⚠️ Blockers
 - Privacy policy + Play data safety form: nothing written, blocks submission.
-- Spend budgets and prepay credits not set. Arnar's, and the only real ceiling.
 - App-proof check registered but not required, and the app sends no token from
   a sideloaded build — Play Integrity only attests installs from Play.
 - No recipe has been imported on a phone since extraction moved to the server.
