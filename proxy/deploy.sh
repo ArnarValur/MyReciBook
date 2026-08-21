@@ -12,7 +12,7 @@
 set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-gen-lang-client-0166122901}"
-REGION="${REGION:-europe-north1}"
+REGION="${REGION:-europe-west1}"  # matches the eur3 Firestore multi-region
 SERVICE="${SERVICE:-myrecibook-proxy}"
 SECRET="${SECRET:-gemini-api-key}"
 
@@ -55,7 +55,7 @@ gcloud run deploy "$SERVICE" \
   --timeout 180s \
   --memory 512Mi \
   --set-secrets "GEMINI_API_KEY=${SECRET}:latest" \
-  --set-env-vars "YEARLY_CAP=${YEARLY_CAP},PER_MINUTE_LIMIT=${PER_MINUTE_LIMIT},PER_DAY_LIMIT=${PER_DAY_LIMIT},GRACE_DAYS=${GRACE_DAYS},GLOBAL_DAILY_LIMIT=${GLOBAL_DAILY_LIMIT},APP_CHECK_ENFORCE=${APP_CHECK_ENFORCE}${FIREBASE_PROJECT_NUMBER:+,FIREBASE_PROJECT_NUMBER=$FIREBASE_PROJECT_NUMBER}"
+  --set-env-vars "GOOGLE_CLOUD_PROJECT=${PROJECT_ID},YEARLY_CAP=${YEARLY_CAP},PER_MINUTE_LIMIT=${PER_MINUTE_LIMIT},PER_DAY_LIMIT=${PER_DAY_LIMIT},GRACE_DAYS=${GRACE_DAYS},GLOBAL_DAILY_LIMIT=${GLOBAL_DAILY_LIMIT},APP_CHECK_ENFORCE=${APP_CHECK_ENFORCE}${FIREBASE_PROJECT_NUMBER:+,FIREBASE_PROJECT_NUMBER=$FIREBASE_PROJECT_NUMBER}"
 
 URL="$(gcloud run services describe "$SERVICE" \
   --project "$PROJECT_ID" --region "$REGION" --format 'value(status.url)')"
@@ -63,7 +63,7 @@ URL="$(gcloud run services describe "$SERVICE" \
 echo
 echo "==> deployed: $URL"
 echo "==> smoke test"
-curl -fsS "$URL/healthz" && echo "  healthz ok"
+curl -fsS "$URL/health" && echo "  health ok"
 
 # A POST with no body must be refused, not forwarded — proves the guard rails
 # are live without spending a Gemini call.

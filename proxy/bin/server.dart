@@ -1,9 +1,12 @@
 // Cloud Run entrypoint. All config via env:
 //   GEMINI_API_KEY        required — refuses to boot without it. On Cloud Run
 //                         this arrives from Secret Manager, never a literal.
-//   GOOGLE_CLOUD_PROJECT  injected by Cloud Run; enables the Firestore ledger.
-//                         Absent → in-memory ledger, which is correct ONLY in
-//                         a single local process.
+//   GOOGLE_CLOUD_PROJECT  selects the Firestore ledger. Cloud Run does NOT set
+//                         this itself (that is App Engine / Cloud Functions),
+//                         so deploy.sh passes it and the metadata server is
+//                         the fallback. Absent → in-memory ledger, which is
+//                         correct ONLY in a single local process, and which
+//                         this server REFUSES to use on Cloud Run.
 //   YEARLY_CAP            per-bucket fair-use cap, default 1200
 //   PER_MINUTE_LIMIT      per-bucket rate limit, default 10
 //   PER_DAY_LIMIT         per-bucket daily ceiling, default 50 — the
@@ -20,6 +23,7 @@
 
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
@@ -35,6 +39,31 @@ String? _env(String name) {
 
 int _envInt(String name, int fallback) =>
     int.tryParse(_env(name) ?? '') ?? fallback;
+
+/// True when running on Cloud Run. K_SERVICE is part of the documented Cloud
+/// Run container contract; GOOGLE_CLOUD_PROJECT is NOT — assuming otherwise is
+/// what silently downgraded the first deploy to the in-memory ledger
+/// (2026-08-21).
+bool get _onCloudRun => _env('K_SERVICE') != null;
+
+/// The project id, from the env var if deploy.sh passed one, else from the
+/// metadata server, which is always right when it answers.
+Future<String?> _resolveProjectId() async {
+  final fromEnv = _env('GOOGLE_CLOUD_PROJECT') ?? _env('GCP_PROJECT');
+  if (fromEnv != null) return fromEnv;
+  if (!_onCloudRun) return null;
+  try {
+    final resp = await http.get(
+      Uri.parse(
+          'http://metadata.google.internal/computeMetadata/v1/project/project-id'),
+      headers: {'Metadata-Flavor': 'Google'},
+    ).timeout(const Duration(seconds: 3));
+    if (resp.statusCode == 200 && resp.body.trim().isNotEmpty) {
+      return resp.body.trim();
+    }
+  } catch (_) {}
+  return null;
+}
 
 Future<void> main() async {
   final key = _env('GEMINI_API_KEY');
@@ -59,7 +88,7 @@ Future<void> main() async {
   // Durable on Cloud Run, in-memory locally. Never silently in-memory in a
   // deployed environment: that was audit B2, and it made the advertised cap
   // unenforceable.
-  final projectId = _env('GOOGLE_CLOUD_PROJECT');
+  final projectId = await _resolveProjectId();
   final UsageLedger ledger;
   if (projectId != null) {
     try {
@@ -78,6 +107,14 @@ Future<void> main() async {
       stderr.writeln('Firestore ledger unavailable — refusing to start: $e');
       exit(1);
     }
+  } else if (_onCloudRun) {
+    // The guard that was missing. A deployed proxy that cannot count is an
+    // open Gemini bill and an unenforceable cap (audit B2) — the exact thing
+    // the Firestore ledger exists to prevent. Die loudly instead.
+    stderr.writeln('Running on Cloud Run but no project id could be resolved '
+        '— refusing to start with the in-memory ledger. Pass '
+        'GOOGLE_CLOUD_PROJECT via --set-env-vars.');
+    exit(1);
   } else {
     ledger = InMemoryUsageLedger(
       cap: cap,

@@ -17,8 +17,17 @@
 - Arnar corrected a wrong call of mine: the two-week free window IS the offer,
   not a pre-billing artefact. Set to 14 days. He then caught the real gap —
   nothing stopped a user draining it — so a 50/bucket/day governor went in.
-- UNFINISHED: nothing deployed — gcloud is not installed, so the proxy has
-  never run against a live project. Privacy policy and Data Safety untouched.
+- gcloud turned out to be installed, just off PATH — so the proxy went LIVE on
+  Cloud Run and was proven end to end: real Gemini call, ledger persisted in
+  Firestore, rate limiter refusing calls 11-13. Two traps found only by
+  deploying: Cloud Run reserves /healthz, and it does NOT set
+  GOOGLE_CLOUD_PROJECT, which had silently downgraded revision 1 to the
+  in-memory ledger — the exact fail-open B2 exists to stop. It now refuses to
+  boot instead.
+- Gemini key moved out of dev.env into Secret Manager; a release APK was built
+  and verified to carry no key.
+- UNFINISHED: privacy policy and Data Safety untouched. App Check registered
+  but not enforced and the app sends no token — google-services.json missing.
   Branch harden/pre-launch-bake is NOT folded to main.
 
 ## 2026-08-20 — export shipped (PDF + Docs), and three rules rewritten

@@ -23,9 +23,11 @@
       and the privacy-policy jurisdiction).
 
 ## Open
-- [ ] Deploy the extraction proxy. Code and deploy.sh are ready; gcloud is not
-      installed on PlutoII, so it has never run against a live project. Every
-      manual step is in docs/runbook-dev-deploy.md.
+- [ ] Budgets + prepay credits — Arnar's, and the only real ceiling on spend.
+- [x] Extraction proxy DEPLOYED 2026-08-21 to Cloud Run europe-west1 (Firestore
+      is eur3, so europe-north1 would have been cross-region). Verified end to
+      end: real Gemini call, ledger persisted, rate limiter live. Gemini key in
+      Secret Manager only; release APK carries no key.
 - [ ] google-services.json into app/android/app/ — a Firebase Console download.
       Until it lands, builds have no Crashlytics and send no App Check token.
 - [ ] Flip APP_CHECK_ENFORCE once a token-carrying build is on the internal

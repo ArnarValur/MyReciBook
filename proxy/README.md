@@ -34,7 +34,7 @@ findings B1–B3. Cap and control design:
 cd proxy
 dart pub get
 GEMINI_API_KEY=<dev key> dart run bin/server.dart
-# smoke: curl -s localhost:8080/healthz
+# smoke: curl -s localhost:8080/health
 ```
 
 Local runs use the **in-memory** ledger and say so on boot. That is honest for

@@ -60,10 +60,14 @@ void main() {
     expect(quota, contains('resets_at'));
   });
 
-  test('healthz answers without touching upstream', () async {
-    final resp =
-        await handler()(Request('GET', Uri.parse('http://localhost/healthz')));
-    expect(resp.statusCode, 200);
+  test('health answers without touching upstream', () async {
+    // /health is the real one — Cloud Run's frontend swallows /healthz — but
+    // both must answer so a local caller using either still works.
+    for (final path in ['health', 'healthz']) {
+      final resp = await handler()(
+          Request('GET', Uri.parse('http://localhost/$path')));
+      expect(resp.statusCode, 200, reason: '/$path should answer');
+    }
     expect(upstreamCalls, isEmpty);
   });
 

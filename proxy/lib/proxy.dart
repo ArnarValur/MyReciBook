@@ -75,8 +75,13 @@ Handler buildHandler(
   final usage = ledger ?? InMemoryUsageLedger();
 
   return (Request request) async {
-    if (request.method == 'GET' && request.url.path == 'healthz') {
-      // Cloud Run's probe. Deliberately says nothing about quota or keys.
+    // '/health', NOT '/healthz': Cloud Run's frontend reserves /healthz and
+    // answers it with its own 404 HTML before the container ever sees it
+    // (found the hard way on the first deploy, 2026-08-21). Both are accepted
+    // here so a local caller using either still works.
+    if (request.method == 'GET' &&
+        (request.url.path == 'health' || request.url.path == 'healthz')) {
+      // Deliberately says nothing about quota, keys or the ledger.
       return Response.ok('ok');
     }
     if (request.method != 'POST') {

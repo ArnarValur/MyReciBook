@@ -1,8 +1,11 @@
 # Runbook — deploy the extraction proxy to MyReciBook-Dev
 
-*Written 2026-08-21. Nothing here has been executed: `gcloud` was not installed
-on PlutoII, so the proxy has never been deployed and never smoke-tested against
-a live project. Every step below is **NEEDS ARNAR** unless marked DONE.*
+*Written 2026-08-21, then partly executed the same evening once gcloud turned
+up. Steps are marked DONE as they actually complete — anything not marked DONE
+has not happened.*
+
+**gcloud lives at `~/google-cloud-sdk/bin` and is NOT on PATH.** Prefix it, or:
+`export PATH="$HOME/google-cloud-sdk/bin:$PATH"`.
 
 Project identifiers: [gcp-project-facts.md](gcp-project-facts.md).
 Cap and control design: [ai-cap-mechanics.md](ai-cap-mechanics.md) §1, §3, §4.
@@ -21,23 +24,29 @@ Cap and control design: [ai-cap-mechanics.md](ai-cap-mechanics.md) §1, §3, §4
   Play Integrity provider, upload + debug fingerprints added (Arnar,
   2026-08-21). Enforcement is still OFF, which is correct until a build
   carrying tokens is on the internal track.
-- **NOT DONE** — no deploy, no Secret Manager entry, no budgets, no
-  google-services.json in the repo, Play App Signing fingerprint not yet added.
+- **DONE 2026-08-21** — **the proxy is DEPLOYED and verified end to end.**
+  `https://myrecibook-proxy-213431165631.europe-west1.run.app`, revision
+  00003. A real Gemini call went through it, the Firestore ledger persisted
+  (`quota/{id}` + `control/global`), and the 10/min limiter refused calls
+  11-13 live. Gemini key is in Secret Manager only — a release APK was built
+  and contains no `AIza` string.
+- **NOT DONE** — budgets and prepay credits (Arnar's), google-services.json,
+  Play App Signing fingerprint, App Check enforcement.
 
 ---
 
-## 0 · Install gcloud (once, on PlutoII)
+## 0 · gcloud — DONE
 
-```sh
-sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
-curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-  | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
-  | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-sudo apt-get update && sudo apt-get install -y google-cloud-cli
-gcloud auth login
-gcloud config set project gen-lang-client-0166122901
-```
+SDK 570.0.0 at `~/google-cloud-sdk/bin`, authed as arnarvalurjonsson@gmail.com
+(arnarvalur@avj.info is also credentialed but not active). The `core/project`
+config points at a different project, so **every command here passes
+`--project` explicitly** rather than relying on it.
+
+## 0b · APIs — DONE 2026-08-21
+
+Enabled on MyReciBook-Dev: `run`, `secretmanager`, `cloudbuild`,
+`artifactregistry`, `firebaseappcheck`. Firestore and generativelanguage were
+already on. Billing account `01C8DA-8CC208-A7AA68`, active.
 
 ---
 
@@ -60,7 +69,12 @@ this, the quota ledger is world-writable and the cap means nothing.
 
 ---
 
-## 2 · The Gemini key → Secret Manager
+## 2 · The Gemini key → Secret Manager — DONE 2026-08-21
+
+Secret `gemini-api-key` created (version 1, enabled), and
+`roles/secretmanager.secretAccessor` granted to the Cloud Run runtime account.
+`app/dev.env` no longer holds the key — it holds `EXTRACTION_PROXY_URL`
+instead, and a release build proved the APK carries no key.
 
 **The existing key is fine here** (Arnar, 2026-08-21). This is the dev/test
 project and its testers; a fresh key gets minted and stored for **prod**, as
@@ -86,50 +100,64 @@ gcloud secrets add-iam-policy-binding gemini-api-key \
 
 ---
 
-## 3 · Let Cloud Run write the ledger
+## 3 · Let Cloud Run write the ledger — DONE 2026-08-21
 
-```sh
-PROJECT_NUMBER=213431165631
-gcloud projects add-iam-policy-binding gen-lang-client-0166122901 \
-  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
-  --role="roles/datastore.user"
-```
+`roles/datastore.user` granted to
+`213431165631-compute@developer.gserviceaccount.com`, the Cloud Run runtime
+service account.
 
 Without this the proxy **refuses to boot** rather than running unmetered —
 that refusal is deliberate (audit B2).
 
 ---
 
-## 4 · Deploy
+## 4 · Deploy — DONE 2026-08-21
 
 ```sh
 cd proxy
 ./deploy.sh
 ```
 
-App Check stays OFF here. The script prints the service URL and runs two smoke
-checks (`/healthz`, and a disallowed model that must be refused).
+Two traps hit on the first run, both fixed in code — do not re-introduce them:
 
-> Check the Firestore region matches `europe-north1`. If Arnar picked a
-> different region when creating the database, set `REGION=` to match —
-> cross-region reads add latency to every rescue for no benefit.
+1. **Cloud Run reserves `/healthz`.** Its frontend answers with its own 404
+   HTML and never forwards to the container. The health endpoint is `/health`.
+2. **Cloud Run does NOT set `GOOGLE_CLOUD_PROJECT`** (that is App Engine and
+   Cloud Functions). Revision 1 silently fell back to the in-memory ledger —
+   the exact failure audit B2 exists to prevent. `deploy.sh` now passes the
+   variable explicitly, the server falls back to the metadata server, and it
+   **refuses to boot** if it is on Cloud Run with no durable ledger.
+
+Also needed once, and now granted: `cloudbuild.builds.builder`,
+`storage.objectViewer`, `artifactregistry.writer`, `logging.logWriter` on the
+compute service account, or the source deploy fails on a storage 403.
+
+App Check stays OFF here. The script prints the service URL and runs two smoke
+checks (`/health`, and a disallowed model that must be refused).
+
+Firestore is **`eur3`** (Europe multi-region: Belgium + Netherlands), so
+`deploy.sh` defaults to **`europe-west1`** to keep ledger reads local. Checked
+2026-08-21 — do not "fix" it back to europe-north1.
 
 ---
 
-## 5 · Point the dev build at it
+## 5 · Point the dev build at it — DONE 2026-08-21
 
-`app/dev.env` (gitignored, never committed):
+`app/dev.env` (gitignored, never committed) now reads:
 
 ```
-EXTRACTION_PROXY_URL=https://myrecibook-proxy-XXXXXXX.europe-north1.run.app
+EXTRACTION_PROXY_URL=https://myrecibook-proxy-213431165631.europe-west1.run.app
 ```
 
-and **remove `GEMINI_API_KEY=` from that file**. That is the whole point: with
-the proxy URL set, the key never ships in the APK. `app/deploy-s21.sh` is the
-only build path and already reads dev.env.
+with `GEMINI_API_KEY` removed. Verified on a real release build: the APK
+contains the proxy URL and no `AIza` string anywhere.
 
-Verify after the first build: `strings` on the APK must find the proxy URL and
-must NOT find an `AIza…` key.
+To re-check after any build:
+
+```sh
+unzip -q -o build/app/outputs/flutter-apk/app-release.apk -d /tmp/apkcheck
+grep -rhoaE 'AIza[A-Za-z0-9_-]{35}' /tmp/apkcheck   # must print nothing
+```
 
 ---
 

@@ -4,40 +4,40 @@
 > **Updated:** 2026-08-21 — checkpoint
 
 ## 📍 Now
-- Phase: build. 0.10.1+8. Branch `harden/pre-launch-bake`, not folded to main.
-- Pre-launch audit written: docs/pre-launch-audit-2026-08-21.md. Three blockers
-  named; two are now code-complete, the third (privacy policy + Data Safety)
-  is untouched and blocks Play submission.
-- Crash reporting: nothing swallowed any more. Local ring buffer always,
-  Crashlytics only on consent, recipe text scrubbed before upload.
-- Proxy rebuilt: Firestore ledger, App Check verification, per-bucket rate
-  limit, global daily breaker, refund on failure. 25 tests green.
-- Proxy has NEVER been deployed — gcloud is not installed on PlutoII.
-  Everything Arnar must do by hand: docs/runbook-dev-deploy.md.
-- GCP identifiers now live in a file, not in chat: docs/gcp-project-facts.md.
+- Phase: build. 0.10.1+8. Branch `harden/pre-launch-bake`, NOT folded to main.
+- Pre-launch audit: docs/pre-launch-audit-2026-08-21.md. Of three blockers, two
+  are fixed; privacy policy + Data Safety is untouched and blocks submission.
+- Proxy is LIVE: myrecibook-proxy, Cloud Run europe-west1 (Firestore is eur3).
+  Verified end to end — real Gemini call, ledger persisted, rate limiter live.
+- Gemini key is in Secret Manager ONLY. Release APK built and checked: no key
+  in the binary. dev.env carries EXTRACTION_PROXY_URL instead.
+- Crash reporting: nothing swallowed. Ring buffer always, Crashlytics on
+  consent, recipe text scrubbed. Ships OFF — the default is Arnar's call.
+- gcloud is at ~/google-cloud-sdk/bin, NOT on PATH.
+- GCP identifiers: docs/gcp-project-facts.md. Hand-work: runbook-dev-deploy.md.
 - Starter foods VALUES UNVERIFIED vs USDA — Arnar owns that run; patch
   domain/starter_foods.dart only.
 
 ## 🚀 Active tracks
 - diary — categories 1-4 in code. Open: device verify of 2-4, starter values.
 - nutrition — open: grocery package-size math, label-photo fallback.
-- mvp-build — billing seam open, unstarted. Dev GCP project MyReciBook-Dev
-  (gen-lang-client-0166122901, project number 213431165631).
+- mvp-build — billing seam open, unstarted. MyReciBook-Dev
+  (gen-lang-client-0166122901, number 213431165631).
 - Play developer account live and verified. Closed test — 12 testers, 14
   unbroken days — is the only gate left before production access, and it needs
   an installable alpha on the closed track.
 
 ## ⚠️ Blockers
 - Privacy policy + Play Data Safety form: nothing written, blocks submission.
-- App Check enforcement cannot be flipped until a build carrying
-  google-services.json reaches the internal track.
+- App Check registered but NOT enforced and the app sends no token —
+  google-services.json is missing, so the proxy still trusts a header the
+  client invents. Last open half of audit B1.
+- Budgets and prepay credits not set. Arnar's, and the only real spend ceiling.
 
 ## 📌 Parked
-- i18n, parked until paid v1 (docs/i18n-report.md; only the stored-key /
-  display-label split gets dearer with time) · user feedback channel ·
-  category icons/colours · serving rescale · step ↔ ingredient chips ·
-  label-photo fallback · meal names UI · copy-to-date UI · day nutrient
-  table · row reorder · multi-barcode per image · orphan image cleanup ·
-  accessibility pass · Dropbox production approval · Play key backup ·
-  audit M1-M6 hardening (SSRF allowlist, cache pruning, ANR/isolates,
-  pinned targetSdk, R8) · audit L1-L4.
+- i18n until paid v1 (docs/i18n-report.md) · user feedback channel · category
+  icons/colours · serving rescale · step ↔ ingredient chips · label-photo
+  fallback · meal names UI · copy-to-date UI · day nutrient table · row
+  reorder · multi-barcode per image · orphan image cleanup · accessibility
+  pass · Dropbox production approval · Play key backup · audit H2 (plaintext
+  tokens) and M1-M6 · audit L1-L4.
