@@ -7,6 +7,8 @@
 - Phase: build. 0.10.1+9 on main. Only main exists, local and remote.
 - Extraction server is live: myrecibook-proxy, Cloud Run europe-west1.
   Verified end to end — real Gemini call, ledger persisted, rate limiter live.
+- Both import doors verified on the phone through the live server 2026-08-22:
+  screenshot rescue and URL share both fetch the recipe (Arnar).
 - Gemini key is in Secret Manager only. Release build checked: no key inside.
   app/dev.env carries the server URL instead.
 - Offer in code: two weeks free, then 1200 a year. Limits 10/min and 50/day per
@@ -31,7 +33,6 @@
 - Privacy policy + Play data safety form: nothing written, blocks submission.
 - App-proof check registered but not required, and the app sends no token from
   a sideloaded build — Play Integrity only attests installs from Play.
-- No recipe has been imported on a phone since extraction moved to the server.
 
 ## 📌 Parked
 - i18n until paid v1 · user feedback channel · category icons/colours · serving
