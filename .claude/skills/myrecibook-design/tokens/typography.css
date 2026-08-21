@@ -1,0 +1,75 @@
+/* ============================================================
+   MyReciBook — Typography
+   Dual-font system, bundled (never runtime-fetched — "a kitchen
+   app shouldn't need network for its own type"):
+   · Plus Jakarta Sans — display / headline / titles / wordmark
+   · Inter — body / labels / small titles ≤15px
+   Reference frame is 360dp Android; px here = dp 1:1.
+   Source: app/lib/ui/theme.dart (_textTheme) + handoff.md.
+   ============================================================ */
+
+:root {
+  /* ── Families ───────────────────────────────────────────── */
+  --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, Menlo, Consolas, monospace; /* the app uses the platform mono ('monospace') */
+
+  /* ── Weights ────────────────────────────────────────────── */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* ── Display / headline — Plus Jakarta Sans.
+     display-lg & headline-lg are defined but NEVER USED in the app. */
+  --display-lg-size: 48px;   /* w700, tracking -0.02em — unused slot */
+  --display-lg-tracking: -0.02em;
+  --headline-lg-size: 32px;  /* w600, -0.01em — unused slot */
+  --headline-md-size: 26px;  /* w700, -0.02em — hero headlines ("Pay once. Cook forever.") */
+  --headline-sm-size: 23px;  /* w700, -0.01em — screen titles, recipe title */
+
+  /* ── Titles ─────────────────────────────────────────────── */
+  --title-lg-size: 18px;     /* PJS w700 — app bar */
+  --title-md-size: 15px;     /* PJS w600 */
+  --title-sm-size: 13.5px;   /* Inter w600 — card titles ≤15px use Inter */
+
+  /* ── Body — Inter ───────────────────────────────────────── */
+  --body-lg-size: 14px;      /* w400, lh 1.5 */
+  --body-md-size: 13.5px;
+  --body-sm-size: 12px;      /* captions — on-surface-variant */
+
+  /* ── Labels — Inter ─────────────────────────────────────── */
+  --label-lg-size: 14px;     /* w600 — button labels */
+  --label-md-size: 12.5px;   /* w500 */
+  --label-sm-size: 11px;     /* w600, +0.9px tracking, UPPERCASE — section labels */
+  --label-sm-tracking: 0.9px;
+
+  /* ── Special moments (one-off sizes living in screens) ──── */
+  --wordmark-size: 23px;     /* "MyReciBook" PJS w800, primary, -0.02em */
+  --cook-step-size: 27px;    /* cook-mode step text, centered, lh 1.4, ≥24 always */
+  --settings-title-size: 22px;
+  --glass-pill-label-size: 11.5px;
+  --mono-size: 11.5px;       /* file paths, install IDs, meter counts — platform mono */
+  /* NOTE: the Flutter theme sets NO line heights (Material defaults
+     apply). The 1.4–1.5 values on the .rb-* classes below are the
+     design intent, set inline only on a few screens — treat body
+     line-height as an open item, not a shipped rule. */
+}
+
+/* ── Utility type classes (.rb-*) ─────────────────────────── */
+.rb-display { font-family: var(--font-display); font-size: var(--display-lg-size); line-height: 1.17; letter-spacing: var(--display-lg-tracking); font-weight: var(--weight-bold); }
+.rb-headline-lg { font-family: var(--font-display); font-size: var(--headline-lg-size); line-height: 1.25; letter-spacing: -0.01em; font-weight: var(--weight-semibold); }
+.rb-headline-md { font-family: var(--font-display); font-size: var(--headline-md-size); line-height: 1.2; letter-spacing: -0.02em; font-weight: var(--weight-bold); }
+.rb-headline-sm { font-family: var(--font-display); font-size: var(--headline-sm-size); line-height: 1.25; letter-spacing: -0.01em; font-weight: var(--weight-bold); }
+.rb-title-lg { font-family: var(--font-display); font-size: var(--title-lg-size); line-height: 1.3; font-weight: var(--weight-bold); }
+.rb-title-md { font-family: var(--font-display); font-size: var(--title-md-size); line-height: 1.3; font-weight: var(--weight-semibold); }
+.rb-title-sm { font-family: var(--font-body); font-size: var(--title-sm-size); line-height: 1.3; font-weight: var(--weight-semibold); }
+.rb-body-lg { font-family: var(--font-body); font-size: var(--body-lg-size); line-height: 1.5; font-weight: var(--weight-regular); }
+.rb-body-md { font-family: var(--font-body); font-size: var(--body-md-size); line-height: 1.5; font-weight: var(--weight-regular); }
+.rb-body-sm { font-family: var(--font-body); font-size: var(--body-sm-size); line-height: 1.45; font-weight: var(--weight-regular); }
+.rb-label-lg { font-family: var(--font-body); font-size: var(--label-lg-size); line-height: 1.4; font-weight: var(--weight-semibold); }
+.rb-label-md { font-family: var(--font-body); font-size: var(--label-md-size); line-height: 1.4; font-weight: var(--weight-medium); }
+.rb-label-sm { font-family: var(--font-body); font-size: var(--label-sm-size); line-height: 1.35; font-weight: var(--weight-semibold); letter-spacing: var(--label-sm-tracking); text-transform: uppercase; }
+.rb-wordmark { font-family: var(--font-display); font-size: var(--wordmark-size); font-weight: var(--weight-extrabold); letter-spacing: -0.02em; color: var(--primary); }
+.rb-mono { font-family: var(--font-mono); font-size: var(--mono-size); line-height: 1.65; }

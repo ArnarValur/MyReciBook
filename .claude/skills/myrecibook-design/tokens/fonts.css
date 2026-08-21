@@ -1,0 +1,19 @@
+/* ============================================================
+   MyReciBook — Webfonts (bundled, like the app: deviation 11 —
+   "a kitchen app shouldn't need network for its own type").
+   TTFs copied verbatim from ArnarValur/MyReciBook
+   app/google_fonts/ (OFL licenses alongside in assets/fonts/).
+   Icons: Material Symbols Rounded, Google CDN (the app uses
+   Flutter's built-in Icons.*_rounded — same glyph set).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap');
+
+@font-face { font-family: 'Inter'; src: url('../assets/fonts/Inter-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../assets/fonts/Inter-Medium.ttf') format('truetype'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../assets/fonts/Inter-SemiBold.ttf') format('truetype'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../assets/fonts/Inter-Bold.ttf') format('truetype'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url('../assets/fonts/PlusJakartaSans-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url('../assets/fonts/PlusJakartaSans-SemiBold.ttf') format('truetype'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url('../assets/fonts/PlusJakartaSans-Bold.ttf') format('truetype'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Plus Jakarta Sans'; src: url('../assets/fonts/PlusJakartaSans-ExtraBold.ttf') format('truetype'); font-weight: 800; font-style: normal; font-display: swap; }

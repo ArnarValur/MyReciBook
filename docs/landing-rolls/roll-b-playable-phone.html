@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyReciBook — roll B · playable phone</title>
+<!-- MOCKUP ONLY: fonts loaded from Google for convenience. Production self-hosts (GDPR, build constraint 4). -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0" rel="stylesheet">
+<style>
+  :root{
+    --scaffold:#FAF8F0; --surface:#F9F9FC; --card:#FFFFFF; --chip:#E8E8EA; --chip-lo:#F3F3F6;
+    --primary:#24389C; --primary-c:#3F51B5;
+    --tertiary:#B40050; --on-tertiary:#FFC3CE;
+    --ink:#1A1C1E; --ink2:#454652; --outline:#757684; --hair:#C5C5D4;
+    --success:#22C55E; --warning:#F59E0B;
+    --shadow:0 4px 10px rgba(36,56,156,.06); --shadow-lg:0 8px 20px rgba(36,56,156,.12);
+    --ease:cubic-bezier(.2,0,0,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--scaffold);color:var(--ink);font:14px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-0.02em}
+  .ms{font-family:'Material Symbols Rounded';font-size:20px;line-height:1;vertical-align:-4px}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 20px}
+  .label{font:600 11px/1 Inter;letter-spacing:.9px;text-transform:uppercase;color:var(--ink2)}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow)}
+  header{padding:22px 0}
+  .wordmark{font:800 23px 'Plus Jakarta Sans';color:var(--primary);display:flex;align-items:center;gap:10px}
+  .wordmark .dot{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--primary-c),var(--primary));display:grid;place-items:center;color:#fff}
+  .btn{border:0;border-radius:999px;padding:13px 24px;font:600 14px Inter;cursor:pointer;background:var(--primary);color:#fff;box-shadow:0 8px 16px 2px rgba(63,81,181,.25)}
+  .capture{display:flex;gap:10px;max-width:440px}
+  .capture input{flex:1;border:1px solid var(--hair);border-radius:999px;padding:13px 20px;font:14px Inter;background:var(--card);outline-color:var(--primary)}
+  .micro{margin-top:12px;font-size:12px;color:var(--outline);max-width:44ch}
+
+  /* ---------- hero with playable phone ---------- */
+  .hero{display:grid;grid-template-columns:1fr auto;gap:56px;align-items:center;padding:36px 0 80px}
+  .hero h1{font-size:42px;line-height:1.14;font-weight:800}
+  .hero h1 em{font-style:normal;color:var(--primary)}
+  .hero .sub{margin:20px 0 26px;font-size:15.5px;color:var(--ink2);max-width:46ch}
+  .trybadge{display:inline-flex;align-items:center;gap:7px;background:var(--chip);border-radius:999px;padding:7px 15px;font:600 12px Inter;color:var(--primary);margin-bottom:18px}
+
+  .phone{width:312px;height:640px;border-radius:38px;background:#0c0e14;padding:10px;box-shadow:0 24px 48px rgba(36,56,156,.22);position:relative}
+  .screen{width:100%;height:100%;border-radius:30px;background:var(--scaffold);overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .sbar{display:flex;justify-content:space-between;padding:10px 18px 6px;font:600 11px Inter;color:var(--ink2)}
+  .appbody{flex:1;position:relative;overflow:hidden}
+  .stage{position:absolute;inset:0;padding:14px 16px;transition:opacity .3s var(--ease),transform .3s var(--ease);opacity:0;transform:translateX(16px);pointer-events:none;display:flex;flex-direction:column}
+  .stage.on{opacity:1;transform:none;pointer-events:auto}
+  .stage h4{font:700 17px 'Plus Jakarta Sans';margin:4px 0 12px}
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+  .tile{aspect-ratio:1;border-radius:10px;position:relative;cursor:pointer;overflow:hidden;transition:transform .15s var(--ease)}
+  .tile:hover{transform:scale(1.04)}
+  .tile.shot{background:#fff;border:1px solid var(--hair)}
+  .tile .tl{position:absolute;inset:7px}
+  .tile .tl i{display:block;height:4px;border-radius:2px;background:#dcdce4;margin-bottom:4px}
+  .tile .tl i.pic{height:45%;border-radius:5px;margin-bottom:5px}
+  .tile.dog{background:radial-gradient(circle at 40% 45%,#c9a37a 26%,#8a6a48 27%,#e5ddd0 62%)}
+  .tile.sky{background:linear-gradient(160deg,#9db8e8,#e8c9a8)}
+  .tile.cat{background:radial-gradient(circle at 50% 55%,#6a6a72 30%,#d8d4dc 31%)}
+  .hint{margin-top:auto;text-align:center;font-size:12px;color:var(--outline);padding:10px 0 4px}
+  .toast{position:absolute;left:16px;right:16px;bottom:14px;background:#1A1C1E;color:#fff;border-radius:12px;padding:11px 15px;font-size:12.5px;opacity:0;transition:opacity .25s;display:flex;gap:8px;align-items:center;pointer-events:none}
+  .toast.on{opacity:.94}
+  .toast .ms{font-size:17px;color:var(--warning)}
+
+  .progresswrap{margin:auto 0;text-align:center}
+  .progresswrap .shotmini{width:84px;height:110px;border-radius:12px;background:#fff;border:1px solid var(--hair);margin:0 auto 20px;padding:9px}
+  .progresswrap .shotmini i{display:block;height:5px;border-radius:2px;background:#dcdce4;margin-bottom:5px}
+  .progresswrap .shotmini i.pic{height:46px;border-radius:6px;background:linear-gradient(120deg,#b0885f,#7c5a38);margin-bottom:6px}
+  .pbar{height:6px;border-radius:999px;background:var(--chip);overflow:hidden;max-width:200px;margin:0 auto}
+  .pbar div{height:100%;width:0;background:var(--primary);border-radius:999px;transition:width 1.1s var(--ease)}
+  .progresswrap p{margin-top:12px;font-size:12.5px;color:var(--ink2)}
+
+  .okline{display:flex;align-items:center;gap:7px;color:var(--success);font:600 13px Inter;margin-bottom:10px}
+  .rvcard{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px}
+  .rvcard .label{display:block;margin-bottom:8px}
+  .rvtitle{font:700 15px 'Plus Jakarta Sans'}
+  .irow{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:12.5px;border-bottom:1px solid rgba(197,197,212,.4)}
+  .irow:last-child{border:0}
+  .irow b{font-weight:600}
+  .irow.flag{background:rgba(245,158,11,.12);border-radius:8px;padding:7px 8px;margin:2px -8px;border:0}
+  .irow.flag .fixchip{margin-left:auto;border:0;background:var(--warning);color:#fff;border-radius:999px;padding:4px 10px;font:600 11px Inter;cursor:pointer}
+  .irow.fixed{background:rgba(34,197,94,.1)}
+  .irow.fixed .ms{margin-left:auto;color:var(--success);font-size:16px}
+  .stagecta{margin-top:auto;border:0;border-radius:999px;padding:13px;font:600 13.5px Inter;background:var(--primary);color:#fff;cursor:pointer;width:100%;box-shadow:0 8px 16px 2px rgba(63,81,181,.3)}
+  .stagecta:disabled{opacity:.45;box-shadow:none;cursor:default}
+
+  .ckgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .ckcard{border-radius:12px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+  .ckcard .cv{height:76px}
+  .ckcard .nm{padding:8px 10px;font:600 12px Inter}
+  .ckcard.new{animation:pop .5s var(--ease)}
+  @keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:none;opacity:1}}
+  .filetoast{margin-top:12px;background:var(--chip-lo);border-radius:10px;padding:9px 12px;font:11.5px ui-monospace,Menlo,monospace;color:var(--ink2);display:flex;gap:7px;align-items:center}
+  .filetoast .ms{font-size:15px;color:var(--success)}
+  .replay{position:absolute;top:12px;right:14px;z-index:5;border:0;background:rgba(255,255,255,.55);backdrop-filter:blur(8px);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--ink2);box-shadow:var(--shadow)}
+
+  /* ---------- lower page ---------- */
+  section{padding:64px 0}
+  h2.sec{font-size:28px;font-weight:800;line-height:1.2}
+  .kick{display:block;margin-bottom:10px}
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+  .promise{padding:22px}
+  .promise .sq{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--chip);color:var(--primary);margin-bottom:12px}
+  .promise h3{font-size:15.5px;margin-bottom:7px}
+  .promise p{font-size:13px;color:var(--ink2)}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
+  .duo .card{padding:24px}
+  .duo h3{font-size:17px;margin-bottom:9px}
+  .duo p{font-size:13.5px;color:var(--ink2)}
+  .pricecard{max-width:500px;margin:30px auto 0;padding:34px;text-align:center;position:relative}
+  .onetime{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--tertiary);color:var(--on-tertiary);border-radius:999px;padding:6px 16px;font:600 11px Inter;letter-spacing:.9px}
+  .bigprice{font:800 50px 'Plus Jakarta Sans';color:var(--primary);letter-spacing:-.03em}
+  .bigprice small{font-size:17px;color:var(--ink2);font-weight:600}
+  .inc{list-style:none;text-align:left;margin:20px 0 4px;font-size:13.5px}
+  .inc li{padding:8px 0;border-bottom:1px solid rgba(197,197,212,.45);display:flex;gap:10px}
+  .inc li:last-child{border:0}
+  .inc .ms{color:var(--success);font-size:18px}
+  .capnote{font-size:12.5px;color:var(--ink2);margin-top:12px}
+  .anchor{margin-top:20px;font-size:13px;color:var(--outline);text-align:center}
+  .founder{max-width:600px;margin:0 auto;text-align:center}
+  .founder p{font-size:14.5px;color:var(--ink2);text-align:left}
+  .founder .sig{margin-top:12px;font:700 15px 'Plus Jakarta Sans';text-align:left}
+  footer{padding:30px 0 46px;text-align:center;font-size:12px;color:var(--outline)}
+  footer a{color:var(--outline)}
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
+    .hero .sub{margin-inline:auto}.capture{margin-inline:auto}
+    .hero h1{font-size:32px}
+    .three,.duo{grid-template-columns:1fr}
+    h2.sec{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="wordmark"><span class="dot"><span class="ms">menu_book</span></span>MyReciBook</div>
+</header>
+
+<!-- hero -->
+<div class="wrap hero">
+  <div>
+    <span class="trybadge"><span class="ms" style="font-size:16px">touch_app</span>This phone works — try it</span>
+    <h1>That recipe you screenshotted three weeks ago? <em>Found in seconds.</em></h1>
+    <p class="sub">MyReciBook turns recipe screenshots into a clean, searchable cookbook — on Android. No subscription. No account. Your recipes are plain files in a folder you own.</p>
+    <form class="capture" onsubmit="event.preventDefault();this.querySelector('button').textContent='You’re on the list ✓'">
+      <input type="email" required placeholder="you@example.com" aria-label="Email">
+      <button class="btn" type="submit">Email me at launch</button>
+    </form>
+    <p class="micro">Launching on Google Play, December 2026. A few progress notes before then — nothing else, unsubscribe anytime.</p>
+  </div>
+
+  <!-- the playable S21 -->
+  <div class="phone">
+    <div class="screen">
+      <button class="replay" onclick="go('s1');resetDemo()" title="Start over"><span class="ms" style="font-size:18px">replay</span></button>
+      <div class="sbar"><span>21:36</span><span>▲ ▮ 78%</span></div>
+      <div class="appbody">
+
+        <!-- stage 1: pick a screenshot -->
+        <div class="stage on" id="s1">
+          <h4>Add to your book</h4>
+          <span class="label">From your screenshots</span>
+          <div class="pgrid" style="margin-top:10px">
+            <div class="tile shot" onclick="rescue()"><div class="tl"><i class="pic" style="background:linear-gradient(120deg,#b0885f,#7c5a38)"></i><i></i><i style="width:80%"></i><i style="width:55%"></i></div></div>
+            <div class="tile dog" onclick="notARecipe()"></div>
+            <div class="tile shot" onclick="rescue()"><div class="tl"><i class="pic" style="background:linear-gradient(120deg,#e8b56a,#c9763a)"></i><i></i><i style="width:70%"></i></div></div>
+            <div class="tile sky" onclick="notARecipe()"></div>
+            <div class="tile shot" onclick="rescue()"><div class="tl"><i class="pic" style="background:linear-gradient(120deg,#8fae6a,#5a7c3a)"></i><i></i><i></i><i style="width:45%"></i></div></div>
+            <div class="tile cat" onclick="notARecipe()"></div>
+          </div>
+          <p class="hint">Tap any screenshot — even a wrong one.</p>
+          <div class="toast" id="skiptoast"><span class="ms">info</span>Not a recipe? We skip it and say so.</div>
+        </div>
+
+        <!-- stage 2: extracting -->
+        <div class="stage" id="s2">
+          <div class="progresswrap">
+            <div class="shotmini"><i class="pic"></i><i></i><i style="width:80%"></i><i style="width:60%"></i></div>
+            <div class="pbar"><div id="pfill"></div></div>
+            <p>Reading your screenshot…</p>
+          </div>
+        </div>
+
+        <!-- stage 3: review -->
+        <div class="stage" id="s3">
+          <div class="okline"><span class="ms">check_circle</span>Recipe rescued</div>
+          <div class="rvcard"><span class="label">Title</span><div class="rvtitle">Nan's brown bread</div></div>
+          <div class="rvcard" style="flex:1;overflow:hidden">
+            <span class="label">Ingredients · 5</span>
+            <div class="irow"><b>450 g</b> wholemeal flour</div>
+            <div class="irow"><b>1 tsp</b> baking soda</div>
+            <div class="irow flag" id="flagrow"><b>2 tbsp</b> treacle — is that right?<button class="fixchip" onclick="confirmRow()">Looks right</button></div>
+            <div class="irow"><b>420 ml</b> buttermilk</div>
+            <div class="irow"><b>1 pinch</b> salt</div>
+          </div>
+          <button class="stagecta" id="savebtn" disabled onclick="saveIt()">Save to cookbook</button>
+          <p class="hint" style="padding-top:8px">Nothing saves silently — the shaky line asks first.</p>
+        </div>
+
+        <!-- stage 4: cookbook -->
+        <div class="stage" id="s4">
+          <h4>Your book</h4>
+          <div class="ckgrid">
+            <div class="ckcard new" id="newcard"><div class="cv" style="background:linear-gradient(120deg,#b0885f,#7c5a38)"></div><div class="nm">Nan's brown bread</div></div>
+            <div class="ckcard"><div class="cv" style="background:linear-gradient(120deg,#e8b56a,#c9763a)"></div><div class="nm">Sticky lemon chicken</div></div>
+            <div class="ckcard"><div class="cv" style="background:linear-gradient(120deg,#8fae6a,#5a7c3a)"></div><div class="nm">Green shakshuka</div></div>
+            <div class="ckcard"><div class="cv" style="background:linear-gradient(120deg,#c9763a,#88003B)"></div><div class="nm">Friday dal</div></div>
+          </div>
+          <div class="filetoast"><span class="ms">check_circle</span>nans-brown-bread.json → your folder</div>
+          <p class="hint" style="margin-top:auto">That file is yours. Delete the app — it stays.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- promises -->
+<section>
+  <div class="wrap">
+    <span class="label kick">What you just did, for real</span>
+    <h2 class="sec">Three promises, kept in writing.</h2>
+    <div class="three">
+      <div class="card promise">
+        <div class="sq"><span class="ms">photo_library</span></div>
+        <h3>Screenshots first</h3>
+        <p>Instagram, TikTok, your mum on WhatsApp. One screenshot or a whole pile — one recipe across five shots gets stitched, five saves become five recipes. You review, you confirm, done. Handwritten cards welcome, by camera.</p>
+      </div>
+      <div class="card promise">
+        <div class="sq"><span class="ms">folder</span></div>
+        <h3>Your files, not our cloud</h3>
+        <p>One plain, readable file per recipe, in a folder you pick, on your phone. Back up to your own Google Drive or Dropbox. Delete the app and every recipe is still there. No account. No login. No tracking. No ads. Ever.</p>
+      </div>
+      <div class="card promise">
+        <div class="sq"><span class="ms">paid</span></div>
+        <h3>Pay once</h3>
+        <p>You buy MyReciBook like you'd buy a good knife: once. AI rescues have a fair-use cap stated in writing — and typing recipes in yourself is always free and unlimited.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- grocery + nutrition, compact -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <span class="label kick">Also in the box</span>
+    <h2 class="sec">The quiet workhorses.</h2>
+    <div class="duo">
+      <div class="card">
+        <h3><span class="ms" style="color:var(--primary)">call_merge</span> The grocery list that actually merges</h3>
+        <p>Add two recipes and "lemon" + "lemons" become one row — 6 lemons, from 2 recipes — and only after asking you. Move an item to your own aisle once and it lands there every time after. Salt, pepper and oil stay quiet unless you tap them.</p>
+      </div>
+      <div class="card">
+        <h3><span class="ms" style="color:var(--primary)">barcode_scanner</span> Your pantry knows its numbers</h3>
+        <p>Scan a barcode and the pantry fills itself — brand, pack size, full nutrients per 100g. Recipes show per-serving numbers computed from your own food. Log what you actually ate, day by day. The whole nutrition kit is AI-free and lives on the never-capped side, forever.</p>
+      </div>
+    </div>
+    <p style="margin-top:20px;font-size:12.5px;color:var(--outline)"><span class="ms" style="font-size:15px">bolt</span> Plus: cook mode that keeps the screen awake and finds timers inside steps · as-written / metric / US toggle · favorites and tags that live in your files · search across everything.</p>
+  </div>
+</section>
+
+<!-- price -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div style="text-align:center"><span class="label kick">The deal</span>
+      <h2 class="sec">Pay once. Cook forever.</h2></div>
+    <div class="card pricecard">
+      <span class="onetime">ONE-TIME</span>
+      <div class="bigprice">$24.99 <small>once, ever</small></div>
+      <ul class="inc">
+        <li><span class="ms">check</span>Every recipe, forever, in your storage</li>
+        <li><span class="ms">check</span>600 AI rescues a year — fair-use cap, in writing</li>
+        <li><span class="ms">check</span>A grocery list that actually merges</li>
+        <li><span class="ms">check</span>All future features included</li>
+      </ul>
+      <p class="capnote">Typing recipes in yourself is unlimited. The cap can go up over time; it can never go down.</p>
+    </div>
+    <p class="anchor">Less than a single year of the big subscription recipe apps.</p>
+  </div>
+</section>
+
+<!-- founder -->
+<section style="padding-top:0">
+  <div class="wrap founder">
+    <p>I'm building MyReciBook solo, as one cook who got tired of screenshotting recipes and never finding them again. It runs on my own Galaxy S21 every day — the demo above is the real flow, pixel for pixel. It's pay-once because there's no investor asking me to charge you rent.</p>
+    <p class="sig">— Arnar</p>
+    <form class="capture" style="margin:28px auto 0;justify-content:center" onsubmit="event.preventDefault();this.querySelector('button').textContent='You’re on the list ✓'">
+      <input type="email" required placeholder="you@example.com" aria-label="Email">
+      <button class="btn" type="submit">Email me at launch</button>
+    </form>
+  </div>
+</section>
+
+<footer class="wrap">
+  MyReciBook · <a href="#">Privacy policy</a> · hello@myrecibook.com
+</footer>
+
+<script>
+function go(id){
+  document.querySelectorAll('.stage').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+function rescue(){
+  go('s2');
+  const f=document.getElementById('pfill');
+  f.style.width='0';
+  requestAnimationFrame(()=>{f.style.width='100%'});
+  setTimeout(()=>go('s3'),1250);
+}
+function notARecipe(){
+  const t=document.getElementById('skiptoast');
+  t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2200);
+}
+function confirmRow(){
+  const r=document.getElementById('flagrow');
+  r.classList.remove('flag');r.classList.add('irow','fixed');
+  r.innerHTML='<b>2 tbsp</b> treacle<span class="ms">check_circle</span>';
+  document.getElementById('savebtn').disabled=false;
+}
+function saveIt(){ go('s4'); }
+function resetDemo(){
+  const r=document.getElementById('flagrow');
+  r.className='irow flag';
+  r.innerHTML='<b>2 tbsp</b> treacle — is that right?<button class="fixchip" onclick="confirmRow()">Looks right</button>';
+  document.getElementById('savebtn').disabled=true;
+  document.getElementById('pfill').style.width='0';
+}
+</script>
+</body>
+</html>

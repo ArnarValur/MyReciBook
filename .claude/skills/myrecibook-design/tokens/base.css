@@ -1,0 +1,20 @@
+/* ============================================================
+   MyReciBook — Base element defaults
+   Minimal: body colors + link colors so consumer-added links
+   never render browser-blue, + the striped-placeholder motif.
+   ============================================================ */
+
+body { background: var(--scaffold); color: var(--on-surface); font-family: var(--font-body); }
+a { color: var(--primary); text-decoration: none; }
+a:hover { color: var(--primary-container); text-decoration: underline; }
+[data-theme="dark"] a:hover { color: var(--on-primary-container); }
+
+/* Diagonal 45° stripes — stands in wherever a user screenshot
+   would render but none exists ("your screenshot"). Never ship
+   real artwork in these slots. Tint = secondary-container over
+   surface at 45% / 20%. */
+.rb-stripes {
+  background: repeating-linear-gradient(45deg,
+    color-mix(in srgb, var(--secondary-container) 45%, var(--surface)) 0 8px,
+    color-mix(in srgb, var(--secondary-container) 20%, var(--surface)) 8px 16px);
+}

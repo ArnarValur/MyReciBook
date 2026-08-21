@@ -1,0 +1,58 @@
+<!-- @dsCard group="Components" viewport="700x400" name="Forms" subtitle="Button · SearchBar · FilterChip · SegmentedControl" -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;padding:16px 20px;background:var(--scaffold)}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { Button, SearchBar, FilterChip, SegmentedControl, CategoryChipRow, Icon } = window.MyReciBookDesignSystem_4222aa;
+function Demo() {
+  const [q, setQ] = React.useState('');
+  const [chip, setChip] = React.useState('All');
+  const [cat, setCat] = React.useState(null);
+  const [seg, setSeg] = React.useState('One recipe · 3 shots');
+  const [theme, setTheme] = React.useState('Light');
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Button icon={<Icon name="play_arrow" size={20} />}>Start cooking</Button>
+        <Button variant="tonal">Merge · 6 lemons</Button>
+        <Button variant="outlined" size="sm">Connect</Button>
+        <Button variant="text">Cancel</Button>
+        <Button variant="danger">Delete</Button>
+        <Button disabled>Rescue as one recipe</Button>
+      </div>
+      <div style={{ display: 'flex', gap: 12 }}>
+        <div style={{ flex: 1 }}><SearchBar value={q} onChange={setQ} /></div>
+        <Button trailingIcon={<Icon name="arrow_forward" size={18} />}>Unlock — $24.99</Button>
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {['All', 'Favorites', 'Quick', 'Sweet'].map((l) => (
+          <FilterChip key={l} label={l} selected={chip === l} onClick={() => setChip(l)}
+            icon={l === 'Favorites' ? 'favorite' : l === 'Quick' ? 'bolt' : l === 'Sweet' ? 'cake' : undefined} />
+        ))}
+      </div>
+      <CategoryChipRow active={cat} onSelect={setCat}
+        categories={[
+          { key: 'produce', label: '🥦 Produce', count: 12 },
+          { key: 'dairy', label: '🧀 Dairy', count: 5 },
+          { key: 'pantry', label: '🥫 Pantry staples', count: 9 },
+          { key: 'other', label: 'Other', count: 3 },
+        ]} />
+      <SegmentedControl options={['One recipe · 3 shots', '3 separate recipes']} value={seg} onChange={setSeg} />
+      <SegmentedControl showCheck options={['System', 'Light', 'Dark']} value={theme} onChange={setTheme} />
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script>
+</body>
+</html>

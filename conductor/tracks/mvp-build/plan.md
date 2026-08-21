@@ -8,6 +8,10 @@
 - [x] List and open
 - [x] Sync connectors: Google Drive and Dropbox, both proven on the S21
 - [x] Extraction proxy built
+- [x] Play developer account live and verified 2026-08-21 — personal account,
+      developer name **Merkurial-Studio**, contact email and phone both verified,
+      website avj.info. Merchant/legal country Norway (drives Play VAT, payouts,
+      and the privacy-policy jurisdiction).
 
 ## Open
 - [ ] Deploy the extraction proxy — the thin server between the app and the cloud

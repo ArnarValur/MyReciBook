@@ -1,0 +1,57 @@
+/* ============================================================
+   MyReciBook — Spacing, Radius & Layout
+   4px grid on a 360dp-wide reference frame (Galaxy S21).
+   Pills (full radius) for search, chips, segmented controls,
+   primary CTAs and the FAB; 22px "icon squircles" are the
+   signature large-icon container.
+   Source: handoff.md tokens + app/lib/ui/* paddings.
+   ============================================================ */
+
+:root {
+  /* ── Spacing (4px grid) ─────────────────────────────────── */
+  --space-unit: 4px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-compact: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  --screen-pad: 20px;        /* horizontal screen padding, everywhere */
+  --card-gap: 12px;          /* stacked cards: 11–12 */
+  --label-gap: 12px;         /* section eyebrow → card */
+  --card-pad: 14px;          /* card internal 12–16 */
+  --frame-width: 360px;      /* reference device width */
+  --nav-clearance: 110px;    /* list bottom padding above the glass bar */
+
+  /* ── Border radius — in practice the app is overwhelmingly
+     PILL and 12; 8 for small inputs. 16/22/24 are rare and
+     specific. Anything else is a smell. ─────────────────────── */
+  --radius-xs: 4px;          /* rare */
+  --radius-sm: 8px;          /* small inputs, inline tints, thumbnails, ONE-TIME badge */
+  --radius-md: 12px;         /* THE workhorse — row cards, grid tiles, notes, snackbars */
+  --radius-lg: 16px;         /* feature cards, dialogs */
+  --radius-squircle: 22px;   /* 68px hero icon squircles (paywall, cap) */
+  --radius-sheet: 24px;      /* bottom sheet top corners */
+  --radius-full: 9999px;     /* pills: search, chips, buttons, FAB, bar */
+
+  /* ── Borders ────────────────────────────────────────────── */
+  --border-hairline: 1px;
+  --border-focus: 1.5px;     /* selected card / focused input, primary */
+
+  /* ── Fixed element sizes ────────────────────────────────── */
+  --button-h: 48px;          /* filled buttons; hit targets ≥44 */
+  --button-sm-h: 36px;
+  --chip-h: 36px;
+  --search-h: 48px;
+  --segment-h: 38px;
+  --nav-pill-h: 56px;        /* inside a 64px hint (FAB overhang) */
+  --fab-size: 52px;
+  --glass-circle: 40px;
+  --icon-tile: 40px;         /* radius-md icon container in rows */
+  --squircle-size: 68px;
+  --cook-zone-h: 60px;       /* cook-mode back/next tap zones */
+  --checkbox-size: 18px;     /* radius 6 */
+  --grabber-w: 36px;         /* sheet grabber 36×4 */
+}

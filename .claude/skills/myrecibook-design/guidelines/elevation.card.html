@@ -1,0 +1,15 @@
+<!-- @dsCard group="Spacing" viewport="700x200" name="Elevation & glow" subtitle="Blue-tinted shadows; glow marks selection; the FAB gradient" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{margin:0;padding:18px 16px;display:flex;gap:16px;align-items:center;font-family:var(--font-body)}
+.c{flex:1;height:120px;border-radius:12px;background:var(--surface-container-lowest);border:1px solid var(--hairline);padding:10px 12px;box-sizing:border-box}
+.n{font-size:12px;font-weight:600}.h{font-size:10.5px;color:var(--on-surface-variant);font-family:var(--font-mono);margin-top:4px;line-height:1.5}
+</style></head>
+<body>
+<div class="c" style="box-shadow:var(--elev-1)"><div class="n">elev-1 · cards</div><div class="h">0 4 10<br>rgba(36,56,156,.06)</div></div>
+<div class="c" style="box-shadow:var(--elev-2)"><div class="n">elev-2 · modals</div><div class="h">0 8 20<br>rgba(36,56,156,.12)</div></div>
+<div class="c" style="box-shadow:var(--glow-primary);border:1.5px solid var(--primary)"><div class="n">glow · selected</div><div class="h">0 0 12 2<br>rgba(63,81,181,.15)<br>+ 1.5px primary</div></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8">
+<div style="width:52px;height:52px;border-radius:50%;background:var(--gradient-fab);box-shadow:var(--glow-fab);display:flex;align-items:center;justify-content:center"><span class="material-symbols-rounded" style="color:#fff;font-size:24px">add</span></div>
+<div class="h" style="text-align:center">FAB · 135° container→primary<br>glow rgba(63,81,181,.45)</div>
+</div>
+</body></html>

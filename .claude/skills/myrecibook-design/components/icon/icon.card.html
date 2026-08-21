@@ -1,0 +1,44 @@
+<!-- @dsCard group="Components" viewport="700x230" name="Icon" subtitle="Material Symbols Rounded — the app's only icon system" -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;padding:16px 20px;background:var(--scaffold)}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { Icon } = window.MyReciBookDesignSystem_4222aa;
+const GLYPHS = ['menu_book','checklist','download','settings','add','search','photo_library','photo_camera','edit','schedule','restaurant','favorite','timer','play_arrow','swap_horiz','check_circle','smartphone','add_to_drive','cloud','hourglass_top','push_pin','ios_share','event_repeat','delete','arrow_back','arrow_forward','chevron_right','close'];
+function Demo() {
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(14, 1fr)', gap: 10, justifyItems: 'center' }}>
+        {GLYPHS.map((g) => <Icon key={g} name={g} size={22} color="var(--on-surface)" />)}
+      </div>
+      <div style={{ display: 'flex', gap: 18, alignItems: 'center', marginTop: 18 }}>
+        <span className="rb-label-sm">Fill = active</span>
+        <span style={{ display: 'inline-flex', gap: 10 }}>
+          <Icon name="favorite" size={22} color="var(--on-surface-variant)" />
+          <Icon name="favorite" size={22} fill color="var(--tertiary-container)" />
+          <Icon name="menu_book" size={22} color="var(--on-surface-variant)" />
+          <Icon name="menu_book" size={22} fill color="var(--primary)" />
+        </span>
+        <span className="rb-label-sm" style={{ marginLeft: 12 }}>Primary accents</span>
+        <span style={{ display: 'inline-flex', gap: 10 }}>
+          <Icon name="schedule" size={22} color="var(--primary)" />
+          <Icon name="check_circle" size={22} color="var(--primary)" />
+        </span>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!-- @dsCard group="Brand" viewport="700x150" name="Motion" subtitle="Purposeful, never bouncy — M3 emphasized easing" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{margin:0;padding:16px;font-family:var(--font-body)}
+.r{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.t{font-family:var(--font-mono);font-size:11px;color:var(--on-surface-variant);width:190px}
+.track{flex:1;height:6px;border-radius:3px;background:var(--surface-container-high);position:relative}
+.dot{position:absolute;top:-4px;width:14px;height:14px;border-radius:50%;background:var(--primary);animation:go 2.4s infinite}
+@keyframes go{0%,12%{left:0}50%,62%{left:calc(100% - 14px)}100%{left:0}}
+.foot{font-size:11.5px;color:var(--on-surface-variant)}
+</style></head>
+<body>
+<div class="r"><span class="t">150ms · micro, hover</span><div class="track"><div class="dot" style="animation-timing-function:cubic-bezier(0.2,0,0,1)"></div></div></div>
+<div class="r"><span class="t">300ms · transitions</span><div class="track"><div class="dot" style="animation-timing-function:cubic-bezier(0.05,0.7,0.1,1);animation-delay:.12s"></div></div></div>
+<div class="r"><span class="t">500ms · deliberate</span><div class="track"><div class="dot" style="animation-timing-function:cubic-bezier(0.2,0,0,1);animation-delay:.24s"></div></div></div>
+<div class="foot">standard cubic-bezier(0.2, 0, 0, 1) · entering (0.05, 0.7, 0.1, 1) · leaving (0.3, 0, 0.8, 0.15) · no bouncy curves · press = ripple/scale 0.98, hover = tint or 2px card lift · known gap: the app does not yet check the system reduced-motion setting</div>
+</body></html>

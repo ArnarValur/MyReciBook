@@ -1,0 +1,18 @@
+<!-- @dsCard group="Brand" viewport="700x210" name="Glass" subtitle="Frosted overlays float over content — nav bar 20px blur, hero controls 12px" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{margin:0;padding:0}
+.stage{position:relative;height:210px}
+.glass{position:absolute;background:var(--glass-fill);border:1px solid var(--glass-border);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.pill{left:20px;right:20px;bottom:16px;height:56px;border-radius:9999px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-size:11.5px;color:var(--on-surface-variant)}
+.circ{top:16px;left:20px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.gp{top:16px;left:72px;height:28px;border-radius:9999px;display:flex;align-items:center;gap:5px;padding:0 12px;font-family:var(--font-body);font-size:11.5px;font-weight:600;color:var(--on-surface)}
+.spec{position:absolute;top:16px;right:20px;font-family:var(--font-mono);font-size:10.5px;color:var(--on-surface);text-align:right;line-height:1.6;background:var(--glass-fill);padding:8px 10px;border-radius:12px;border:1px solid var(--glass-border);backdrop-filter:blur(12px)}
+</style></head>
+<body>
+<div class="stage rb-stripes">
+<div class="glass circ"><span class="material-symbols-rounded" style="font-size:20px;color:var(--on-surface)">arrow_back</span></div>
+<div class="glass gp"><span class="material-symbols-rounded" style="font-size:15px">swap_horiz</span>original</div>
+<div class="spec">fill rgba(255,255,255,.55)<br>border rgba(0,0,0,.08)<br>dark: rgba(0,0,0,.35) / white 12%</div>
+<div class="glass pill">the floating nav pill — content scrolls under it (extendBody)</div>
+</div>
+</body></html>

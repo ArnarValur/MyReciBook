@@ -1,0 +1,39 @@
+/* ============================================================
+   MyReciBook — Elevation, Glow, Glass & Motion
+   Depth = tonal layers + soft ambient shadows tinted with the
+   primary blue. Dark mode leans on surface tint, not shadow.
+   Source: app/lib/ui/theme.dart (RbTokens) + handoff.md.
+   ============================================================ */
+
+:root {
+  /* ── Ambient shadows (light) ────────────────────────────── */
+  --elev-1: 0 4px 10px rgba(36, 56, 156, 0.06);   /* cards */
+  --elev-2: 0 8px 20px rgba(36, 56, 156, 0.12);   /* modals, sheets */
+
+  /* ── Moody Blue glows ───────────────────────────────────── */
+  --glow-primary: 0 0 12px 2px rgba(63, 81, 181, 0.15); /* selected card, merge prompt */
+  --glow-fab: 0 8px 16px 2px rgba(63, 81, 181, 0.45);   /* gradient FAB */
+
+  /* ── FAB gradient — 135° primary-container → primary ────── */
+  --gradient-fab: linear-gradient(135deg, var(--primary-container), var(--primary));
+
+  /* ── Glass blur ─────────────────────────────────────────── */
+  --blur-glass: 20px;         /* nav bar */
+  --blur-glass-soft: 12px;    /* glass circles / pills on heroes */
+
+  /* ── Motion — purposeful, never bouncy ──────────────────── */
+  --dur-fast: 150ms;    /* @kind other */  /* micro / hover */
+  --dur-normal: 300ms;  /* @kind other */  /* standard transitions */
+  --dur-slow: 500ms;    /* @kind other */  /* deliberate */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);        /* @kind other */
+  --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1); /* @kind other */  /* entering */
+  --ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);       /* @kind other */  /* leaving */
+}
+
+/* Dark "Midnight": shadows read weakly on navy — soften, tint. */
+[data-theme="dark"] {
+  --elev-1: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --elev-2: 0 8px 20px rgba(0, 0, 0, 0.5);
+  --glow-primary: 0 0 12px 2px rgba(186, 195, 255, 0.18);
+  --glow-fab: 0 8px 18px 2px rgba(186, 195, 255, 0.3);
+}

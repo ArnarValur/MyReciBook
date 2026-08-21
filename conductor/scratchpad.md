@@ -1,37 +1,54 @@
 # Scratchpad
 
-Arnar's notes. Conductor never writes here.
+Arnar's notes. Fresh page pulled 2026-08-21 on Arnar's word; old page in git history.
 
-- Grocery list needs a bit of a revamp — ask Arnar what he wants changed.
-- Internationalization: can we offer languages?
-- Export recipes as PDF? If Google Drive connected, open in Google Docs?
-- Need a way for users to send feedback / error reports.
-- App update mechanism for installed app — presume Google Play standard update flow, confirm.
-- Can we import recipes from other apps? Research feasibility.
+## Carried over — still live
+- Grocery list revamp — ask Arnar what he wants changed.
+- Import recipes from other apps — research feasibility.
+- User feedback channel — Crashlytics covers the error half; feedback half still open.
+- OPEN, Arnar's call: Crashlytics on by default with an off switch, vs off until opt-in.
+- Decided, not yet in code: remove the delete-screenshot toggle from import review
+  (app/lib/ui/import_review_screen.dart).
+- Crashlytics install recipe: two packages, google-services.json, two Gradle plugins,
+  startup error hooks, ring buffer as breadcrumbs, recipe text scrubbed before upload.
+  Build/startup config only — no screen or recipe code.
 
-## 2026-08-20 — crash visibility, discussed
+## 2026-08-21 — weekend plan, agreed (Cowork session)
 
-- Feedback received: the ring-buffer log only leaves the phone if a tester copies it
-  out by hand, so in production real failure rates stay invisible.
-- Play Console → Android vitals already collects crash and ANR rates for free, no
-  code, no SDK. TODO: go look at it for 0.6.0+3.
-- Firebase Crashlytics is the Flutter/Google standard for stack traces and for
-  handled-but-wrong errors that never kill the app. Free tier.
-- Constraint 3 "no backend" means no custom server or CMS Arnar maintains — not
-  managed Google infra. Firebase joins the existing GCP project that holds the
-  Gemini key. Arnar's reading, agreed.
-- TODO (later session, before the closed test widens): two packages,
-  google-services.json, two Gradle plugins, error hooks in app startup, ring buffer
-  wired in as breadcrumbs, recipe text scrubbed before upload. Startup and build
-  config only — no screen or recipe code touched.
-- OPEN, Arnar's call: crash reporting on by default with an off switch in settings,
-  versus off until the user opts in. It is a promise to users, not a technical choice.
-- No Dart obfuscation — it would make crash reports unreadable to us too.
-  deploy-s21.sh is already correct; nothing to change.
-- App Check becomes available once Firebase is on the project. It gates who can call
-  endpoints but does NOT replace the proxy's per-purchase cap counter. Do not chase.
-- Arnar decided: remove the delete-screenshot toggle from import review altogether
-  (app/lib/ui/import_review_screen.dart, currently off by default). If deletion ever
-  misfires the original screenshot is gone for good.
-- Scratchpad line "need a way for users to send feedback / error reports" is what
-  this thread was about — Crashlytics covers the error half, feedback still open.
+Sequence, not schedule. Finish line: Arnar installs MyReciBook from Play + landing site moving.
+
+**Stage 1 — harden**
+- S21 verify diary categories 2–4.
+- Three pinned link-picker test files: fix or delete, no third option.
+- Secret scan done 2026-08-21: client_secret, dev.env, key.properties all untracked,
+  never in git history. Clean.
+
+**Stage 2 — infra on MyReciBook-Dev** (Google ecosystem, agreed)
+- Proxy → Cloud Run, key in Secret Manager, per ai-cap-mechanics.md §4.
+- Durable cap counter → Firestore per §1; usage measuring on (per-install ID until billing).
+- Prepay Gemini credits, auto-reload off. Spend-cap budgets $50 Gemini / $10 Cloud Run,
+  plus one alerts-only budget across the billing account.
+- Unparked by Arnar: Crashlytics · Play key backup.
+- Cost ceiling Arnar set: up to ~100–200 NOK/mo is fine; expected spend ≈ 0.
+
+**Stage 3 — Play internal track**
+- Release bundle, app created in Play Console, data safety form, privacy policy URL
+  (avj.info hosts it until myrecibook.com exists).
+- Internal testing track → Arnar installs from Play. First official user.
+- Update propagation = push a new bundle to the track, Play auto-updates every install.
+  Prove it with the next build. (Old scratchpad question "confirm update flow" — confirmed.)
+
+**Stage 4 — landing site**
+- Base: Arnar's AI Studio prototype — keep the elements he likes. SEO is the point.
+- Cats on the page. Non-negotiable; they are the shareholders.
+- Hosting decision when the stage opens (Firebase Hosting is the ecosystem default, free tier).
+
+**Cap decision**
+- Working number moves 600 → 1200 rescues/year ("100 a month"). Math at verified
+  2026-08-21 pricing ($0.30/$2.50 per M): maxed user $3.84/yr, all-worst-path $6.72/yr,
+  against ~$21.24 net per sale. Fleet cost follows real usage (~150/yr), not the cap.
+- Nothing prints in the listing until closed-test usage data confirms.
+- Once printed, 1200 can rise, never fall.
+
+Parked by Arnar for another session: tester recruitment / branching out to networks —
+he has ideas, ask him there.

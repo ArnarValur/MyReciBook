@@ -1,0 +1,163 @@
+/* ============================================================
+   MyReciBook — Color System
+   Merkurial-Studio house palette (shared with DittoDatto):
+   Material 3 tonal palettes seeded from "Moody Blue" #3F51B5.
+   Two themes ship: light "Stitch Slate" (default, warm cream
+   scaffold) and dark "Midnight" (deep navy — never black).
+   Source of truth: app/lib/ui/theme.dart (RbColors) +
+   docs/design/handoff.md in ArnarValur/MyReciBook.
+   ============================================================ */
+
+:root {
+  /* ── Brand seed ─────────────────────────────────────────── */
+  --rb-moody-blue: #3f51b5;
+
+  /* ── Primary (Moody Blue) ───────────────────────────────── */
+  --primary: #24389c;
+  --on-primary: #ffffff;
+  --primary-container: #3f51b5;
+  --on-primary-container: #cacfff;
+  --inverse-primary: #bac3ff;
+  --surface-tint: #4355b9;
+
+  /* ── Secondary (soft indigo — chips, tonal fills) ───────── */
+  --secondary: #4d5a9c;
+  --on-secondary: #ffffff;
+  --secondary-container: #abb7ff;
+  --on-secondary-container: #394687;
+
+  /* ── Tertiary (magenta-pink) — RESERVED. Only two uses in
+     the whole app: the paywall ONE-TIME badge and the favorite
+     heart. Never decorate with it. ────────────────────────── */
+  --tertiary: #88003b;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #b40050;
+  --on-tertiary-container: #ffc3ce;
+
+  /* ── Error ──────────────────────────────────────────────── */
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+
+  /* ── Status (semantic — ONLY success + warning exist; identical in
+     both themes; defined outside the scheme in RbColors).
+     CONTRAST RULE: never raw text on light surfaces (≈2:1). Use:
+     fill @12–14% · border @55–70% 1.5px · text blended toward
+     on-surface (the *-text tokens below). Raw color only as a small
+     icon beside text saying the same thing. ─────────────────────── */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  /* Flagged extraction line: warning at 12% over the card */
+  --flag-tint: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.55);
+  --warning-text: color-mix(in srgb, var(--warning) 55%, var(--on-surface));
+  /* Quiet status pill fill: success at 14% */
+  --pill-success-tint: rgba(34, 197, 94, 0.14);
+  --success-border: rgba(34, 197, 94, 0.55);
+  --success-text: color-mix(in srgb, var(--success) 55%, var(--on-surface));
+
+  /* ── Surfaces (Light — "Stitch Slate") ──────────────────── */
+  --background: #f9f9fc;
+  --on-background: #1a1c1e;
+  --surface: #f9f9fc;
+  --surface-dim: #dadadc;
+  --surface-bright: #f9f9fc;
+  --surface-container-lowest: #ffffff;  /* cards */
+  --surface-container-low: #f3f3f6;
+  --surface-container: #eeeef0;         /* search bar */
+  --surface-container-high: #e8e8ea;    /* chips, icon squircles */
+  --surface-container-highest: #e2e2e5;
+  --on-surface: #1a1c1e;
+  --on-surface-variant: #454652;
+
+  /* Scaffold cream — the warm off-white behind every screen */
+  --scaffold: #faf8f0;
+
+  --outline: #757684;
+  --outline-variant: #c5c5d4;
+  /* Hairline = outline-variant @50%; separator = @35% */
+  --hairline: rgba(197, 197, 212, 0.5);
+  --separator: rgba(197, 197, 212, 0.35);
+
+  --inverse-surface: #2f3133;
+  --inverse-on-surface: #f0f0f3;
+
+  /* ── Glass tints (light) ────────────────────────────────── */
+  --glass-fill: rgba(255, 255, 255, 0.55);
+  --glass-fill-dim: rgba(255, 255, 255, 0.35);
+  --glass-border: rgba(0, 0, 0, 0.08);
+
+  /* ── Scrim (import sheet barrier — 45% deep navy) ───────── */
+  --scrim: rgba(11, 13, 22, 0.45);
+
+  /* ── Recipe cover gradients — 135°, chosen deterministically
+     from the recipe title (stable hash), watermarked with the
+     LogoMark at 22% white. Screenshots are NOT promoted to
+     covers. Order matters — it is the hash table. ──────────── */
+  --cover-indigo: linear-gradient(135deg, #3f51b5, #24389c); /* @kind other */
+  --cover-slate: linear-gradient(135deg, #4a5a8c, #2c3557); /* @kind other */
+  --cover-plum: linear-gradient(135deg, #8e3b62, #5b2340); /* @kind other */
+  --cover-terracotta: linear-gradient(135deg, #b4643c, #7c3f24); /* @kind other */
+  --cover-teal: linear-gradient(135deg, #2e6f6a, #1b4744); /* @kind other */
+  --cover-olive: linear-gradient(135deg, #5e7346, #3b4a2b); /* @kind other */
+}
+
+/* ============================================================
+   Dark theme — "Midnight"
+   Deep navy surfaces (never #000). Primary shifts to light
+   lavender per M3 dark mapping; elevation is shown through
+   surface tinting rather than shadow.
+   ============================================================ */
+[data-theme="dark"] {
+  --primary: #bac3ff;
+  --on-primary: #071a86;
+  --primary-container: #293ca0;
+  --on-primary-container: #dee0ff;
+  --inverse-primary: #24389c;
+  --surface-tint: #bac3ff;
+
+  --secondary: #b9c3ff;
+  --on-secondary: #21326f;
+  --secondary-container: #354282;
+  --on-secondary-container: #dee1ff;
+
+  --tertiary: #ffb1c1;
+  --on-tertiary: #650029;
+  --tertiary-container: #8f003f;
+  --on-tertiary-container: #ffd9df;
+
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+
+  --background: #0f1117;
+  --on-background: #e4e2e6;
+  --surface: #0f1117;
+  --surface-dim: #0f1117;
+  --surface-bright: #35373e;
+  --surface-container-lowest: #0a0c11;
+  --surface-container-low: #141720;
+  --surface-container: #161922;
+  --surface-container-high: #1c1f2b;
+  --surface-container-highest: #262a36;
+  --on-surface: #e4e2e6;
+  --on-surface-variant: #c5c5d4;
+
+  --scaffold: #0f1117;
+
+  --outline: #8f8f9e;
+  --outline-variant: #454652;
+  --hairline: rgba(69, 70, 82, 0.5);
+  --separator: rgba(69, 70, 82, 0.35);
+
+  --inverse-surface: #e4e2e6;
+  --inverse-on-surface: #2f3133;
+
+  --glass-fill: rgba(0, 0, 0, 0.35);
+  --glass-fill-dim: rgba(0, 0, 0, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.12);
+
+  --scrim: rgba(0, 0, 0, 0.55);
+}

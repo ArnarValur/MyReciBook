@@ -24,6 +24,9 @@
 - nutrition — open: grocery package-size math, label-photo fallback.
 - mvp-build — billing seam open, unstarted. Dev GCP project
   MyReciBook-Dev (gen-lang-client-0166122901).
+- Play developer account live and verified (Merkurial-Studio, personal, Norway).
+  Closed test — 12 testers, 14 unbroken days — is now the only gate left before
+  production access, and it needs an installable alpha on the closed track.
 
 ## ⚠️ Blockers
 - None.

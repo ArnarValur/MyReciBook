@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyReciBook — roll C · pantry numbers</title>
+<!-- MOCKUP ONLY: fonts loaded from Google for convenience. Production self-hosts (GDPR, build constraint 4). -->
+<!-- Angle: the foodlog/barcode audience. No competitor names on the page (strategy §4) — the contrast does the talking. -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0" rel="stylesheet">
+<style>
+  :root{
+    --scaffold:#FAF8F0; --surface:#F9F9FC; --card:#FFFFFF; --chip:#E8E8EA; --chip-lo:#F3F3F6;
+    --primary:#24389C; --primary-c:#3F51B5;
+    --tertiary:#B40050; --on-tertiary:#FFC3CE;
+    --ink:#1A1C1E; --ink2:#454652; --outline:#757684; --hair:#C5C5D4;
+    --success:#22C55E; --warning:#F59E0B;
+    --shadow:0 4px 10px rgba(36,56,156,.06); --shadow-lg:0 8px 20px rgba(36,56,156,.12);
+    --ease:cubic-bezier(.2,0,0,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--scaffold);color:var(--ink);font:14px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-0.02em}
+  .ms{font-family:'Material Symbols Rounded';font-size:20px;line-height:1;vertical-align:-4px}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 20px}
+  .label{font:600 11px/1 Inter;letter-spacing:.9px;text-transform:uppercase;color:var(--ink2)}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow)}
+  section{padding:68px 0}
+  h2.sec{font-size:29px;font-weight:800;line-height:1.2}
+  .kick{display:block;margin-bottom:10px}
+  header{padding:22px 0}
+  .wordmark{font:800 23px 'Plus Jakarta Sans';color:var(--primary);display:flex;align-items:center;gap:10px}
+  .wordmark .dot{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--primary-c),var(--primary));display:grid;place-items:center;color:#fff}
+  .btn{border:0;border-radius:999px;padding:13px 24px;font:600 14px Inter;cursor:pointer;background:var(--primary);color:#fff;box-shadow:0 8px 16px 2px rgba(63,81,181,.25)}
+  .capture{display:flex;gap:10px;max-width:440px}
+  .capture input{flex:1;border:1px solid var(--hair);border-radius:999px;padding:13px 20px;font:14px Inter;background:var(--card);outline-color:var(--primary)}
+  .micro{margin-top:12px;font-size:12px;color:var(--outline);max-width:44ch}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:center}
+
+  /* ---------- hero ---------- */
+  .hero{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;padding:36px 0 80px}
+  .hero h1{font-size:44px;line-height:1.12;font-weight:800}
+  .hero h1 em{font-style:normal;color:var(--primary)}
+  .hero .sub{margin:20px 0 26px;font-size:15.5px;color:var(--ink2);max-width:46ch}
+  .freebadges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+  .fb{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border-radius:999px;padding:6px 13px;font:600 12px Inter;color:var(--ink2)}
+  .fb .ms{font-size:15px;color:var(--success)}
+
+  /* scanner demo */
+  .scanwrap{position:relative}
+  .scanner{border-radius:20px;background:#10131c;padding:22px;box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
+  .viewfinder{border-radius:14px;background:linear-gradient(160deg,#232838,#151926);height:170px;position:relative;display:grid;place-items:center;overflow:hidden}
+  .barcode{display:flex;gap:3px;align-items:flex-end;height:64px;filter:drop-shadow(0 0 8px rgba(255,255,255,.15))}
+  .barcode i{display:block;background:#e8e8ec;width:3px;height:100%}
+  .barcode i:nth-child(3n){width:6px}.barcode i:nth-child(4n){height:88%}.barcode i:nth-child(5n){width:2px}
+  .scanline{position:absolute;left:8%;right:8%;height:2px;background:linear-gradient(90deg,transparent,#ff5470,transparent);box-shadow:0 0 12px 2px rgba(255,84,112,.6);top:20%;opacity:0}
+  .scanning .scanline{opacity:1;animation:sweep 1.1s ease-in-out 2}
+  @keyframes sweep{0%{top:14%}50%{top:82%}100%{top:14%}}
+  .torch{position:absolute;top:12px;right:12px;color:#fff;opacity:.7}
+  .scanbtn{margin-top:16px;width:100%;border:0;border-radius:999px;padding:13px;font:600 13.5px Inter;background:#fff;color:#10131c;cursor:pointer}
+  .scanbtn:disabled{opacity:.5;cursor:default}
+  .foundcard{position:absolute;left:18px;right:18px;bottom:-84px;padding:16px 18px;opacity:0;transform:translateY(10px);transition:all .45s var(--ease);background:var(--card);border-radius:16px;box-shadow:var(--shadow-lg)}
+  .foundcard.on{opacity:1;transform:none}
+  .foundcard .nm{font:700 15px 'Plus Jakarta Sans'}
+  .foundcard .meta{font-size:12px;color:var(--ink2);margin-top:2px}
+  .nutgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;text-align:center}
+  .nutgrid b{display:block;font:800 17px 'Plus Jakarta Sans';color:var(--primary)}
+  .nutgrid span{font-size:10.5px;color:var(--ink2)}
+  .vitline{margin-top:10px;font-size:11.5px;color:var(--outline)}
+  .aifree{position:absolute;top:-12px;right:14px;background:var(--success);color:#fff;border-radius:999px;padding:5px 12px;font:600 10.5px Inter;letter-spacing:.6px}
+
+  /* ---------- never-capped grid ---------- */
+  .four{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px}
+  .feat{padding:24px 22px}
+  .feat .sq{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--chip);color:var(--primary);margin-bottom:13px}
+  .feat h3{font-size:16px;margin-bottom:8px}
+  .feat p{font-size:13.5px;color:var(--ink2)}
+
+  /* ---------- food log ---------- */
+  .log{padding:20px;max-width:420px}
+  .log .lhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .log .day{font:700 16px 'Plus Jakarta Sans'}
+  .log .total{font:800 20px 'Plus Jakarta Sans';color:var(--primary)}
+  .meal{margin-top:12px}
+  .mrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(197,197,212,.4);font-size:13px}
+  .mrow:last-child{border:0}
+  .mrow .kc{margin-left:auto;font-weight:600;color:var(--ink2)}
+  .mrow .ms{font-size:17px;color:var(--outline)}
+  .mrow.added{animation:popin .45s var(--ease);background:rgba(34,197,94,.08);border-radius:8px;padding-inline:8px;margin-inline:-8px}
+  @keyframes popin{0%{transform:scale(.9);opacity:0}100%{transform:none;opacity:1}}
+  .logbtn{margin-top:14px;width:100%;border:1px solid var(--hair);background:transparent;border-radius:999px;padding:10px;font:600 12.5px Inter;color:var(--primary);cursor:pointer}
+  .logbtn:disabled{opacity:.5;cursor:default}
+
+  /* ---------- rescue strip ---------- */
+  .rescue{background:var(--surface);border-top:1px solid rgba(197,197,212,.4);border-bottom:1px solid rgba(197,197,212,.4)}
+  .rrows{margin-top:22px;display:grid;gap:12px;max-width:640px}
+  .rrow{display:flex;gap:14px;align-items:flex-start;padding:16px 18px}
+  .rrow .ms{color:var(--primary);margin-top:2px}
+  .rrow p{font-size:13.5px;color:var(--ink2)}
+  .rrow b{display:block;font:700 14.5px 'Plus Jakarta Sans';color:var(--ink);margin-bottom:2px}
+
+  /* ---------- price ---------- */
+  .pricecard{max-width:520px;margin:30px auto 0;padding:36px 36px 30px;text-align:center;position:relative}
+  .onetime{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--tertiary);color:var(--on-tertiary);border-radius:999px;padding:6px 16px;font:600 11px Inter;letter-spacing:.9px}
+  .bigprice{font:800 52px 'Plus Jakarta Sans';color:var(--primary);letter-spacing:-.03em}
+  .bigprice small{font-size:18px;color:var(--ink2);font-weight:600}
+  .inc{list-style:none;text-align:left;margin:22px 0 4px;font-size:13.5px}
+  .inc li{padding:9px 0;border-bottom:1px solid rgba(197,197,212,.45);display:flex;gap:10px}
+  .inc li:last-child{border:0}
+  .inc .ms{color:var(--success);font-size:18px}
+  .capnote{font-size:12.5px;color:var(--ink2);margin-top:12px}
+  .anchor{margin-top:20px;font-size:13px;color:var(--outline);text-align:center}
+
+  .founder{max-width:620px;margin:0 auto;text-align:center}
+  .founder p{font-size:14.5px;color:var(--ink2);text-align:left}
+  .founder p+p{margin-top:12px}
+  .founder .sig{margin-top:14px;font:700 15px 'Plus Jakarta Sans';text-align:left}
+  .macline{background:var(--chip-lo);border-radius:12px;padding:13px 16px;font-size:13.5px}
+  footer{padding:30px 0 46px;text-align:center;font-size:12px;color:var(--outline)}
+  footer a{color:var(--outline)}
+  @media (max-width:860px){
+    .hero,.split{grid-template-columns:1fr;gap:32px}
+    .hero h1{font-size:33px}h2.sec{font-size:25px}
+    .four{grid-template-columns:1fr}
+    .scanwrap{margin-bottom:96px}
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="wordmark"><span class="dot"><span class="ms">menu_book</span></span>MyReciBook</div>
+</header>
+
+<!-- 1 · hero -->
+<div class="wrap hero">
+  <div>
+    <h1>Your pantry knows <em>its numbers.</em></h1>
+    <p class="sub">Scan barcodes, log your food, see per-serving nutrition computed from what you actually bought — on Android, with no subscription behind the scanner. And it files every recipe as a plain file you own.</p>
+    <div class="freebadges">
+      <span class="fb"><span class="ms">check</span>No subscription</span>
+      <span class="fb"><span class="ms">check</span>No account</span>
+      <span class="fb"><span class="ms">check</span>No ads, ever</span>
+      <span class="fb"><span class="ms">check</span>No cap on any of this</span>
+    </div>
+    <form class="capture" onsubmit="event.preventDefault();this.querySelector('button').textContent='You’re on the list ✓'">
+      <input type="email" required placeholder="you@example.com" aria-label="Email">
+      <button class="btn" type="submit">Email me at launch</button>
+    </form>
+    <p class="micro">Launching on Google Play, December 2026. A few progress notes before then — nothing else, unsubscribe anytime.</p>
+  </div>
+
+  <!-- scanner demo -->
+  <div class="scanwrap">
+    <div class="scanner" id="scanner">
+      <div class="viewfinder">
+        <span class="torch ms">flashlight_on</span>
+        <div class="barcode" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="scanline"></div>
+      </div>
+      <button class="scanbtn" id="scanbtn" onclick="scan()">Tap to scan — try it</button>
+    </div>
+    <div class="foundcard" id="foundcard">
+      <span class="aifree">AI-FREE</span>
+      <div class="nm">Whole milk 3.5%</div>
+      <div class="meta">Arla · 1 L · per 100 ml</div>
+      <div class="nutgrid">
+        <div><b>64</b><span>kcal</span></div>
+        <div><b>3.4g</b><span>protein</span></div>
+        <div><b>3.5g</b><span>fat</span></div>
+        <div><b>4.7g</b><span>carbs</span></div>
+      </div>
+      <div class="vitline">+ calcium, B2, B12 — vitamins included when the database knows them.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 · the never-capped kit -->
+<section>
+  <div class="wrap">
+    <span class="label kick">The whole kit, never capped</span>
+    <h2 class="sec">A barcode scanner shouldn't live behind a paywall.</h2>
+    <p style="margin-top:14px;color:var(--ink2);max-width:60ch">Everything on this side of the app is AI-free — plain, honest database lookups and arithmetic. So none of it touches the rescue cap, none of it ever expires, and none of it will quietly move into a "premium" tier one Tuesday.</p>
+    <div class="four">
+      <div class="card feat">
+        <div class="sq"><span class="ms">barcode_scanner</span></div>
+        <h3>Scan the shelf</h3>
+        <p>Scan a barcode off the shelf and the pantry fills itself — name, brand, pack size and the full nutrient list per 100g, vitamins included when the database knows them.</p>
+      </div>
+      <div class="card feat">
+        <div class="sq"><span class="ms">link</span></div>
+        <h3>Your food, your numbers</h3>
+        <p>Link "250 ml milk" in a recipe to the actual milk you scanned, and the recipe shows per-serving numbers computed from your own food — not a generic average.</p>
+      </div>
+      <div class="card feat">
+        <div class="sq"><span class="ms">kitchen</span></div>
+        <h3>Cook from the pantry</h3>
+        <p>Build a new recipe straight out of what's already on your shelves. The pantry knows what you have; the grocery list quietly hints when a recipe needs something you don't.</p>
+      </div>
+      <div class="card feat">
+        <div class="sq"><span class="ms">fact_check</span></div>
+        <h3>Log what you actually ate</h3>
+        <p>Day by day, meal by meal, from your pantry and your recipes. Your log is yours — it lives in your files, not on our servers, because there are no servers with your name on them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · food log demo -->
+<section style="padding-top:0">
+  <div class="wrap split">
+    <div class="card log">
+      <div class="lhead"><span class="day">Thursday 20 Aug</span><span class="total">1,462 <span style="font:500 12px Inter;color:var(--ink2)">kcal</span></span></div>
+      <div class="meal">
+        <span class="label">Breakfast</span>
+        <div class="mrow"><span class="ms">bakery_dining</span>Oat porridge, blueberries<span class="kc">318</span></div>
+        <div class="mrow"><span class="ms">coffee</span>Coffee, splash of milk<span class="kc">24</span></div>
+      </div>
+      <div class="meal">
+        <span class="label">Lunch</span>
+        <div class="mrow"><span class="ms">lunch_dining</span>Rye bread, eggs & cucumber<span class="kc">434</span></div>
+      </div>
+      <div class="meal">
+        <span class="label">Dinner</span>
+        <div class="mrow"><span class="ms">dinner_dining</span>Sticky lemon chicken · 1 serving<span class="kc">486</span></div>
+        <div class="mrow"><span class="ms">icecream</span>Skyr, honey<span class="kc">200</span></div>
+      </div>
+      <div id="loghome"></div>
+      <button class="logbtn" id="logbtn" onclick="logMilk()">+ Log the milk you just scanned</button>
+    </div>
+    <div>
+      <span class="label kick">Try it</span>
+      <h2 class="sec">A real day, from real food.</h2>
+      <p style="margin-top:16px;color:var(--ink2)">The dinner line comes from a rescued recipe — 486 kcal per serving, computed from the linked pantry items. The rest was logged in a few taps. No streak guilt, no coach popups, no ads between your meals. It's a log, and it behaves like one.</p>
+      <p style="margin-top:12px;font-size:12.5px;color:var(--outline)"><span class="ms" style="font-size:15px">lock_open</span> Scanned it in the hero? The button on the card actually works.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · the recipe rescuer, briefly -->
+<section class="rescue">
+  <div class="wrap">
+    <span class="label kick">Oh — and the other half of the app</span>
+    <h2 class="sec">It rescues the recipes buried in your camera roll.</h2>
+    <div class="rrows">
+      <div class="card rrow"><span class="ms">photo_library</span><p><b>Screenshots become recipes.</b> Instagram, TikTok, your mum on WhatsApp. Pick one screenshot or a pile; you review, you confirm, done. AI rescues carry a fair-use cap stated in writing — typing recipes in yourself is always free and unlimited.</p></div>
+      <div class="card rrow"><span class="ms">folder</span><p><b>Your files, not our cloud.</b> One plain, readable file per recipe, in a folder you pick. Back up to your own Drive or Dropbox. Delete the app and every recipe — and your food log — is still there. No account. No login. No tracking. No ads. Ever.</p></div>
+      <div class="card rrow"><span class="ms">call_merge</span><p><b>A grocery list that actually merges.</b> "Lemon" + "lemons" become one row — 6 lemons, from 2 recipes — and only after asking you. Your aisles, remembered. Staples stay quiet.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · price -->
+<section>
+  <div class="wrap">
+    <div style="text-align:center"><span class="label kick">The deal</span>
+      <h2 class="sec">Pay once. Cook forever.</h2></div>
+    <div class="card pricecard">
+      <span class="onetime">ONE-TIME</span>
+      <div class="bigprice">$24.99 <small>once, ever</small></div>
+      <ul class="inc">
+        <li><span class="ms">check</span>Every recipe, forever, in your storage</li>
+        <li><span class="ms">check</span>The whole nutrition kit — scanning, pantry, logging — never capped</li>
+        <li><span class="ms">check</span>600 AI rescues a year — fair-use cap, in writing</li>
+        <li><span class="ms">check</span>All future features included</li>
+      </ul>
+      <p class="capnote">Typing recipes in yourself is unlimited. The cap can go up over time; it can never go down.</p>
+    </div>
+    <p class="anchor">Less than a single year of the big subscription recipe apps.</p>
+  </div>
+</section>
+
+<!-- 6 · founder -->
+<section style="padding-top:0">
+  <div class="wrap founder">
+    <p>I'm building MyReciBook solo, as one cook who wanted his screenshots, his pantry and his food log in one place — without renting them back monthly. It runs on my own Galaxy S21 every day. Pay-once, no ads, no tricks: there's no investor asking me to charge you rent.</p>
+    <p class="macline"><span class="ms" style="color:var(--primary)">laptop_mac</span> <b>iPhone folks:</b> iOS is coming. The funding plan is exactly this simple — enough of you buy the Android app, I buy a cheap MacBook, and we ship it. You'll hear it here first.</p>
+    <p class="sig">— Arnar</p>
+    <form class="capture" style="margin:28px auto 0;justify-content:center" onsubmit="event.preventDefault();this.querySelector('button').textContent='You’re on the list ✓'">
+      <input type="email" required placeholder="you@example.com" aria-label="Email">
+      <button class="btn" type="submit">Email me at launch</button>
+    </form>
+  </div>
+</section>
+
+<footer class="wrap">
+  MyReciBook · <a href="#">Privacy policy</a> · hello@myrecibook.com
+</footer>
+
+<script>
+let scanned=false;
+function scan(){
+  const sc=document.getElementById('scanner'), btn=document.getElementById('scanbtn');
+  btn.disabled=true; btn.textContent='Scanning…';
+  sc.classList.add('scanning');
+  setTimeout(()=>{
+    sc.classList.remove('scanning');
+    document.getElementById('foundcard').classList.add('on');
+    btn.textContent='Found it — no AI needed';
+    scanned=true;
+  },2200);
+}
+function logMilk(){
+  const btn=document.getElementById('logbtn');
+  if(!scanned){ btn.textContent='Scan the milk in the hero first ↑'; setTimeout(()=>btn.textContent='+ Log the milk you just scanned',1800); return; }
+  const row=document.createElement('div');
+  row.className='mrow added';
+  row.innerHTML='<span class="ms">water_full</span>Whole milk 3.5% · 250 ml<span class="kc">160</span>';
+  document.getElementById('loghome').appendChild(row);
+  document.querySelector('.log .total').innerHTML='1,622 <span style="font:500 12px Inter;color:var(--ink2)">kcal</span>';
+  btn.disabled=true; btn.textContent='Logged ✓ — it went into your file, not our cloud';
+}
+</script>
+</body>
+</html>
