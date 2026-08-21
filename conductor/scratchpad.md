@@ -6,9 +6,9 @@ Arnar's notes. Fresh page pulled 2026-08-21 on Arnar's word; old page in git his
 - Grocery list revamp — ask Arnar what he wants changed.
 - Import recipes from other apps — research feasibility.
 - User feedback channel — Crashlytics covers the error half; feedback half still open.
-- OPEN, Arnar's call: Crashlytics on by default with an off switch, vs off until opt-in.
-  Built 2026-08-21 defaulting OFF, toggle present. One constant flips it:
-  kCrashReportingDefaultOn in app/lib/data/crash_reporter.dart.
+- Crash reporting: ON by default, switch in Settings to turn it off. Arnar
+  2026-08-22: this was never actually an open question — a previous session
+  wrote it up as one. Setting it up dormant defeated the point.
 - Decided, not yet in code: remove the delete-screenshot toggle from import review
   (app/lib/ui/import_review_screen.dart).
 - Crashlytics install recipe — DONE in code 2026-08-21. Only google-services.json

@@ -5,7 +5,7 @@
 // production this moves to package_info_plus so the binary reports its real
 // version; no new dependency for the alpha.
 
-const kAppVersion = '0.10.1';
+const kAppVersion = '0.10.2';
 
 /// The ONE footer string (6a, turn 6): '· you own this copy' is appended only
 /// when a purchase receipt makes it true — the mock annotation "drops 'you

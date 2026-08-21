@@ -32,6 +32,25 @@ class CrashReportingModel extends ChangeNotifier {
   /// switch that would quietly do nothing.
   bool get hasSink => _reporter?.hasSink ?? false;
 
+  /// Fires one deliberate report so the pipe can be SEEN working — the
+  /// Crashlytics dashboard shows nothing at all until a first report lands,
+  /// which is indistinguishable from being broken. Non-fatal: it is a probe,
+  /// not a crash, so it does not pollute the crash-free-users number.
+  ///
+  /// Returns false when there is nothing to send through (reporting off, or
+  /// no Firebase in this build) so the caller can say so honestly.
+  bool sendTestReport() {
+    final reporter = _reporter;
+    if (reporter == null || !reporter.hasSink || !_enabled) return false;
+    reporter.record(
+      Exception('Test report from MyReciBook settings — not a real crash'),
+      StackTrace.current,
+      context: 'sent by hand from the error log',
+      fatal: false,
+    );
+    return true;
+  }
+
   Future<void> setEnabled(bool value) async {
     if (value == _enabled) return;
     _enabled = value;

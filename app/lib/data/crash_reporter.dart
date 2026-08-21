@@ -21,14 +21,17 @@
 
 import 'crash_log.dart';
 
-/// Crash reporting default — OPEN CALL, Arnar's (scratchpad 2026-08-21: "on by
-/// default with an off switch, vs off until opt-in"). Until he decides it ships
-/// OFF: the Settings toggle exists and works, it just starts unchecked, so no
-/// error text leaves a device without the user having said yes.
+/// Crash reporting default — ON. Arnar decided 2026-08-22: shipping it dormant
+/// meant a tester could hit a bug and we would learn nothing, which defeats the
+/// point of having it during a closed test.
 ///
-/// Flipping this one constant to `true` changes the default for fresh installs
-/// only — anyone who has already touched the toggle keeps their own choice.
-const bool kCrashReportingDefaultOn = false;
+/// The switch in Settings still lets anyone turn it off, and everything
+/// uploaded is scrubbed first (see [scrubForUpload]) — no recipe text, no
+/// paths, no tokens. The local ring buffer runs regardless of this setting.
+///
+/// This is the default for fresh installs only; anyone who has already touched
+/// the switch keeps their own choice.
+const bool kCrashReportingDefaultOn = true;
 
 /// The off-device destination for an error. Implemented by the Crashlytics
 /// sink; left null in tests and in any build without Firebase configured.

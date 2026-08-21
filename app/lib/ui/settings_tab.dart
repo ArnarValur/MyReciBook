@@ -39,6 +39,7 @@ class SettingsTab extends StatelessWidget {
 
   void _showErrorLog(BuildContext context) {
     final log = context.read<CrashLog>();
+    final crash = context.read<CrashReportingModel>();
     showDialog<void>(
       context: context,
       builder: (ctx) {
@@ -77,6 +78,22 @@ class SettingsTab extends StatelessWidget {
                   ),
           ),
           actions: [
+            // The dashboard shows nothing until a first report arrives, which
+            // looks exactly like being broken. This proves the pipe.
+            if (crash.enabled && crash.hasSink)
+              TextButton(
+                onPressed: () {
+                  final sent = crash.sendTestReport();
+                  Navigator.of(ctx).pop();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(sent
+                            ? 'Test report sent — it shows up in a minute or two'
+                            : 'Crash reports are off, nothing sent')));
+                  }
+                },
+                child: const Text('Send test report'),
+              ),
             if (entries.isNotEmpty) ...[
               TextButton(
                 onPressed: () async {
