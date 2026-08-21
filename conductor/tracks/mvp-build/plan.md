@@ -48,10 +48,11 @@
       debug fingerprint covers it.
 - [ ] Measure real usage. The ledger records it from the first live call;
       nothing meaningful collected yet.
-- [ ] Closed-test build on the Play track — Google makes a new personal developer
-      account run a closed test, 12 testers for 14 unbroken days, before it will
-      grant production access. So an installable alpha has to go up on Play's
-      closed track well before launch.
+- [ ] Closed test on Play — Google grants a new personal developer account
+      production access only after 12 people have the app installed from the
+      test track for 14 days straight. Nobody recruited; Arnar owns that.
+      Nothing to do with the 14 free days a buyer gets — same number, unrelated.
+      An installable alpha has to be on the closed track well before launch.
 - [ ] Billing — one-time purchase, hard paywall. Seam exists, nothing built.
 
 ## Arnar's, not tracked here

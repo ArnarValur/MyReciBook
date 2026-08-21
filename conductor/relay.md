@@ -11,7 +11,10 @@
 - Arnar: dormant crash reporting defeated the point, and that "open question" a
   previous session recorded was never his. Spend budgets and credits are his to
   manage — conductor stopped tracking them.
-- Nothing pending.
+- Play's 12-testers-for-14-days gate had sat in 8 repo files since 2026-08-05
+  and no session ever said it out loud; Arnar hit it by accident. Now a pulse
+  blocker. Standing rule: a gate found in research is said, not just filed.
+- Nothing pending. Tester recruitment is the long pole; Arnar owns it.
 
 ## 2026-08-21 — audited before selling, then took the server live
 
