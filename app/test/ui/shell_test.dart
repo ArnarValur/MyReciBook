@@ -171,7 +171,13 @@ void main() {
     await settle(tester, rounds: 4);
     expect(find.text('Where your recipes live'), findsOneWidget);
     // 6a footer rule: version only — no ownership claim without a receipt.
-    expect(find.text('MyReciBook $kAppVersion'), findsOneWidget);
+    // The footer is last in a scrolling list and the crash-report block above
+    // it (2026-08-21) pushed it off a 360dp screen, so scroll before looking.
+    final footer = find.text('MyReciBook $kAppVersion');
+    await tester.scrollUntilVisible(footer, 120,
+        scrollable: find.byType(Scrollable).last);
+    await tester.pump();
+    expect(footer, findsOneWidget);
     expect(find.textContaining('you own this copy'), findsNothing);
     // Honest state: local-only alpha never claims sync.
     expect(find.textContaining('synced'), findsNothing);
