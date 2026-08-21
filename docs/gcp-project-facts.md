@@ -31,6 +31,10 @@ The project number is also the prefix of the Drive OAuth client already in
 
 ## Production project
 
-Does not exist yet. §4 item 9 of `docs/ai-cap-mechanics.md` calls for two
+Does not exist yet. **Everything deployed as of 2026-08-21 is dev/test.**
+When prod is created it needs its own: Gemini auth key, Secret Manager secret,
+Firestore database, Cloud Run service and URL, budgets, and App Check
+registration with the Play App Signing fingerprint. The only thing shared is
+the source. §4 item 9 of `docs/ai-cap-mechanics.md` calls for two
 projects, prod and test, with separate keys and separate caps. NEEDS ARNAR when
 the internal track graduates.

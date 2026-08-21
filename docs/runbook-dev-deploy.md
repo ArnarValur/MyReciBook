@@ -1,5 +1,16 @@
 # Runbook — deploy the extraction proxy to MyReciBook-Dev
 
+> **This is the TEST/DEV environment.** Everything below lives on
+> MyReciBook-Dev (`gen-lang-client-0166122901`). Production is a separate GCP
+> project that does not exist yet (§4 item 9) and shares nothing but the code:
+> its own Gemini auth key, Secret Manager entry, Firestore, Cloud Run URL,
+> budgets and App Check registration.
+>
+> **The trap:** the Play closed test can legitimately run against this dev
+> proxy — 12 testers is tiny spend and it is exactly the fair-use measurement
+> we want. But the dev URL must NOT survive into the production build. When
+> prod is stood up, `EXTRACTION_PROXY_URL` changes and the old one dies.
+
 *Written 2026-08-21, then partly executed the same evening once gcloud turned
 up. Steps are marked DONE as they actually complete — anything not marked DONE
 has not happened.*
