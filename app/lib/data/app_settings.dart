@@ -65,6 +65,11 @@ class AppSettings {
     return v == 'metric' || v == 'imperial' ? v as String : 'as_written';
   }
 
+  /// Interface language ('en' / 'nb' / 'system'); default system, i.e. follow
+  /// the phone. Unknown values read as 'system' — a corrupt entry, or a
+  /// language dropped in a later version, is a default, not a crash.
+  String get language => _data['language'] as String? ?? 'system';
+
   /// Daily calorie target for the diary. Null = no goal set, and the diary
   /// says "no goal yet" instead of measuring you against a number nobody
   /// chose. Zero or negative reads as unset.
@@ -113,6 +118,8 @@ class AppSettings {
   Future<void> setMealNames(List<String> names) => _write('meal_names', names);
 
   Future<void> setUnits(String units) => _write('units', units);
+
+  Future<void> setLanguage(String language) => _write('language', language);
 
   Future<void> setThemeMode(String mode) => _write('theme_mode', mode);
 

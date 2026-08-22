@@ -24,7 +24,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 #   the suite if lib/version.dart drifts) · 0.MINOR.PATCH until production,
 #   1.0.0 reserved for launch · +N = Play versionCode, bump on EVERY upload.
 # The drift guard is decision-neutral and stands whatever scheme he picks.
-version: 0.10.2+10
+version: 0.11.0+10
 
 environment:
   sdk: ^3.12.0
@@ -38,6 +38,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Material/Cupertino widgets in the user's language, and the date/number
+  # formatting the diary and nutrition screens need per locale.
+  flutter_localizations:
+    sdk: flutter
+  # Pinned by flutter_localizations — 'any' lets that pin win instead of
+  # fighting it on every SDK bump.
+  intl: any
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -72,6 +79,10 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+
+  # Runs gen_l10n over lib/l10n/*.arb on every build/test (config: l10n.yaml).
+  # The generated AppLocalizations is not checked in — it is build output.
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

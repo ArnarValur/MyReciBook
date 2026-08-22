@@ -16,7 +16,9 @@ import 'package:provider/provider.dart';
 
 import '../data/crash_log.dart';
 import '../features.dart';
+import '../domain/app_language.dart';
 import '../domain/units.dart';
+import '../l10n/l10n.dart';
 import '../version.dart';
 import 'crash_reporting_model.dart';
 import 'diary/diary_goal_screen.dart';
@@ -24,6 +26,8 @@ import 'diary/diary_model.dart';
 import 'storage_model.dart';
 import 'theme.dart';
 import 'theme_model.dart';
+import 'language_model.dart';
+import 'language_screen.dart';
 import 'units_model.dart';
 import 'widgets/skin.dart';
 
@@ -47,12 +51,12 @@ class SettingsTab extends StatelessWidget {
         final entries = log.entries;
         return AlertDialog(
           title: Text(entries.isEmpty
-              ? 'Error log'
-              : 'Error log (${entries.length})'),
+              ? ctx.l10n.errorLogTitle
+              : ctx.l10n.errorLogTitleCount(entries.length)),
           content: SizedBox(
             width: double.maxFinite,
             child: entries.isEmpty
-                ? Text('No captured errors.',
+                ? Text(ctx.l10n.errorLogEmpty,
                     style: Theme.of(ctx)
                         .textTheme
                         .bodyMedium
@@ -83,16 +87,19 @@ class SettingsTab extends StatelessWidget {
             if (crash.enabled && crash.hasSink)
               TextButton(
                 onPressed: () {
+                  // Both strings read off the dialog's context BEFORE the pop
+                  // — after it, ctx is unmounted and the lookup would throw.
+                  final l10n = ctx.l10n;
                   final sent = crash.sendTestReport();
                   Navigator.of(ctx).pop();
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(sent
-                            ? 'Test report sent — it shows up in a minute or two'
-                            : 'Crash reports are off, nothing sent')));
+                            ? l10n.errorLogTestSent
+                            : l10n.errorLogReportsOff)));
                   }
                 },
-                child: const Text('Send test report'),
+                child: Text(ctx.l10n.errorLogSendTest),
               ),
             if (entries.isNotEmpty) ...[
               TextButton(
@@ -100,25 +107,27 @@ class SettingsTab extends StatelessWidget {
                   await log.clear();
                   if (ctx.mounted) Navigator.of(ctx).pop();
                 },
-                child: const Text('Clear'),
+                child: Text(ctx.l10n.errorLogClear),
               ),
               TextButton(
                 onPressed: () async {
+                  // Read before the await and the pop, same reason.
+                  final copied = ctx.l10n.errorLogCopied;
                   await Clipboard.setData(ClipboardData(text: log.export()));
                   if (ctx.mounted) Navigator.of(ctx).pop();
                   // The OUTER context crossed the await too — guard it
                   // separately; the tab can unmount while the copy runs.
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Error log copied — paste it to Arnar')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(copied)));
                   }
                 },
-                child: const Text('Copy all'),
+                child: Text(ctx.l10n.errorLogCopyAll),
               ),
             ],
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Close'),
+              child: Text(ctx.l10n.commonClose),
             ),
           ],
         );
@@ -132,6 +141,7 @@ class SettingsTab extends StatelessWidget {
     final scheme = context.scheme;
     final themeModel = context.watch<ThemeModel>();
     final unitsModel = context.watch<UnitsModel>();
+    final languageModel = context.watch<LanguageModel>();
     final storage = context.watch<StorageModel>();
 
     Widget row({
@@ -139,10 +149,12 @@ class SettingsTab extends StatelessWidget {
       required String title,
       String? caption,
       VoidCallback? onTap,
+      Key? key,
     }) =>
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: InkWell(
+            key: key,
             borderRadius: BorderRadius.circular(12),
             onTap: onTap,
             child: TokenCard(
@@ -240,7 +252,7 @@ class SettingsTab extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-            child: Text('Settings',
+            child: Text(context.l10n.settingsTitle,
                 style: theme.textTheme.headlineSmall?.copyWith(fontSize: 22)),
           ),
           Expanded(
@@ -248,42 +260,74 @@ class SettingsTab extends StatelessWidget {
               // Bottom clearance for the glass bar, grocery-tab convention.
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 110),
               children: [
-                const SectionLabel('Theme'),
+                SectionLabel(context.l10n.sectionTheme),
                 const SizedBox(height: 8),
                 Container(
+                  key: const Key('settings-theme-control'),
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                       color: scheme.surfaceContainerHigh,
                       borderRadius: BorderRadius.circular(999)),
                   child: Row(children: [
-                    themeSegment(ThemeMode.system, 'System'),
-                    themeSegment(ThemeMode.light, 'Light'),
-                    themeSegment(ThemeMode.dark, 'Dark'),
+                    themeSegment(ThemeMode.system, context.l10n.themeSystem),
+                    themeSegment(ThemeMode.light, context.l10n.themeLight),
+                    themeSegment(ThemeMode.dark, context.l10n.themeDark),
                   ]),
                 ),
                 const SizedBox(height: 20),
                 // Units (Arnar 2026-08-18): three states, not a checkbox —
                 // "As written" must exist so nothing converts by default.
-                const SectionLabel('Units'),
+                SectionLabel(context.l10n.sectionUnits),
                 const SizedBox(height: 8),
                 Container(
+                  key: const Key('settings-units-control'),
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                       color: scheme.surfaceContainerHigh,
                       borderRadius: BorderRadius.circular(999)),
                   child: Row(children: [
-                    unitSegment(UnitSystem.asWritten, 'As written'),
-                    unitSegment(UnitSystem.metric, 'Metric'),
-                    unitSegment(UnitSystem.imperial, 'US'),
+                    unitSegment(
+                        UnitSystem.asWritten, context.l10n.unitsAsWritten),
+                    unitSegment(UnitSystem.metric, context.l10n.unitsMetric),
+                    unitSegment(
+                        UnitSystem.imperial, context.l10n.unitsImperial),
                   ]),
                 ),
                 const SizedBox(height: 20),
+                // Language: hidden entirely until a second language is
+                // actually finished (kLanguageChoiceExists). A row that opens
+                // a list of one, or that switches you into a screen of mixed
+                // Icelandic and English, is worse than no row at all.
+                // A row to a pushed list, the Storage shape — eleven
+                // languages plus System never fit a segmented pill. The row's
+                // title IS the current language, in its own name.
+                if (kLanguageChoiceExists) ...[
+                  SectionLabel(context.l10n.sectionLanguage),
+                  const SizedBox(height: 8),
+                  row(
+                    // Keyed: the row's title is 'System' before a choice, which
+                    // also labels a Theme segment — a bare text finder is two.
+                    key: const Key('settings-language-row'),
+                    icon: Icons.language_rounded,
+                    title: languageModel.language == AppLanguage.system
+                        ? context.l10n.languageSystem
+                        : appLanguageEndonym(languageModel.language),
+                    onTap: () =>
+                        Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                            builder: (_) => ChangeNotifierProvider<LanguageModel>
+                                .value(
+                              value: context.read<LanguageModel>(),
+                              child: const LanguageScreen(),
+                            ))),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (kDiaryEnabled) ...[
-                  const SectionLabel('Diary'),
+                  SectionLabel(context.l10n.sectionDiary),
                   const SizedBox(height: 8),
                   row(
                     icon: Icons.flag_outlined,
-                    title: 'Daily goal',
+                    title: context.l10n.diaryDailyGoal,
                     caption: context.watch<DiaryModel>().goalSummary,
                     onTap: () =>
                         Navigator.of(context).push<void>(MaterialPageRoute<void>(
@@ -295,11 +339,11 @@ class SettingsTab extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                 ],
-                const SectionLabel('Storage'),
+                SectionLabel(context.l10n.sectionStorage),
                 const SizedBox(height: 8),
                 row(
                   icon: Icons.cloud_rounded,
-                  title: 'Where your recipes live',
+                  title: context.l10n.storageWhereRecipesLive,
                   // Truthful one-liner (6a): 'This phone' alone, or
                   // 'This phone + <Provider> · synced X ago' when proven.
                   caption: storage.settingsSummary(),
@@ -311,22 +355,20 @@ class SettingsTab extends StatelessWidget {
                 // Arnar-only (audit H1): a crash nobody can see is a crash
                 // nobody fixes. It is opt-in, it is a switch, and the local
                 // error log below keeps working either way.
-                const SectionLabel('Crash reports'),
+                SectionLabel(context.l10n.sectionCrashReports),
                 const SizedBox(height: 8),
                 Builder(builder: (context) {
                   final crash = context.watch<CrashReportingModel>();
                   return SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: Text('Send crash reports',
+                    title: Text(context.l10n.crashReportsSend,
                         style: theme.textTheme.bodyLarge),
                     subtitle: Text(
                       crash.hasSink
-                          ? 'Anonymous error reports, so a crash gets fixed '
-                              'instead of forgotten. Never your recipes.'
+                          ? context.l10n.crashReportsCaption
                           // Honest rather than silently inert: no Firebase in
                           // this build, so the switch has nowhere to send.
-                          : 'Not available in this build. Errors are still '
-                              'recorded on this device.',
+                          : context.l10n.crashReportsUnavailable,
                       style: theme.textTheme.bodySmall
                           ?.copyWith(color: scheme.onSurfaceVariant),
                     ),
@@ -336,11 +378,11 @@ class SettingsTab extends StatelessWidget {
                   );
                 }),
                 const SizedBox(height: 8),
-                const SectionLabel('About'),
+                SectionLabel(context.l10n.sectionAbout),
                 const SizedBox(height: 8),
                 row(
                   icon: Icons.description_outlined,
-                  title: 'Open-source licenses',
+                  title: context.l10n.aboutLicenses,
                   onTap: () => showLicensePage(
                       context: context,
                       applicationName: 'MyReciBook',

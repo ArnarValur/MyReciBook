@@ -1,0 +1,62 @@
+{
+  "@@locale": "en",
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": { "description": "Heading of the Settings tab." },
+
+  "sectionTheme": "Theme",
+  "@sectionTheme": { "description": "Settings section label above the light/dark control." },
+  "themeSystem": "System",
+  "@themeSystem": { "description": "Theme choice: follow the phone's light/dark setting." },
+  "themeLight": "Light",
+  "themeDark": "Dark",
+
+  "sectionUnits": "Units",
+  "@sectionUnits": { "description": "Settings section label above the measurement control." },
+  "unitsAsWritten": "As written",
+  "@unitsAsWritten": { "description": "Measurement choice: never convert, show the recipe's own units. This is the default and must read as 'leave it alone'." },
+  "unitsMetric": "Metric",
+  "unitsImperial": "US",
+  "@unitsImperial": { "description": "Short label for US customary measurements (cups, ounces). Kept short to fit one third of a segmented control." },
+
+  "sectionLanguage": "Language",
+  "@sectionLanguage": { "description": "Settings section label above the language control." },
+  "languageSystem": "System",
+  "@languageSystem": { "description": "Language choice: follow the phone's language. Translate this one; the other entries are language endonyms and stay untranslated." },
+
+  "sectionDiary": "Diary",
+  "diaryDailyGoal": "Daily goal",
+  "@diaryDailyGoal": { "description": "Settings row opening the calorie and macro targets screen." },
+
+  "sectionStorage": "Storage",
+  "storageWhereRecipesLive": "Where your recipes live",
+  "@storageWhereRecipesLive": { "description": "Settings row opening the storage screen. The caption below it names the folder and any connected service." },
+
+  "sectionCrashReports": "Crash reports",
+  "crashReportsSend": "Send crash reports",
+  "crashReportsCaption": "Anonymous error reports, so a crash gets fixed and not forgotten. Never your recipes.",
+  "@crashReportsCaption": { "description": "Explains what leaves the device. 'Never your recipes' is the promise — keep that reassurance in translation." },
+  "crashReportsUnavailable": "Not available in this build. Errors are still recorded on this device.",
+  "@crashReportsUnavailable": { "description": "Shown when the build has no crash-reporting sink compiled in." },
+
+  "sectionAbout": "About",
+  "aboutLicenses": "Open-source licenses",
+
+  "errorLogTitle": "Error log",
+  "errorLogTitleCount": "Error log ({count})",
+  "@errorLogTitleCount": {
+    "description": "Error log heading when there are captured errors.",
+    "placeholders": { "count": { "type": "int", "example": "3" } }
+  },
+  "errorLogEmpty": "No captured errors.",
+  "errorLogSendTest": "Send test report",
+  "@errorLogSendTest": { "description": "Button that fires a fake crash report so the pipe can be proven before a real crash lands." },
+  "errorLogTestSent": "Test report sent — it shows up in a minute or two",
+  "errorLogReportsOff": "Crash reports are off, nothing sent",
+  "errorLogClear": "Clear",
+  "errorLogCopyAll": "Copy all",
+  "errorLogCopied": "Error log copied — send it to the developer",
+  "@errorLogCopied": { "description": "Snackbar after copying the error log to the clipboard. Say SEND, not paste — paste-to-a-person is an English-only idiom, and the dictionary word for 'paste' is not what people actually say in most languages. Do not name the developer; a stranger does not know who that is." },
+
+  "commonClose": "Close"
+}

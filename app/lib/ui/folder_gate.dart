@@ -15,6 +15,8 @@ import '../data/product_store.dart';
 import '../data/recipe_store.dart';
 import '../data/saf_pantry_store.dart';
 import '../data/saf_store.dart';
+import '../domain/app_language.dart';
+import '../l10n/generated/app_localizations.dart';
 import 'theme.dart';
 
 enum _Boot { checking, gate, migrating, ready }
@@ -29,6 +31,7 @@ class BootGate extends StatefulWidget {
     this.localPantry,
     this.pantryImageCache,
     this.themeMode,
+    this.locale,
     this.appNavigatorKey,
     this.safChannel = const MethodChannel('com.merkurialstudio.myrecibook/saf'),
   });
@@ -50,6 +53,12 @@ class BootGate extends StatefulWidget {
   /// pass, 2026-08-06). Listenable so a settings change reaches a later
   /// re-entry (change-folder) without a restart; null keeps system (tests).
   final ValueListenable<ThemeMode>? themeMode;
+
+  /// The user's saved interface language, for the same reason as [themeMode]:
+  /// the gate's MaterialApp is built before the provider tree exists, so
+  /// without this it would resolve the phone's language and ignore an in-app
+  /// choice. Null (tests, and follow-the-phone) lets the platform resolve.
+  final ValueListenable<Locale?>? locale;
 
   /// Pre-gate app-private store — the one-shot migration source.
   final LocalFolderStore localStore;
@@ -290,18 +299,28 @@ class _BootGateState extends State<BootGate> {
       _ => _Busy(
           label: _phase == _Boot.migrating ? 'Moving your recipes in…' : null),
     };
-    MaterialApp app(ThemeMode mode) => MaterialApp(
+    MaterialApp app(ThemeMode mode, Locale? locale) => MaterialApp(
           title: 'MyReciBook',
           navigatorKey: _nav,
           theme: rbLightTheme(),
           darkTheme: rbDarkTheme(),
           themeMode: mode,
+          // null = follow the phone; MaterialApp resolves it against the
+          // supported list itself.
+          locale: locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: kOfferedLocales,
           home: gateHome,
         );
-    final pref = widget.themeMode;
-    if (pref == null) return app(ThemeMode.system);
+    final themePref = widget.themeMode;
+    final localePref = widget.locale;
+    Widget withLocale(ThemeMode mode) => localePref == null
+        ? app(mode, null)
+        : ValueListenableBuilder<Locale?>(
+            valueListenable: localePref, builder: (_, l, _) => app(mode, l));
+    if (themePref == null) return withLocale(ThemeMode.system);
     return ValueListenableBuilder<ThemeMode>(
-        valueListenable: pref, builder: (_, mode, _) => app(mode));
+        valueListenable: themePref, builder: (_, mode, _) => withLocale(mode));
   }
 }
 
