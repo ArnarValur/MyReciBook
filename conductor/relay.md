@@ -3,17 +3,19 @@
 
 ## 2026-08-22 — i18n unparked, foundation up, Icelandic chosen as the stress test
 
-- 0.11.0+10 on branch i18n, not folded. flutter_localizations + gen_l10n, a
-  language picker in endonyms, follow-the-phone default, both MaterialApps
-  wired. Settings tab migrated as the proof. 50 green.
+- 0.11.0+10, folded to main. flutter_localizations + gen_l10n, a language
+  picker in endonyms, follow-the-phone default, both MaterialApps wired.
+  Settings tab migrated as the proof. test/ui 194 green.
 - 11 .arb files seeded and reviewed by language family; 46 corrections applied.
   Two of them were the ENGLISH source: "paste it to Arnar" and "instead of
   forgotten" are English-only idioms every Nordic language calqued into
   nonsense. Fixed at the source, and the developer's name is out of the string.
 - Arnar: one language at a time, Icelandic first — four cases and three genders,
-  so what survives it survives the rest. Only COMPLETE languages are offered;
-  nine files sit at 31 messages on purpose. He is recruiting Polish testers,
-  which serves the Play gate and the Polish read-through at once.
+  so what survives it survives the rest. And never show the language selection
+  until a language is FINISHED — matching app_en.arb only proves a file kept up
+  with the strings extracted so far. The control hides itself; all ten .arb
+  files are parked. He is recruiting Polish testers, which serves the Play gate
+  and the Polish read-through at once.
 - Counting strings surfaced two real bugs, neither i18n: 'Veggies' is written
   out 73 times because every starter food carries its category as a free
   string, and convertUnits never touches serving labels, so metric users see

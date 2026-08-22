@@ -4,7 +4,7 @@
 > **Updated:** 2026-08-22 — checkpoint
 
 ## 📍 Now
-- Phase: build. 0.11.0+10. Branch i18n holds the language work; main is at 0.10.2+10.
+- Phase: build. 0.11.0+10 on main. Branch i18n is level with main and is where language work continues.
 - Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Verified end to end.
 - Both import doors verified on a phone through the live server (Arnar).
 - Gemini key in Secret Manager only; release build carries none. app/dev.env holds the server URL.
@@ -20,7 +20,8 @@
 - mvp-build — server done and deployed. Billing seam open, unstarted.
 - diary — categories 1-4 in code. Open: device verify of 2-4, starter values.
 - nutrition — open: grocery package-size math, label-photo fallback, serving-label conversion.
-- i18n — foundation done on branch i18n, English + Íslenska offered, nine more parked at 31 strings. Open: the string sweep. Arnar takes one language at a time.
+- i18n — foundation folded to main. Language control HIDDEN until a language
+  is finished; ten .arb files parked. Open: the string sweep, one language at a time.
 
 ## ⚠️ Blockers
 - Play grants production access only after 12 people have the app installed
