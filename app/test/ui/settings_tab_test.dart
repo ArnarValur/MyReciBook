@@ -89,8 +89,20 @@ void main() {
     expect(ThemeModel().mode, ThemeMode.system);
   });
 
-  FontWeight? segmentWeight(WidgetTester tester, String label) =>
-      tester.widget<Text>(find.text(label)).style?.fontWeight;
+  /// Scoped to one segmented control: 'System' labels the Theme segment AND
+  /// (while the language is unset) the Language row, so a bare find.text
+  /// would match twice.
+  FontWeight? segmentWeight(WidgetTester tester, String label,
+          {String control = 'settings-theme-control'}) =>
+      tester
+          .widget<Text>(find.descendant(
+              of: find.byKey(Key(control)), matching: find.text(label)))
+          .style
+          ?.fontWeight;
+
+  Finder segment(String label, {String control = 'settings-theme-control'}) =>
+      find.descendant(
+          of: find.byKey(Key(control)), matching: find.text(label));
 
   testWidgets('segmented theme control reacts live and persists across a '
       'relaunch', (tester) async {
@@ -105,7 +117,8 @@ void main() {
 
     await openSettings(tester);
     // Active segment carries the check + w600; the others stay quiet.
-    // Two checks total on the tab: one per segmented control (Theme + Units).
+    // Two checks on the tab: one per segmented control (Theme + Units).
+    // Language is a row to a pushed list, so its check is not on this tab.
     expect(segmentWeight(tester, 'System'), FontWeight.w600);
     expect(segmentWeight(tester, 'Dark'), FontWeight.w500);
     expect(
@@ -114,7 +127,7 @@ void main() {
             matching: find.byIcon(Icons.check_rounded)),
         findsNWidgets(2));
 
-    await tester.tap(find.text('Dark'));
+    await tester.tap(segment('Dark'));
     await settle(tester, rounds: 8);
     expect(appThemeMode(tester), ThemeMode.dark); // MaterialApp reacted
     expect(
@@ -135,7 +148,7 @@ void main() {
     // ...and a relaunched ThemeModel boots straight into it.
     expect(ThemeModel(settings: reloaded).mode, ThemeMode.dark);
 
-    await tester.tap(find.text('Light'));
+    await tester.tap(segment('Light'));
     await settle(tester, rounds: 8);
     expect(appThemeMode(tester), ThemeMode.light);
     expect(
@@ -156,14 +169,14 @@ void main() {
     await openSettings(tester);
 
     // Default: nothing converts — "As written" carries the active pill.
-    expect(segmentWeight(tester, 'As written'), FontWeight.w600);
-    expect(segmentWeight(tester, 'Metric'), FontWeight.w500);
+    expect(segmentWeight(tester, 'As written', control: 'settings-units-control'), FontWeight.w600);
+    expect(segmentWeight(tester, 'Metric', control: 'settings-units-control'), FontWeight.w500);
 
     await tester.tap(find.text('Metric'));
     await settle(tester, rounds: 8);
     expect(model.system, UnitSystem.metric);
-    expect(segmentWeight(tester, 'Metric'), FontWeight.w600);
-    expect(segmentWeight(tester, 'As written'), FontWeight.w500);
+    expect(segmentWeight(tester, 'Metric', control: 'settings-units-control'), FontWeight.w600);
+    expect(segmentWeight(tester, 'As written', control: 'settings-units-control'), FontWeight.w500);
 
     // Persisted: the choice survives a reload of the settings file...
     final reloaded =

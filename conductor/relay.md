@@ -1,6 +1,28 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-22 — i18n unparked, foundation up, Icelandic chosen as the stress test
+
+- 0.11.0+10 on branch i18n, not folded. flutter_localizations + gen_l10n, a
+  language picker in endonyms, follow-the-phone default, both MaterialApps
+  wired. Settings tab migrated as the proof. 50 green.
+- 11 .arb files seeded and reviewed by language family; 46 corrections applied.
+  Two of them were the ENGLISH source: "paste it to Arnar" and "instead of
+  forgotten" are English-only idioms every Nordic language calqued into
+  nonsense. Fixed at the source, and the developer's name is out of the string.
+- Arnar: one language at a time, Icelandic first — four cases and three genders,
+  so what survives it survives the rest. Only COMPLETE languages are offered;
+  nine files sit at 31 messages on purpose. He is recruiting Polish testers,
+  which serves the Play gate and the Polish read-through at once.
+- Counting strings surfaced two real bugs, neither i18n: 'Veggies' is written
+  out 73 times because every starter food carries its category as a free
+  string, and convertUnits never touches serving labels, so metric users see
+  cups. Both filed.
+- UNFINISHED: the string sweep has not started. 629 literals in lib/ui, 395
+  unclassified in lib/data and lib/domain, 353 glued together with $, 21 faking
+  plurals. Inventory and handoff rules in tracks/i18n/coverage.md. Next file is
+  pantry_tab, English and Icelandic together.
+
 ## 2026-08-22 — crash reports on by default, both import doors proven on a phone
 
 - Screenshot rescue and URL share both verified on the phone against the live
