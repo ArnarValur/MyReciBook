@@ -109,6 +109,15 @@ Ships behind `kRecipeTagsEnabled`, which exists and is already off for exactly t
 - ❓ **Filter persistence.** Proposal: no. A filter that survives a restart makes
   the cookbook look empty and broken. Session-only, like today.
 
+## i18n — landed on main 2026-08-22, after this plan was written
+- Every string this track adds goes through gen_l10n, not a literal: the
+  Settings→Tags screen, the picker, the built-in chip labels (All / Favorites /
+  Quick). `arb_parity_test` fails the suite if a key is missing from a locale.
+- User tag NAMES are user data. Never translated, never keyed, never touched.
+- Icon catalog group names ("Dishes", "Kitchen & tools") and the picker's search
+  terms are UI strings — they need keys, and search must match the localized
+  term, not the English one.
+
 ## Not in this track
 - Auto-tagging from the extractor. Nothing earns a tag but the user's tap.
 - Tag-driven meal planning, tag search syntax, tags on the grocery list.
