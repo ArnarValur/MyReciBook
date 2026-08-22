@@ -29,12 +29,14 @@ import 'data/share_intake.dart';
 import 'data/sync_engine.dart';
 import 'data/sync_source.dart';
 import 'data/token_store.dart';
+import 'domain/app_language.dart';
 import 'domain/extractor.dart';
 import 'ui/app_shell.dart';
 import 'ui/batch_model.dart';
 import 'ui/cookbook_prefs.dart';
 import 'ui/crash_reporting_model.dart';
 import 'ui/units_model.dart';
+import 'ui/language_model.dart';
 import 'ui/folder_gate.dart';
 import 'ui/grocery_model.dart';
 import 'ui/library_model.dart';
@@ -44,6 +46,7 @@ import 'ui/storage_model.dart';
 import 'ui/photo_sources.dart';
 import 'ui/theme.dart';
 import 'ui/theme_model.dart';
+import 'l10n/generated/app_localizations.dart';
 
 // Storage connector credentials (rule 6): device builds read the gitignored
 // app/dev.env via --dart-define-from-file — it gains DRIVE_CLIENT_ID=... and
@@ -154,6 +157,7 @@ Future<void> main() async {
   final themeModel = ThemeModel(settings: settings);
   final cookbookPrefs = CookbookPrefs(settings: settings);
   final unitsModel = UnitsModel(settings: settings);
+  final languageModel = LanguageModel(settings: settings);
 
   final picker = ImagePicker();
   // App Check proves to the proxy that this really is our app on a real
@@ -189,6 +193,9 @@ Future<void> main() async {
     // it sat on ThemeMode.system and change-folder opened dark over a light
     // app (Arnar's S21 pass, 2026-08-06).
     themeMode: themeModel,
+    // Same reason as themeMode: the gate's own MaterialApp is built before the
+    // provider tree, so it needs the language handed to it directly.
+    locale: languageModel,
     appNavigatorKey: nav,
     appBuilder: (store, pantry, onGrantLost, onChangeFolder) {
       // A lost grant mid-sync joins the same re-pick flow as store ops.
@@ -211,6 +218,7 @@ Future<void> main() async {
         themeModel: themeModel,
         cookbookPrefs: cookbookPrefs,
         unitsModel: unitsModel,
+        languageModel: languageModel,
         crashLog: crashLog,
         crashReporting: crashReporting,
         onGrantLost: onGrantLost,
@@ -243,6 +251,7 @@ Widget buildApp({
   ThemeModel? themeModel,
   CookbookPrefs? cookbookPrefs,
   UnitsModel? unitsModel,
+  LanguageModel? languageModel,
   CrashLog? crashLog,
   CrashReportingModel? crashReporting,
   VoidCallback? onGrantLost,
@@ -276,6 +285,13 @@ Widget buildApp({
           ChangeNotifierProvider<UnitsModel>.value(value: unitsModel)
         else
           ChangeNotifierProvider<UnitsModel>(create: (_) => UnitsModel()),
+        // Same .value rule; the inert default follows the phone's language —
+        // the exact pre-toggle behavior, so the test seam stays unchanged.
+        if (languageModel != null)
+          ChangeNotifierProvider<LanguageModel>.value(value: languageModel)
+        else
+          ChangeNotifierProvider<LanguageModel>(
+              create: (_) => LanguageModel()),
         // Plain Provider (not a notifier): the settings footer door reads it
         // on demand. Inert default keeps the test seam file-free.
         Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),
@@ -321,13 +337,20 @@ Widget buildApp({
       ],
       // Consumer, not a plain read: MaterialApp.themeMode must react live
       // when the settings tab changes the preference.
-      child: Consumer<ThemeModel>(
-        builder: (_, themeModel, child) => MaterialApp(
+      // Consumer2, not a plain read: MaterialApp.themeMode and .locale must
+      // both react live when the settings tab changes a preference.
+      child: Consumer2<ThemeModel, LanguageModel>(
+        builder: (_, themeModel, languageModel, child) => MaterialApp(
           title: 'MyReciBook',
           navigatorKey: navigatorKey,
           theme: rbLightTheme(),
           darkTheme: rbDarkTheme(),
           themeMode: themeModel.mode,
+          // null = follow the phone; MaterialApp then matches the device
+          // language against supportedLocales itself.
+          locale: languageModel.locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: kOfferedLocales,
           home: AppShell(
             extractor: extractor,
             picker: picker,

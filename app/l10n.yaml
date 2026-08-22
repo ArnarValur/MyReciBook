@@ -1,0 +1,12 @@
+# gen_l10n config. Every user-facing string lives in lib/l10n/app_<code>.arb;
+# the build turns them into AppLocalizations, reached as context.l10n.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+# Generated beside the .arb files. Gitignored — build output, never edited.
+output-dir: lib/l10n/generated
+# A string missing from a translation falls back to English rather than
+# rendering blank. untranslated-messages-file names the gaps at build time.
+untranslated-messages-file: l10n-untranslated.txt
+nullable-getter: false

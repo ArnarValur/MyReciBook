@@ -47,3 +47,11 @@ flag until wired.
 - The grocery list can still text-suggest merging two rows that carry different products.
 - A photo restored from remote only appears after the next pantry rescan.
 - Some "not measured" values from Open Food Facts print as 0.
+
+## Found 2026-08-22 — serving labels ignore the units toggle
+`convertUnits` is called only on recipe ingredient lines and steps
+(recipe_detail, cook_mode, recipe_pdf). Serving labels on products and in the
+diary never pass through it, so the starter-food table's "1 cup" / "1 tsp" /
+"1 medium" show as written no matter what the units pill says. A metric user
+sees cups. This is a units bug, not an i18n one — surfaced while counting
+strings for the i18n sweep.
