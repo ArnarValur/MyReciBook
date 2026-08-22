@@ -10,16 +10,30 @@ string shape that survives it survives the other nine. Gemini then fills the
 remaining languages one at a time against the finished English + Icelandic
 pair.
 
-## "Complete" is a mechanical fact, not an opinion
-- A language is offered only if it is in `kOfferedLanguages`
-  (lib/domain/app_language.dart).
+## "Finished" means the app speaks it, not that the .arb matches
+Arnar, 2026-08-22: **never show the language selection until a language is
+actually finished.** A file that matches app_en.arb only proves it kept up
+with the strings extracted so far — and most of the app is still hardcoded
+English. Íslenska matching 31 messages would have bought an Icelandic
+Settings tab in front of an English app.
+
+- `kOfferedLanguages` (lib/domain/app_language.dart) lists languages the app
+  genuinely speaks. Today: English only.
+- `kLanguageChoiceExists` is derived from it. One language is not a choice, so
+  the Settings row and the whole picker are hidden until a second one lands.
+  There is no separate feature flag to forget — adding a language to the list
+  is the only switch.
+- `kOfferedLocales` restricts MaterialApp.supportedLocales the same way, so a
+  phone already set to Icelandic is not dropped into a half-translated app
+  without ever choosing.
 - `test/l10n/arb_parity_test.dart` FAILS the build if an offered language is
-  missing even one message.
-- Languages not yet offered may lag; the same test reports how far behind
-  each one is, and fails them only for inventing keys that do not exist in
-  app_en.arb.
-- Right now: English + Íslenska offered. The other nine .arb files exist,
-  hold 31 messages each, and are deliberately parked.
+  missing a message. The parked files may lag; the test reports how far behind
+  each is, and fails them only for inventing keys that are not in app_en.arb.
+- `test/ui/language_test.dart` exercises the picker directly, so the code
+  keeps working while it waits offstage, and asserts the Settings row tracks
+  `kLanguageChoiceExists` rather than any hardcoded expectation.
+- Right now: ten .arb files parked. Íslenska covers the Settings tab, the
+  other nine hold 31 messages each.
 
 ## The surface, bucket by bucket
 

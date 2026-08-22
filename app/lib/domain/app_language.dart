@@ -27,28 +27,38 @@ enum AppLanguage {
   swedish,
 }
 
-/// Languages whose .arb file is COMPLETE — every message translated.
-/// Only these are offered, because a half-translated language is worse than
-/// none: the user picks Polski, gets a screen of mixed Polish and English,
-/// and concludes the app is broken. A language joins this list the day its
-/// file catches up, and arb_parity_test fails the build if an offered
-/// language is missing even one message.
+/// Languages that are DONE — every string the user can reach, translated.
+/// Not "the .arb file matches app_en.arb": that only proves a language kept
+/// up with the strings extracted so far, and most of the app is still
+/// hardcoded English. A language joins this list when the app actually
+/// speaks it (Arnar, 2026-08-22).
 ///
-/// Working order (Arnar, 2026-08-22): one language at a time, Icelandic
-/// first. If the strings survive four cases and three genders they survive
-/// everything else. The other eight files exist and lag on purpose.
+/// Working order: one language at a time, Icelandic first — four cases and
+/// three genders, so what survives it survives the rest. Íslenska has an
+/// .arb file and is NOT on this list yet; it covers the Settings tab and
+/// nothing else.
+///
+/// Adding a language here is the only switch. The picker appears on its own
+/// once there is a real choice, and disappears again if there is not — there
+/// is no separate feature flag to forget.
 const kOfferedLanguages = [
   AppLanguage.system,
   AppLanguage.english,
-  AppLanguage.icelandic,
 ];
+
+/// Is there anything to choose between? One language is not a choice, and a
+/// Settings row that opens a list of one reads as broken. Until a second
+/// language is finished the whole control stays hidden.
+bool get kLanguageChoiceExists =>
+    kOfferedLanguages.where((l) => l != AppLanguage.system).length > 1;
 
 /// Every language with an .arb file, complete or not.
 const kAppLanguages = AppLanguage.values;
 
 /// Locales MaterialApp will resolve the phone's setting against. Restricted
-/// to the complete ones for the same reason — following the phone into a
-/// half-translated language is the same bad screen, just without a tap.
+/// to the finished ones for the same reason — a phone already set to
+/// Icelandic must not be dropped into a half-translated app without ever
+/// having chosen it.
 List<Locale> get kOfferedLocales => [
       for (final l in kOfferedLanguages)
         if (appLanguageLocale(l) != null) appLanguageLocale(l)!

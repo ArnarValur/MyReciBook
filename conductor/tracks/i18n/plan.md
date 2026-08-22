@@ -28,6 +28,11 @@ Polish read-through at the same time.
   out. "System" is the exception: a word, not a language, so it translates.
 - D2 — default is follow-the-phone, not English. MaterialApp.locale stays null
   and the platform resolves it against the supported list.
+- D9 — the language selection does not appear until a language is FINISHED
+  (Arnar, 2026-08-22). Matching app_en.arb is not finished: it only means the
+  file kept up with the strings extracted so far. Íslenska is parked with the
+  rest until the app actually speaks it. `kLanguageChoiceExists` derives the
+  visibility from `kOfferedLanguages`, so there is no flag to forget.
 - D3 — settings strings are the locale codes ('nb', 'is', …) and never change
   once shipped. A rename would silently reset every user's saved choice.
   A test pins the code and the settings string to each other.

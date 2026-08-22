@@ -294,28 +294,34 @@ class SettingsTab extends StatelessWidget {
                   ]),
                 ),
                 const SizedBox(height: 20),
-                // Language: a row to a pushed list, the Storage shape —
-                // eleven languages plus System never fit a segmented pill.
-                // The row's title IS the current language, in its own name.
-                SectionLabel(context.l10n.sectionLanguage),
-                const SizedBox(height: 8),
-                row(
-                  // Keyed: the row's title is 'System' before a choice, which
-                  // also labels a Theme segment — a bare text finder is two.
-                  key: const Key('settings-language-row'),
-                  icon: Icons.language_rounded,
-                  title: languageModel.language == AppLanguage.system
-                      ? context.l10n.languageSystem
-                      : appLanguageEndonym(languageModel.language),
-                  onTap: () =>
-                      Navigator.of(context).push<void>(MaterialPageRoute<void>(
-                          builder: (_) => ChangeNotifierProvider<LanguageModel>
-                              .value(
-                            value: context.read<LanguageModel>(),
-                            child: const LanguageScreen(),
-                          ))),
-                ),
-                const SizedBox(height: 8),
+                // Language: hidden entirely until a second language is
+                // actually finished (kLanguageChoiceExists). A row that opens
+                // a list of one, or that switches you into a screen of mixed
+                // Icelandic and English, is worse than no row at all.
+                // A row to a pushed list, the Storage shape — eleven
+                // languages plus System never fit a segmented pill. The row's
+                // title IS the current language, in its own name.
+                if (kLanguageChoiceExists) ...[
+                  SectionLabel(context.l10n.sectionLanguage),
+                  const SizedBox(height: 8),
+                  row(
+                    // Keyed: the row's title is 'System' before a choice, which
+                    // also labels a Theme segment — a bare text finder is two.
+                    key: const Key('settings-language-row'),
+                    icon: Icons.language_rounded,
+                    title: languageModel.language == AppLanguage.system
+                        ? context.l10n.languageSystem
+                        : appLanguageEndonym(languageModel.language),
+                    onTap: () =>
+                        Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                            builder: (_) => ChangeNotifierProvider<LanguageModel>
+                                .value(
+                              value: context.read<LanguageModel>(),
+                              child: const LanguageScreen(),
+                            ))),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (kDiaryEnabled) ...[
                   SectionLabel(context.l10n.sectionDiary),
                   const SizedBox(height: 8),
