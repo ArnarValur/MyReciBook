@@ -5,13 +5,13 @@
 
 ## 📍 Now
 - Phase: build. 0.11.0+10 on main. Branch i18n is level with main and is where language work continues.
+- Tag system + icon catalog PROPOSED, unratified — plan on main, five questions await Arnar. Its branch is merged and redundant.
 - Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Verified end to end.
 - Both import doors verified on a phone through the live server (Arnar).
 - Gemini key in Secret Manager only; release build carries none. app/dev.env holds the server URL.
 - Offer in code: two weeks free, then 1200 a year. Limits 10/min, 50/day per buyer, 2000/day overall.
 - Crash reporting ships ON, switch in Settings, recipe text scrubbed, test-report door proves the pipe.
-- Build 9 on the phone and on the tester link (App Distribution), no testers added.
-- Play developer account live and verified. Nothing uploaded to Play yet.
+- Build 9 on the phone and the tester link (App Distribution), no testers. Play account live and verified, nothing uploaded.
 - Docs: pre-launch-audit-2026-08-21 · runbook-dev-deploy · gcp-project-facts. gcloud: ~/google-cloud-sdk/bin, not on PATH.
 - Starter foods values UNVERIFIED vs USDA — Arnar's run; patch starter_foods.dart.
 - Serving labels ignore the units pill: convertUnits touches recipe lines only, so "1 cup" shows in metric. Noted in the nutrition plan.
@@ -33,8 +33,8 @@
 
 ## 📌 Parked
 - user feedback channel (i18n needs it — a wrong string with nowhere to report
-  it stays wrong) · category icons/colours · serving rescale · step ↔
-  ingredient chips · label-photo fallback · meal names UI · copy-to-date UI ·
-  day nutrient table · row reorder · multi-barcode per image · orphan image
-  cleanup · accessibility pass · Dropbox production approval · Play key backup ·
-  audit items H2 and M1-M6 and L1-L4.
+  it stays wrong) · category icons/colours (the tags plan's icon catalog is the
+  intended supply) · serving rescale · step ↔ ingredient chips · label-photo
+  fallback · meal names UI · copy-to-date UI · day nutrient table · row reorder ·
+  multi-barcode per image · orphan image cleanup · accessibility pass · Dropbox
+  production approval · Play key backup · audit items H2 and M1-M6 and L1-L4.

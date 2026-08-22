@@ -1,6 +1,25 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-22 — tag system and icon catalog planned, nothing built
+
+- Plan only, no code, no version bump. conductor/tracks/tags/plan.md on main.
+- The track is small because the parts exist: Recipe.tags is already in the file
+  format and unused, kRecipeTagsEnabled is already off waiting for this design,
+  _filterRow already draws icon+label chips, and pantry's "+ Category" sheet is
+  the tag picker's shape.
+- Design: membership rides the recipe file, decoration rides tags.json beside it,
+  recipe files win — a tag can lose its outfit, never be lost. Icon + showLabel,
+  two fields not three modes, so a blank chip is unrepresentable. Icons keyed by
+  string not codepoint: --tree-shake-icons strips a runtime-built IconData and it
+  only shows in the release APK.
+- Arnar: merge to main, continue on the workstation. Five questions unanswered —
+  Quick stays or goes, emoji escape hatch, colour in v1, delete semantics, stacking.
+- Merged into main after i18n had landed 4 commits ahead; folded gen_l10n into the
+  plan (group names and search terms need keys, user tag names never do).
+- UNFINISHED: the five questions. No icon name in the plan is compile-checked —
+  no Flutter SDK in the web container, so the catalog needs one analyze pass.
+
 ## 2026-08-22 — i18n unparked, foundation up, Icelandic chosen as the stress test
 
 - 0.11.0+10, folded to main. flutter_localizations + gen_l10n, a language
