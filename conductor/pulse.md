@@ -4,20 +4,22 @@
 > **Updated:** 2026-08-27
 
 ## 📍 Now
-- Phase: build. 0.11.0+11 on main and on the phone. Branch i18n is level with main and is where language work continues.
-- Tag system + icon catalog PROPOSED, unratified — plan on main, five questions await Arnar. Branch pruned.
+- Phase: build. 0.14.0+17 on main and on the phone. Branch i18n is level with 0.11.0+10 and is where language work continues.
+- Build APKs ONLY via app/deploy-s21.sh — plain `flutter build apk` ships no proxy URL and placeholder connector keys.
 - Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Verified end to end.
-- Both import doors verified on a phone through the live server (Arnar).
-- Gemini key in Secret Manager only; release build carries none. app/dev.env holds the server URL.
+- Gemini key in Secret Manager only; release build carries none. app/dev.env holds the server URL and the Drive/Dropbox keys.
 - Offer in code: two weeks free, then 1200 a year. Limits 10/min, 50/day per buyer, 2000/day overall.
 - Crash reporting ships ON, switch in Settings, recipe text scrubbed, test-report door proves the pipe.
-- Build 11 installed on the phone 2026-08-27, unverified by eye. Tester link still on 9. Play account live, nothing uploaded.
+- Build 17 installed on the phone 2026-08-27. Tester link still on 9. Play account live, nothing uploaded.
+- Folder pointer + onboarding marker live in app-support/device.json, excluded from Android backup; settings.json stays portable.
 - Docs: pre-launch-audit-2026-08-21 · runbook-dev-deploy · gcp-project-facts. gcloud: ~/google-cloud-sdk/bin, not on PATH.
 - Starter foods values UNVERIFIED vs USDA — Arnar's run; patch starter_foods.dart.
 - Serving labels ignore the units pill: convertUnits touches recipe lines only, so "1 cup" shows in metric. Noted in the nutrition plan.
+- Link import writes tags from the site's recipeCategory/recipeCuisine/keywords, up to 8. Review screen now shows them before save.
 
 ## 🚀 Active tracks
 - mvp-build — server done and deployed. Billing seam open, unstarted.
+- tags — shipped end to end. Open: strings are English literals, not gen_l10n keys.
 - diary — categories 1-4 in code. Open: device verify of 2-4, starter values.
 - nutrition — open: grocery package-size math, label-photo fallback, serving-label conversion.
 - i18n — foundation folded to main. Language control HIDDEN until a language
@@ -32,10 +34,11 @@
   a sideloaded build — Play Integrity only attests installs from Play.
 
 ## 📌 Parked
+- Welcome slide screenshots — Arnar's crops; drop into kSlides in slides_screen.
 - user feedback channel (i18n needs it — a wrong string with nowhere to report
-  it stays wrong) · category icons/colours (the tags plan's icon catalog is the
-  intended supply) · serving rescale · step ↔ ingredient chips · label-photo
-  fallback · meal names UI · copy-to-date UI · day nutrient table · row reorder ·
-  multi-barcode per image · orphan image cleanup · roundup/listicle link import
-  (feasible, free path) · accessibility pass · Dropbox production approval ·
-  Play key backup · audit items H2 and M1-M6 and L1-L4.
+  it stays wrong) · pantry category icons/colours (the tag catalog is the supply) ·
+  serving rescale · step ↔ ingredient chips · label-photo fallback · meal names UI ·
+  copy-to-date UI · day nutrient table · row reorder · multi-barcode per image ·
+  orphan image cleanup · roundup/listicle link import (feasible, free path) ·
+  accessibility pass · Dropbox production approval · Play key backup ·
+  audit items H2 and M1-M6 and L1-L4.

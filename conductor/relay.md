@@ -1,6 +1,29 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-27 — the folder-pointer backup bug, a welcome flow, and tags
+
+- Shipped 0.14.0+17: settings.json no longer carries tree_uri — it rides
+  Android backup, so a restored install met "your recipes folder moved" as its
+  FIRST screen. Split into device.json, excluded from backup and D2D.
+- Welcome → first-time setup → feature slides, built from Arnar's Claude Design
+  mockup. Onboarding is versioned, not a bool: bumping kOnboardingVersion
+  replays the slides as a what's-new. Screenshots still pending his crops.
+- Tags shipped whole: 78-icon catalog + 117-emoji palette, tags.json beside the
+  recipes, Settings → Tags, tag row on the recipe page, chips in the cookbook
+  filter, badges on rows and cover cards. Sweet deleted, Quick kept.
+- Two things I got wrong and he caught: I built a BrandMark when LogoMark
+  already existed (deleted mine), and I shipped two APKs with plain
+  `flutter build apk` instead of deploy-s21.sh — no proxy URL, no connector keys.
+- The tags plan claimed "nothing writes recipe tags today". Wrong: link import
+  maps recipeCategory/recipeCuisine/keywords into tags, up to 8. Arnar found
+  them on his own library. Review screen now shows them before save, and an
+  undecorated tag can be deleted without adopting it first.
+- Arnar: colour in v1, emoji in, delete strips the name from recipe files,
+  units onboarding is Metric/Imperial only, and no i18n on this pass — English
+  literals, the sweep picks them up.
+- UNFINISHED: nothing pending. Next session is his — barcode scanner and pantry.
+
 ## 2026-08-22 — tag system and icon catalog planned, nothing built
 
 - Plan only, no code, no version bump. conductor/tracks/tags/plan.md on main.
@@ -116,60 +139,3 @@
 - Claude wrote a "no tests" law unasked and credited it to Arnar. Corrected
   2026-08-20: tests are proposed, Arnar decides. Icons/colours his.
 - UNFINISHED: redeploy to S21; three link-picker test files need rewrite.
-
-## 2026-08-20 — unified editor, five agents, budget burn
-- Five parallel agents: unified New/Edit row editor, inline units (popup dead),
-  product name on linked rows, servings/time/cover widgets, picker reorder,
-  7-test diary-chain e2e. 0.7.0+4.
-- Editor agent burned heavy tokens busy-wait polling; killed, tail hand-finished.
-- Arnar decided: linked name replaces typed text at render only; skip final
-  test run for budget. Full suite deferred to the release gate (2026-08-20).
-  Nothing pending.
-
-## 2026-08-19 — the meal diary, end to end, and the thread that doesn't hold yet
-- MFP-style diary shipped to the S21 at 0.6.0+3: day files, servings, tags,
-  snapshot entries, per-serving calculator, recipe logging, diary sync,
-  pantry-born manual recipes. 637 green serially. Built with parallel agents.
-- Arnar's catches drove three fixes mid-session: a duplicated product card
-  (extracted to one ProductRow), a bulk refresh that would silently revert
-  hand edits (user_edited flag + confirm), and free-text recipe entry that
-  didn't match how recipes read (now row editor with self-structuring lines).
-- Versioning is now step 4 of the checkpoint ceremony — Arnar asked for it.
-- UNFINISHED: the recipe→pantry→diary thread holds only for recipes born in
-  the new editor. Edit-recipe has no linking, recipes sit below the whole
-  pantry in Add food, and no end-to-end test covers the chain. Diagnosed in
-  pulse blockers; that is where the next session starts.
-
-## 2026-08-19 — link import shipped end-to-end
-- Share a URL → recipe: JSON-LD free path + Gemini text fallback (ABC case),
-  cover toggle from the site's photo, source.url in the file. On the S21,
-  both paths verified by Arnar. 527 green serially. Folded to main.
-- Broke twice on the way: dart:io chokes on Fastly's chunked trailers (read
-  as "offline") → NetBridge over the platform stack; AGP 9 rejected Cronet.
-- Arnar decided: spoons never convert; covers are a user toggle. Nothing pending.
-
-## 2026-08-18 — unit toggle shipped, keyless-build trap closed
-- Units pill in settings (As written / Metric / US): render-time math on
-  ingredients, steps and cook mode. On the S21. 495 green serially.
-- Two builds today shipped without dev.env keys — every extraction failed with
-  the generic error. app/deploy-s21.sh is now the only build path; a keyless
-  build now says "This build is broken" in-app. Nothing pending.
-
-## 2026-08-18 — stale state cleared, unit conversion designed
-- Cleared the stale "nutrient work uncommitted" lines from pulse, relay and the
-  nutrition plan — the work was already on main (21d9094).
-- Brainstormed metric conversion on import: parse structured quantities at
-  extraction, convert with local math at render, keep the original string.
-  Landed in the nutrition plan as two open items.
-- Nothing pending.
-
-## 2026-08-18 — conductor rebuilt
-- Arnar deleted conductor/ because the files had grown verbose and poisoned each
-  next session. Rebuilt from scratch: 8 files, ~200 lines, one fact per line.
-- Cut: the 158-line technical rules file, the old relay and 3 archives, the
-  narrative track plans, the landing-page track. All still in git history.
-- Arnar edited context himself: pitch is now "collect", not "rescue"; gates,
-  schedule and budget sections removed; recipe files exportable in other formats.
-- Answered his two questions in the mvp-build plan: what the proxy is, what the
-  Play closed test is.
-- Nutrient work committed on main (21d9094). Nothing pending.

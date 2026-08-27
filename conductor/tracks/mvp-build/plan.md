@@ -36,6 +36,21 @@
       website avj.info. Merchant/legal country Norway (drives Play VAT, payouts,
       and the privacy-policy jurisdiction).
 
+## Onboarding — shipped 2026-08-27 (0.12.0 → 0.14.0)
+- First run: welcome → first-time setup (folder, units, theme, optional
+  Drive/Dropbox connect) → feature slides → app. Built from Arnar's Claude
+  Design mockup, docs/MyReciBook Flutter welcome-mockups.zip turn 1.
+- Onboarding is VERSIONED, not a bool: kOnboardingVersion vs the marker in
+  device.json. Bump it after a release and the slides replay as a what's-new.
+- A lost SAF grant still goes straight to the re-pick gate — that user has an
+  app, they lost a permission, and setup again would be theatre.
+- Slide screenshots pending Arnar's crops: kSlides in ui/onboarding/slides_screen.
+- Fixed the same day: tree_uri lived in settings.json, which rides Android
+  cloud backup and D2D, so a restored install was handed a folder path it had
+  no grant for and met "your recipes folder moved" as its FIRST screen. Moved
+  to app-support/device.json, excluded in both res/xml rule files; a pre-split
+  settings.json is drained on load so nobody loses their folder on update.
+
 ## Open
 - [ ] Privacy policy URL + Play data safety form. Nothing written; blocks
       submission. Five things leave the device and all must be declared.
