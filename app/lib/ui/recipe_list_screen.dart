@@ -1,6 +1,15 @@
-// Cookbook home (design 3d; empty state 4b), hosted as the shell's first tab.
-// The shell owns import + share intake; this screen renders the library and
-// hands its two doors back up: the FAB/empty-state import and the 5c drawer.
+// Cookbook home (empty state 4b), hosted as the shell's first tab. The shell
+// owns import + share intake; this screen renders the library and hands its
+// two doors back up: the FAB/empty-state import and the 5c drawer.
+//
+// The shape (Arnar 2026-08-27, replacing design 3d's flat dump + tag chips):
+// the chip row keeps only All and Favorites, and the user's tags are folded
+// sections on a collapsible shelf like the pantry's — every tag at a glance,
+// no horizontal scroll-hunt. Untagged recipes flow flat above the shelf; a
+// recipe with several tags sits under each of them. Favorites and a search
+// stay flat results — the shelf is the All view's shape, not a filter's. The
+// fold persists through AppSettings.cookbookOpenSections, defaulting to
+// everything open.
 
 import 'dart:io';
 
@@ -8,6 +17,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/app_settings.dart';
 import '../domain/recipe.dart';
 import '../features.dart';
 import 'batch_model.dart';
@@ -16,18 +26,19 @@ import 'library_model.dart';
 import 'postalpha/dev_gallery.dart';
 import 'recipe_detail_screen.dart';
 import 'theme.dart';
+import 'widgets/collapsible_shelf.dart';
 import 'widgets/logo_mark.dart';
 import '../domain/recipe_tag.dart';
 import 'tag_chip.dart';
 import 'tags_model.dart';
 import 'widgets/skin.dart';
 
-/// The built-ins. Sweet was deleted 2026-08-27: it guessed from a word list
-/// and nothing ever let a recipe earn it. Quick survives because it is
-/// computed from the recipe's own times, so it is honest and needs no tagging.
-/// Everything past these two is a tag the user invented — [_tag] carries its
-/// name.
-enum _Filter { all, favorites, quick, tag }
+/// The built-ins — and now the whole row. Sweet was deleted 2026-08-27
+/// (guessed from a word list), Quick the same day (computed, but
+/// administrable nowhere — Arnar: a chip no settings screen explains is a
+/// bug, not a feature), and the user-tag chips left for the shelf sections
+/// the same day too.
+enum _Filter { all, favorites }
 
 class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({
@@ -52,24 +63,30 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   String _query = '';
   _Filter _filter = _Filter.all;
 
-  /// The selected user tag when [_filter] is [_Filter.tag]. Single-select in
-  /// v1 — AND/OR across tags needs a different affordance and can follow.
-  /// Session-only, like every other filter: one that survived a restart would
-  /// make the cookbook look empty and broken.
-  String? _tagName;
+  /// The shelf sections the user has open. Null = they have never touched a
+  /// header on this install, and every section starts open — a cookbook is
+  /// small enough to show whole, unlike the pantry's 180 starter rows.
+  /// Persisted, so the fold survives a restart. Stale ids from deleted tags
+  /// sit in the stored set harmlessly: no section claims them.
+  Set<String>? _expanded;
+
+  /// Null under a bare pump (nothing provided it) — the shelf still works,
+  /// it just forgets the fold between launches.
+  AppSettings? _settings;
 
   @override
   void initState() {
     super.initState();
+    try {
+      _settings = context.read<AppSettings?>();
+    } on ProviderNotFoundException {
+      _settings = null;
+    }
+    _expanded = _settings?.cookbookOpenSections?.toSet();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<LibraryModel>().rescan();
     });
-  }
-
-  static bool _isQuick(Recipe r) {
-    final total = r.times?.totalMin ?? r.times?.cookMin;
-    return total != null && total <= 30;
   }
 
   List<Recipe> _visible(List<Recipe> all) {
@@ -77,16 +94,71 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     return [
       for (final r in all)
         if ((q.isEmpty || r.title.toLowerCase().contains(q)) &&
-            switch (_filter) {
-              _Filter.all => true,
-              _Filter.favorites => r.favorite,
-              _Filter.quick => _isQuick(r),
-              _Filter.tag => _tagName != null &&
-                  r.tags.any((t) =>
-                      RecipeTag.canonical(t) == RecipeTag.canonical(_tagName!)),
-            })
+            (_filter == _Filter.all || r.favorite))
           r
     ];
+  }
+
+  /// Fold or unfold one tag section. The full open set is written every time,
+  /// so what lands on disk is always the whole answer — no merge on read.
+  Future<void> _toggleSection(String id, Set<String> open) async {
+    final next = {...open};
+    if (!next.remove(id)) next.add(id);
+    setState(() => _expanded = next);
+    try {
+      await _settings?.setCookbookOpenSections(next.toList());
+    } catch (_) {} // persistence best-effort — the shelf is already redrawn
+  }
+
+  /// One shelf section per user tag that is on at least one recipe, ordered
+  /// alphabetically by display name. A recipe with several tags appears under
+  /// each of them; a tag Settings knows but no recipe carries gets no section
+  /// — a section that can only be empty is worse than none. Bodies build only
+  /// while open (the shelf contract), so a folded tag costs no cards.
+  List<ShelfSection> _tagSections(List<Recipe> all, bool grid) {
+    final tags = context.watch<TagsModel>();
+    final members = <String, List<Recipe>>{};
+    final spelling = <String, String>{};
+    for (final r in all) {
+      final seen = <String>{};
+      for (final t in r.tags) {
+        final key = RecipeTag.canonical(t);
+        if (!seen.add(key)) continue; // hand-edited duplicate casing
+        members.putIfAbsent(key, () => []).add(r);
+        spelling.putIfAbsent(key, () => t);
+      }
+    }
+    final sections = <ShelfSection>[];
+    for (final e in members.entries) {
+      final decorated = tags.chipFor(spelling[e.key]!);
+      final carriers = e.value;
+      sections.add(ShelfSection(
+        id: e.key,
+        label: decorated.name,
+        count: carriers.length,
+        leading: TagBadge(tag: decorated, size: 22),
+        builder: (_) => grid
+            // Non-scrolling: the outer CustomScrollView owns the scroll, this
+            // just lays the same cards two across inside the open fold.
+            ? GridView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 4),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  mainAxisExtent: 168,
+                ),
+                children: [for (final r in carriers) _RecipeCard(recipe: r)],
+              )
+            : Column(
+                children: [for (final r in carriers) _RecipeRow(recipe: r)]),
+      ));
+    }
+    sections.sort(
+        (a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
+    return sections;
   }
 
   @override
@@ -96,6 +168,19 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     final scheme = context.scheme;
     final recipes = _visible(model.recipes);
     final emptyBook = model.recipes.isEmpty && !model.loading;
+    final grid = context.watch<CookbookPrefs>().view == CookbookView.grid;
+
+    // The All view with no search is the shelf shape; Favorites or a query
+    // flattens back to plain results, like the pantry's search does.
+    final shelfShape =
+        kRecipeTagsEnabled && _filter == _Filter.all && _query.trim().isEmpty;
+    final untagged = [
+      for (final r in recipes)
+        if (r.tags.isEmpty) r
+    ];
+    final sections =
+        shelfShape ? _tagSections(recipes, grid) : const <ShelfSection>[];
+    final open = _expanded ?? {for (final s in sections) s.id};
 
     return Scaffold(
       body: SafeArea(
@@ -139,11 +224,52 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                             ),
                           ),
                         )
-                      else if (context.watch<CookbookPrefs>().view ==
-                          CookbookView.grid)
+                      else if (shelfShape) ...[
+                        // Untagged first, flat, no header and no fold — they
+                        // have no section to live in, and an "Untagged"
+                        // heading would nag anyone who never tags.
+                        if (untagged.isNotEmpty)
+                          SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                            sliver: grid
+                                ? SliverGrid(
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 12,
+                                      crossAxisSpacing: 12,
+                                      mainAxisExtent: 168,
+                                    ),
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, i) =>
+                                          _RecipeCard(recipe: untagged[i]),
+                                      childCount: untagged.length,
+                                    ),
+                                  )
+                                : SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, i) =>
+                                          _RecipeRow(recipe: untagged[i]),
+                                      childCount: untagged.length,
+                                    ),
+                                  ),
+                          ),
+                        // 110 bottom: clears the 64dp bar hint + 16dp inset.
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding:
+                                EdgeInsets.fromLTRB(20, 12, 20, navBarClearance(context)),
+                            child: CollapsibleShelf(
+                              sections: sections,
+                              expanded: open,
+                              onToggle: (id) => _toggleSection(id, open),
+                            ),
+                          ),
+                        ),
+                      ] else if (grid)
                         SliverPadding(
                           // 110 bottom: clears the 64dp bar hint + 16dp inset.
-                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
+                          padding: EdgeInsets.fromLTRB(20, 12, 20, navBarClearance(context)),
                           sliver: SliverGrid(
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
@@ -161,7 +287,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                         )
                       else
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 110),
+                          padding: EdgeInsets.fromLTRB(20, 12, 20, navBarClearance(context)),
                           sliver: SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (context, i) => _RecipeRow(recipe: recipes[i]),
@@ -172,9 +298,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                       if (model.skipped > 0)
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+                            padding: EdgeInsets.fromLTRB(20, 0, 20, navBarClearance(context)),
                             child: Text(
-                              "${model.skipped} files in the folder couldn't be read",
+                              "${model.skipped} file${model.skipped == 1 ? '' : 's'} in the folder couldn't be read",
                               style: theme.textTheme.bodySmall?.copyWith(
                                   color: scheme.onSurfaceVariant),
                             ),
@@ -302,7 +428,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
 
   Widget _filterRow(ThemeData theme) {
     Widget chip(_Filter f, String label, [IconData? icon]) {
-      final selected = _filter == f && f != _Filter.tag;
+      final selected = _filter == f;
       final scheme = context.scheme;
       return Padding(
         padding: const EdgeInsets.only(right: 8),
@@ -321,11 +447,10 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
             child: Row(
               children: [
                 if (icon != null) ...[
-                  Icon(icon,
-                      size: 15,
-                      color: selected
-                          ? scheme.onSecondaryContainer
-                          : scheme.primary),
+                  // Only the heart carries an icon, and the heart is the
+                  // tertiary moment everywhere — red like the rows', in both
+                  // states, never the old unselected primary blue.
+                  Icon(icon, size: 15, color: scheme.tertiary),
                   const SizedBox(width: 5),
                 ],
                 Text(
@@ -344,79 +469,18 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
       );
     }
 
-    // Chips bleed to the screen edge — the half-visible last chip is the
-    // scroll cue; the view toggle stays pinned at the far end (Arnar's ask,
-    // 2026-08-15: covers grid ⇄ compact list).
+    // Two chips, no scroll — the user tags moved onto the shelf below. The
+    // view toggle stays pinned at the far end (Arnar's ask, 2026-08-15:
+    // covers grid ⇄ compact list).
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(children: [
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.only(left: 20),
-            child: Row(children: [
-              chip(_Filter.all, 'All'),
-              chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
-              if (kRecipeTagsEnabled) ...[
-                // Quick is computed from the recipe's own times — no tagging
-                // needed, so it stays a built-in (Arnar 2026-08-27).
-                chip(_Filter.quick, 'Quick', Icons.bolt_rounded),
-                // The user's own tags, in the order Settings puts them. Only
-                // tags that are actually on a recipe appear: a filter that
-                // can only ever return nothing is worse than no chip.
-                for (final tag in _userTagChips())
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: TagChip(
-                      tag: tag,
-                      selected: _filter == _Filter.tag &&
-                          _tagName != null &&
-                          RecipeTag.canonical(_tagName!) ==
-                              RecipeTag.canonical(tag.name),
-                      onTap: () => setState(() {
-                        final same = _filter == _Filter.tag &&
-                            _tagName != null &&
-                            RecipeTag.canonical(_tagName!) ==
-                                RecipeTag.canonical(tag.name);
-                        // Tapping the selected tag clears back to All, so the
-                        // row is never a trap you can't get out of.
-                        _filter = same ? _Filter.all : _Filter.tag;
-                        _tagName = same ? null : tag.name;
-                      }),
-                    ),
-                  ),
-              ],
-            ]),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 8, right: 20),
-          child: _viewToggle(),
-        ),
+        chip(_Filter.all, 'All'),
+        chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
+        const Spacer(),
+        _viewToggle(),
       ]),
     );
-  }
-
-  /// Decorated chips for every tag actually in use, ordered by the user's
-  /// Settings order with any undecorated names after them.
-  List<RecipeTag> _userTagChips() {
-    final tags = context.watch<TagsModel>();
-    final inUse = {
-      for (final n in tags.namesInUse) RecipeTag.canonical(n): n
-    };
-    final out = <RecipeTag>[];
-    final placed = <String>{};
-    for (final t in tags.tags) {
-      final key = RecipeTag.canonical(t.name);
-      if (!inUse.containsKey(key)) continue;
-      out.add(t);
-      placed.add(key);
-    }
-    final rest = [
-      for (final e in inUse.entries)
-        if (!placed.contains(e.key)) e.value
-    ]..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-    return [...out, for (final n in rest) RecipeTag(name: n)];
   }
 
   /// Grid ⇄ list switch. Shows the layout a tap takes you TO (files-app
@@ -483,8 +547,6 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   }
 }
 
-/// Compact list form: title + meta, no cover decode — the fast scanning
-/// view for big libraries. Favorites keep their heart (the tertiary moment).
 /// A recipe's tags in the order Settings puts them, with anything undecorated
 /// after. Without this the badges follow the order the tags happen to sit in
 /// the file, and two recipes with the same tags would show them differently.
@@ -502,6 +564,10 @@ List<String> _orderTags(BuildContext context, List<String> tags) {
   return sorted;
 }
 
+/// Compact list form: a 38px cover thumb + title + meta — the fast scanning
+/// view for big libraries. The thumb decodes small (cacheWidth, the pantry
+/// row's idiom), so a long list never holds full screenshots in memory.
+/// Favorites keep their heart (the tertiary moment).
 class _RecipeRow extends StatelessWidget {
   const _RecipeRow({required this.recipe});
 
@@ -512,6 +578,7 @@ class _RecipeRow extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final rb = context.rb;
+    final model = context.read<LibraryModel>();
     final meta = _RecipeCard.metaLine(recipe);
     return Padding(
       padding: const EdgeInsets.only(bottom: 11),
@@ -529,6 +596,35 @@ class _RecipeRow extends StatelessWidget {
             boxShadow: rb.cardShadow,
           ),
           child: Row(children: [
+            // Coverless recipes get the mini RecipeCover instead of a blank
+            // box, so a recipe keeps its title-hashed colour identity in
+            // both views.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 38,
+                height: 38,
+                child: FutureBuilder<File?>(
+                  future: model.coverFor(recipe),
+                  builder: (_, snap) {
+                    final file = snap.data;
+                    if (file == null) {
+                      return RecipeCover(file: null, title: recipe.title);
+                    }
+                    return Image.file(
+                      file,
+                      width: 38,
+                      height: 38,
+                      fit: BoxFit.cover,
+                      cacheWidth: 114,
+                      errorBuilder: (_, _, _) =>
+                          RecipeCover(file: null, title: recipe.title),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,17 +744,9 @@ class _RecipeCard extends StatelessWidget {
                             color: context.scheme.onSurfaceVariant),
                       ),
                     ],
-                    // The same badges as the list row, so switching view does
-                    // not change what a recipe appears to be tagged with.
-                    if (kRecipeTagsEnabled && recipe.tags.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      TagBadgeRow(
-                        names: _orderTags(context, recipe.tags),
-                        decorate: context.watch<TagsModel>().chipFor,
-                        max: 4,
-                        size: 18,
-                      ),
-                    ],
+                    // No badges here — the cover card's 168dp is spent on the
+                    // photo and title, and badges only ever peeked out as a
+                    // clipped sliver (Arnar 2026-08-27). List view carries them.
                   ],
                 ),
               ),

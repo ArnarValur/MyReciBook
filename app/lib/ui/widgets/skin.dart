@@ -10,6 +10,15 @@ import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import '../theme.dart';
 import 'logo_mark.dart';
 
+/// Bottom padding that clears the floating glass bar wherever content
+/// scrolls under it (SafeArea bottom: false): the system nav inset — zero on
+/// gesture nav, ~48dp on 3-button — plus the bar's 16dp lift, its pill and
+/// 8dp of air. The old flat 110 ignored the inset, so every tab's tail sat
+/// behind the bar on a 3-button phone; the first inset-aware cut (+104) then
+/// left a lengthy gap (Arnar 2026-08-27, both).
+double navBarClearance(BuildContext context) =>
+    MediaQuery.paddingOf(context).bottom + 84;
+
 /// `INGREDIENTS · 8` — tiny tracked uppercase label.
 class SectionLabel extends StatelessWidget {
   const SectionLabel(this.text, {super.key, this.trailing});

@@ -145,6 +145,20 @@ class AppSettings {
     ];
   }
 
+  /// Cookbook shelf sections the user left open, by canonical tag name. Same
+  /// stance as [pantryOpenSections]: portable, and null means the key was
+  /// never written — the cookbook then defaults to every section open. An
+  /// EMPTY list is a real answer: they closed every section. Ids of tags
+  /// deleted since sit in the list harmlessly — no section claims them.
+  List<String>? get cookbookOpenSections {
+    final v = _data['cookbook_open_sections'];
+    if (v is! List) return null;
+    return [
+      for (final s in v)
+        if (s is String) s
+    ];
+  }
+
   /// Daily calorie target for the diary. Null = no goal set, and the diary
   /// says "no goal yet" instead of measuring you against a number nobody
   /// chose. Zero or negative reads as unset.
@@ -197,6 +211,9 @@ class AppSettings {
 
   Future<void> setPantryOpenSections(List<String> ids) =>
       _write('pantry_open_sections', ids);
+
+  Future<void> setCookbookOpenSections(List<String> ids) =>
+      _write('cookbook_open_sections', ids);
 
   Future<void> setUnits(String units) => _write('units', units);
 

@@ -98,6 +98,31 @@ const _ceilings = {
   'salt': 100.0,
 };
 
+/// Ceilings for the ride-along micros, in grams per 100 g. These exist to
+/// catch a number the model failed to convert: 30.4 µg of folate returned as
+/// a raw 30.4 landed in a product file as thirty GRAMS of folate (found on
+/// Arnar's oats, 2026-08-27). No food carries a gram of any vitamin or five
+/// grams of any mineral per 100 g — a value past these is an unconverted mg
+/// or µg figure, and it drops rather than clamps, like everything else here.
+const _vitaminCeiling = 1.0;
+const _mineralCeiling = 5.0;
+const _minerals = {
+  'calcium', 'iron', 'magnesium', 'phosphorus', 'potassium', 'zinc',
+  'copper', 'manganese', 'selenium', 'iodine', 'chloride', 'fluoride',
+  'chromium', 'molybdenum', 'sodium',
+};
+const _vitaminish = {
+  'beta_carotene', 'biotin', 'folates', 'pantothenic_acid', 'vitamin_pp',
+};
+
+double? _microCeiling(String key) {
+  if (key.startsWith('vitamin_') || _vitaminish.contains(key)) {
+    return _vitaminCeiling;
+  }
+  if (_minerals.contains(key)) return _mineralCeiling;
+  return null;
+}
+
 double? _number(Object? v) {
   final d = v is num ? v.toDouble() : double.tryParse('$v'.trim());
   if (d == null || !d.isFinite || d < 0) return null;
@@ -139,7 +164,7 @@ LabelRead labelReadFromJson(Map<String, dynamic> json) {
       }
       final n = _number(e.value);
       if (n == null) continue;
-      final ceiling = _ceilings[key];
+      final ceiling = _ceilings[key] ?? _microCeiling(key);
       if (ceiling != null && n > ceiling) continue;
       values[key] = n;
     }

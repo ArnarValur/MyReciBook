@@ -59,11 +59,23 @@ void main() {
 
   test('vitamins ride along without this file knowing about them', () {
     final r = labelReadFromJson({
-      'per_100g': {'kcal': 90, 'calcium': 120, 'vitamin_d': 0.75, 'Bad Key!': 3},
+      'per_100g': {'kcal': 90, 'calcium': 0.12, 'vitamin_d': 0.000015, 'Bad Key!': 3},
     });
-    expect(r.values['calcium'], 120);
-    expect(r.values['vitamin_d'], 0.75);
+    expect(r.values['calcium'], 0.12);
+    expect(r.values['vitamin_d'], 0.000015);
     expect(r.values.containsKey('Bad Key!'), isFalse);
+  });
+
+  test('an unconverted mg or µg figure drops instead of landing as grams', () {
+    // 30.4 µg of folate returned raw became thirty GRAMS in a product file
+    // (Arnar's oats, 2026-08-27). Values past any honest gram figure are a
+    // failed unit conversion, not food.
+    final r = labelReadFromJson({
+      'per_100g': {'kcal': 370, 'vitamin_b9': 30.4, 'calcium': 120, 'iron': 0.004},
+    });
+    expect(r.values.containsKey('vitamin_b9'), isFalse);
+    expect(r.values.containsKey('calcium'), isFalse);
+    expect(r.values['iron'], 0.004, reason: 'honest gram figures survive');
   });
 
   test('a converted basis is reported so the UI can say so', () {

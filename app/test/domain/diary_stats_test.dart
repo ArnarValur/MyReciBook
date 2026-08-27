@@ -217,6 +217,21 @@ void main() {
       expect(stats.micros.map((r) => r.key), ['saturated_fat', 'salt']);
     });
 
+    test('a nutrient every measurement put at zero gets no row', () {
+      // One OFF product carrying explicit zeros filled the ledger with
+      // "Calcium 0 g" lines (Arnar 2026-08-27). Zero everywhere = no row;
+      // any measured amount at all keeps the row.
+      final stats = computeDiaryStats(
+        range: TrendRange.week,
+        today: thursday,
+        days: [
+          day('2026-08-24', {'kcal': 1000, 'alcohol': 0, 'calcium': 0}),
+          day('2026-08-25', {'kcal': 1000, 'calcium': 0.12}),
+        ],
+      );
+      expect(stats.micros.map((r) => r.key), ['calcium']);
+    });
+
     test('rows come out in label order, unknown keys alphabetically after', () {
       final stats = computeDiaryStats(
         range: TrendRange.week,

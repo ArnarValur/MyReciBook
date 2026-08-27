@@ -4,6 +4,12 @@
 ate into a day, from the pantry, from a recipe, or typed in, and see the day total
 against a goal. This is the piece that makes pantry, scanner and recipes one app.
 
+**Sanded 2026-08-28 at 0.17.5+29:** meal sections in the CollapsibleShelf card
+(session-only folds, kcal on the header) · Trends drops all-zero micro rows
+(diary_stats_test pins it) · label micros forced to grams in the prompt with
+drop-ceilings in label_read (vitamin >1 g, mineral >5 g per 100 g — a raw µg
+number once landed as 30.4 g of folate; Arnar re-reads that oats label).
+
 **Division:** Arnar owns UI and design — no mockup turn ever drew a diary, so the
 first diary screen is a design decision he makes, not one the agent assumes. Agent
 owns the engine.

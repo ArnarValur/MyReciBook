@@ -68,9 +68,10 @@ whatever numbers are printed. If you can read a label, read it.
 ## Extra keys are allowed
 
 If the table prints vitamins or minerals, add them to `per_100g` under plain
-lowercase keys (`"calcium"`, `"iron"`, `"vitamin_d"`) in the label's own unit,
-milligrams where the label uses milligrams. Rule 1 still applies: printed
-only.
+lowercase keys (`"calcium"`, `"iron"`, `"vitamin_d"`) — converted to GRAMS,
+like every other value: a label's `120 mg` calcium is `0.12`, a `30 µg`
+folate is `0.00003`. Never return a milligram or microgram number raw. Rule 1
+still applies: printed only.
 
 ## A product with no nutrition table
 

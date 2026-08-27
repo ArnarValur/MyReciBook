@@ -263,7 +263,7 @@ class _PantryTabState extends State<PantryTab> {
       body: SafeArea(
         bottom: false, // content scrolls under the shell's glass bar
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 110),
+          padding: EdgeInsets.fromLTRB(20, 24, 20, navBarClearance(context)),
           children: [
             if (widget.header != null) ...[
               widget.header!,

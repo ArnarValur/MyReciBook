@@ -260,7 +260,7 @@ class SettingsTab extends StatelessWidget {
           Expanded(
             child: ListView(
               // Bottom clearance for the glass bar, grocery-tab convention.
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 110),
+              padding: EdgeInsets.fromLTRB(20, 14, 20, navBarClearance(context)),
               children: [
                 SectionLabel(context.l10n.sectionTheme),
                 const SizedBox(height: 8),

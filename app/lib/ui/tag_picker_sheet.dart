@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 
 import '../domain/recipe_tag.dart';
 import 'tag_chip.dart';
+import 'tag_editor_screen.dart';
 import 'tags_model.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
@@ -50,14 +51,7 @@ class _TagPicker extends StatefulWidget {
 }
 
 class _TagPickerState extends State<_TagPicker> {
-  final _newTag = TextEditingController();
   bool _busy = false;
-
-  @override
-  void dispose() {
-    _newTag.dispose();
-    super.dispose();
-  }
 
   bool _isOn(String name) => widget
       .selected()
@@ -70,10 +64,13 @@ class _TagPickerState extends State<_TagPicker> {
     if (mounted) setState(() => _busy = false);
   }
 
-  Future<void> _addTyped() async {
-    final name = _newTag.text.trim();
-    if (!RecipeTag.isValidName(name) || _isOn(name)) return;
-    _newTag.clear();
+  /// The full editor, not a bare name field — a name-only tag had no icon or
+  /// colour and looked like nothing happened. The saved name comes back and
+  /// goes straight onto whatever the sheet was opened for; names only, so
+  /// this works at import review too, before a recipe exists.
+  Future<void> _createNew() async {
+    final name = await showTagEditor(context);
+    if (name == null || !mounted) return;
     await _toggle(name);
   }
 
@@ -126,8 +123,8 @@ class _TagPickerState extends State<_TagPicker> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
-                        'No tags yet. Type one below — icons and colours come '
-                        'later, in Settings → Tags.',
+                        'No tags yet. Make your first one — icon, colour '
+                        'and all.',
                         style: theme.textTheme.bodySmall?.copyWith(
                             height: 1.5, color: scheme.onSurfaceVariant),
                       ),
@@ -146,23 +143,15 @@ class _TagPickerState extends State<_TagPicker> {
                       ],
                     ),
                   const SizedBox(height: 16),
-                  TextField(
-                    key: const Key('tag-picker-new'),
-                    controller: _newTag,
-                    textCapitalization: TextCapitalization.sentences,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _addTyped(),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      labelText: 'New tag',
-                      hintText: 'Weeknight',
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        key: const Key('tag-picker-add'),
-                        tooltip: 'Add',
-                        onPressed: _addTyped,
-                        icon: const Icon(Icons.add_rounded),
-                      ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FilledButton.tonalIcon(
+                      key: const Key('tag-picker-new'),
+                      style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 44)),
+                      onPressed: _busy ? null : _createNew,
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('New tag'),
                     ),
                   ),
                 ],

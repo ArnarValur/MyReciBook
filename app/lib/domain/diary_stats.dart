@@ -502,7 +502,13 @@ List<MicroRow> _micros(List<String> dates, Map<String, Nutriments> totals) {
       (measuredOn[key] ??= <String>{}).add(date);
     });
   });
-  final keys = sums.keys.toList()..sort(_byLedgerOrder);
+  // All-zero rows say nothing: "the days that measured it measured none" is
+  // a whole screen of "Calcium 0 g" the moment one product carries explicit
+  // zeros (Arnar 2026-08-27). A field with any measured amount still shows.
+  final keys = [
+    for (final key in sums.keys)
+      if (sums[key]! > 0) key
+  ]..sort(_byLedgerOrder);
   return [
     for (final key in keys)
       MicroRow(

@@ -1,6 +1,19 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-28 — the rough corners named and sanded, 0.16.0 → 0.17.5+29
+
+- Shipped: cookbook as a folded tag shelf (untagged flat, sections alphabetical,
+  chips = All + Favorites), full-page tag editor wired into the recipe picker,
+  diary meals in the shelf card, inset-aware bottom-bar clearance, scan skips
+  tags.json, Trends drops all-zero rows, label micros forced to grams.
+- Broke: an agent's Center in bottomNavigationBar shipped a BLANK tag editor
+  (0.17.1→.4); Arnar caught it on device. Widget test now pins the body.
+- Arnar: colour-by-tag everywhere, heart red everywhere, no icon search,
+  no "Untagged" heading, ~8dp air over the nav pill.
+- UNFINISHED: his oats file still carries 30.4 g folate — he re-reads the label
+  on the product page. Full suite still unrun since 2026-08-21.
+
 ## 2026-08-27 — pantry scan doors, label reading, and four design agents welded
 
 - Scan bar was wrapped in IgnorePointer: a miss was a dead end, a hit could not

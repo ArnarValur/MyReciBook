@@ -27,6 +27,8 @@ class ShelfSection {
     required this.id,
     required this.label,
     required this.count,
+    this.leading,
+    this.trailing,
     this.starterPack = false,
     required this.builder,
   });
@@ -41,6 +43,13 @@ class ShelfSection {
   /// Items behind the header. Shown on the header so a closed section still
   /// tells you how much is in it.
   final int count;
+
+  /// Drawn before the label — the cookbook's tag glyph. Pantry needs none:
+  /// its emoji rides inside [label] as text.
+  final Widget? leading;
+
+  /// Right-aligned before the chevron — the diary's kcal readout.
+  final Widget? trailing;
 
   /// Ships with the app rather than scanned — draws the leaf mark, and the
   /// caller's default rule folds these first.
@@ -133,20 +142,37 @@ class _ShelfHeader extends StatelessWidget {
                   border: Border(top: BorderSide(color: context.rb.separator)))
               : null,
           child: Row(children: [
-            Flexible(
-              child: Text(
-                section.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w600, color: accent),
-              ),
+            if (section.leading != null) ...[
+              section.leading!,
+              const SizedBox(width: 8),
+            ],
+            // Label and count share ONE Expanded. With the old
+            // Flexible-label + Spacer pair the two split the free space
+            // half-half, the label declined its half, and the leftover
+            // trailed the chevron — which then drifted mid-row by exactly
+            // the label's length (Arnar 2026-08-27: "random widths").
+            Expanded(
+              child: Row(children: [
+                Flexible(
+                  child: Text(
+                    section.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600, color: accent),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                Text('${section.count}',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant)),
+              ]),
             ),
             const SizedBox(width: 9),
-            Text('${section.count}',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: scheme.onSurfaceVariant)),
-            const Spacer(),
+            if (section.trailing != null) ...[
+              section.trailing!,
+              const SizedBox(width: 8),
+            ],
             if (section.starterPack) ...[
               Icon(Icons.eco_rounded,
                   size: 15, color: scheme.onSurfaceVariant),

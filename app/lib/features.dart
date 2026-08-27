@@ -25,8 +25,9 @@ const bool kYourCopyEnabled = false;
 /// them. Turned ON 2026-08-27 — the tagging design that 2026-08-06 was waiting
 /// for is conductor/tracks/tags/plan.md, and it is built.
 ///
-/// The flag also gates Quick, which is computed from the recipe's own times.
-/// Sweet is gone: it guessed from a word list and nothing could ever earn it.
+/// Sweet and Quick, the two guessing built-ins, are gone (2026-08-27): one
+/// read a word list, the other read the times, and neither could be
+/// administrated anywhere a user could see.
 const bool kRecipeTagsEnabled = true;
 
 /// Unlock tab in nav slot 2 — the 3g paywall pitch promoted from the debug

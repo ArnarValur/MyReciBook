@@ -8,6 +8,17 @@ a built-in that no tag can replace or delete.
 Agent owns the store, the model, the filter seam and the curated icon catalog.
 Ships behind `kRecipeTagsEnabled`, which exists and is already off for exactly this.
 
+**REWORKED 2026-08-28 at 0.17.5+29** to Arnar's shape after a day on the phone:
+cookbook = folded tag shelf on CollapsibleShelf (untagged flat above, sections
+alphabetical, chips row All + Favorites only, folds in cookbookOpenSections) ·
+editor = full page, no drawer, no search bar (typed-emoji hatch parked with it),
+icon grid tints to the chosen colour, reached from Settings AND the recipe
+picker (showTagEditor returns the saved name) · badges list-view only · Quick
+chip deleted · glyphs wear their colour everywhere, heart is tertiary
+everywhere. Regressions pinned: tag_editor_screen_test (a Center in
+bottomNavigationBar once shipped a blank editor), recipe_store_scan_test
+(tags.json is never a "couldn't be read" count).
+
 **BUILT 2026-08-27 at 0.13.0+14.** Every ❓ was answered by Arnar that day:
 colour in v1 (yes, 8 tints) · emoji escape hatch (yes) · built-ins are
 Favorites + Quick, Sweet deleted · delete strips the name from the recipe

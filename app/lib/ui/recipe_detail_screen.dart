@@ -44,8 +44,9 @@ class RecipeDetailScreen extends StatefulWidget {
 
 class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   late Recipe _recipe = widget.recipe;
-  late final TextEditingController _notes =
-      TextEditingController(text: widget.recipe.notes ?? '');
+  late final TextEditingController _notes = TextEditingController(
+    text: widget.recipe.notes ?? '',
+  );
   final Set<int> _checked = {}; // kitchen-session state, not persisted
   bool _showOriginal = false;
   List<File> _originals = const [];
@@ -97,15 +98,17 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       saved = await context.read<LibraryModel>().saveImported(next, const []);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Save failed: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Save failed: $e')));
       return;
     }
     if (!mounted) return;
     setState(() => _recipe = saved);
     if (confirmation != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(confirmation)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(confirmation)));
     }
   }
 
@@ -142,9 +145,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 key: const Key('cover-screenshot'),
                 leading: const Icon(Icons.image_rounded),
                 title: const Text('Use a screenshot'),
-                subtitle: Text(_originals.length == 1
-                    ? 'The original you imported'
-                    : 'Pick one of ${_originals.length} originals'),
+                subtitle: Text(
+                  _originals.length == 1
+                      ? 'The original you imported'
+                      : 'Pick one of ${_originals.length} originals',
+                ),
                 onTap: () => Navigator.of(sheet).pop('screenshot'),
               ),
             if (_recipe.cover != null)
@@ -174,7 +179,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     }
     // Backing out of the camera/gallery/grid must leave the cover alone —
     // only 'remove' clears it.
-    if (!mounted || (choice != 'remove' && photo == null && ref == null)) return;
+    if (!mounted || (choice != 'remove' && photo == null && ref == null)) {
+      return;
+    }
 
     try {
       final saved = choice == 'remove'
@@ -188,8 +195,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       await _loadCover();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Cover not saved: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Cover not saved: $e')));
     }
   }
 
@@ -225,24 +233,21 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     );
   }
 
-  /// The recipe's own tags, plus the one door that adds them. Each chip's ×
-  /// takes the tag off THIS recipe; it never deletes the tag itself — that
-  /// lives in Settings, behind a confirm.
-  Widget _tagRow() {
+  /// The recipe's own tags, plus the one door that adds them — spliced into
+  /// the meta Wrap beside time and servings. Each chip's × takes the tag off
+  /// THIS recipe; it never deletes the tag itself — that lives in Settings,
+  /// behind a confirm.
+  List<Widget> _tagChips() {
     final tags = context.watch<TagsModel>();
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final name in _recipe.tags)
-          TagChip(
-            tag: tags.chipFor(name),
-            height: 32,
-            onDeleted: () => _toggleTag(name),
-          ),
-        AddTagChip(onTap: _openTagSheet),
-      ],
-    );
+    return [
+      for (final name in _recipe.tags)
+        TagChip(
+          tag: tags.chipFor(name),
+          height: 32,
+          onDeleted: () => _toggleTag(name),
+        ),
+      AddTagChip(onTap: _openTagSheet),
+    ];
   }
 
   Future<void> _toggleTag(String name) async {
@@ -253,13 +258,15 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   /// The shared picker — the same sheet the import review uses, so putting a
   /// tag on a recipe reads the same before and after it is saved.
   Future<void> _openTagSheet() => showTagPicker(
-        context,
-        selected: () => _recipe.tags,
-        onToggle: _toggleTag,
-      );
+    context,
+    selected: () => _recipe.tags,
+    onToggle: _toggleTag,
+  );
 
-  Future<void> _saveNotes() =>
-      _persist(_recipe.copyWith(notes: _notes.text), confirmation: 'Notes saved');
+  Future<void> _saveNotes() => _persist(
+    _recipe.copyWith(notes: _notes.text),
+    confirmation: 'Notes saved',
+  );
 
   Future<void> _toggleFavorite() =>
       _persist(_recipe.copyWith(favorite: !_recipe.favorite));
@@ -279,8 +286,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       msg = res.addedCount == 0
           ? 'Nothing added — everything is already checked off'
           : res.excludedCheckedCount > 0
-              ? 'Added to grocery — checked-off items skipped'
-              : 'Added to grocery';
+          ? 'Added to grocery — checked-off items skipped'
+          : 'Added to grocery';
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -302,8 +309,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       final bytes = await buildRecipePdf(data);
       await Printing.sharePdf(bytes: bytes, filename: '${_pdfName()}.pdf');
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(
-          content: Text("Couldn't build the PDF — try again")));
+      messenger.showSnackBar(
+        const SnackBar(content: Text("Couldn't build the PDF — try again")),
+      );
     }
   }
 
@@ -333,9 +341,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           }
         }
       }
-      lines.add(convertUnits(
+      lines.add(
+        convertUnits(
           linked == null ? ing.raw : linkedIngredientLine(ing, linked.name),
-          system));
+          system,
+        ),
+      );
     }
 
     Uint8List? coverBytes;
@@ -350,8 +361,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     // least one covered ingredient, and words worth printing. The coverage
     // note travels with it — a printed page cannot be tapped for the caveat.
     final n = kPantryEnabled
-        ? recipeNutrition(
-            _recipe, {for (final p in pantryProducts) p.id: p})
+        ? recipeNutrition(_recipe, {for (final p in pantryProducts) p.id: p})
         : null;
     NutritionBlock? block;
     if (n != null && !n.isEmpty) {
@@ -369,9 +379,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       title: _recipe.title,
       ingredients: lines,
       groupBefore: groups,
-      steps: [
-        for (final s in _recipe.steps) convertUnits(s.raw, system),
-      ],
+      steps: [for (final s in _recipe.steps) convertUnits(s.raw, system)],
       servings: _recipe.servings?.raw,
       time: _recipe.times?.raw,
       notes: _notes.text,
@@ -390,14 +398,19 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     if (client == null) return;
     final data = await _exportData();
     messenger.showSnackBar(
-        const SnackBar(content: Text('Making a Google Doc…')));
+      const SnackBar(content: Text('Making a Google Doc…')),
+    );
     try {
       final link = await exportRecipeToGoogleDocs(client, data);
-      await const MethodChannel('com.merkurialstudio.myrecibook/auth')
-          .invokeMethod<void>('launchUrl', link);
+      await const MethodChannel(
+        'com.merkurialstudio.myrecibook/auth',
+      ).invokeMethod<void>('launchUrl', link);
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(
-          content: Text("Couldn't reach Drive — the PDF still works")));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text("Couldn't reach Drive — the PDF still works"),
+        ),
+      );
     }
   }
 
@@ -444,10 +457,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   }
 
   Future<void> _edit() async {
-    final saved = await Navigator.of(context).push<Recipe>(MaterialPageRoute(
-      builder: (_) =>
-          ManualEntryScreen(initial: _recipe, originals: _originals),
-    ));
+    final saved = await Navigator.of(context).push<Recipe>(
+      MaterialPageRoute(
+        builder: (_) =>
+            ManualEntryScreen(initial: _recipe, originals: _originals),
+      ),
+    );
     if (saved == null || !mounted) return;
     setState(() => _recipe = saved);
     final grocery = context.read<GroceryModel>();
@@ -478,8 +493,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     // entirely when nothing is covered: a card promising numbers it doesn't
     // have is a dead end, not a feature (Arnar, 2026-08-19).
     final nutrition = kPantryEnabled
-        ? recipeNutrition(_recipe,
-            {for (final p in context.watch<PantryModel>().products) p.id: p})
+        ? recipeNutrition(_recipe, {
+            for (final p in context.watch<PantryModel>().products) p.id: p,
+          })
         : null;
 
     return Scaffold(
@@ -499,109 +515,127 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
                     sliver: SliverList.list(
                       children: [
-                  Text(_recipe.title, style: theme.textTheme.headlineSmall),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      if (_recipe.times?.raw != null)
-                        MetaChip(
-                            icon: Icons.schedule_rounded,
-                            label: _recipe.times!.raw!),
-                      if (_recipe.servings?.raw != null)
-                        MetaChip(
-                            icon: Icons.restaurant_rounded,
-                            label: _recipe.servings!.raw!),
-                    ],
-                  ),
-                  // Tags sit under the meta chips: they belong to the recipe
-                  // the way its time and servings do, and they are the thing
-                  // a user comes back to a recipe to change.
-                  if (kRecipeTagsEnabled) ...[
-                    const SizedBox(height: 12),
-                    _tagRow(),
-                  ],
-                  if (nutrition != null && !nutrition.isEmpty) ...[
-                    const SizedBox(height: 14),
-                    const SectionLabel('Nutrition'),
-                    const SizedBox(height: 8),
-                    _nutritionCard(theme, scheme, nutrition),
-                  ],
-                  const SizedBox(height: 14),
-                  const SectionLabel('Ingredients'),
-                  const SizedBox(height: 8),
-                  TokenCard(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-                    child: Column(children: _ingredientRows(theme, scheme)),
-                  ),
-                  const SizedBox(height: 14),
-                  const SectionLabel('Steps'),
-                  const SizedBox(height: 8),
-                  TokenCard(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (var n = 0; n < _recipe.steps.length; n++)
-                          Padding(
-                            padding: EdgeInsets.only(top: n == 0 ? 0 : 8),
-                            child: Text.rich(
-                              TextSpan(children: [
-                                TextSpan(
-                                  text: '${n + 1}  ',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: scheme.primary),
-                                ),
-                                TextSpan(
-                                    text: convertUnits(_recipe.steps[n].raw,
-                                        context.watch<UnitsModel>().system)),
-                              ]),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                height: 1.55,
-                                color: n == 0
-                                    ? scheme.onSurface
-                                    : scheme.onSurfaceVariant,
+                        Text(
+                          _recipe.title,
+                          style: theme.textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 12),
+                        // One flowing row: time, servings, then the tags and their
+                        // add door. They belong to the recipe the same way, and
+                        // stacking them spent two rows on what fits in one
+                        // (Arnar 2026-08-27).
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            if (_recipe.times?.raw != null)
+                              MetaChip(
+                                icon: Icons.schedule_rounded,
+                                label: _recipe.times!.raw!,
                               ),
-                            ),
+                            if (_recipe.servings?.raw != null)
+                              MetaChip(
+                                icon: Icons.restaurant_rounded,
+                                label: _recipe.servings!.raw!,
+                              ),
+                            if (kRecipeTagsEnabled) ..._tagChips(),
+                          ],
+                        ),
+                        if (nutrition != null && !nutrition.isEmpty) ...[
+                          const SizedBox(height: 14),
+                          const SectionLabel('Nutrition'),
+                          const SizedBox(height: 8),
+                          _nutritionCard(theme, scheme, nutrition),
+                        ],
+                        const SizedBox(height: 14),
+                        const SectionLabel('Ingredients'),
+                        const SizedBox(height: 8),
+                        TokenCard(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 2,
                           ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  const SectionLabel('Notes'),
-                  const SizedBox(height: 8),
-                  TokenCard(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          key: const Key('notes-field'),
-                          controller: _notes,
-                          maxLines: null,
-                          style: theme.textTheme.bodyMedium,
-                          decoration: InputDecoration(
-                            isCollapsed: true,
-                            border: InputBorder.none,
-                            hintText: 'Your notes',
-                            hintStyle: theme.textTheme.bodyMedium
-                                ?.copyWith(color: scheme.onSurfaceVariant),
+                          child: Column(
+                            children: _ingredientRows(theme, scheme),
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton(
-                            onPressed: _saveNotes,
-                            child: const Text('Save notes'),
+                        const SizedBox(height: 14),
+                        const SectionLabel('Steps'),
+                        const SizedBox(height: 8),
+                        TokenCard(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (var n = 0; n < _recipe.steps.length; n++)
+                                Padding(
+                                  padding: EdgeInsets.only(top: n == 0 ? 0 : 8),
+                                  child: Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: '${n + 1}  ',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            color: scheme.primary,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: convertUnits(
+                                            _recipe.steps[n].raw,
+                                            context.watch<UnitsModel>().system,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      height: 1.55,
+                                      color: n == 0
+                                          ? scheme.onSurface
+                                          : scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                        const SizedBox(height: 14),
+                        const SectionLabel('Notes'),
+                        const SizedBox(height: 8),
+                        TokenCard(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextField(
+                                key: const Key('notes-field'),
+                                controller: _notes,
+                                maxLines: null,
+                                style: theme.textTheme.bodyMedium,
+                                decoration: InputDecoration(
+                                  isCollapsed: true,
+                                  border: InputBorder.none,
+                                  hintText: 'Your notes',
+                                  hintStyle: theme.textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton(
+                                  onPressed: _saveNotes,
+                                  child: const Text('Save notes'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -624,10 +658,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     if (_recipe.steps.isNotEmpty)
                       Expanded(
                         child: FilledButton.icon(
-                          onPressed: () =>
-                              Navigator.of(context).push(MaterialPageRoute<void>(
-                            builder: (_) => CookModeScreen(recipe: _recipe),
-                          )),
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => CookModeScreen(recipe: _recipe),
+                            ),
+                          ),
                           icon: const Icon(Icons.play_arrow_rounded),
                           label: const Text('Start cooking'),
                         ),
@@ -646,7 +681,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   /// such — dividing by an invented count would be a lie with decimals. The
   /// '~' and the "N of M" line are the honesty contract: a partial sum is a
   /// hint, never the truth (Arnar, 2026-08-19).
-  Widget _nutritionCard(ThemeData theme, ColorScheme scheme, RecipeNutrition n) {
+  Widget _nutritionCard(
+    ThemeData theme,
+    ColorScheme scheme,
+    RecipeNutrition n,
+  ) {
     // Wording lives in domain/nutrient_display.dart so the PDF export prints
     // the identical lines — one honesty contract, one place to edit it.
     final words = nutritionWords(n);
@@ -659,21 +698,28 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (headline != null)
-            Text(headline,
-                style: theme.textTheme.bodyLarge
-                    ?.copyWith(fontWeight: FontWeight.w600)),
+            Text(
+              headline,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           if (macros.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: headline == null ? 0 : 4),
-              child: Text(macros,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: scheme.onSurfaceVariant)),
+              child: Text(
+                macros,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
             ),
           const SizedBox(height: 6),
           Text(
             words.note,
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: scheme.onSurfaceVariant),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -681,12 +727,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   }
 
   Widget _groceryButton() => FilledButton.tonalIcon(
-        onPressed: _toggleGrocery,
-        icon: Icon(context.watch<GroceryModel>().isOnList(_recipe.id)
-            ? Icons.playlist_add_check_rounded
-            : Icons.playlist_add_rounded),
-        label: const Text('Grocery'),
-      );
+    onPressed: _toggleGrocery,
+    icon: Icon(
+      context.watch<GroceryModel>().isOnList(_recipe.id)
+          ? Icons.playlist_add_check_rounded
+          : Icons.playlist_add_rounded,
+    ),
+    label: const Text('Grocery'),
+  );
 
   /// Collapsing hero: expanded it is the 210px cover (tap → originals
   /// viewer, swap pill bottom-right, cover door bottom-left); scrolled, the
@@ -739,49 +787,64 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         ),
         const SizedBox(width: 8),
         GlassCircle(
-            icon: Icons.delete_rounded, tooltip: 'Delete', onTap: _delete),
+          icon: Icons.delete_rounded,
+          tooltip: 'Delete',
+          onTap: _delete,
+        ),
         const SizedBox(width: 16),
       ],
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.parallax,
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            GestureDetector(
-              onTap: originals.isEmpty
-                  ? null
-                  : () => Navigator.of(context).push(MaterialPageRoute<void>(
-                      builder: (_) => OriginalsViewer(images: originals))),
-              // The flip now swaps two different pictures: the chosen cover
-              // (or its drawn stand-in) and the screenshot it came from.
-              child: _showOriginal
-                  ? ColoredBox(
-                      color: scheme.surfaceContainerLow,
-                      child: CoverImage(originals.firstOrNull,
-                          fit: BoxFit.contain))
-                  : RecipeCover(file: _cover, title: _recipe.title),
-            ),
-            Positioned(
-              bottom: 12,
-              left: 12,
-              child: GlassPill(
-                key: const Key('cover-door'),
-                icon: Icons.add_photo_alternate_rounded,
-                label: _recipe.cover == null ? 'add cover' : 'cover',
-                onTap: _pickCover,
+        // The cover starts BELOW the status bar, which then sits on the app
+        // bar's surface like every other screen's — not translucent over the
+        // photo (Arnar 2026-08-27).
+        background: Padding(
+          padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              GestureDetector(
+                onTap: originals.isEmpty
+                    ? null
+                    : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => OriginalsViewer(images: originals),
+                        ),
+                      ),
+                // The flip now swaps two different pictures: the chosen cover
+                // (or its drawn stand-in) and the screenshot it came from.
+                child: _showOriginal
+                    ? ColoredBox(
+                        color: scheme.surfaceContainerLow,
+                        child: CoverImage(
+                          originals.firstOrNull,
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    : RecipeCover(file: _cover, title: _recipe.title),
               ),
-            ),
-            if (originals.isNotEmpty)
               Positioned(
                 bottom: 12,
-                right: 12,
+                left: 12,
                 child: GlassPill(
-                  icon: Icons.swap_horiz_rounded,
-                  label: _showOriginal ? 'cover' : 'original',
-                  onTap: () => setState(() => _showOriginal = !_showOriginal),
+                  key: const Key('cover-door'),
+                  icon: Icons.add_photo_alternate_rounded,
+                  label: _recipe.cover == null ? 'add cover' : 'cover',
+                  onTap: _pickCover,
                 ),
               ),
-          ],
+              if (originals.isNotEmpty)
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: GlassPill(
+                    icon: Icons.swap_horiz_rounded,
+                    label: _showOriginal ? 'cover' : 'original',
+                    onTap: () => setState(() => _showOriginal = !_showOriginal),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -796,9 +859,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     if (!mounted) return;
     final ing = _recipe.ingredients[index];
     if (pantry.products.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Your pantry is empty — scan some products on the '
-              'Pantry tab first, then link them here.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Your pantry is empty — scan some products on the '
+            'Pantry tab first, then link them here.',
+          ),
+        ),
+      );
       return;
     }
     final pick = await showProductPickerSheet(
@@ -812,12 +880,16 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final chosen = pick.product;
     if (chosen != null) {
       next[index] = ing.copyWith(productRef: chosen.id);
-      await _persist(_recipe.copyWith(ingredients: next),
-          confirmation: 'Linked to ${chosen.name}');
+      await _persist(
+        _recipe.copyWith(ingredients: next),
+        confirmation: 'Linked to ${chosen.name}',
+      );
     } else {
       next[index] = ing.copyWith(clearProductRef: true);
-      await _persist(_recipe.copyWith(ingredients: next),
-          confirmation: 'Unlinked');
+      await _persist(
+        _recipe.copyWith(ingredients: next),
+        confirmation: 'Unlinked',
+      );
     }
   }
 
@@ -827,16 +899,21 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final rb = context.rb;
     // Linked labels resolve against the live pantry; a dangling ref (product
     // removed) just shows nothing — display noise, never an error.
-    final pantryProducts =
-        kPantryEnabled ? context.watch<PantryModel>().products : const <Product>[];
+    final pantryProducts = kPantryEnabled
+        ? context.watch<PantryModel>().products
+        : const <Product>[];
     for (var i = 0; i < _recipe.ingredients.length; i++) {
       final ing = _recipe.ingredients[i];
       if (ing.group != null && ing.group != prevGroup) {
-        rows.add(Padding(
-          padding: const EdgeInsets.only(top: 10, bottom: 2),
-          child: Align(
-              alignment: Alignment.centerLeft, child: SectionLabel(ing.group!)),
-        ));
+        rows.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 2),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SectionLabel(ing.group!),
+            ),
+          ),
+        );
       }
       prevGroup = ing.group;
       final checked = _checked.contains(i);
@@ -850,74 +927,86 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
           }
         }
       }
-      rows.add(InkWell(
-        onTap: () => setState(
-            () => checked ? _checked.remove(i) : _checked.add(i)),
-        onLongPress: kPantryEnabled ? () => _linkSheet(i) : null,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          decoration: last
-              ? null
-              : BoxDecoration(
-                  border: Border(bottom: BorderSide(color: rb.separator))),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 18,
-                height: 18,
-                margin: const EdgeInsets.only(top: 1),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  color: checked ? scheme.primary : null,
-                  border: checked
-                      ? null
-                      : Border.all(color: scheme.outline, width: 2),
+      rows.add(
+        InkWell(
+          onTap: () =>
+              setState(() => checked ? _checked.remove(i) : _checked.add(i)),
+          onLongPress: kPantryEnabled ? () => _linkSheet(i) : null,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            decoration: last
+                ? null
+                : BoxDecoration(
+                    border: Border(bottom: BorderSide(color: rb.separator)),
+                  ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 18,
+                  height: 18,
+                  margin: const EdgeInsets.only(top: 1),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: checked ? scheme.primary : null,
+                    border: checked
+                        ? null
+                        : Border.all(color: scheme.outline, width: 2),
+                  ),
+                  child: checked
+                      ? Icon(
+                          Icons.check_rounded,
+                          size: 13,
+                          color: scheme.onPrimary,
+                        )
+                      : null,
                 ),
-                child: checked
-                    ? Icon(Icons.check_rounded,
-                        size: 13, color: scheme.onPrimary)
-                    : null,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                // Linked rows show the PRODUCT's name inline as the
-                // ingredient name — one line, no sub-line (Arnar 2026-08-20).
-                // Display-time substitution only: ing.raw in the file is
-                // never touched, so unlink and re-import stay clean. The
-                // trailing kitchen icon keeps the sub-line's linked marker.
-                child: Text.rich(
-                  TextSpan(children: [
-                    qtyBoldSpan(
-                      convertUnits(
-                          linked == null
-                              ? ing.raw
-                              : linkedIngredientLine(ing, linked.name),
-                          context.watch<UnitsModel>().system),
-                      theme.textTheme.bodyMedium?.copyWith(
-                        decoration:
-                            checked ? TextDecoration.lineThrough : null,
-                        color: checked ? scheme.onSurfaceVariant : null,
-                      ),
+                const SizedBox(width: 10),
+                Expanded(
+                  // Linked rows show the PRODUCT's name inline as the
+                  // ingredient name — one line, no sub-line (Arnar 2026-08-20).
+                  // Display-time substitution only: ing.raw in the file is
+                  // never touched, so unlink and re-import stay clean. The
+                  // trailing kitchen icon keeps the sub-line's linked marker.
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        qtyBoldSpan(
+                          convertUnits(
+                            linked == null
+                                ? ing.raw
+                                : linkedIngredientLine(ing, linked.name),
+                            context.watch<UnitsModel>().system,
+                          ),
+                          theme.textTheme.bodyMedium?.copyWith(
+                            decoration: checked
+                                ? TextDecoration.lineThrough
+                                : null,
+                            color: checked ? scheme.onSurfaceVariant : null,
+                          ),
+                        ),
+                        if (linked != null) ...[
+                          const WidgetSpan(child: SizedBox(width: 5)),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Icon(
+                              Icons.kitchen_rounded,
+                              size: 12,
+                              color: checked
+                                  ? scheme.onSurfaceVariant
+                                  : scheme.primary,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    if (linked != null) ...[
-                      const WidgetSpan(child: SizedBox(width: 5)),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Icon(Icons.kitchen_rounded,
-                            size: 12,
-                            color: checked
-                                ? scheme.onSurfaceVariant
-                                : scheme.primary),
-                      ),
-                    ],
-                  ]),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ));
+      );
     }
     return rows;
   }

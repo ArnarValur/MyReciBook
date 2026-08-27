@@ -104,7 +104,8 @@ class BatchQueueScreen extends StatelessWidget {
       child: Padding(
           // Embedded sits under the glass bar (shell sets extendBody), so the
           // list needs the bar's height as bottom padding instead of 24.
-          padding: EdgeInsets.fromLTRB(20, 12, 20, embedded ? 110 : 24),
+          padding: EdgeInsets.fromLTRB(
+              20, 12, 20, embedded ? navBarClearance(context) : 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

@@ -118,6 +118,7 @@ class SafFolderStore implements RecipeStore {
     var skipped = 0;
     for (final entry in _rootFiles!.entries) {
       if (!entry.key.endsWith('.json')) continue;
+      if (RecipeStore.appOwnedFiles.contains(entry.key)) continue;
       try {
         final bytes = await _invoke<Uint8List>(
             'readFile', {'treeUri': treeUri, 'docId': entry.value});

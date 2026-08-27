@@ -9,6 +9,7 @@ import 'dart:io';
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
 import 'atomic_file.dart';
+import 'tag_store.dart' show kTagsFileName;
 
 class StoreResult {
   final List<Recipe> recipes;
@@ -48,6 +49,13 @@ abstract class RecipeStore {
 
   static bool safeImageRef(String rel) =>
       rel.startsWith('images/') && safeId(rel.substring('images/'.length));
+
+  /// Root files the APP writes beside the recipes. The scan must not read
+  /// them as recipes and must not count them as unreadable — tags.json spent
+  /// its first day on the shelf as a permanent "1 files in the folder
+  /// couldn't be read" (Arnar 2026-08-27). Every impl skips these by name;
+  /// add any future app-owned root file here, not in the impls.
+  static const appOwnedFiles = {kTagsFileName};
 }
 
 class LocalFolderStore implements RecipeStore {
@@ -68,6 +76,9 @@ class LocalFolderStore implements RecipeStore {
     var skipped = 0;
     await for (final entity in root.list()) {
       if (entity is! File || !entity.path.endsWith('.json')) continue;
+      if (RecipeStore.appOwnedFiles.contains(entity.path.split('/').last)) {
+        continue;
+      }
       try {
         final json = jsonDecode(await entity.readAsString()) as Map<String, dynamic>;
         if (fileProblems(json).where(isSaveBlocking).isNotEmpty) {

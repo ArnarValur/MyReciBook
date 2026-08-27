@@ -94,8 +94,10 @@ class TagChip extends StatelessWidget {
 
     final content = circle
         // Bigger than the pill's glyph: in the circle form the icon IS the
-        // chip, so it gets the room the label would have taken.
-        ? Center(child: TagGlyph(tag: tag, size: height * 0.5, color: fg))
+        // chip, so it gets the room the label would have taken. Always the
+        // tag's tint, like the pill's glyph — otherwise the same tag reads
+        // black here and coloured in TagBadge.
+        ? Center(child: TagGlyph(tag: tag, size: height * 0.5, color: tint))
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -5,7 +5,8 @@
 // of snapshots already in the day file; nothing here reads the pantry.
 //
 // Undesigned in the mockups (no turn ever drew a diary), so this is built in
-// the established idiom — TokenCard rows, SectionLabel headings, the cream
+// the established idiom — TokenCard rows, the meals on one collapsible shelf
+// card (the Pantry's white container, a ShelfSection per meal), the cream
 // scaffold and the glass bar's 110px bottom gap — and flagged for a design
 // turn on the copy and the totals card.
 
@@ -15,6 +16,7 @@ import 'package:provider/provider.dart';
 import '../../domain/diary.dart';
 import '../../domain/nutrient_display.dart';
 import '../theme.dart';
+import '../widgets/collapsible_shelf.dart';
 import '../widgets/skin.dart';
 import 'add_food_sheet.dart';
 import 'diary_model.dart';
@@ -32,6 +34,11 @@ class DiaryTab extends StatefulWidget {
 }
 
 class _DiaryTabState extends State<DiaryTab> {
+  /// Meals currently unfolded on the shelf. Null = never touched, and every
+  /// meal starts open. Session-only on purpose: a day's diary is small, and a
+  /// fold remembered across launches would hide meals people expect to see.
+  Set<String>? _openMeals;
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +49,13 @@ class _DiaryTabState extends State<DiaryTab> {
 
   Future<void> _addFood(String meal) async {
     await showAddFoodSheet(context, meal: meal);
+  }
+
+  /// Fold or unfold one meal. Screen state only — nothing written anywhere.
+  void _toggleMeal(String id, Set<String> open) {
+    final next = {...open};
+    if (!next.remove(id)) next.add(id);
+    setState(() => _openMeals = next);
   }
 
   /// Trends is a sub-screen, not a tab: the settings-row idiom, the model
@@ -104,17 +118,62 @@ class _DiaryTabState extends State<DiaryTab> {
     }
   }
 
+  /// One meal as a shelf section — the header carries the name, entry count
+  /// and the kcal readout; the rows and the add door build only while open.
+  /// An empty meal still draws its header — MFP's four slots are the shape
+  /// of the day, not a list that grows.
+  ShelfSection _mealSection(
+      ThemeData theme, ColorScheme scheme, DiaryModel model, String name) {
+    final meal = model.day.meal(name);
+    final entries = meal?.entries ?? const <DiaryEntry>[];
+    final kcal = meal?.total.kcal;
+    return ShelfSection(
+      id: name,
+      label: name,
+      count: entries.length,
+      trailing: Text(
+        kcal == null ? '—' : '${kcal.round()} kcal',
+        style: theme.textTheme.labelMedium
+            ?.copyWith(color: kcal == null ? scheme.onSurfaceVariant : null),
+      ),
+      builder: (_) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final entry in entries) ...[
+            _EntryRow(entry: entry, onTap: () => _entrySheet(entry)),
+            const SizedBox(height: 8),
+          ],
+          InkWell(
+            onTap: () => _addFood(name),
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(children: [
+                Icon(Icons.add_rounded, size: 18, color: scheme.primary),
+                const SizedBox(width: 6),
+                Text('Add food',
+                    style: theme.textTheme.labelLarge
+                        ?.copyWith(color: scheme.primary)),
+              ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final model = context.watch<DiaryModel>();
+    final openMeals = _openMeals ?? model.visibleMealNames.toSet();
 
     return Scaffold(
       body: SafeArea(
         bottom: false, // content scrolls under the shell's glass bar
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 110),
+          padding: EdgeInsets.fromLTRB(20, 24, 20, navBarClearance(context)),
           children: [
             if (widget.header != null) ...[
               widget.header!,
@@ -130,15 +189,15 @@ class _DiaryTabState extends State<DiaryTab> {
             const SizedBox(height: 14),
             _TotalsCard(model: model),
             const SizedBox(height: 22),
-            for (final name in model.visibleMealNames) ...[
-              _MealSection(
-                name: name,
-                meal: model.day.meal(name),
-                onAdd: () => _addFood(name),
-                onEntry: _entrySheet,
-              ),
-              const SizedBox(height: 18),
-            ],
+            CollapsibleShelf(
+              sections: [
+                for (final name in model.visibleMealNames)
+                  _mealSection(theme, scheme, model, name),
+              ],
+              expanded: openMeals,
+              onToggle: (id) => _toggleMeal(id, openMeals),
+            ),
+            const SizedBox(height: 18),
             if (model.loading) const LinearProgressIndicator(),
             const SizedBox(height: 8),
             Text(
@@ -340,66 +399,6 @@ class _MacroCell extends StatelessWidget {
             minHeight: 4,
             backgroundColor: scheme.surfaceContainerHigh,
             color: scheme.secondary,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// One meal heading, its rows, and the add door. An empty meal still draws —
-/// MFP's four slots are the shape of the day, not a list that grows.
-class _MealSection extends StatelessWidget {
-  const _MealSection({
-    required this.name,
-    required this.meal,
-    required this.onAdd,
-    required this.onEntry,
-  });
-
-  final String name;
-  final DiaryMeal? meal;
-  final VoidCallback onAdd;
-  final Future<void> Function(DiaryEntry) onEntry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = context.scheme;
-    final entries = meal?.entries ?? const <DiaryEntry>[];
-    final kcal = meal?.total.kcal;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            SectionLabel(name),
-            const Spacer(),
-            Text(
-              kcal == null ? '—' : '${kcal.round()} kcal',
-              style: theme.textTheme.labelMedium?.copyWith(
-                  color: kcal == null ? scheme.onSurfaceVariant : null),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        for (final entry in entries) ...[
-          _EntryRow(entry: entry, onTap: () => onEntry(entry)),
-          const SizedBox(height: 8),
-        ],
-        InkWell(
-          onTap: onAdd,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(children: [
-              Icon(Icons.add_rounded, size: 18, color: scheme.primary),
-              const SizedBox(width: 6),
-              Text('Add food',
-                  style: theme.textTheme.labelLarge
-                      ?.copyWith(color: scheme.primary)),
-            ]),
           ),
         ),
       ],

@@ -301,7 +301,7 @@ class GroceryPreview extends StatelessWidget {
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 110),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, navBarClearance(context)),
           children: [
             Row(children: [
               Expanded(

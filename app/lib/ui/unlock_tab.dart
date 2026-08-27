@@ -144,7 +144,7 @@ class UnlockTab extends StatelessWidget {
       body: SafeArea(
         bottom: false, // content scrolls under the shell's glass bar
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 110),
+          padding: EdgeInsets.fromLTRB(20, 24, 20, navBarClearance(context)),
           children: [
             const PaywallPitch(),
             const SizedBox(height: 20),

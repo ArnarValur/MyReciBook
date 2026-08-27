@@ -1,4 +1,4 @@
-// Settings → Tags. The list, reorder, and the create/edit sheet.
+// Settings → Tags. The list, reorder, and the door to the editor page.
 //
 // Two lists on purpose. The top one is the tags the user has designed. The
 // bottom one — "found in your recipes" — is every tag string the library
@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 
 import '../domain/recipe_tag.dart';
 import 'tag_chip.dart';
-import 'tag_editor_sheet.dart';
+import 'tag_editor_screen.dart';
 import 'tags_model.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
@@ -27,9 +27,15 @@ class TagsScreen extends StatelessWidget {
     final orphans = model.undecoratedNames;
     return Scaffold(
       appBar: AppBar(title: const Text('Tags')),
+      // Styled by hand: the default M3 FAB wears primaryContainer, a second
+      // blue that fought the editor's primary buttons (Arnar 2026-08-27).
+      // One blue — scheme.primary — and the house stadium shape.
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('tags-new-button'),
         onPressed: () => showTagEditor(context),
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        shape: const StadiumBorder(),
         icon: const Icon(Icons.add_rounded),
         label: const Text('New tag'),
       ),
