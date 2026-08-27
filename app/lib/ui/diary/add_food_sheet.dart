@@ -32,6 +32,7 @@ import '../../domain/recipe_tag.dart';
 import '../library_model.dart';
 import '../pantry/pantry_model.dart';
 import '../tags_model.dart';
+import '../../features.dart';
 import '../theme.dart';
 import '../widgets/collapsible_shelf.dart';
 import '../widgets/product_row.dart';
@@ -152,19 +153,24 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
 
   /// Tapping a recipe. The branch that matters: a recipe with nothing linked
   /// has no numbers, so the tap opens the LINKING sheet rather than logging a
-  /// meal of zero kcal. Come back with links and it logs; come back empty and
-  /// nothing is written at all.
+  /// meal of zero kcal. Come back with links and it logs; back out and nothing
+  /// is written.
+  ///
+  /// The exception is deliberate: the linking sheet offers "log it without
+  /// numbers", because the meal happened whether or not anyone linked it. That
+  /// entry stores ABSENT values, not zeros — the diary's own rule, and the
+  /// reason a blank nutrient never drags an average down.
   Future<void> _openRecipe(Recipe recipe) async {
     final products = _productsById(context.read<PantryModel>());
     var current = recipe;
     var nutrition = recipeNutrition(current, products);
     if (nutrition.isEmpty) {
-      final linked = await showLinkRecipeSheet(context, recipe: current);
-      if (!mounted || linked == null) return;
-      current = linked;
+      final result = await showLinkRecipeSheet(context, recipe: current);
+      if (!mounted || result == null) return;
+      current = result.recipe;
       nutrition = recipeNutrition(
           current, _productsById(context.read<PantryModel>()));
-      if (nutrition.isEmpty) return;
+      if (nutrition.isEmpty && !result.logAnyway) return;
     }
     final logged = await showLogRecipeSheet(context,
         recipe: current, nutrition: nutrition, meal: widget.meal);
@@ -422,11 +428,13 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                 : _openCategories.add(id)),
           ),
       ],
-      const SizedBox(height: 16),
-      Row(children: [
-        MetaChip(
-            icon: Icons.bolt_rounded, label: 'Quick add', onTap: _quickAdd),
-      ]),
+      if (kQuickAddEnabled) ...[
+        const SizedBox(height: 16),
+        Row(children: [
+          MetaChip(
+              icon: Icons.bolt_rounded, label: 'Quick add', onTap: _quickAdd),
+        ]),
+      ],
     ];
   }
 

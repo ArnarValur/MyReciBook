@@ -24,13 +24,28 @@ import '../widgets/skin.dart';
 
 /// Returns the recipe as it now stands — the same object when nothing was
 /// linked, so the caller can tell a no-op from real progress.
-Future<Recipe?> showLinkRecipeSheet(BuildContext context,
+/// What the linking sheet came back with.
+///
+/// [logAnyway] is the escape hatch: design 2b routes an unlinked recipe into
+/// linking instead of logging, which is right for the common case but would
+/// otherwise delete "I ate this, I don't know the numbers" as a recordable
+/// fact (Arnar's call 2026-08-27). The meal happened either way; a diary that
+/// can only record the meals you were willing to itemise is a diary that
+/// quietly under-counts.
+class LinkRecipeResult {
+  const LinkRecipeResult(this.recipe, {this.logAnyway = false});
+
+  final Recipe recipe;
+  final bool logAnyway;
+}
+
+Future<LinkRecipeResult?> showLinkRecipeSheet(BuildContext context,
     {required Recipe recipe}) async {
   final pantry = context.read<PantryModel>();
   final library = context.read<LibraryModel>();
   await pantry.ensureLoaded();
   if (!context.mounted) return null;
-  return showModalBottomSheet<Recipe>(
+  return showModalBottomSheet<LinkRecipeResult>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
@@ -147,12 +162,29 @@ class _LinkRecipeSheetState extends State<_LinkRecipeSheet> {
           ),
           Padding(
             padding: EdgeInsets.fromLTRB(20, 8, 20, 20 + systemBar),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(_recipe),
-                child: Text(linked > 0 ? 'Done — log it' : 'Done'),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => Navigator.of(context)
+                        .pop(LinkRecipeResult(_recipe)),
+                    child: Text(linked > 0 ? 'Done — log it' : 'Done'),
+                  ),
+                ),
+                // Nothing linked and no appetite for linking now: the meal
+                // still happened. The log sheet behind this says out loud
+                // that it carries no numbers, and the entry stores ABSENT
+                // values — never zeros, which would drag every average down.
+                if (linked == 0 && blocked == null)
+                  TextButton(
+                    key: const Key('log-without-numbers'),
+                    onPressed: () => Navigator.of(context)
+                        .pop(LinkRecipeResult(_recipe, logAnyway: true)),
+                    child: const Text('Log it without numbers'),
+                  ),
+              ],
             ),
           ),
         ]),

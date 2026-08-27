@@ -205,15 +205,17 @@ void main() {
     expect(find.byType(ProductRow), findsNothing);
   });
 
-  testWidgets('the dropped chip row is gone, quick add survives',
+  testWidgets('the whole chip row is gone, quick add included',
       (tester) async {
     await openSheet(tester);
 
-    // Scan and "create food" are pantry management and live on the Pantry
-    // tab now. Quick add only ever touched the diary, so it stays.
+    // Scan and "create food" are pantry management and live on the Pantry tab.
+    // Quick add is not — its engine is real and stays — but it is parked
+    // behind kQuickAddEnabled (Arnar 2026-08-27: he could not tell from the
+    // label what it did). This sheet only adds to the meal.
     expect(find.text('Scan'), findsNothing);
     expect(find.text('Create food'), findsNothing);
-    expect(find.text('Quick add'), findsOneWidget);
+    expect(find.text('Quick add'), findsNothing);
   });
 
   testWidgets('the recipes tab shelves by tag, untagged last',

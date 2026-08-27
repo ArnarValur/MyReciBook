@@ -140,6 +140,20 @@ is only the correction path. `user_edited` tags are never overwritten.
       edit_recipe, recipe_detail_link. Rewrite against the shared sheet
       WHEN Arnar orders a test pass — one hung 9m40 on 2026-08-20.
 
+## Weld-time item — product photos on every card (Arnar 2026-08-27)
+- Pantry rows show a product's photo when it has one. Diary lines and the add
+  sheet do not — same product, two different faces.
+- Recipes have the same gap wherever a row draws the book fallback instead of
+  the cover.
+- TENSION with mockup 1a, which is deliberate, not an oversight: "entry
+  avatars say where a line came from: book = logged from a recipe, fridge =
+  from the pantry". The avatar carries PROVENANCE; a photo carries IDENTITY.
+  Showing the photo wins the identity and loses the provenance.
+  Unsettled — Arnar's call at the weld: photo with a small provenance badge in
+  the corner, or photo simply replaces the icon.
+- Do it after the four design agents land; they own diary_tab, add_food_sheet
+  and pantry_tab right now.
+
 ## Open — NEXT SESSION STARTS HERE
 - [ ] Redeploy to the S21 (it runs the phase-1-3 build; starter foods and
       the picker consolidation are newer). Then Arnar's eyes on: chips,

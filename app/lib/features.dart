@@ -60,3 +60,16 @@ const bool kDiaryEnabled = true;
 /// they stay hidden until one exists (dead-end rule). Flip = one line here
 /// plus real handlers in unlock_tab.dart.
 const bool kSpreadWordEnabled = false;
+
+
+/// Quick add — a diary line that is calories and nothing else, for the meal
+/// out nobody is going to itemise. The engine is real and tested
+/// (quickAddEntry, DiaryModel.logQuickAdd); only its door is hidden.
+///
+/// Parked 2026-08-27: design 2a drops the sheet's Scan / Create food / Quick
+/// add row, and Arnar did not recognise what Quick add was — a feature nobody
+/// can name from its label is not earning its place in the one sheet you use
+/// to log food. The code stays because the need is real and the next design
+/// pass may give it a better name and a better home. Flip this to bring the
+/// chip back; nothing else has to change.
+const bool kQuickAddEnabled = false;

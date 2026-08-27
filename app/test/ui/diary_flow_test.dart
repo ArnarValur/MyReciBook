@@ -196,15 +196,14 @@ void main() {
     expect(await diaryStore.loggedDates(), isEmpty);
   });
 
+  // The Quick add CHIP is parked behind kQuickAddEnabled (2026-08-27), so
+  // this drives the engine directly rather than through a door that is not
+  // drawn. Parked, not deleted: flipping the flag back must not reveal rot,
+  // and that only holds if the path stays covered.
   testWidgets('quick add logs calories with no food behind them',
       (tester) async {
     await pump(tester);
-    await tester.tap(find.text('Add food').at(1)); // Lunch
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Quick add'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).last, '600');
-    await tester.tap(find.text('Add'));
+    await diary.logQuickAdd(meal: 'Lunch', kcal: 600);
     await tester.pumpAndSettle();
 
     expect(find.text('Quick add'), findsOneWidget);
