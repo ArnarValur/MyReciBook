@@ -40,6 +40,11 @@ class DiaryModel extends ChangeNotifier {
   List<DiaryEntry> _recents = const [];
   bool _recentsLoaded = false;
 
+  /// Days already read this session, for [loadRange]. In memory only — D4's
+  /// rescan-per-session rule; nothing about the diary is ever cached to disk.
+  final Map<String, DiaryDay> _rangeCache = {};
+  List<String>? _loggedDates;
+
   String get date => _date;
   DiaryDay get day => _day;
   bool get loading => _loading;
@@ -111,6 +116,42 @@ class DiaryModel extends ChangeNotifier {
       _loaded = true;
       notifyListeners();
     }
+  }
+
+  /// Every logged day from [from] to [to] inclusive, oldest first — the range
+  /// read the Trends screen is built on.
+  ///
+  /// The store's directory listing already answers "which days have a file",
+  /// so only days that exist are opened: a year of daily logging is one
+  /// listing plus the days you actually logged, not 365 misses. Days read
+  /// earlier this session come back from memory, so switching W → Y → W costs
+  /// one pass, not three. Still one day resident for EDITING — [day] and this
+  /// are different jobs.
+  Future<List<DiaryDay>> loadRange(String from, String to) async {
+    final store = _store;
+    if (store == null) return const [];
+    List<String> dates;
+    try {
+      dates = _loggedDates ??= await store.loggedDates();
+    } catch (_) {
+      return const []; // an unreadable folder is an empty chart, never a crash
+    }
+    final out = <DiaryDay>[];
+    for (final date in dates) {
+      if (date.compareTo(from) < 0 || date.compareTo(to) > 0) continue;
+      final cached = _rangeCache[date];
+      if (cached != null) {
+        out.add(cached);
+        continue;
+      }
+      try {
+        out.add(_rangeCache[date] = await store.load(date));
+      } catch (_) {
+        // One file we couldn't read is a day the trends don't count (§7).
+      }
+    }
+    out.sort((a, b) => a.date.compareTo(b.date));
+    return out;
   }
 
   Future<void> ensureRecents() async {
@@ -230,6 +271,9 @@ class DiaryModel extends ChangeNotifier {
   Future<void> _apply(DiaryDay next) async {
     _day = next;
     _recentsLoaded = false; // the recents list just changed
+    _rangeCache[next.date] = next; // and so did what the trends would count
+    // An emptied day loses its file; a first entry gains one.
+    _loggedDates = null;
     notifyListeners();
     try {
       await _store?.save(next);

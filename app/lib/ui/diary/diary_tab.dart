@@ -18,6 +18,7 @@ import '../theme.dart';
 import '../widgets/skin.dart';
 import 'add_food_sheet.dart';
 import 'diary_model.dart';
+import 'trends_screen.dart';
 
 class DiaryTab extends StatefulWidget {
   const DiaryTab({super.key, this.header});
@@ -41,6 +42,17 @@ class _DiaryTabState extends State<DiaryTab> {
 
   Future<void> _addFood(String meal) async {
     await showAddFoodSheet(context, meal: meal);
+  }
+
+  /// Trends is a sub-screen, not a tab: the settings-row idiom, the model
+  /// handed down by value so the pushed route reads the same diary.
+  void _openTrends() {
+    Navigator.of(context).push<void>(MaterialPageRoute<void>(
+      builder: (_) => ChangeNotifierProvider<DiaryModel>.value(
+        value: context.read<DiaryModel>(),
+        child: const TrendsScreen(),
+      ),
+    ));
   }
 
   Future<void> _entrySheet(DiaryEntry entry) async {
@@ -113,6 +125,7 @@ class _DiaryTabState extends State<DiaryTab> {
               isToday: model.isToday,
               onShift: model.shiftDay,
               onToday: () => model.openDate(diaryDate(DateTime.now())),
+              onTrends: _openTrends,
             ),
             const SizedBox(height: 14),
             _TotalsCard(model: model),
@@ -149,12 +162,14 @@ class _DayStrip extends StatelessWidget {
     required this.isToday,
     required this.onShift,
     required this.onToday,
+    required this.onTrends,
   });
 
   final String date;
   final bool isToday;
   final Future<void> Function(int) onShift;
   final VoidCallback onToday;
+  final VoidCallback onTrends;
 
   @override
   Widget build(BuildContext context) {
@@ -193,6 +208,11 @@ class _DayStrip extends StatelessWidget {
           onPressed: () => onShift(1),
           icon: const Icon(Icons.chevron_right_rounded),
           tooltip: 'Next day',
+        ),
+        IconButton(
+          onPressed: onTrends,
+          icon: const Icon(Icons.insights_rounded),
+          tooltip: 'Trends',
         ),
       ],
     );
