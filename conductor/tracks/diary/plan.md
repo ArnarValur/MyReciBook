@@ -4,6 +4,10 @@
 ate into a day, from the pantry, from a recipe, or typed in, and see the day total
 against a goal. This is the piece that makes pantry, scanner and recipes one app.
 
+**Next session (Arnar, 2026-08-28):** final polishing, and explore custom meal
+hours — editing the time Breakfast and the other meals stand for (a user
+request relayed by Arnar).
+
 **Sanded 2026-08-28 at 0.17.5+29:** meal sections in the CollapsibleShelf card
 (session-only folds, kcal on the header) · Trends drops all-zero micro rows
 (diary_stats_test pins it) · label micros forced to grams in the prompt with
