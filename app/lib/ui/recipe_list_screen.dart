@@ -485,6 +485,23 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
 
 /// Compact list form: title + meta, no cover decode — the fast scanning
 /// view for big libraries. Favorites keep their heart (the tertiary moment).
+/// A recipe's tags in the order Settings puts them, with anything undecorated
+/// after. Without this the badges follow the order the tags happen to sit in
+/// the file, and two recipes with the same tags would show them differently.
+List<String> _orderTags(BuildContext context, List<String> tags) {
+  final model = context.read<TagsModel>();
+  final rank = {
+    for (var i = 0; i < model.tags.length; i++)
+      RecipeTag.canonical(model.tags[i].name): i
+  };
+  final sorted = [...tags]..sort((a, b) {
+      final ra = rank[RecipeTag.canonical(a)] ?? 1 << 30;
+      final rb = rank[RecipeTag.canonical(b)] ?? 1 << 30;
+      return ra != rb ? ra.compareTo(rb) : a.toLowerCase().compareTo(b.toLowerCase());
+    });
+  return sorted;
+}
+
 class _RecipeRow extends StatelessWidget {
   const _RecipeRow({required this.recipe});
 
@@ -536,6 +553,16 @@ class _RecipeRow extends StatelessWidget {
                 ],
               ),
             ),
+            // Tags, then the heart. Badges rather than chips: the row's job
+            // is the title, and a glyph plus its colour says which tags are
+            // on this recipe without spending any of that width on words.
+            if (kRecipeTagsEnabled && recipe.tags.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              TagBadgeRow(
+                names: _orderTags(context, recipe.tags),
+                decorate: context.watch<TagsModel>().chipFor,
+              ),
+            ],
             if (recipe.favorite) ...[
               const SizedBox(width: 8),
               Icon(Icons.favorite_rounded, size: 16, color: scheme.tertiary),
@@ -619,6 +646,17 @@ class _RecipeCard extends StatelessWidget {
                         style: theme.textTheme.bodySmall?.copyWith(
                             fontSize: 11.5,
                             color: context.scheme.onSurfaceVariant),
+                      ),
+                    ],
+                    // The same badges as the list row, so switching view does
+                    // not change what a recipe appears to be tagged with.
+                    if (kRecipeTagsEnabled && recipe.tags.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      TagBadgeRow(
+                        names: _orderTags(context, recipe.tags),
+                        decorate: context.watch<TagsModel>().chipFor,
+                        max: 4,
+                        size: 18,
                       ),
                     ],
                   ],

@@ -145,3 +145,98 @@ class TagChip extends StatelessWidget {
     );
   }
 }
+
+
+/// A tag squeezed down to a badge, for the cookbook's rows and cover cards.
+///
+/// Always the ICON form, whatever the tag's own showLabel says: a row has no
+/// room for words, and a glyph plus its colour is exactly the scanning aid
+/// colour was added for. A tag with no icon falls back to its first letter,
+/// so it still says WHICH tag rather than just "there is one".
+class TagBadge extends StatelessWidget {
+  const TagBadge({super.key, required this.tag, this.size = 20});
+
+  final RecipeTag tag;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final tint = tagColorOf(context, tag.color);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: dark ? 0.3 : 0.16),
+        shape: BoxShape.circle,
+      ),
+      child: tag.icon != null
+          ? TagGlyph(tag: tag, size: size * 0.62, color: tint)
+          : Text(
+              tag.name.characters.first.toUpperCase(),
+              style: TextStyle(
+                fontSize: size * 0.5,
+                height: 1,
+                fontWeight: FontWeight.w700,
+                color: tint,
+              ),
+            ),
+    );
+  }
+}
+
+/// The badges for one recipe, in the user's Settings order, capped so a
+/// heavily tagged recipe cannot push the title out of its own row.
+class TagBadgeRow extends StatelessWidget {
+  const TagBadgeRow({
+    super.key,
+    required this.names,
+    required this.decorate,
+    this.max = 3,
+    this.size = 20,
+  });
+
+  /// The recipe's tag strings, already ordered.
+  final List<String> names;
+
+  /// Usually TagsModel.chipFor — decoration if the tag has one, a plain tag
+  /// if it does not.
+  final RecipeTag Function(String) decorate;
+
+  final int max;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    if (names.isEmpty) return const SizedBox.shrink();
+    final shown = names.take(max).toList();
+    final extra = names.length - shown.length;
+    final scheme = context.scheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final name in shown) ...[
+          TagBadge(tag: decorate(name), size: size),
+          const SizedBox(width: 4),
+        ],
+        if (extra > 0)
+          Container(
+            height: size,
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text('+$extra',
+                style: TextStyle(
+                    fontSize: size * 0.5,
+                    height: 1,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurfaceVariant)),
+          ),
+      ],
+    );
+  }
+}
