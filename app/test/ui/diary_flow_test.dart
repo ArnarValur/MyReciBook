@@ -136,6 +136,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Add to breakfast'), findsOneWidget);
 
+    // The shelf opens folded — nothing under a header is built until it is
+    // tapped. Havregryn carries no category, so it sits under Other.
+    expect(find.text('Havregryn'), findsNothing);
+    await tester.tap(find.text('🏷️ Other'));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text('Havregryn'));
     await tester.pumpAndSettle();
 
