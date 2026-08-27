@@ -34,7 +34,7 @@ class LabelRead {
     this.basis = LabelBasis.unknown,
     this.confidence,
     this.unreadable = const [],
-    this.notAProduct = false,
+    this.noLabel = false,
   });
 
   final String? name;
@@ -53,8 +53,12 @@ class LabelRead {
   /// person should check by hand.
   final List<String> unreadable;
 
-  /// The photos were not grocery packaging at all.
-  final bool notAProduct;
+  /// No packaging text to read at all — a blank surface, a face, a photo too
+  /// dark to make anything out. Deliberately NOT "this is not food": whether
+  /// a thing belongs in someone's pantry is their call, and the model would
+  /// get it wrong anyway (coffee, spices, oil and supplements all read as
+  /// non-food to a model looking for a nutrition table).
+  final bool noLabel;
 
   bool get isEmpty =>
       name == null && brand == null && values.isEmpty && serving == null;
@@ -62,7 +66,7 @@ class LabelRead {
   /// A reading worth showing at all. Low confidence still shows — the person
   /// is looking at the pack and can fix it — but a read with nothing in it is
   /// a failed read, not a form to confirm.
-  bool get hasAnything => !notAProduct && !isEmpty;
+  bool get hasAnything => !noLabel && !isEmpty;
 }
 
 /// Keys the pantry form and the product file understand. Anything else the
@@ -115,8 +119,10 @@ LabelBasis _basis(Object? v) => switch (v) {
 /// Turn the model's JSON into a reading, dropping everything that fails a
 /// sanity check. Never throws: a garbled response is an empty read.
 LabelRead labelReadFromJson(Map<String, dynamic> json) {
-  if (json['not_a_product'] == true) {
-    return const LabelRead(notAProduct: true);
+  // Both keys: 'not_a_product' was the first prompt's wording and a model
+  // that has seen it may still answer that way.
+  if (json['no_label'] == true || json['not_a_product'] == true) {
+    return const LabelRead(noLabel: true);
   }
 
   final values = <String, double>{};

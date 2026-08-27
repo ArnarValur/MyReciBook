@@ -89,11 +89,28 @@ void main() {
         isNull);
   });
 
-  test('not_a_product short-circuits everything', () {
-    final r = labelReadFromJson({'not_a_product': true, 'name': 'Vaseline'});
-    expect(r.notAProduct, isTrue);
-    expect(r.hasAnything, isFalse);
-    expect(r.name, isNull);
+  test('no_label short-circuits everything, old key included', () {
+    for (final key in ['no_label', 'not_a_product']) {
+      final r = labelReadFromJson({key: true, 'name': 'X'});
+      expect(r.noLabel, isTrue, reason: key);
+      expect(r.hasAnything, isFalse, reason: key);
+      expect(r.name, isNull, reason: key);
+    }
+  });
+
+  test('a pack with no nutrition table is still a good read', () {
+    // Coffee, spices, olive oil, a tub of petroleum jelly — plenty of real
+    // packaging carries a name and an ingredients list and no table. Whether
+    // it belongs in a pantry is the person's call, not the model's.
+    final r = labelReadFromJson({
+      'name': 'Vaseline Original',
+      'brand': 'Unilever',
+      'basis': 'unknown',
+    });
+    expect(r.hasAnything, isTrue);
+    expect(r.noLabel, isFalse);
+    expect(r.name, 'Vaseline Original');
+    expect(r.values, isEmpty);
   });
 
   test('garbage never throws — it reads as nothing', () {

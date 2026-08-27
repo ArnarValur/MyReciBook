@@ -81,6 +81,12 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
   String? _readError;
   LabelRead? _read;
 
+  /// Shots of the pack waiting to be read. Front, back, ingredients panel —
+  /// three is the ceiling because a fourth photo of the same tub costs
+  /// another slice of the request and buys nothing.
+  static const _maxLabelShots = 3;
+  final List<File> _labelShots = [];
+
   /// Selected tags, in the order they were picked. A list, not a set: the
   /// order a person chose is the order the shelf should show.
   final _tags = <String>[];
@@ -180,8 +186,21 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
   /// Costs one AI call against the same fair-use budget a recipe import
   /// spends, which is why it is a button and not something the scanner does
   /// on its own. Barcode lookups are free; this is not.
-  Future<void> _readLabel(Future<List<File>> Function() source) async {
-    final photos = await source();
+  /// Add shots to the tray. The camera hands back one at a time, so this is
+  /// tapped again for the next side; the gallery can hand back several.
+  Future<void> _addLabelShots(Future<List<File>> Function() source) async {
+    final picked = await source();
+    if (picked.isEmpty || !mounted) return;
+    setState(() {
+      _readError = null;
+      for (final f in picked) {
+        if (_labelShots.length < _maxLabelShots) _labelShots.add(f);
+      }
+    });
+  }
+
+  Future<void> _readLabel() async {
+    final photos = List<File>.of(_labelShots);
     if (photos.isEmpty || !mounted) return;
     setState(() {
       _reading = true;
@@ -192,10 +211,11 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
       if (reader == null) return; // button is hidden without one
       final read = labelReadFromJson(await reader.extractLabel(photos));
       if (!mounted) return;
-      if (read.notAProduct) {
+      if (read.noLabel) {
         setState(() {
           _reading = false;
-          _readError = 'That does not look like food packaging';
+          _readError = "No label to read in that photo — get the pack's text "
+              'in frame, in good light';
         });
         return;
       }
@@ -278,12 +298,30 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Photograph the nutrition table — and the front, for the name. '
-            'It fills the fields below; you check them.',
+            'Photograph the nutrition table, the front for the name, the '
+            'ingredients if you want them — up to three. It fills the fields '
+            'below; you check them.',
             style: theme.textTheme.bodySmall
                 ?.copyWith(height: 1.5, color: scheme.onSurfaceVariant),
           ),
           const SizedBox(height: 12),
+          if (_labelShots.isNotEmpty) ...[
+            SizedBox(
+              height: 72,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: _labelShots.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (_, i) => _LabelShot(
+                  file: _labelShots[i],
+                  onRemove: _reading
+                      ? null
+                      : () => setState(() => _labelShots.removeAt(i)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           if (_reading)
             Row(children: [
               const SizedBox(
@@ -295,19 +333,29 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
             ])
           else
             Wrap(spacing: 8, runSpacing: 8, children: [
-              if (photos.camera != null)
-                FilledButton.tonalIcon(
-                  key: const Key('label-read-camera'),
-                  onPressed: () => _readLabel(photos.camera!),
-                  icon: const Icon(Icons.photo_camera_rounded, size: 18),
-                  label: const Text('Photograph'),
+              if (_labelShots.length < _maxLabelShots) ...[
+                if (photos.camera != null)
+                  FilledButton.tonalIcon(
+                    key: const Key('label-read-camera'),
+                    onPressed: () => _addLabelShots(photos.camera!),
+                    icon: const Icon(Icons.photo_camera_rounded, size: 18),
+                    label: Text(_labelShots.isEmpty ? 'Photograph' : 'Another'),
+                  ),
+                OutlinedButton.icon(
+                  key: const Key('label-read-gallery'),
+                  onPressed: () => _addLabelShots(photos.gallery),
+                  icon: const Icon(Icons.photo_library_rounded, size: 18),
+                  label: const Text('From photos'),
                 ),
-              OutlinedButton.icon(
-                key: const Key('label-read-gallery'),
-                onPressed: () => _readLabel(photos.gallery),
-                icon: const Icon(Icons.photo_library_rounded, size: 18),
-                label: const Text('From photos'),
-              ),
+              ],
+              if (_labelShots.isNotEmpty)
+                FilledButton.icon(
+                  key: const Key('label-read-go'),
+                  onPressed: _readLabel,
+                  icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                  label: Text('Read ${_labelShots.length} photo'
+                      '${_labelShots.length == 1 ? '' : 's'}'),
+                ),
             ]),
           if (_readError != null) ...[
             const SizedBox(height: 10),
@@ -598,6 +646,51 @@ class _TagPill extends StatelessWidget {
               color: selected ? scheme.onPrimary : scheme.onSurface),
         ),
       ),
+    );
+  }
+}
+
+/// One queued photo of the pack, with its way back out. Nothing here is saved
+/// — these are read once and dropped when the screen closes.
+class _LabelShot extends StatelessWidget {
+  const _LabelShot({required this.file, required this.onRemove});
+
+  final File file;
+
+  /// Null while a read is in flight — pulling a photo out mid-request would
+  /// change what the answer was about.
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.file(file,
+              width: 72, height: 72, fit: BoxFit.cover, gaplessPlayback: true),
+        ),
+        if (onRemove != null)
+          Positioned(
+            top: -6,
+            right: -6,
+            child: Material(
+              color: scheme.surfaceContainerHighest,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: onRemove,
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: Icon(Icons.close_rounded,
+                      size: 14, color: scheme.onSurface),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
