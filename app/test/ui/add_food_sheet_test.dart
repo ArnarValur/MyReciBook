@@ -1,6 +1,11 @@
-// The "Add food" picker's layout contract: recipes sit ABOVE the pantry as
-// a collapsed strip (a real shelf is a long scroll — a section below it is
-// a section nobody finds), and search reaches recipes as well as products.
+// The "Add food" picker's layout contract, design 2a/2b: a Pantry | Recipes
+// tab pair over one search field, and BOTH tabs' shelves opening folded.
+//
+// The assertion this file exists for is the fold: nothing under a closed
+// header may be built. Flat-rendering the pantry is what made the sheet slow
+// to open, and "hidden but built" would pass a naive eyeball test while
+// costing exactly as much — so the checks here are findsNothing before the
+// tap and findsOneWidget after it, never a visibility check.
 //
 // Stores are in-memory, same stance as diary_flow_test.dart: this file
 // proves the SHEET, the on-disk contracts live in the store tests.
@@ -25,7 +30,7 @@ import 'package:provider/provider.dart';
 
 import '../helpers/fixtures.dart';
 
-Product shelfItem(int n) => Product(
+Product shelfItem(int n, {List<String> tags = const []}) => Product(
       schemaVersion: 1,
       barcode: '70000000000$n',
       name: 'Shelf item $n',
@@ -34,6 +39,7 @@ Product shelfItem(int n) => Product(
       nutriments: Nutriments(kcal: 100),
       servings: const [Serving(label: '100 g', grams: 100)],
       defaultServing: 0,
+      tags: tags,
     );
 
 class _MemoryPantryStore implements ProductStore {
@@ -110,20 +116,36 @@ void main() {
   late PantryModel pantry;
   late LibraryModel library;
 
-  // Five recipes: two more than the collapsed strip's preview of three.
-  const titles = ['Pancakes', 'Waffles', 'Omelette', 'Granola', 'Smoothie'];
+  // Five recipes across overlapping tags, plus one nobody filed: exactly the
+  // shape 2b is drawn for — a recipe may sit under several headings, and
+  // Untagged is pinned last.
+  const tagged = <String, List<String>>{
+    'Pancakes': ['Breakfast'],
+    'Waffles': ['Breakfast', 'Desserts'],
+    'Omelette': ['Breakfast'],
+    'Granola': ['Desserts'],
+    'Smoothie': <String>[],
+  };
 
   setUp(() async {
     final pantryStore = _MemoryPantryStore();
-    for (var n = 1; n <= 6; n++) {
-      await pantryStore.save(shelfItem(n));
+    // Two categories plus an uncategorised one, so shelf order and the
+    // Other-goes-last rule are both under test.
+    for (var n = 1; n <= 3; n++) {
+      await pantryStore.save(shelfItem(n, tags: const ['Dairy']));
     }
+    for (var n = 4; n <= 5; n++) {
+      await pantryStore.save(shelfItem(n, tags: const ['Fruit']));
+    }
+    await pantryStore.save(shelfItem(6));
     pantry = PantryModel(pantryStore);
     diary = DiaryModel(_MemoryDiaryStore(),
         clock: () => DateTime(2026, 8, 19, 9));
     final recipeStore = _StubRecipeStore()
       ..recipes = [
-        for (final (i, title) in titles.indexed) cannedRecipe('r$i', title),
+        for (final entry in tagged.entries)
+          cannedRecipe('r-${entry.key}', entry.key)
+              .copyWith(tags: entry.value),
       ];
     library = LibraryModel(recipeStore);
     await library.rescan();
@@ -161,76 +183,106 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('recipes sit above the pantry as a collapsed strip',
+  testWidgets('the pantry shelf opens folded and builds nothing under it',
       (tester) async {
     await openSheet(tester);
 
-    // Both sections are drawn — recipes first. SectionLabel uppercases.
-    final recipesY = tester.getTopLeft(find.text('YOUR RECIPES')).dy;
-    final pantryY = tester.getTopLeft(find.text('YOUR PANTRY')).dy;
-    expect(recipesY, lessThan(pantryY));
+    // Every category is on screen at once — that is what the fold buys.
+    expect(find.text('YOUR PANTRY'), findsOneWidget);
+    for (final label in ['🥛 Dairy', '🍎 Fruit', '🏷️ Other']) {
+      expect(find.text(label), findsOneWidget);
+    }
 
-    // Only the preview shows; the rest hide behind the expander.
+    // Not "hidden" — not built. A closed section's builder is never called.
+    expect(find.byType(ProductRow), findsNothing);
+
+    await tester.tap(find.text('🥛 Dairy'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ProductRow), findsNWidgets(3));
+
+    await tester.tap(find.text('🥛 Dairy'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ProductRow), findsNothing);
+  });
+
+  testWidgets('the dropped chip row is gone, quick add survives',
+      (tester) async {
+    await openSheet(tester);
+
+    // Scan and "create food" are pantry management and live on the Pantry
+    // tab now. Quick add only ever touched the diary, so it stays.
+    expect(find.text('Scan'), findsNothing);
+    expect(find.text('Create food'), findsNothing);
+    expect(find.text('Quick add'), findsOneWidget);
+  });
+
+  testWidgets('the recipes tab shelves by tag, untagged last',
+      (tester) async {
+    await openSheet(tester);
+    await tester.tap(find.text('Recipes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('YOUR RECIPES · BY TAG'), findsOneWidget);
+    expect(
+        find.text('A recipe logs as one diary line — its numbers come from '
+            'its linked ingredients.'),
+        findsOneWidget);
+
+    // Every tag on screen — no "show all N" — and Untagged pinned below them.
+    final breakfast = tester.getTopLeft(find.text('Breakfast')).dy;
+    final desserts = tester.getTopLeft(find.text('Desserts')).dy;
+    final untagged = tester.getTopLeft(find.text('Untagged')).dy;
+    expect(breakfast, lessThan(untagged));
+    expect(desserts, lessThan(untagged));
+    expect(find.textContaining('Show all'), findsNothing);
+
+    // Folded, again: no recipe row exists until a header is tapped.
+    expect(find.text('Waffles'), findsNothing);
+    await tester.tap(find.text('Breakfast'));
+    await tester.pumpAndSettle();
     for (final title in ['Pancakes', 'Waffles', 'Omelette']) {
       expect(find.text(title), findsOneWidget);
     }
-    expect(find.text('Granola'), findsNothing);
-    expect(find.text('Smoothie'), findsNothing);
-    expect(find.text('Show all 5'), findsOneWidget);
 
-    // The three doors are still on the sheet.
-    for (final chip in ['Scan', 'Create food', 'Quick add']) {
-      expect(find.text(chip), findsOneWidget);
-    }
+    // Tags overlap by design: Waffles is under Desserts as well, and both
+    // copies are on screen at once.
+    await tester.tap(find.text('Desserts'));
+    await tester.pumpAndSettle();
+    expect(find.text('Waffles'), findsNWidgets(2));
+    expect(find.text('Granola'), findsOneWidget);
   });
 
-  testWidgets('show all expands the strip, show fewer folds it back',
+  testWidgets('search flattens both shelves and counts the other tab',
       (tester) async {
     await openSheet(tester);
 
-    await tester.tap(find.text('Show all 5'));
-    await tester.pumpAndSettle();
-    for (final title in titles) {
-      expect(find.text(title), findsOneWidget);
-    }
-
-    await tester.tap(find.text('Show fewer'));
-    await tester.pumpAndSettle();
-    expect(find.text('Granola'), findsNothing);
-    expect(find.text('Show all 5'), findsOneWidget);
-  });
-
-  testWidgets('search finds a recipe by name, even past the preview',
-      (tester) async {
-    await openSheet(tester);
-    // Granola is the fourth recipe — collapsed away until searched for.
-    expect(find.text('Granola'), findsNothing);
-
-    await tester.enterText(find.byType(TextField), 'granola');
+    await tester.enterText(find.byType(TextField).first, 'granola');
     await tester.pumpAndSettle();
 
+    // The Pantry tab is still the one showing, and it says so honestly —
+    // but the hit on the other tab is counted, never hidden.
+    expect(find.text('PANTRY · 0 MATCHES'), findsOneWidget);
+    expect(find.text('Recipes · 1'), findsOneWidget);
+
+    await tester.tap(find.text('Recipes · 1'));
+    await tester.pumpAndSettle();
+
+    // Flat results: no shelf headers, no unfolding needed.
     expect(find.text('RECIPES · 1 MATCH'), findsOneWidget);
     expect(find.text('Granola'), findsOneWidget);
-    expect(find.text('PANTRY · 0 MATCHES'), findsOneWidget);
-    expect(find.text('Shelf item 1'), findsNothing);
-
-    // The hit is tappable: the recipe log sheet opens on it.
-    await tester.tap(find.text('Granola'));
-    await tester.pumpAndSettle();
-    expect(find.text('How many servings'), findsOneWidget);
+    expect(find.text('Desserts'), findsNothing);
   });
 
-  testWidgets('a pantry-only search hides the recipes section',
-      (tester) async {
+  testWidgets('a pantry search flattens the categories away', (tester) async {
     await openSheet(tester);
 
-    await tester.enterText(find.byType(TextField), 'Shelf item 2');
+    await tester.enterText(find.byType(TextField).first, 'Shelf item 2');
     await tester.pumpAndSettle();
 
     // .text would also hit the query echoed inside the search field.
     expect(find.widgetWithText(ProductRow, 'Shelf item 2'), findsOneWidget);
     expect(find.text('PANTRY · 1 MATCH'), findsOneWidget);
-    expect(find.textContaining('RECIPES'), findsNothing);
-    expect(find.text('Pancakes'), findsNothing);
+    expect(find.text('🥛 Dairy'), findsNothing);
+    expect(find.text('RECENT'), findsNothing);
   });
 }

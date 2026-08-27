@@ -8,11 +8,13 @@
 //  2. Screen: the Add-food picker offers the recipe WITH its kcal, and
 //     tapping through the log sheet lands an entry with nutrition in the
 //     day the store holds.
-//  3. The negative that bit: a recipe with NO productRefs logs honestly
-//     with no numbers — empty per_serving, no invented zeros in the total,
-//     and the sheet says so out loud. A regression in either direction
-//     (numbers appearing from nowhere, or vanishing where links exist)
-//     trips here.
+//  3. The negative that bit: a recipe with NO productRefs never reaches the
+//     diary at all. The domain still refuses to invent a zero (empty
+//     per_serving, no kcal key in the total), and design 2b closes the door
+//     one step earlier — tapping such a recipe in the picker opens the
+//     linking sheet, and backing out of it writes nothing. A regression in
+//     either direction (numbers appearing from nowhere, or vanishing where
+//     links exist) trips here.
 //
 // Stores are in-memory, diary_flow_test's stance: file IO is proven in
 // diary_store_test.dart; this file proves the chain.
@@ -335,12 +337,21 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Add to breakfast'), findsOneWidget);
 
+      // Recipes are their own tab now, and the tag shelf opens folded: the
+      // recipe carries no tags, so it waits under Untagged.
+      await tester.tap(find.text('Recipes'));
+      await tester.pumpAndSettle();
+      expect(find.text('Overnight oats'), findsNothing);
+      await tester.tap(find.text('Untagged'));
+      await tester.pumpAndSettle();
+
       // The recipe is offered, with its honest per-serving estimate:
       // 421.5 rounds to 422, prefixed "~" — pantry links, not a label.
       await tester.ensureVisible(find.text('Overnight oats'));
       await tester.pumpAndSettle();
       expect(find.text('Overnight oats'), findsOneWidget);
-      expect(find.text('~422 kcal per serving'), findsOneWidget);
+      expect(find.text('per serving'), findsOneWidget);
+      expect(find.text('~422 kcal'), findsOneWidget);
 
       await tester.tap(find.text('Overnight oats'));
       await tester.pumpAndSettle();
@@ -374,45 +385,86 @@ void main() {
       expect(saved.total.kcal, closeTo(421.5, 0.01));
     });
 
-    testWidgets('unlinked recipe says so in the picker and logs no numbers',
+    testWidgets('unlinked recipe says so, and tapping it starts linking',
         (tester) async {
       recipeStore.recipes = [unlinkedRecipe()];
       await pump(tester);
 
       await tester.tap(find.text('Add food').first);
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Recipes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Untagged'));
+      await tester.pumpAndSettle();
 
-      // The row is offered but promises nothing.
+      // The row is offered but promises nothing — no kcal pill at all, since
+      // a blank is what "not measured" looks like.
       await tester.ensureVisible(find.text('Plain pancakes'));
       await tester.pumpAndSettle();
       expect(find.text('no linked ingredients yet'), findsOneWidget);
+      expect(find.textContaining('~'), findsNothing); // no kcal pill at all
 
       await tester.tap(find.text('Plain pancakes'));
       await tester.pumpAndSettle();
 
-      // The sheet says out loud what will happen, twice.
-      expect(find.textContaining('No ingredients are linked to pantry foods'),
+      // Design 2b: the tap opens the LINKING sheet, not the log sheet — a
+      // recipe with no links has no numbers, and the diary must not be handed
+      // a meal of nothing dressed up as a measurement.
+      expect(find.textContaining('Point each line at the pantry food'),
           findsOneWidget);
-      expect(
-          find.textContaining(
-              'This will log as servings with no numbers behind them'),
+      expect(find.text('INGREDIENTS · 0 OF 2 LINKED'), findsOneWidget);
+      expect(find.text('How many servings'), findsNothing);
+
+      // Backing out without linking anything writes nothing at all. If an
+      // entry ever appears here, the zero-logging path came back.
+      await tester.tap(find.widgetWithText(FilledButton, 'Done'));
+      await tester.pumpAndSettle();
+      expect(find.text('Add to breakfast'), findsOneWidget);
+      expect(await diaryStore.loggedDates(), isEmpty);
+    });
+
+    testWidgets('linking one ingredient makes the recipe loggable',
+        (tester) async {
+      recipeStore.recipes = [unlinkedRecipe()];
+      await pump(tester);
+
+      await tester.tap(find.text('Add food').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Recipes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Untagged'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Plain pancakes'));
+      await tester.pumpAndSettle();
+
+      // Link "2 dl flour" to a pantry product. The user is the matcher,
+      // always — nothing here guesses which food a line means.
+      await tester.tap(find.text('2 dl flour'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Havregryn'));
+      await tester.pumpAndSettle();
+      expect(find.text('INGREDIENTS · 1 OF 2 LINKED'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Done — log it'));
+      await tester.pumpAndSettle();
+
+      // Now the log sheet opens, and it states the partial basis out loud
+      // rather than passing one covered line off as the whole recipe.
+      expect(find.textContaining('Estimated from 1 of 2 ingredients'),
           findsOneWidget);
 
       await tester.tap(find.widgetWithText(FilledButton, 'Add to Breakfast'));
       await tester.pumpAndSettle();
       await tester.pumpAndSettle();
 
-      // The stored entry exists — the food was eaten — but carries NO
-      // nutrition, and the day fabricates none. If numbers ever appear
-      // here, someone started inventing them; if the entry stops landing,
-      // logging broke. Both are regressions.
       final saved = await diaryStore.load('2026-08-19');
       final entry = saved.meal('Breakfast')!.entries.single;
       expect(entry.name, 'Plain pancakes');
       expect(entry.source, DiarySources.recipe);
+      // 2 dl at flour's 0.53 g/ml = 106 g, at 370 kcal/100 g = 392.2 — and
+      // the recipe declares no servings, so that is the whole recipe.
       expect(entry.servingLabel, 'whole recipe');
-      expect(entry.perServing.isEmpty, isTrue);
-      expect(saved.total.kcal, isNull);
+      expect(entry.perServing.kcal, closeTo(392.2, 0.01));
     });
   });
 }
