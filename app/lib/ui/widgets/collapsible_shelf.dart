@@ -1,23 +1,27 @@
-// The folded shelf — one collapsible list of headers, shared by the Pantry
-// tab's category shelf and the Add-food sheet's category / recipe-tag shelves
-// so the three cannot drift apart.
+// One shelf, every category on it — the folded-header list the Pantry tab
+// and the Add sheet both draw (design 1b / 2a). Categories stack vertically,
+// so a shelf with twenty of them still fits the screen without the chip row's
+// horizontal scroll-hunt.
 //
-// The whole point is the FOLD, not the look: a section's [ShelfSection.builder]
-// is only ever called while that section is open. Flat-rendering the pantry is
-// what made the Add-food sheet slow to open (a 57-item spice wall built to
-// draw a header), and a widget that "just" hides its children with Offstage or
-// an AnimatedCrossFade would build them all over again. Nothing under a folded
-// header exists.
+// THE CONTRACT: a folded section's [ShelfSection.builder] is never called.
+// Nothing under a closed header is built, measured or laid out — that is the
+// whole point, because the three starter packs are ~60 products each and the
+// old flat dump built all 180 to show a heading. It is also what made the
+// Add-food sheet slow to open: a 57-item spice wall built in order to draw a
+// heading nobody had tapped. Offstage or an AnimatedCrossFade would build
+// them all over again, so the `if (open)` below is load-bearing, not an
+// optimisation. Both surfaces depend on it.
 //
-// Sections are drawn in the order given: the caller owns shelf order (Unknown
-// / Untagged pinned last), and open/closed is the caller's state as well —
-// this widget holds none, so the Pantry tab can remember it and a modal sheet
-// can start folded every time.
+// Open/closed is NOT held here: the caller owns the set and decides whether
+// it outlives the widget (the Pantry tab persists it through AppSettings).
+// A stateless shelf cannot forget the user's choice on a rebuild.
 
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import 'skin.dart';
 
+/// One folded header and the content behind it.
 class ShelfSection {
   const ShelfSection({
     required this.id,
@@ -27,19 +31,22 @@ class ShelfSection {
     required this.builder,
   });
 
-  /// Stable key — the category or tag name. Toggling reports this.
+  /// Stable identity across rebuilds — the category name. It is what the
+  /// caller stores, so it must not carry emoji or counts.
   final String id;
 
-  /// Display label, emoji included: '🥛 Dairy'. The caller decorates.
+  /// Display label, emoji included: `categoryLabel()` output.
   final String label;
 
+  /// Items behind the header. Shown on the header so a closed section still
+  /// tells you how much is in it.
   final int count;
 
-  /// Draws the leaf mark: a shelf full of bundled starter foods rather than
-  /// the user's own scans. It is why those sections arrive collapsed.
+  /// Ships with the app rather than scanned — draws the leaf mark, and the
+  /// caller's default rule folds these first.
   final bool starterPack;
 
-  /// Built ONLY while the section is open. See the file header.
+  /// Built ONLY while the section is open. See the contract above.
   final WidgetBuilder builder;
 }
 
@@ -53,55 +60,47 @@ class CollapsibleShelf extends StatelessWidget {
 
   final List<ShelfSection> sections;
 
-  /// Ids currently open.
+  /// Ids of the sections currently open.
   final Set<String> expanded;
 
+  /// The tapped section's id — the caller flips it in [expanded].
   final ValueChanged<String> onToggle;
-
-  /// Compact enough that ten categories fit on one screen without scrolling —
-  /// that is what buys "every category at a glance". 40 rather than the mock's
-  /// 34 so the header is still an honest touch target.
-  static const double headerHeight = 40;
 
   @override
   Widget build(BuildContext context) {
+    // No categories yet: no empty card floating on the page.
     if (sections.isEmpty) return const SizedBox.shrink();
-    final scheme = context.scheme;
-    final rb = context.rb;
-    final children = <Widget>[];
-    for (var i = 0; i < sections.length; i++) {
-      final section = sections[i];
-      final open = expanded.contains(section.id);
-      children.add(_Header(
-        section: section,
-        open: open,
-        // A hairline between blocks, never above the first one.
-        divided: i > 0,
-        onTap: () => onToggle(section.id),
-      ));
-      // The fold itself: the builder is not reached at all while closed.
-      if (open) {
-        children.add(Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Builder(builder: section.builder),
-        ));
-      }
-    }
-    return Container(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: rb.hairline),
-        boxShadow: rb.cardShadow,
-      ),
+    return TokenCard(
+      radius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 13),
-      child: Column(children: children),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < sections.length; i++) ...[
+            _ShelfHeader(
+              section: sections[i],
+              open: expanded.contains(sections[i].id),
+              // Hairline between rows, never above the first one — the card's
+              // own border already draws that edge.
+              divided: i > 0,
+              onTap: () => onToggle(sections[i].id),
+            ),
+            if (expanded.contains(sections[i].id))
+              Padding(
+                // Indented under the label: the body reads as belonging to
+                // the header above it, not as a new top-level list.
+                padding: const EdgeInsets.only(left: 8, bottom: 8),
+                child: sections[i].builder(context),
+              ),
+          ],
+        ],
+      ),
     );
   }
 }
 
-class _Header extends StatelessWidget {
-  const _Header({
+class _ShelfHeader extends StatelessWidget {
+  const _ShelfHeader({
     required this.section,
     required this.open,
     required this.divided,
@@ -117,41 +116,47 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
-    final rb = context.rb;
-    // Open reads in the primary tint — the one section you are looking at is
-    // the one the eye should find on the way back up the shelf.
-    final tint = open ? scheme.primary : scheme.onSurface;
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        height: CollapsibleShelf.headerHeight,
-        decoration: divided
-            ? BoxDecoration(
-                border: Border(top: BorderSide(color: rb.hairline)))
-            : null,
-        child: Row(children: [
-          Expanded(
-            child: Text(
-              section.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleSmall?.copyWith(color: tint),
+    // The open section is the one you are reading: it takes the accent, the
+    // rest stay quiet so twenty headers don't shout at once.
+    final accent = open ? scheme.primary : scheme.onSurface;
+    return Semantics(
+      button: true,
+      expanded: open,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          // 44 not the mockup's 34: a header is a tap target before it is a
+          // line of type.
+          height: 44,
+          decoration: divided
+              ? BoxDecoration(
+                  border: Border(top: BorderSide(color: context.rb.separator)))
+              : null,
+          child: Row(children: [
+            Flexible(
+              child: Text(
+                section.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600, color: accent),
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Text('${section.count}',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: scheme.onSurfaceVariant)),
-          if (section.starterPack) ...[
-            const SizedBox(width: 6),
-            Icon(Icons.eco_rounded,
-                size: 14, color: scheme.onSurfaceVariant),
-          ],
-          const SizedBox(width: 6),
-          Icon(open ? Icons.expand_less_rounded : Icons.expand_more_rounded,
-              size: 20,
-              color: open ? scheme.primary : scheme.onSurfaceVariant),
-        ]),
+            const SizedBox(width: 9),
+            Text('${section.count}',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: scheme.onSurfaceVariant)),
+            const Spacer(),
+            if (section.starterPack) ...[
+              Icon(Icons.eco_rounded,
+                  size: 15, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 6),
+            ],
+            Icon(open ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                size: 20,
+                color: open ? scheme.primary : scheme.onSurfaceVariant),
+          ]),
+        ),
       ),
     );
   }
