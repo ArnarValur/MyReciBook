@@ -36,5 +36,6 @@
   it stays wrong) · category icons/colours · serving rescale · step ↔
   ingredient chips · label-photo fallback · meal names UI · copy-to-date UI ·
   day nutrient table · row reorder · multi-barcode per image · orphan image
-  cleanup · accessibility pass · Dropbox production approval · Play key backup ·
+  cleanup · roundup/listicle link import (feasible, free path — see
+  scratchpad 2026-08-22) · accessibility pass · Dropbox production approval · Play key backup ·
   audit items H2 and M1-M6 and L1-L4.

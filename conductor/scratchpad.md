@@ -14,6 +14,26 @@ Arnar's notes. Fresh page pulled 2026-08-21 on Arnar's word; old page in git his
 - Crashlytics install recipe — DONE in code 2026-08-21. Only google-services.json
   is left, and that is a Console download (docs/runbook-dev-deploy.md step 7).
 
+## 2026-08-22 — roundup links ("10 Easy One-Pot Pasta Recipes")
+
+Arnar asked: can we pull all recipes out of a listicle link? Checked, answer is yes.
+
+- Today: no. `recipeContentFromHtml` (app/lib/data/link_extractor.dart:167) returns the
+  first Recipe node and stops.
+- That Pioneer Woman page has **no** Recipe JSON-LD at all — only NewsArticle + WebPage +
+  an `ItemList` with `numberOfItems: 10`. So it falls to the AI text path and mashes ten
+  recipes into one, or fails.
+- But the page body carries exactly 10 unique links to the real recipe pages (count matches
+  the ItemList), and each child page has full Recipe JSON-LD — verified on the lemon-pasta
+  child, complete `recipeIngredient` array.
+- So a roundup imports on the **free path**: detect ItemList + harvest child links → fetch
+  each child → `recipeContentFromHtml` unchanged → push into the existing `BatchModel` queue
+  (sequential worker, auto-save at confidence 1.0). Ten green cards, zero AI calls.
+- Only real new plumbing: `BatchItem` carries a URL instead of `List<File> images`, and the
+  share-intent fork picks batch-vs-single.
+- Full plan sitting at ~/.claude/plans/question-if-a-link-glowing-unicorn.md. Not built,
+  not approved — Arnar was asking about feasibility, not ordering the work.
+
 ## 2026-08-21 — weekend plan, agreed (Cowork session)
 
 Sequence, not schedule. Finish line: Arnar installs MyReciBook from Play + landing site moving.

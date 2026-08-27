@@ -1,6 +1,20 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-22 — roundup links: asked, checked, answered
+
+- No code. Arnar asked whether a listicle link ("10 Easy One-Pot Pasta
+  Recipes") can yield all ten recipes.
+- Checked the live page: it carries NO Recipe JSON-LD, only an ItemList of 10
+  blurbs, so today's extractor drops to the AI text path and mashes them into
+  one. recipeContentFromHtml returns the first Recipe node and stops.
+- Answer is yes, and on the free path: the body names all 10 child URLs and
+  each child page carries full Recipe JSON-LD (verified on the lemon-pasta
+  child). Detect ItemList, harvest links, fan into the existing BatchModel.
+- Written up in conductor/scratchpad.md; full plan at
+  ~/.claude/plans/question-if-a-link-glowing-unicorn.md. NOT ordered — he was
+  asking about feasibility.
+
 ## 2026-08-22 — i18n unparked, foundation up, Icelandic chosen as the stress test
 
 - 0.11.0+10, folded to main. flutter_localizations + gen_l10n, a language
