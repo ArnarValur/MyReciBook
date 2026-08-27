@@ -202,6 +202,8 @@ Future<void> main() async {
     units: unitsModel,
     onUnits: unitsModel.setSystem,
     onThemeMode: themeModel.setMode,
+    // Drive/Dropbox connect straight from the setup screen.
+    storage: storage,
     appBuilder: (store, pantry, onGrantLost, onChangeFolder) {
       // A lost grant mid-sync joins the same re-pick flow as store ops.
       storage.onGrantLost = onGrantLost;

@@ -1,18 +1,23 @@
-// Screen 2 of the first-run flow: the three choices that are annoying to hunt
-// for later — where recipes live, which units to show, light or dark.
+// Screen 1b of the first-run flow — Claude Design onboarding mockup, option 1b
+// ("Make it yours"). Three choices on one page, no skip.
 //
-// Arnar's shape (2026-08-27): "first time settings page instead — choose
-// location, choose default metrics, choose theme, boom." Three rows, kept to
-// three. Everything else already has a home in Settings and belongs there;
-// a first-run page that grows into a second settings screen is a page nobody
-// finishes.
+// Where recipes live is drawn as three cards, and that is the answer to "why
+// can't I pick Drive or Dropbox?": neither exposes a writable folder tree to
+// Android's picker, so neither can BE the location. The phone folder is the
+// location; the two cloud cards connect a mirror beside it. One page, base
+// plus optional connect, exactly as drawn.
 //
-// The folder is the only required one. Units and theme both have a working
-// default, so a user who ignores them still lands somewhere sane.
+// Two deliberate departures from the mockup, both Arnar's call 2026-08-27:
+//   · "This phone" starts unchosen and opens the system picker, because the
+//     app genuinely cannot run until a real folder is granted. The mockup's
+//     "zero setup" caption would have been a lie.
+//   · Units offers Metric and Imperial as drawn. The app's third mode,
+//     "as written", stays in Settings.
 
 import 'package:flutter/material.dart';
 
 import '../../domain/units.dart';
+import '../storage_model.dart';
 import '../theme.dart';
 import 'onboarding_scaffold.dart';
 
@@ -26,10 +31,11 @@ class FirstRunSetupScreen extends StatelessWidget {
     required this.themeMode,
     required this.onThemeMode,
     required this.onContinue,
+    this.storage,
   });
 
-  /// Display name of the chosen folder, or null while none is chosen —
-  /// which is also what keeps [onContinue] disabled.
+  /// Display name of the granted folder, null while none is chosen — which is
+  /// also what keeps [onContinue] disabled.
   final String? folderName;
   final VoidCallback onPickFolder;
 
@@ -42,108 +48,108 @@ class FirstRunSetupScreen extends StatelessWidget {
   /// Null until a folder is chosen.
   final VoidCallback? onContinue;
 
+  /// The connector model, for the two cloud cards. Null (tests) draws them
+  /// in their unconfigured state and taps do nothing.
+  final StorageModel? storage;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
-    final picked = folderName != null;
     return Scaffold(
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(28, 32, 28, 8),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Set up MyReciBook',
-                      style: theme.textTheme.headlineSmall
-                          ?.copyWith(fontSize: 22, height: 1.25)),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Three quick choices. You can change all of them later in '
-                    'Settings.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant, height: 1.5),
-                  ),
+                  Text('Make it yours',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                          fontSize: 23, height: 1.25, letterSpacing: -0.23)),
+                  const SizedBox(height: 5),
+                  Text('Three choices. Everything else has good defaults.',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                          fontSize: 13.5, color: scheme.onSurfaceVariant)),
                 ],
               ),
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(28, 16, 28, 16),
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
                 children: [
-                  _Section(
-                    title: 'Where your recipes live',
-                    // The one honest correction to the old gate copy: the
-                    // Android picker was never restricted to internal storage
-                    // (SafBridge sends a plain OPEN_DOCUMENT_TREE), so it
-                    // already lists the SD card and any cloud app that
-                    // exposes a writable folder. Saying "on this phone" was
-                    // narrower than the code.
-                    body: 'Every recipe is saved as a plain file in a folder '
-                        'you choose — your folder, your files. The app reads '
-                        'and writes only in there.',
-                    child: _FolderRow(
-                      folderName: folderName,
-                      onPick: onPickFolder,
-                    ),
+                  const _SectionLabel('WHERE YOUR RECIPES LIVE'),
+                  const SizedBox(height: 10),
+                  _LocationCard(
+                    key: const Key('setup-choose-folder'),
+                    icon: Icons.phone_android_rounded,
+                    title: folderName ?? 'This phone',
+                    subtitle: folderName == null
+                        ? 'choose a folder · works offline'
+                        : 'your folder · works offline',
+                    selected: folderName != null,
+                    onTap: onPickFolder,
                   ),
-                  const SizedBox(height: 28),
-                  _Section(
-                    title: 'Units',
-                    body: 'How quantities are shown. As written keeps each '
-                        'recipe exactly as its author wrote it.',
-                    child: _Choices<UnitSystem>(
-                      value: units,
-                      onChanged: onUnits,
-                      options: const {
-                        UnitSystem.asWritten: 'As written',
-                        UnitSystem.metric: 'Metric',
-                        UnitSystem.imperial: 'Imperial',
-                      },
-                    ),
+                  const SizedBox(height: 10),
+                  _ConnectorCard(
+                    provider: StorageModel.drive,
+                    icon: Icons.add_to_drive_rounded,
+                    title: 'Google Drive',
+                    subtitle: "app folder only — we can't see the rest",
+                    storage: storage,
                   ),
-                  const SizedBox(height: 28),
-                  _Section(
-                    title: 'Appearance',
-                    body: 'System follows your phone.',
-                    child: _Choices<ThemeMode>(
-                      value: themeMode,
-                      onChanged: onThemeMode,
-                      options: const {
-                        ThemeMode.system: 'System',
-                        ThemeMode.light: 'Light',
-                        ThemeMode.dark: 'Dark',
-                      },
-                    ),
+                  const SizedBox(height: 10),
+                  _ConnectorCard(
+                    provider: StorageModel.dropbox,
+                    icon: Icons.cloud_rounded,
+                    title: 'Dropbox',
+                    subtitle: 'app folder only',
+                    storage: storage,
+                  ),
+                  const SizedBox(height: 18),
+                  const _SectionLabel('UNITS'),
+                  const SizedBox(height: 8),
+                  _PillToggle<UnitSystem>(
+                    key: const Key('setup-units-toggle'),
+                    value: units,
+                    onChanged: onUnits,
+                    options: const {
+                      UnitSystem.metric: 'Metric',
+                      UnitSystem.imperial: 'Imperial',
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  const _SectionLabel('THEME'),
+                  const SizedBox(height: 8),
+                  _PillToggle<ThemeMode>(
+                    key: const Key('setup-theme-toggle'),
+                    value: themeMode,
+                    onChanged: onThemeMode,
+                    options: const {
+                      ThemeMode.system: 'System',
+                      ThemeMode.light: 'Light',
+                      ThemeMode.dark: 'Dark',
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DottedNote(
+                    folderName == null
+                        ? 'Pick a folder to continue. All three live in '
+                            'Settings — nothing here is final.'
+                        : 'All three live in Settings — nothing here is final.',
                   ),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(28, 8, 28, 28),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (!picked)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Text(
-                        'Choose a folder to continue.',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: scheme.onSurfaceVariant),
-                      ),
-                    ),
-                  GradientButton(
-                    key: const Key('setup-continue-button'),
-                    label: 'Continue',
-                    icon: Icons.arrow_forward_rounded,
-                    onPressed: onContinue,
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+              child: GradientButton(
+                key: const Key('setup-continue-button'),
+                label: 'Continue',
+                icon: Icons.arrow_forward_rounded,
+                onPressed: onContinue,
               ),
             ),
           ],
@@ -153,71 +159,97 @@ class FirstRunSetupScreen extends StatelessWidget {
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.body, required this.child});
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
 
-  final String title;
-  final String body;
-  final Widget child;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title,
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        Text(body,
-            style: theme.textTheme.bodySmall?.copyWith(
-                color: context.scheme.onSurfaceVariant, height: 1.5)),
-        const SizedBox(height: 12),
-        child,
-      ],
-    );
+    return Text(text,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            fontSize: 11,
+            letterSpacing: 0.9,
+            fontWeight: FontWeight.w600,
+            color: context.scheme.onSurfaceVariant));
   }
 }
 
-class _FolderRow extends StatelessWidget {
-  const _FolderRow({required this.folderName, required this.onPick});
+/// The shared card shell: icon tile, title, subtitle, trailing slot.
+class _Card extends StatelessWidget {
+  const _Card({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+    this.selected = false,
+    this.onTap,
+  });
 
-  final String? folderName;
-  final VoidCallback onPick;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget trailing;
+  final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
-    final name = folderName;
     return Material(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+      color: scheme.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        key: const Key('setup-choose-folder'),
         borderRadius: BorderRadius.circular(16),
-        onTap: onPick,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(name == null ? Icons.folder_open_rounded : Icons.folder_rounded,
-                  size: 22, color: scheme.primary),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  name ?? 'Choose folder',
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: name == null ? FontWeight.w600 : FontWeight.w500),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected ? scheme.primary : context.rb.hairline,
+              width: selected ? 1.5 : 1,
+            ),
+            boxShadow: selected ? context.rb.glowPrimary : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(13),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: selected
+                        ? scheme.secondaryContainer
+                        : scheme.surfaceContainerHigh,
+                  ),
+                  child: Icon(icon,
+                      size: 21,
+                      color: selected
+                          ? scheme.onSecondaryContainer
+                          : scheme.onSurfaceVariant),
                 ),
-              ),
-              if (name != null)
-                Text('Change',
-                    style: theme.textTheme.labelLarge
-                        ?.copyWith(color: scheme.primary)),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                              fontSize: 14.5, fontWeight: FontWeight.w600)),
+                      Text(subtitle,
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: scheme.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                trailing,
+              ],
+            ),
           ),
         ),
       ),
@@ -225,10 +257,130 @@ class _FolderRow extends StatelessWidget {
   }
 }
 
-/// A row of segmented choices. Generic so units and theme share one control
-/// instead of two that drift.
-class _Choices<T> extends StatelessWidget {
-  const _Choices({
+class _LocationCard extends StatelessWidget {
+  const _LocationCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return _Card(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      selected: selected,
+      onTap: onTap,
+      trailing: selected
+          ? Icon(Icons.check_circle, size: 22, color: scheme.primary)
+          : Text('Choose',
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(color: scheme.primary)),
+    );
+  }
+}
+
+/// A cloud mirror card. Rebuilds on the model so a connect in flight, a
+/// failure, and "awaiting keys in this build" are all visible where they
+/// happened rather than swallowed.
+class _ConnectorCard extends StatelessWidget {
+  const _ConnectorCard({
+    required this.provider,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.storage,
+  });
+
+  final String provider;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final StorageModel? storage;
+
+  @override
+  Widget build(BuildContext context) {
+    final model = storage;
+    if (model == null) {
+      return _Card(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        trailing: const _ConnectLabel('Connect', enabled: false),
+      );
+    }
+    return AnimatedBuilder(
+      animation: model,
+      builder: (context, _) {
+        final connected = model.active == provider;
+        final busy = model.connecting == provider;
+        final unconfigured = model.notConfigured == provider;
+        final error = model.connectErrorFor(provider);
+        return _Card(
+          icon: icon,
+          title: title,
+          subtitle: unconfigured
+              ? 'awaiting keys in this build'
+              : error ?? (connected ? 'connected · mirroring' : subtitle),
+          selected: connected,
+          onTap: connected || busy ? null : () => model.connect(provider),
+          trailing: busy
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : connected
+                  ? Icon(Icons.check_circle,
+                      size: 22, color: context.scheme.primary)
+                  : const _ConnectLabel('Connect'),
+        );
+      },
+    );
+  }
+}
+
+class _ConnectLabel extends StatelessWidget {
+  const _ConnectLabel(this.text, {this.enabled = true});
+
+  final String text;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+            color: enabled ? scheme.outline : context.rb.hairline),
+      ),
+      child: Text(text,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: enabled ? scheme.onSurface : scheme.onSurfaceVariant)),
+    );
+  }
+}
+
+/// The mockup's rounded-full segmented track: the selected segment is a raised
+/// pill with a check, the rest are flat labels.
+class _PillToggle<T> extends StatelessWidget {
+  const _PillToggle({
+    super.key,
     required this.value,
     required this.onChanged,
     required this.options,
@@ -240,14 +392,60 @@ class _Choices<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<T>(
-      showSelectedIcon: false,
-      segments: [
-        for (final e in options.entries)
-          ButtonSegment<T>(value: e.key, label: Text(e.value)),
-      ],
-      selected: {value},
-      onSelectionChanged: (s) => onChanged(s.first),
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        children: [
+          for (final e in options.entries)
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onChanged(e.key),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(999),
+                    color: e.key == value
+                        ? scheme.surfaceContainerLowest
+                        : Colors.transparent,
+                    boxShadow: e.key == value ? context.rb.cardShadow : null,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (e.key == value) ...[
+                        Icon(Icons.check, size: 16, color: scheme.primary),
+                        const SizedBox(width: 5),
+                      ],
+                      Flexible(
+                        child: Text(
+                          e.value,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontSize: 12.5,
+                            fontWeight: e.key == value
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                            color: e.key == value
+                                ? scheme.primary
+                                : scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

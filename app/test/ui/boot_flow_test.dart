@@ -154,13 +154,13 @@ void main() {
 
     // Screen one is the welcome, NOT the bare folder gate — the whole point
     // of the 2026-08-27 flow.
-    expect(find.text('MyReciBook'), findsOneWidget);
+    expect(find.text('Pay once.\nCook forever.'), findsOneWidget);
     expect(find.text('Where should your recipes live?'), findsNothing);
     expect(find.byType(RecipeListScreen), findsNothing);
 
     await tester.tap(find.byKey(const Key('welcome-continue-button')));
     await settle(tester);
-    expect(find.text('Set up MyReciBook'), findsOneWidget);
+    expect(find.text('Make it yours'), findsOneWidget);
 
     // Continue is dead until a folder exists.
     final button = tester.widget<GradientButton>(
@@ -171,20 +171,45 @@ void main() {
     await settle(tester);
 
     // Picking stays on setup — units and theme are still to choose.
-    expect(find.text('Set up MyReciBook'), findsOneWidget);
+    expect(find.text('Make it yours'), findsOneWidget);
     expect(settings.treeUri, fake.treeUri);
 
     await tester.tap(find.byKey(const Key('setup-continue-button')));
     await settle(tester);
 
-    // Slides, then out.
-    expect(find.byKey(const Key('slides-next-button')), findsOneWidget);
+    // Slides. Mid-flow carries Skip and dots — the final button only appears
+    // on the last one (mockup 1c/1d), so Skip is the exit from here.
+    expect(find.byKey(const Key('slides-skip-button')), findsOneWidget);
+    expect(find.byKey(const Key('slides-next-button')), findsNothing);
     await tester.tap(find.byKey(const Key('slides-skip-button')));
     await settle(tester);
 
     expect(find.textContaining('Your book is empty'), findsOneWidget);
     expect(settings.onboardingSeen, kOnboardingVersion);
     expect(settings.migrationDone, isTrue); // empty pass still sets the flag
+  });
+
+  testWidgets('swiping the slides to the end ends the flow', (tester) async {
+    final settings = await loadSettings(tester, onboarded: false);
+    await tester.pumpWidget(boot(settings));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('welcome-continue-button')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('setup-choose-folder')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('setup-continue-button')));
+    await settle(tester);
+
+    await tester.fling(
+        find.byType(PageView), const Offset(-400, 0), 1000);
+    await settle(tester);
+
+    // Last slide: Skip is gone, the one button ends it.
+    expect(find.byKey(const Key('slides-skip-button')), findsNothing);
+    await tester.tap(find.byKey(const Key('slides-next-button')));
+    await settle(tester);
+    expect(find.textContaining('Your book is empty'), findsOneWidget);
+    expect(settings.onboardingSeen, kOnboardingVersion);
   });
 
   testWidgets('onboarding is marked done and never replays at that version',
@@ -226,7 +251,7 @@ void main() {
 
     // The re-pick gate, not the welcome flow: this user has an app.
     expect(find.text('Pick your folder again'), findsOneWidget);
-    expect(find.text('Set up MyReciBook'), findsNothing);
+    expect(find.text('Make it yours'), findsNothing);
 
     fake.revoked = false;
     await tester.tap(find.byKey(const Key('choose-folder-button')));

@@ -11,6 +11,29 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
+/// The mockup's dashed reassurance note.
+class DottedNote extends StatelessWidget {
+  const DottedNote(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
+      ),
+      child: Text(text,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontSize: 12.5, height: 1.5, color: scheme.onSurfaceVariant)),
+    );
+  }
+}
+
 /// A reserved region for art or screenshots Arnar has not supplied yet.
 class OnboardingSlot extends StatelessWidget {
   const OnboardingSlot({
@@ -31,29 +54,39 @@ class OnboardingSlot extends StatelessWidget {
     return Container(
       height: height,
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.rb.hairline),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.image_outlined,
-              size: 26, color: scheme.onSurfaceVariant.withValues(alpha: 0.7)),
-          const SizedBox(height: 8),
-          Text(label,
+      // The mockup's 45° hatch, so an unfilled slot reads as a placeholder at
+      // a glance and nobody mistakes it for a finished screen.
+      child: CustomPaint(
+        painter: _HatchPainter(
+          a: Color.alphaBlend(
+              scheme.secondaryContainer.withValues(alpha: 0.45),
+              scheme.surface),
+          b: Color.alphaBlend(
+              scheme.secondaryContainer.withValues(alpha: 0.22),
+              scheme.surface),
+        ),
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            decoration: BoxDecoration(
+              color: scheme.surface.withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              note == null ? label : '$label · $note',
               textAlign: TextAlign.center,
-              style: theme.textTheme.labelLarge
-                  ?.copyWith(color: scheme.onSurfaceVariant)),
-          if (note != null) ...[
-            const SizedBox(height: 2),
-            Text(note!,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant.withValues(alpha: 0.75))),
-          ],
-        ],
+              style: theme.textTheme.bodySmall?.copyWith(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: scheme.onSurfaceVariant),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -109,4 +142,29 @@ class GradientButton extends StatelessWidget {
       ),
     );
   }
+}
+
+
+class _HatchPainter extends CustomPainter {
+  const _HatchPainter({required this.a, required this.b});
+
+  final Color a;
+  final Color b;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = b);
+    final stripe = Paint()
+      ..color = a
+      ..strokeWidth = 9;
+    // 45° stripes, 9px on 9px off — the mockup's repeating-linear-gradient.
+    final span = size.width + size.height;
+    for (var d = -size.height; d < span; d += 18) {
+      canvas.drawLine(
+          Offset(d, 0), Offset(d + size.height, size.height), stripe);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_HatchPainter old) => old.a != a || old.b != b;
 }

@@ -34,6 +34,7 @@ import 'onboarding/first_run_setup_screen.dart';
 import 'onboarding/onboarding.dart';
 import 'onboarding/slides_screen.dart';
 import 'onboarding/welcome_screen.dart';
+import 'storage_model.dart';
 import 'theme.dart';
 
 enum _Boot { checking, welcome, setup, gate, migrating, slides, ready }
@@ -53,6 +54,7 @@ class BootGate extends StatefulWidget {
     this.units,
     this.onUnits,
     this.onThemeMode,
+    this.storage,
     this.safChannel = const MethodChannel('com.merkurialstudio.myrecibook/saf'),
   });
 
@@ -65,6 +67,10 @@ class BootGate extends StatefulWidget {
   /// immediately instead of waiting for a restart. Null (tests) = inert.
   final ValueChanged<UnitSystem>? onUnits;
   final ValueChanged<ThemeMode>? onThemeMode;
+
+  /// Connector model, for the setup screen's Drive and Dropbox cards. Null
+  /// (tests) draws them unconfigured and inert.
+  final StorageModel? storage;
 
   /// The READY-phase app's navigator key (main passes the same key into
   /// buildApp). The change-folder confirm and picker-failure snackbar need a
@@ -333,6 +339,17 @@ class _BootGateState extends State<BootGate> {
     _pick();
   }
 
+  /// The setup screen offers Metric and Imperial, as designed — the app's
+  /// third mode, as-written, lives in Settings. Landing on setup while still
+  /// on as-written would draw Metric selected without it being true, so the
+  /// default is committed here, where the user can see and change it.
+  void _startSetup() {
+    if (widget.units?.value == UnitSystem.asWritten) {
+      widget.onUnits?.call(UnitSystem.metric);
+    }
+    setState(() => _phase = _Boot.setup);
+  }
+
   /// The setup screen rebuilds on its own listenables rather than through the
   /// MaterialApp's: units and theme must reflect a tap instantly, and theme
   /// repaints the whole gate app around it.
@@ -347,6 +364,7 @@ class _BootGateState extends State<BootGate> {
           onUnits: widget.onUnits ?? (_) {},
           themeMode: t,
           onThemeMode: widget.onThemeMode ?? (_) {},
+          storage: widget.storage,
           // Disabled until a folder exists — Continue must never advance into
           // an app with nowhere to save.
           onContinue: uri == null ? null : () => _enter(uri),
@@ -376,9 +394,7 @@ class _BootGateState extends State<BootGate> {
       );
     }
     final gateHome = switch (_phase) {
-      _Boot.welcome => WelcomeScreen(
-          onContinue: () => setState(() => _phase = _Boot.setup),
-        ),
+      _Boot.welcome => WelcomeScreen(onContinue: _startSetup),
       _Boot.setup => _setupScreen(),
       _Boot.gate => FolderGate(
           lost: _lost,
