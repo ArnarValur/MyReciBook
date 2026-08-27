@@ -322,6 +322,11 @@ Widget buildApp({
         // on demand instead of being threaded down through list and card.
         Provider<PhotoSources>.value(
             value: PhotoSources(gallery: picker, camera: camera)),
+        // Label reading is a capability, not a guarantee: a build or a test
+        // whose extractor cannot do it provides null, and the pantry hides
+        // the button rather than offering a dead end.
+        Provider<LabelReader?>.value(
+            value: extractor is LabelReader ? extractor as LabelReader : null),
         ChangeNotifierProvider(
             create: (ctx) => LibraryModel(store,
                 onGrantLost: onGrantLost,

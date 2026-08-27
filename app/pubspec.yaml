@@ -24,7 +24,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 #   the suite if lib/version.dart drifts) · 0.MINOR.PATCH until production,
 #   1.0.0 reserved for launch · +N = Play versionCode, bump on EVERY upload.
 # The drift guard is decision-neutral and stands whatever scheme he picks.
-version: 0.14.0+17
+version: 0.15.0+18
 
 environment:
   sdk: ^3.12.0
@@ -91,6 +91,7 @@ flutter:
 
   assets:
     - assets/structure_prompt.md
+    - assets/label_prompt.md
     # Bundled brand fonts (OFL) — google_fonts loads these from assets, so the
     # skin renders correctly offline and in tests; no runtime fetching.
     - google_fonts/

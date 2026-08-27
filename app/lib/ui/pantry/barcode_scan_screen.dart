@@ -26,12 +26,25 @@ import '../widgets/skin.dart';
 
 /// What a collect-mode detection came to: one line for the flash chip.
 class ScanFeedback {
-  const ScanFeedback(this.message, {this.ok = true});
+  const ScanFeedback(this.message, {this.ok = true, this.action, this.actionLabel});
 
   final String message;
 
   /// false = shown in error red (not found / lookup down), true = success.
   final bool ok;
+
+  /// What tapping the flash bar does. Null leaves the bar inert, which is
+  /// what "Open Food Facts didn't answer" wants — there is nothing to open
+  /// and nothing to create, only a rescan.
+  ///
+  /// Awaited, and the scan screen pauses its camera while it runs: the action
+  /// pushes a route, and a scanner running behind a form is battery spent on
+  /// nothing.
+  final Future<void> Function()? action;
+
+  /// Short verb on the bar's right, so the tap is visibly offered rather than
+  /// hidden behind a guess. Ignored when [action] is null.
+  final String? actionLabel;
 }
 
 typedef ScanCollect = Future<ScanFeedback> Function(String digits);
@@ -58,6 +71,9 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
   /// Post-flash breather before the next detection counts.
   static const _cooldown = Duration(seconds: 3);
 
+  /// The same breather when the bar carries something to tap.
+  static const _actionCooldown = Duration(seconds: 6);
+
   /// A jar still in frame right after cooldown must not re-add itself.
   static const _sameCodeGrace = Duration(seconds: 8);
 
@@ -68,6 +84,8 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
   // Collect-mode state: the flash chip and the detection gate.
   String? _flash;
   bool _flashOk = true;
+  Future<void> Function()? _flashAction;
+  String? _flashActionLabel;
   bool _looking = false;
   bool _cooling = false;
   String? _lastDigits;
@@ -122,13 +140,42 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
       _cooling = true;
       _flash = fb.message;
       _flashOk = fb.ok;
+      _flashAction = fb.action;
+      _flashActionLabel = fb.actionLabel;
     });
-    await Future<void>.delayed(_cooldown);
+    // A bar you can act on gets longer than one you can only read: three
+    // seconds is a glance, not a decision.
+    await Future<void>.delayed(fb.action == null ? _cooldown : _actionCooldown);
     if (!mounted) return;
     setState(() {
       _flash = null;
+      _flashAction = null;
+      _flashActionLabel = null;
       _cooling = false;
     });
+  }
+
+  /// Run the flash bar's action with the camera stopped. Returning to a live
+  /// scanner with the same pack still in frame would re-fire the detection
+  /// the user just dealt with, so the grace window is reset on the way back.
+  Future<void> _runFlashAction() async {
+    final action = _flashAction;
+    if (action == null) return;
+    setState(() {
+      _flash = null;
+      _flashAction = null;
+      _flashActionLabel = null;
+    });
+    await _controller.stop();
+    try {
+      await action();
+    } finally {
+      if (mounted) {
+        _lastAt = DateTime.now();
+        _cooling = false;
+        await _controller.start();
+      }
+    }
   }
 
   /// One-shot mode's way out with a result: haptic + green flash, then pop.
@@ -271,44 +318,65 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
           // Collect-mode flash: verdict chip over the live preview — no dim,
           // the user is already aiming at the next product.
           if (_flash != null)
-            IgnorePointer(
-              child: Align(
-                alignment: const Alignment(0, -0.62),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 28),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: _flashOk
-                        ? RbColors.success
-                        : theme.colorScheme.error,
+            Align(
+              alignment: const Alignment(0, -0.62),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Material(
+                  color: _flashOk ? RbColors.success : theme.colorScheme.error,
+                  borderRadius: BorderRadius.circular(999),
+                  child: InkWell(
+                    key: const Key('scan-flash-bar'),
                     borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_looking)
-                        const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                      else
-                        Icon(
-                            _flashOk
-                                ? Icons.check_rounded
-                                : Icons.error_outline_rounded,
-                            size: 18,
-                            color: Colors.white),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(_flash!,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(color: Colors.white)),
+                    // Null keeps the bar inert — the old IgnorePointer, now
+                    // conditional instead of absolute.
+                    onTap: _flashAction == null ? null : _runFlashAction,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_looking)
+                            const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white))
+                          else
+                            Icon(
+                                _flashOk
+                                    ? Icons.check_rounded
+                                    : Icons.error_outline_rounded,
+                                size: 18,
+                                color: Colors.white),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(_flash!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall
+                                    ?.copyWith(color: Colors.white)),
+                          ),
+                          if (_flashAction != null &&
+                              _flashActionLabel != null) ...[
+                            const SizedBox(width: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.22),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(_flashActionLabel!,
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700)),
+                            ),
+                          ],
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),

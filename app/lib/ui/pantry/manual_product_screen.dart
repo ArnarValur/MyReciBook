@@ -7,8 +7,14 @@
 // the product file stores; a portion (label + grams) is optional and is what
 // the diary preselects.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../domain/extractor.dart';
+import '../../domain/label_read.dart';
+import '../photo_sources.dart';
 
 import '../../domain/product.dart';
 import '../../domain/product_categories.dart';
@@ -17,11 +23,18 @@ import '../widgets/skin.dart';
 import 'pantry_model.dart';
 
 class ManualProductScreen extends StatefulWidget {
-  const ManualProductScreen({super.key, this.initial});
+  const ManualProductScreen({super.key, this.initial, this.barcode});
 
   /// Editing an existing product instead of creating one. The barcode and the
   /// file it lives in are kept — this is an edit, not a second file.
   final Product? initial;
+
+  /// Creating a product for a barcode Open Food Facts had never heard of.
+  /// The digits are kept on the file so a later OFF refresh can find it, and
+  /// so a second scan of the same pack lands on this product rather than
+  /// offering to create it all over again. Ignored when [initial] is set —
+  /// an edit keeps its own barcode.
+  final String? barcode;
 
   @override
   State<ManualProductScreen> createState() => _ManualProductScreenState();
@@ -60,6 +73,13 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
   };
 
   bool _saving = false;
+
+  /// A label read in flight, and the last one's caveats — both only ever
+  /// affect what the FORM shows. Nothing is saved until Save is tapped, so a
+  /// bad read costs a correction and never a wrong file.
+  bool _reading = false;
+  String? _readError;
+  LabelRead? _read;
 
   /// Selected tags, in the order they were picked. A list, not a set: the
   /// order a person chose is the order the shelf should show.
@@ -155,6 +175,176 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
     });
   }
 
+  /// Photograph the pack and let the model fill the form in.
+  ///
+  /// Costs one AI call against the same fair-use budget a recipe import
+  /// spends, which is why it is a button and not something the scanner does
+  /// on its own. Barcode lookups are free; this is not.
+  Future<void> _readLabel(Future<List<File>> Function() source) async {
+    final photos = await source();
+    if (photos.isEmpty || !mounted) return;
+    setState(() {
+      _reading = true;
+      _readError = null;
+    });
+    try {
+      final reader = context.read<LabelReader?>();
+      if (reader == null) return; // button is hidden without one
+      final read = labelReadFromJson(await reader.extractLabel(photos));
+      if (!mounted) return;
+      if (read.notAProduct) {
+        setState(() {
+          _reading = false;
+          _readError = 'That does not look like food packaging';
+        });
+        return;
+      }
+      if (!read.hasAnything) {
+        setState(() {
+          _reading = false;
+          _readError = "Couldn't read anything off that — try the nutrition "
+              'table straight on, in good light';
+        });
+        return;
+      }
+      setState(() {
+        _reading = false;
+        _read = read;
+        _applyRead(read);
+      });
+    } on ExtractionException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _reading = false;
+        _readError = e.message;
+      });
+    }
+  }
+
+  /// Fill the empty fields, never overwrite what the person already typed —
+  /// they were here first.
+  void _applyRead(LabelRead read) {
+    if (_name.text.trim().isEmpty && read.name != null) {
+      _name.text = read.name!;
+    }
+    if (_brand.text.trim().isEmpty && read.brand != null) {
+      _brand.text = read.brand!;
+    }
+    for (final e in read.values.entries) {
+      final ctrl = _fields[e.key];
+      if (ctrl == null || ctrl.text.trim().isNotEmpty) continue;
+      // Trailing .0 on a whole number reads as noise on a form.
+      ctrl.text = e.value == e.value.roundToDouble()
+          ? '${e.value.round()}'
+          : '${e.value}';
+    }
+    final serving = read.serving;
+    if (serving != null) {
+      if (_portionLabel.text.trim().isEmpty) _portionLabel.text = serving.label;
+      if (_portionGrams.text.trim().isEmpty) {
+        _portionGrams.text = serving.grams == serving.grams.roundToDouble()
+            ? '${serving.grams.round()}'
+            : '${serving.grams}';
+      }
+    }
+  }
+
+  /// The photo door. Hidden when nothing can read a label, so the button is
+  /// never a promise the build cannot keep.
+  Widget _labelReadCard(ThemeData theme, ColorScheme scheme) {
+    if (context.read<LabelReader?>() == null) return const SizedBox.shrink();
+    final photos = context.read<PhotoSources>();
+    final read = _read;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.document_scanner_rounded,
+                  size: 20, color: scheme.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Read it off the pack',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Photograph the nutrition table — and the front, for the name. '
+            'It fills the fields below; you check them.',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(height: 1.5, color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 12),
+          if (_reading)
+            Row(children: [
+              const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2)),
+              const SizedBox(width: 10),
+              Text('Reading the label…', style: theme.textTheme.bodyMedium),
+            ])
+          else
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              if (photos.camera != null)
+                FilledButton.tonalIcon(
+                  key: const Key('label-read-camera'),
+                  onPressed: () => _readLabel(photos.camera!),
+                  icon: const Icon(Icons.photo_camera_rounded, size: 18),
+                  label: const Text('Photograph'),
+                ),
+              OutlinedButton.icon(
+                key: const Key('label-read-gallery'),
+                onPressed: () => _readLabel(photos.gallery),
+                icon: const Icon(Icons.photo_library_rounded, size: 18),
+                label: const Text('From photos'),
+              ),
+            ]),
+          if (_readError != null) ...[
+            const SizedBox(height: 10),
+            Text(_readError!,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: scheme.error, height: 1.4)),
+          ],
+          // What the reading could NOT do is the part worth saying out loud:
+          // an unchecked number off a photo is how someone ends up eating by
+          // a hallucination.
+          if (read != null && _readError == null) ...[
+            const SizedBox(height: 10),
+            Text(_readSummary(read),
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: scheme.onSurfaceVariant, height: 1.45)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _readSummary(LabelRead read) {
+    final bits = <String>[
+      'Filled ${read.values.length} value${read.values.length == 1 ? '' : 's'} '
+          '— check them against the pack.',
+      if (read.basis == LabelBasis.converted)
+        'The pack printed per serving, so these were converted to per 100 g.',
+      if (read.basis == LabelBasis.unknown && read.values.isEmpty)
+        'No per-100 g table found — type the numbers in yourself.',
+      if (read.unreadable.isNotEmpty)
+        'Could not read: ${read.unreadable.join(', ')}.',
+      if (read.confidence != null && read.confidence! < 0.6)
+        'The photo was hard to read — worth a second look.',
+    ];
+    return bits.join(' ');
+  }
+
   Future<void> _save() async {
     final name = _name.text.trim();
     if (name.isEmpty) return;
@@ -191,7 +381,7 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
     final product = initial == null
         ? Product(
             schemaVersion: Product.currentSchemaVersion,
-            barcode: '',
+            barcode: widget.barcode ?? '',
             name: name,
             brand: _brand.text.trim().isEmpty ? null : _brand.text.trim(),
             source: 'manual',
@@ -221,11 +411,19 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final editing = widget.initial != null;
+    // Arrived from a scan Open Food Facts could not answer: the pack is real,
+    // the database just does not know it. Say that rather than the
+    // no-barcode copy, which would read as a mistake here.
+    final fromScan = !editing && widget.barcode != null;
 
     return Scaffold(
       appBar: AppBar(
         leading: const AppBackButton(),
-        title: Text(editing ? 'Edit food' : 'Create a food'),
+        title: Text(editing
+            ? 'Edit food'
+            : fromScan
+                ? 'Add this product'
+                : 'Create a food'),
       ),
       body: SafeArea(
         child: ListView(
@@ -235,12 +433,34 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
               editing
                   ? 'Open Food Facts is crowdsourced and sometimes wrong. What '
                       'you type here wins, and stays yours.'
-                  : 'For everything without a barcode — fruit, veg, the loaf '
-                      'from the bakery. It becomes a normal file in your '
-                      'pantry, exactly like a scanned one.',
+                  : fromScan
+                      ? 'Open Food Facts has never seen this barcode. Fill it '
+                          'in once and it is yours — the code stays on the '
+                          'file, so a later scan finds this product.'
+                      : 'For everything without a barcode — fruit, veg, the '
+                          'loaf from the bakery. It becomes a normal file in '
+                          'your pantry, exactly like a scanned one.',
               style: theme.textTheme.bodySmall
                   ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
             ),
+            if (!editing) ...[
+              const SizedBox(height: 14),
+              _labelReadCard(theme, scheme),
+            ],
+            if (fromScan) ...[
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(Icons.qr_code_rounded,
+                      size: 16, color: scheme.onSurfaceVariant),
+                  const SizedBox(width: 6),
+                  Text(widget.barcode!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                          color: scheme.onSurfaceVariant)),
+                ],
+              ),
+            ],
             const SizedBox(height: 20),
             TextField(
               controller: _name,

@@ -17,7 +17,7 @@ import 'package:http/http.dart' as http;
 
 import '../domain/extractor.dart';
 
-class GeminiExtractor implements Extractor {
+class GeminiExtractor implements Extractor, LabelReader {
   // Flash-Lite for cost (Arnar 2026-08-19): same multimodal input, a
   // fraction of the price per extraction, and the fair-use cap in the
   // listing is what this bill has to fit inside. Still vision-capable —
@@ -92,6 +92,30 @@ class GeminiExtractor implements Extractor {
         'and comments.\n\nPAGE TEXT:\n$pageText';
     return _generate([
       {'text': prompt}
+    ]);
+  }
+
+  /// Read a grocery product's packaging instead of a recipe. Same transport,
+  /// same App Check header, same fair-use slot — a label read costs exactly
+  /// what a screenshot import costs, which is why it is a deliberate tap and
+  /// never automatic.
+  ///
+  /// Returns the model's raw JSON; domain/label_read.dart is what turns it
+  /// into something the pantry will store, and what refuses to trust it.
+  @override
+  Future<Map<String, dynamic>> extractLabel(List<File> images) async {
+    final prompt = await rootBundle.loadString('assets/label_prompt.md');
+    return _generate([
+      {'text': prompt},
+      for (final img in images)
+        {
+          'inline_data': {
+            'mime_type': img.path.toLowerCase().endsWith('.png')
+                ? 'image/png'
+                : 'image/jpeg',
+            'data': base64Encode(await img.readAsBytes()),
+          }
+        },
     ]);
   }
 

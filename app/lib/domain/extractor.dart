@@ -28,3 +28,13 @@ class ExtractionException implements Exception {
   @override
   String toString() => 'ExtractionException($httpStatus): $message';
 }
+
+
+/// Reading a grocery product's packaging — a separate capability from
+/// extracting a recipe, so a build or a test that has one need not have the
+/// other. GeminiExtractor implements both; the pantry asks for this one and
+/// hides its button when nothing provides it (the dead-end rule).
+abstract class LabelReader {
+  /// Raw model JSON. domain/label_read.dart is what refuses to trust it.
+  Future<Map<String, dynamic>> extractLabel(List<File> images);
+}

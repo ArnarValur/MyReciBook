@@ -59,22 +59,40 @@ class _PantryTabState extends State<PantryTab> {
 
   /// One detection → one honest flash line. The three-way outcome keeps
   /// "OFF didn't answer" visibly different from "not in the database".
+  ///
+  /// Two of the three now carry an action on the bar (Arnar 2026-08-27):
+  /// a hit opens what was just saved so the numbers can be checked with the
+  /// pack still in hand, and a miss leads straight into creating it. Only
+  /// "OFF didn't answer" stays inert — there is nothing to open and nothing
+  /// worth creating, only a rescan.
   Future<ScanFeedback> _collect(String digits) async {
     final outcome = await context.read<PantryModel>().addByBarcode(digits);
     switch (outcome) {
       case PantryAdded(:final product, :final wasKnown):
-        return ScanFeedback(wasKnown
-            ? '${product.name} — refreshed'
-            : '${product.name} — added');
-      case PantryNotFound():
-        return const ScanFeedback('Not on Open Food Facts — nothing saved',
-            ok: false);
+        return ScanFeedback(
+          wasKnown ? '${product.name} — refreshed' : '${product.name} — added',
+          actionLabel: 'Check',
+          action: () => _openDetail(product),
+        );
+      case PantryNotFound(:final barcode):
+        return ScanFeedback(
+          'Not on Open Food Facts — nothing saved',
+          ok: false,
+          actionLabel: 'Add it',
+          action: () => _createFromScan(barcode),
+        );
       case PantryUnavailable():
         return const ScanFeedback(
             'Open Food Facts didn\'t answer — scan it again',
             ok: false);
     }
   }
+
+  /// The miss door: create the product the database has never heard of, with
+  /// its barcode already on the file so a later scan finds it again.
+  Future<void> _createFromScan(String barcode) =>
+      Navigator.of(context).push<void>(MaterialPageRoute<void>(
+          builder: (_) => ManualProductScreen(barcode: barcode)));
 
   /// Tap a row → pushed detail page (the recipe-detail gesture; a bottom
   /// sheet fought the device's own nav bar — Arnar's S21 pass, 2026-08-17).
