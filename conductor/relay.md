@@ -1,6 +1,31 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-27 — pantry scan doors, label reading, and four design agents welded
+
+- Scan bar was wrapped in IgnorePointer: a miss was a dead end, a hit could not
+  be checked. Both now act — 'Add it' creates with the barcode on the file,
+  'Check' opens what was just saved. 0.15.0+18.
+- Label reading off the pack, up to three photos, one AI call. Needed NO server
+  change: the proxy forwards bodies verbatim. Prompt asks the model to omit
+  what it cannot read; label_read.dart drops impossible values rather than
+  clamping them. First prompt refused non-food — wrong question, since coffee
+  and spices have no nutrition table either; it now asks only whether there is
+  a label to read.
+- Four agents built designs 1b, 1c, 2a/2b and 3a/3b in parallel worktrees and
+  were welded to 0.16.0+21. Both shelves came back on the shared contract, so
+  welding was choosing one. Agents branched two commits stale; only the
+  pantry_tab import block conflicted.
+- Agent catches worth keeping: SIZE was not a new field (Product.quantity held
+  it), and a barcode-less food's rename is a file move — a data-loss hazard the
+  moment saving went automatic.
+- Arnar: Quick add parked not deleted (kQuickAddEnabled) — he could not tell
+  from the label what it did; 'Log it without numbers' added to the linking
+  sheet so an unlinked meal is still recordable, with absent values not zeros.
+- UNFINISHED: Arnar sees multiple rough corners in the welded Food surfaces,
+  not yet named. Product photos on diary and add-sheet cards still open —
+  tension with mockup 1a's provenance avatars written up in the diary plan.
+
 ## 2026-08-27 — the folder-pointer backup bug, a welcome flow, and tags
 
 - Shipped 0.14.0+17: settings.json no longer carries tree_uri — it rides

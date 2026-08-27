@@ -140,6 +140,31 @@ is only the correction path. `user_edited` tags are never overwritten.
       edit_recipe, recipe_detail_link. Rewrite against the shared sheet
       WHEN Arnar orders a test pass — one hung 9m40 on 2026-08-20.
 
+## Design pass 2026-08-27 — shipped at 0.16.0+21
+Built by four parallel agents from docs/MyReciBook Flutter diary-pantry-mockups.zip
+(option ids are that file's own), then welded on main.
+- 1a Diary tab and 1d scanner ratified as built — no work.
+- 1b Pantry tab: starter foods is a leaf icon on the title row, chip bar and
+  flat dump replaced by ui/widgets/collapsible_shelf.dart, search over name +
+  brand + synonym, fold state persisted in settings.json.
+- 1c Product page: overview and Edit unified into ui/pantry/product_page.dart.
+  Debounced autosave, back flushes, no Save button. SIZE reuses the existing
+  Product.quantity. A barcode-less rename is a FILE MOVE — held to the exit
+  flush or typing spawns a file per keystroke.
+- 2a/2b Add sheet: tabbed Pantry | Recipes, folded shelf inside the sheet,
+  recipes browsed by recipe tag. Recipe→diary logging already existed; no
+  engine was added. ui/diary/link_recipe_sheet.dart is the "start linking" door.
+- 3a/3b Trends: domain/diary_stats.dart + ui/diary/trends_screen.dart. A year
+  is one directory listing plus one read per logged day, cached per session.
+  "kcal avg / logged day" everywhere — averaging over unlogged days would make
+  a blank day a zero-calorie day.
+- Known deviations from the drawings: shelf headers are 44dp not 34 (touch
+  target); the vitamins card is hidden when the file carries no extras; a tag
+  wearing a catalog icon shows its name only in a shelf header, because
+  ShelfSection.label is a String.
+- UNRESOLVED: Arnar reports multiple rough corners in these surfaces, not yet
+  named. First job next session is naming them on the device.
+
 ## Weld-time item — product photos on every card (Arnar 2026-08-27)
 - Pantry rows show a product's photo when it has one. Diary lines and the add
   sheet do not — same product, two different faces.
