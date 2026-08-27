@@ -4,15 +4,19 @@
 // cannot make from a switch label, so the real chip sits at the top of the
 // sheet and changes as you touch things.
 //
-// The icon field takes a catalog key OR a literal emoji the user types.
-// Material Symbols has no avocado; Android ships Noto Color Emoji; the
-// distinction costs one regex (isTagIconKey) and nothing at runtime.
+// The icon field takes a Material catalog key OR an emoji, and the picker
+// offers both behind a two-way switch: Material for the brand-clean look,
+// Emoji because the pantry's category chips have used them since 2026-08-20
+// and they cover exactly what Material cannot — named ingredients. Anything
+// typed that is not a catalog key is taken as an emoji, so the palette is a
+// convenience, never a ceiling.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../domain/recipe_tag.dart';
+import '../domain/tag_emoji.dart';
 import '../domain/tag_icons.dart';
 import 'icons/food_icons.dart';
 import 'tag_chip.dart';
@@ -194,33 +198,35 @@ class _TagEditorState extends State<_TagEditor> {
                       if (v == null) _showLabel = true;
                     }),
                   ),
-                  const SizedBox(height: 20),
-                  const SectionLabel('COLOUR'),
-                  const SizedBox(height: 10),
-                  _ColorRow(
-                      value: _color,
-                      onChanged: (c) => setState(() => _color = c)),
-                  const SizedBox(height: 8),
                   SwitchListTile.adaptive(
                     key: const Key('tag-show-label-switch'),
                     contentPadding: EdgeInsets.zero,
                     value: _showLabel,
                     // Forced on when there is no icon: the alternative is a
-                    // chip with nothing in it.
+                    // chip with nothing in it. Sits directly under the icon
+                    // picker because that is when the question arises —
+                    // "you have an icon, do you still want the words?".
                     onChanged: _icon == null
                         ? null
                         : (v) => setState(() => _showLabel = v),
                     title: const Text('Show the name'),
                     subtitle: Text(
                       _icon == null
-                          ? 'A tag with no icon always shows its name'
+                          ? 'Pick an icon above to turn this off'
                           : _showLabel
                               ? 'A pill with the icon and the name'
-                              : 'Just the icon — fits on a cookbook cover',
+                              : 'Icon only — a small circle, no words',
                       style: theme.textTheme.bodySmall
                           ?.copyWith(color: scheme.onSurfaceVariant),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  const SectionLabel('COLOUR'),
+                  const SizedBox(height: 10),
+                  _ColorRow(
+                      value: _color,
+                      onChanged: (c) => setState(() => _color = c)),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -272,10 +278,24 @@ class _IconFieldState extends State<_IconField> {
   final _search = TextEditingController();
   String _query = '';
 
+  /// Which palette is showing. Opens on whichever kind the tag already wears,
+  /// so editing an emoji tag does not start on the wrong list.
+  late bool _emojiMode = widget.icon != null && !isTagIconKey(widget.icon!);
+
   @override
   void dispose() {
     _search.dispose();
     super.dispose();
+  }
+
+  List<TagEmoji> _emojiMatches(TagEmojiGroup group) {
+    final q = _query.trim().toLowerCase();
+    final all = tagEmojiIn(group);
+    if (q.isEmpty) return all;
+    return [
+      for (final e in all)
+        if (e.terms.any((t) => t.contains(q))) e
+    ];
   }
 
   List<TagIcon> _matches(TagIconGroup group) {
@@ -298,6 +318,16 @@ class _IconFieldState extends State<_IconField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        SegmentedButton<bool>(
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment<bool>(value: false, label: Text('Icons')),
+            ButtonSegment<bool>(value: true, label: Text('Emoji')),
+          ],
+          selected: {_emojiMode},
+          onSelectionChanged: (s) => setState(() => _emojiMode = s.first),
+        ),
+        const SizedBox(height: 10),
         TextField(
           key: const Key('tag-icon-search'),
           controller: _search,
@@ -305,7 +335,9 @@ class _IconFieldState extends State<_IconField> {
           decoration: InputDecoration(
             isDense: true,
             prefixIcon: const Icon(Icons.search_rounded, size: 20),
-            hintText: 'Search icons, or type an emoji',
+            hintText: _emojiMode
+                ? 'Search emoji, or type your own'
+                : 'Search icons, or type an emoji',
             border: const OutlineInputBorder(),
             suffixIcon: widget.icon == null
                 ? null
@@ -351,36 +383,46 @@ class _IconFieldState extends State<_IconField> {
           ),
         ],
         const SizedBox(height: 12),
-        for (final group in TagIconGroup.values)
-          Builder(builder: (context) {
-            final matches = _matches(group);
-            if (matches.isEmpty) return const SizedBox.shrink();
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8, top: 4),
-                  child: Text(_groupName(group),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                          letterSpacing: 0.9,
-                          color: scheme.onSurfaceVariant)),
-                ),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final i in matches)
-                      _IconTile(
-                        icon: foodIcon(i.key),
-                        selected: widget.icon == i.key,
-                        onTap: () => widget.onChanged(i.key),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-              ],
-            );
-          }),
+        if (_emojiMode)
+          for (final group in TagEmojiGroup.values)
+            Builder(builder: (context) {
+              final matches = _emojiMatches(group);
+              if (matches.isEmpty) return const SizedBox.shrink();
+              return _PaletteGroup(
+                title: _emojiGroupName(group),
+                children: [
+                  for (final e in matches)
+                    _Tile(
+                      selected: widget.icon == e.char,
+                      onTap: () => widget.onChanged(e.char),
+                      // Emoji render as text — Android's own colour font, so
+                      // they carry their colour without any tinting from us.
+                      child: Text(e.char, style: const TextStyle(fontSize: 22)),
+                    ),
+                ],
+              );
+            })
+        else
+          for (final group in TagIconGroup.values)
+            Builder(builder: (context) {
+              final matches = _matches(group);
+              if (matches.isEmpty) return const SizedBox.shrink();
+              return _PaletteGroup(
+                title: _groupName(group),
+                children: [
+                  for (final i in matches)
+                    _Tile(
+                      selected: widget.icon == i.key,
+                      onTap: () => widget.onChanged(i.key),
+                      child: Icon(foodIcon(i.key),
+                          size: 21,
+                          color: widget.icon == i.key
+                              ? scheme.onSecondaryContainer
+                              : scheme.onSurface),
+                    ),
+                ],
+              );
+            }),
       ],
     );
   }
@@ -395,14 +437,53 @@ String _groupName(TagIconGroup g) => switch (g) {
       TagIconGroup.time => 'TIME',
     };
 
-class _IconTile extends StatelessWidget {
-  const _IconTile({
-    required this.icon,
+String _emojiGroupName(TagEmojiGroup g) => switch (g) {
+      TagEmojiGroup.fruitVeg => 'FRUIT & VEG',
+      TagEmojiGroup.meatFish => 'MEAT & FISH',
+      TagEmojiGroup.dairyEggs => 'DAIRY & EGGS',
+      TagEmojiGroup.grains => 'GRAINS & BREAD',
+      TagEmojiGroup.sweets => 'SWEETS',
+      TagEmojiGroup.drinks => 'DRINKS',
+      TagEmojiGroup.dishes => 'MEALS & DISHES',
+      TagEmojiGroup.kitchen => 'KITCHEN',
+      TagEmojiGroup.occasions => 'OCCASIONS',
+    };
+
+class _PaletteGroup extends StatelessWidget {
+  const _PaletteGroup({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8, top: 4),
+          child: Text(title,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  letterSpacing: 0.9,
+                  color: context.scheme.onSurfaceVariant)),
+        ),
+        Wrap(spacing: 8, runSpacing: 8, children: children),
+        const SizedBox(height: 14),
+      ],
+    );
+  }
+}
+
+/// One palette cell. Holds an Icon or an emoji Text — the selected skin is
+/// identical either way, so the two lists cannot drift.
+class _Tile extends StatelessWidget {
+  const _Tile({
+    required this.child,
     required this.selected,
     required this.onTap,
   });
 
-  final IconData icon;
+  final Widget child;
   final bool selected;
   final VoidCallback onTap;
 
@@ -415,6 +496,7 @@ class _IconTile extends StatelessWidget {
       child: Container(
         width: 44,
         height: 44,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected
               ? scheme.secondaryContainer
@@ -423,9 +505,7 @@ class _IconTile extends StatelessWidget {
           border:
               selected ? Border.all(color: scheme.primary, width: 1.5) : null,
         ),
-        child: Icon(icon,
-            size: 21,
-            color: selected ? scheme.onSecondaryContainer : scheme.onSurface),
+        child: child,
       ),
     );
   }

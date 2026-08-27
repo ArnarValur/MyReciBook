@@ -93,7 +93,9 @@ class TagChip extends StatelessWidget {
     final circle = tag.icon != null && !tag.showLabel;
 
     final content = circle
-        ? Center(child: TagGlyph(tag: tag, size: height * 0.45, color: fg))
+        // Bigger than the pill's glyph: in the circle form the icon IS the
+        // chip, so it gets the room the label would have taken.
+        ? Center(child: TagGlyph(tag: tag, size: height * 0.5, color: fg))
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [

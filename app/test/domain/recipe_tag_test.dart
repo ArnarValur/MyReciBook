@@ -3,6 +3,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myrecibook/domain/recipe_tag.dart';
+import 'package:myrecibook/domain/tag_emoji.dart';
 import 'package:myrecibook/domain/tag_icons.dart';
 
 void main() {
@@ -72,5 +73,23 @@ void main() {
     // unknown fallback, a binding with no key can never be reached.
     expect(kTagIconKeys.toSet().length, kTagIconKeys.length,
         reason: 'duplicate catalog key');
+  });
+
+  test('every catalog key is a key, and every palette emoji is not', () {
+    // The whole icon/emoji distinction is this one predicate, so both
+    // palettes have to sit on the correct side of it.
+    for (final key in kTagIconKeys) {
+      expect(isTagIconKey(key), isTrue, reason: '"$key" would read as emoji');
+    }
+    for (final e in kTagEmoji) {
+      expect(isTagIconKey(e.char), isFalse,
+          reason: '"${e.char}" would read as a catalog key');
+    }
+  });
+
+  test('the emoji palette carries no duplicates', () {
+    final chars = [for (final e in kTagEmoji) e.char];
+    expect(chars.toSet().length, chars.length,
+        reason: 'the same emoji is offered twice');
   });
 }
