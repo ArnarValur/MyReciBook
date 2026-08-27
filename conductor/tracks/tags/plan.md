@@ -8,7 +8,11 @@ a built-in that no tag can replace or delete.
 Agent owns the store, the model, the filter seam and the curated icon catalog.
 Ships behind `kRecipeTagsEnabled`, which exists and is already off for exactly this.
 
-**PROPOSED 2026-08-22, nothing ratified.** Every ❓ below is Arnar's call.
+**BUILT 2026-08-27 at 0.13.0+14.** Every ❓ was answered by Arnar that day:
+colour in v1 (yes, 8 tints) · emoji escape hatch (yes) · built-ins are
+Favorites + Quick, Sweet deleted · delete strips the name from the recipe
+files. The three the plan proposed defaults for were taken as proposed:
+single-select filter, no tag cap, filter does not survive a restart.
 
 ## What already exists — the reason this is small
 - `Recipe.tags: List<String>` is in the file format and in recipe.schema.json.
@@ -81,18 +85,18 @@ Ships behind `kRecipeTagsEnabled`, which exists and is already off for exactly t
   ❓ Arnar: emoji in, or Material-only and keep the row monochrome-tidy?
 
 ## Build order
-- [ ] `domain/tag_icons.dart` + `ui/icons/food_icons.dart` — catalog first,
+- [x] `domain/tag_icons.dart` + `ui/icons/food_icons.dart` — catalog first,
       nothing depends on the rest of the track. Reusable immediately.
-- [ ] `domain/recipe_tag.dart` — the record, JSON in/out, name-key rules.
-- [ ] `data/tag_store.dart` — `tags.json`, atomic write, corrupt→empty (never crash).
-- [ ] `sync_engine._ownedName` — one case for `tags.json`.
-- [ ] `ui/tags_model.dart` — list, create, rename, recolour, reorder, delete.
-- [ ] Settings → Tags screen. Create/edit sheet: name field, icon picker with
+- [x] `domain/recipe_tag.dart` — the record, JSON in/out, name-key rules.
+- [x] `data/tag_store.dart` — `tags.json`, atomic write, corrupt→empty (never crash).
+- [x] `sync_engine._ownedName` — one case for `tags.json`.
+- [x] `ui/tags_model.dart` — list, create, rename, recolour, reorder, delete.
+- [x] Settings → Tags screen. Create/edit sheet: name field, icon picker with
       search, colour row, "show the label" switch, live chip preview.
-- [ ] Recipe detail: tag row under the title, `+ Tag` sheet (pantry's shape).
-- [ ] Cookbook `_filterRow`: user tags appended after the built-ins; flip
+- [x] Recipe detail: tag row under the title, `+ Tag` sheet (pantry's shape).
+- [x] Cookbook `_filterRow`: user tags appended after the built-ins; flip
       `kRecipeTagsEnabled`.
-- [ ] Delete the `_isSweet` predicate — nothing ever earned it.
+- [x] Delete the `_isSweet` predicate — nothing ever earned it.
 
 ## Open questions — Arnar's calls
 - ❓ **Quick stays or goes?** `_isQuick` (total ≤30 min) is computable and honest,
@@ -108,6 +112,13 @@ Ships behind `kRecipeTagsEnabled`, which exists and is already off for exactly t
   endless. Proposal: no hard cap, but the row scrolls and Settings owns the order.
 - ❓ **Filter persistence.** Proposal: no. A filter that survives a restart makes
   the cookbook look empty and broken. Session-only, like today.
+
+## NOT done — the one deliberate omission
+Every string this track added is an English literal, not a gen_l10n key
+(Arnar 2026-08-27: "dont think about i18n now, just normal english version").
+The i18n sweep picks them up with the rest of lib/ui. Files to revisit:
+tags_screen · tag_editor_sheet · tag_chip · the Settings row · the recipe
+detail sheet. Only English is offered today, so arb_parity_test stays green.
 
 ## i18n — landed on main 2026-08-22, after this plan was written
 - Every string this track adds goes through gen_l10n, not a literal: the

@@ -20,11 +20,14 @@ const bool kMealPlanEnabled = false;
 /// (Arnar: "no idea what the purpose of it is"); flips on with 3g.
 const bool kYourCopyEnabled = false;
 
-/// Recipe tag chips beyond Favorites (Quick / Sweet in the cookbook filter row).
-/// The chips are drawn in turn 1 and hi-fi 3d, but no turn ever drew how a
-/// recipe GETS a tag, so they filtered on nothing. Favorites-only until a
-/// tagging design exists (Arnar's call, 2026-08-06).
-const bool kRecipeTagsEnabled = false;
+/// User-invented recipe tags: Settings → Tags to make them, a tag row on the
+/// recipe page to apply them, chips in the cookbook filter row to filter by
+/// them. Turned ON 2026-08-27 — the tagging design that 2026-08-06 was waiting
+/// for is conductor/tracks/tags/plan.md, and it is built.
+///
+/// The flag also gates Quick, which is computed from the recipe's own times.
+/// Sweet is gone: it guessed from a word list and nothing could ever earn it.
+const bool kRecipeTagsEnabled = true;
 
 /// Unlock tab in nav slot 2 — the 3g paywall pitch promoted from the debug
 /// gallery to a real tab, replacing the Import queue tab (Arnar's call,

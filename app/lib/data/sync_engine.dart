@@ -18,6 +18,7 @@ import 'atomic_file.dart';
 import 'remote_store.dart';
 import 'sha256.dart';
 import 'sync_source.dart';
+import 'tag_store.dart' show kTagsFileName;
 
 enum SyncState { idle, syncing, synced, authRevoked, offline }
 
@@ -78,6 +79,9 @@ class SyncEngine {
 
   static bool _ownedName(String name) =>
       _uuidJson.hasMatch(name) ||
+      // The tag decorations. A root file, not a uuid, so it needs its own
+      // case or a mirror would keep resurrecting a tags.json the user deleted.
+      name == kTagsFileName ||
       (name.startsWith('images/') && SyncSource.safeName(name)) ||
       (name.startsWith('pantry/') && SyncSource.safeName(name)) ||
       (name.startsWith('diary/') && SyncSource.safeName(name));

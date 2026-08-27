@@ -23,6 +23,7 @@ import 'data/oauth.dart';
 import 'data/product_store.dart';
 import 'data/recipe_store.dart';
 import 'data/saf_diary_store.dart';
+import 'data/tag_store.dart';
 import 'data/sha256.dart';
 import 'data/share_entry.dart';
 import 'data/share_intake.dart';
@@ -35,6 +36,7 @@ import 'ui/app_shell.dart';
 import 'ui/batch_model.dart';
 import 'ui/cookbook_prefs.dart';
 import 'ui/crash_reporting_model.dart';
+import 'ui/tags_model.dart';
 import 'ui/units_model.dart';
 import 'ui/language_model.dart';
 import 'ui/folder_gate.dart';
@@ -220,6 +222,9 @@ Future<void> main() async {
         pantry: pantry,
         // Same tree as the recipes and the pantry: <tree>/diary/.
         diary: SafDiaryStore(treeUri: store.treeUri),
+        // tags.json at the root of the same tree, mirrored like everything
+        // else in it.
+        tags: SafTagStore(treeUri: store.treeUri),
         settings: settings,
         storage: storage,
         themeModel: themeModel,
@@ -253,6 +258,7 @@ Widget buildApp({
   GroceryStore? grocery,
   ProductStore? pantry,
   DiaryStore? diary,
+  TagStore? tags,
   AppSettings? settings,
   StorageModel? storage,
   ThemeModel? themeModel,
@@ -333,6 +339,15 @@ Widget buildApp({
         // in-memory exactly like the pantry does.
         ChangeNotifierProvider(
             create: (_) => DiaryModel(diary, settings: settings)),
+        // Tag decorations. Null store (test seam, or no folder yet) degrades
+        // to in-memory like the pantry and the diary. It reads LibraryModel
+        // because renaming and deleting a tag rewrite the recipes that carry
+        // it — the recipe files are the truth about which tags exist.
+        ChangeNotifierProvider(
+            create: (ctx) => TagsModel(
+                  store: tags ?? MemoryTagStore(),
+                  library: ctx.read<LibraryModel>(),
+                )..load()),
         // Session batch queue (D5): lives above the shell so it survives tab
         // switches and pushed routes; dies with the app. Saves ride the
         // LibraryModel seam, so grocery/storage glue comes along for free.

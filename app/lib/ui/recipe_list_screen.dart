@@ -17,9 +17,17 @@ import 'postalpha/dev_gallery.dart';
 import 'recipe_detail_screen.dart';
 import 'theme.dart';
 import 'widgets/logo_mark.dart';
+import '../domain/recipe_tag.dart';
+import 'tag_chip.dart';
+import 'tags_model.dart';
 import 'widgets/skin.dart';
 
-enum _Filter { all, favorites, quick, sweet }
+/// The built-ins. Sweet was deleted 2026-08-27: it guessed from a word list
+/// and nothing ever let a recipe earn it. Quick survives because it is
+/// computed from the recipe's own times, so it is honest and needs no tagging.
+/// Everything past these two is a tag the user invented — [_tag] carries its
+/// name.
+enum _Filter { all, favorites, quick, tag }
 
 class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({
@@ -44,6 +52,12 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   String _query = '';
   _Filter _filter = _Filter.all;
 
+  /// The selected user tag when [_filter] is [_Filter.tag]. Single-select in
+  /// v1 — AND/OR across tags needs a different affordance and can follow.
+  /// Session-only, like every other filter: one that survived a restart would
+  /// make the cookbook look empty and broken.
+  String? _tagName;
+
   @override
   void initState() {
     super.initState();
@@ -51,11 +65,6 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
       if (!mounted) return;
       context.read<LibraryModel>().rescan();
     });
-  }
-
-  static bool _isSweet(Recipe r) {
-    const sweet = {'sweet', 'dessert', 'cake', 'baking', 'cookies'};
-    return r.tags.any((t) => sweet.contains(t.toLowerCase()));
   }
 
   static bool _isQuick(Recipe r) {
@@ -72,7 +81,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
               _Filter.all => true,
               _Filter.favorites => r.favorite,
               _Filter.quick => _isQuick(r),
-              _Filter.sweet => _isSweet(r),
+              _Filter.tag => _tagName != null &&
+                  r.tags.any((t) =>
+                      RecipeTag.canonical(t) == RecipeTag.canonical(_tagName!)),
             })
           r
     ];
@@ -291,7 +302,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
 
   Widget _filterRow(ThemeData theme) {
     Widget chip(_Filter f, String label, [IconData? icon]) {
-      final selected = _filter == f;
+      final selected = _filter == f && f != _Filter.tag;
       final scheme = context.scheme;
       return Padding(
         padding: const EdgeInsets.only(right: 8),
@@ -346,13 +357,34 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
             child: Row(children: [
               chip(_Filter.all, 'All'),
               chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
-              // Quick/Sweet are drawn in 3d but nothing lets a recipe EARN the
-              // tag — dead filters on real libraries (Arnar's pass,
-              // 2026-08-06). Hidden behind kRecipeTagsEnabled until a tagging
-              // design exists; the predicates above stay live for the flip.
               if (kRecipeTagsEnabled) ...[
+                // Quick is computed from the recipe's own times — no tagging
+                // needed, so it stays a built-in (Arnar 2026-08-27).
                 chip(_Filter.quick, 'Quick', Icons.bolt_rounded),
-                chip(_Filter.sweet, 'Sweet', Icons.cake_rounded),
+                // The user's own tags, in the order Settings puts them. Only
+                // tags that are actually on a recipe appear: a filter that
+                // can only ever return nothing is worse than no chip.
+                for (final tag in _userTagChips())
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: TagChip(
+                      tag: tag,
+                      selected: _filter == _Filter.tag &&
+                          _tagName != null &&
+                          RecipeTag.canonical(_tagName!) ==
+                              RecipeTag.canonical(tag.name),
+                      onTap: () => setState(() {
+                        final same = _filter == _Filter.tag &&
+                            _tagName != null &&
+                            RecipeTag.canonical(_tagName!) ==
+                                RecipeTag.canonical(tag.name);
+                        // Tapping the selected tag clears back to All, so the
+                        // row is never a trap you can't get out of.
+                        _filter = same ? _Filter.all : _Filter.tag;
+                        _tagName = same ? null : tag.name;
+                      }),
+                    ),
+                  ),
               ],
             ]),
           ),
@@ -363,6 +395,28 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         ),
       ]),
     );
+  }
+
+  /// Decorated chips for every tag actually in use, ordered by the user's
+  /// Settings order with any undecorated names after them.
+  List<RecipeTag> _userTagChips() {
+    final tags = context.watch<TagsModel>();
+    final inUse = {
+      for (final n in tags.namesInUse) RecipeTag.canonical(n): n
+    };
+    final out = <RecipeTag>[];
+    final placed = <String>{};
+    for (final t in tags.tags) {
+      final key = RecipeTag.canonical(t.name);
+      if (!inUse.containsKey(key)) continue;
+      out.add(t);
+      placed.add(key);
+    }
+    final rest = [
+      for (final e in inUse.entries)
+        if (!placed.contains(e.key)) e.value
+    ]..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return [...out, for (final n in rest) RecipeTag(name: n)];
   }
 
   /// Grid ⇄ list switch. Shows the layout a tap takes you TO (files-app

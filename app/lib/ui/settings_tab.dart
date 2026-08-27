@@ -24,6 +24,8 @@ import 'crash_reporting_model.dart';
 import 'diary/diary_goal_screen.dart';
 import 'diary/diary_model.dart';
 import 'storage_model.dart';
+import 'tags_model.dart';
+import 'tags_screen.dart';
 import 'theme.dart';
 import 'theme_model.dart';
 import 'language_model.dart';
@@ -337,6 +339,32 @@ class SettingsTab extends StatelessWidget {
                               child: const DiaryGoalScreen(),
                             ))),
                   ),
+                  const SizedBox(height: 8),
+                ],
+                // Tags: a pushed list, the Storage/Language shape. Only
+                // reachable once tagging is on — the dead-end rule.
+                if (kRecipeTagsEnabled) ...[
+                  const SectionLabel('Tags'),
+                  const SizedBox(height: 8),
+                  Builder(builder: (context) {
+                    final tags = context.watch<TagsModel>();
+                    final n = tags.tags.length;
+                    return row(
+                      key: const Key('settings-tags-row'),
+                      icon: Icons.sell_rounded,
+                      title: 'Your tags',
+                      caption: n == 0
+                          ? 'None yet — invent one'
+                          : '$n tag${n == 1 ? '' : 's'}',
+                      onTap: () => Navigator.of(context)
+                          .push<void>(MaterialPageRoute<void>(
+                              builder: (_) =>
+                                  ChangeNotifierProvider<TagsModel>.value(
+                                    value: context.read<TagsModel>(),
+                                    child: const TagsScreen(),
+                                  ))),
+                    );
+                  }),
                   const SizedBox(height: 8),
                 ],
                 SectionLabel(context.l10n.sectionStorage),

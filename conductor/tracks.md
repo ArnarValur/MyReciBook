@@ -5,10 +5,10 @@
 - **nutrition** — pantry, linking, units shipped; density table, per-serving calculator and nutrition badge landed via the diary track 2026-08-19. Open: grocery package-size math, label-photo fallback. → tracks/nutrition/plan.md
 - **diary** — pantry categories end to end 2026-08-20: OFF auto-tag, chips + grouped shelf, drawer filter, one shared product picker, starter foods (149, values unverified). Open: device verify, USDA value check. (The three link-picker test files were checked 2026-08-21 and pass.) → tracks/diary/plan.md
 - **i18n** — unparked 2026-08-22: the Play tester gate is the long pole, so polish instead of waiting. Foundation done on branch i18n at 0.11.0+10 — gen_l10n, endonym picker, follow-the-phone default, Settings tab migrated as proof, 50 green. English + Íslenska offered; nine more parked at 31 messages, one language at a time. Open: the string sweep — inventory in tracks/i18n/coverage.md. → tracks/i18n/plan.md
+- **tags** — built 2026-08-27 at 0.13.0+14: 78-icon catalog, tags.json beside the recipes, Settings → Tags with reorder and a live-preview editor, tag row on the recipe page, user chips in the cookbook filter. Colour and emoji in, Sweet deleted, delete strips the name from the recipe files. Open: strings are English literals, not gen_l10n keys. → tracks/tags/plan.md
 - **mvp-build** — engine complete through sync. Extraction server deployed and verified 2026-08-21, Gemini key out of the app, both import doors proven on a phone 2026-08-22, crash reports ship on by default. Open: privacy policy + data safety, closed test on Play. Billing seam open, unstarted. → tracks/mvp-build/plan.md
 
 ## Not open yet
-- **tags** — user-invented recipe tags (name + icon + colour, icon-only or labelled), created in Settings, filtering the cookbook; plus a curated Material Symbols Rounded food/kitchen icon catalog reusable app-wide. PROPOSED 2026-08-22, unratified — five open questions in the plan. → tracks/tags/plan.md
 - **launch** — store listing, ASO, launch content.
 
 ## Done
