@@ -6,6 +6,10 @@
 // Numbers are entered per 100 g because that is what a label prints and what
 // the product file stores; a portion (label + grams) is optional and is what
 // the diary preselects.
+//
+// The tag cloud ([ProductTagCloud]) lives here but is not this screen's: the
+// product page opens the same one as a sheet, so the two doors onto a
+// product's tags cannot drift into two vocabularies.
 
 import 'dart:io';
 
@@ -131,17 +135,6 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
     return double.tryParse(cleaned);
   }
 
-  /// The pills on offer: the canonical shelf categories (the SAME list the
-  /// chips and auto-tagging use — one source, never a parallel copy), then
-  /// anything selected that isn't among them — an edited product's old
-  /// custom tags, or one just typed — appended sorted for a stable home.
-  List<String> get _tagOptions {
-    final extras = _tags.where((t) => !productCategories.contains(t))
-        .toList()
-      ..sort();
-    return [...productCategories, ...extras];
-  }
-
   void _toggleTag(String tag) {
     setState(() {
       if (!_tags.remove(tag)) _tags.add(tag);
@@ -149,33 +142,8 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
   }
 
   Future<void> _addOwnTag() async {
-    final controller = TextEditingController();
-    final raw = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add a tag'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(hintText: 'Wine, spices…'),
-          onSubmitted: (v) => Navigator.of(context).pop(v),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Add'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    final tag = raw?.trim() ?? '';
-    if (tag.isEmpty) return;
+    final tag = await askForOwnTag(context);
+    if (tag == null) return;
     setState(() {
       if (!_tags.contains(tag)) _tags.add(tag);
     });
@@ -567,22 +535,10 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
                   ?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
             ),
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final tag in _tagOptions)
-                  _TagPill(
-                    label: tag,
-                    selected: _tags.contains(tag),
-                    onTap: () => _toggleTag(tag),
-                  ),
-                ActionChip(
-                  avatar: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Add your own'),
-                  onPressed: _addOwnTag,
-                ),
-              ],
+            ProductTagCloud(
+              selected: _tags,
+              onToggle: _toggleTag,
+              onAddOwn: _addOwnTag,
             ),
             const SizedBox(height: 24),
 
@@ -616,6 +572,81 @@ class _ManualProductScreenState extends State<ManualProductScreen> {
       ),
     );
   }
+}
+
+/// Every tag on offer: the canonical shelf categories (the SAME list the
+/// chips and auto-tagging use — one source, never a parallel copy), then
+/// anything already selected that isn't among them — a product's old custom
+/// tags, or one just typed — appended sorted for a stable home. Last comes
+/// the door to invent another.
+///
+/// Shared by the create screen (inline) and the product page (as a sheet).
+class ProductTagCloud extends StatelessWidget {
+  const ProductTagCloud({
+    super.key,
+    required this.selected,
+    required this.onToggle,
+    required this.onAddOwn,
+  });
+
+  final List<String> selected;
+  final void Function(String tag) onToggle;
+  final VoidCallback onAddOwn;
+
+  @override
+  Widget build(BuildContext context) {
+    final extras = selected.where((t) => !productCategories.contains(t)).toList()
+      ..sort();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final tag in [...productCategories, ...extras])
+          _TagPill(
+            label: categoryLabel(tag),
+            selected: selected.contains(tag),
+            onTap: () => onToggle(tag),
+          ),
+        ActionChip(
+          avatar: const Icon(Icons.add_rounded, size: 18),
+          label: const Text('Add your own'),
+          onPressed: onAddOwn,
+        ),
+      ],
+    );
+  }
+}
+
+/// "Wine", "spices" — a tag nobody's taxonomy had. Returns the trimmed name,
+/// or null when the user backed out or typed nothing.
+Future<String?> askForOwnTag(BuildContext context) async {
+  final controller = TextEditingController();
+  final raw = await showDialog<String>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Add a tag'),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: const InputDecoration(hintText: 'Wine, spices…'),
+        onSubmitted: (v) => Navigator.of(context).pop(v),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(controller.text),
+          child: const Text('Add'),
+        ),
+      ],
+    ),
+  );
+  controller.dispose();
+  final tag = raw?.trim() ?? '';
+  return tag.isEmpty ? null : tag;
 }
 
 /// A selectable pill — same look as the log sheet's serving picker, copied
