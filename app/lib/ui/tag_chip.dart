@@ -240,3 +240,41 @@ class TagBadgeRow extends StatelessWidget {
     );
   }
 }
+
+
+/// The one door that adds a tag — a dashed chip so it reads as an action and
+/// not as a tag called "Tag". Shared by the recipe page and the import
+/// review, which are the two places a tag gets put on something.
+class AddTagChip extends StatelessWidget {
+  const AddTagChip({super.key, required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return InkWell(
+      key: const Key('add-tag-chip'),
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add_rounded, size: 15, color: scheme.primary),
+            const SizedBox(width: 4),
+            Text('Tag',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w600, color: scheme.primary)),
+          ],
+        ),
+      ),
+    );
+  }
+}

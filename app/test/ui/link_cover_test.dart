@@ -15,7 +15,9 @@ import 'package:myrecibook/data/link_extractor.dart';
 import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/ui/import_review_screen.dart';
+import 'package:myrecibook/data/tag_store.dart';
 import 'package:myrecibook/ui/library_model.dart';
+import 'package:myrecibook/ui/tags_model.dart';
 import 'package:myrecibook/ui/theme.dart';
 import 'package:provider/provider.dart';
 
@@ -114,8 +116,17 @@ void main() {
         };
 
     Widget harness({required Future<File?> Function(String) fetchCover}) =>
-        ChangeNotifierProvider(
-          create: (_) => LibraryModel(store),
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (_) => LibraryModel(store)),
+            // The review screen shows the tags an import arrived with, so it
+            // reads TagsModel exactly as it does inside buildApp.
+            ChangeNotifierProvider(
+                create: (ctx) => TagsModel(
+                      store: MemoryTagStore(),
+                      library: ctx.read<LibraryModel>(),
+                    )),
+          ],
           child: MaterialApp(
             theme: rbLightTheme(),
             home: ImportReviewScreen.prefilled(

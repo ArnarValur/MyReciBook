@@ -10,10 +10,15 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/saf_store.dart';
+import '../features.dart';
 import '../domain/extractor.dart';
+import '../domain/recipe_tag.dart';
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
 import 'library_model.dart';
+import 'tag_chip.dart';
+import 'tag_picker_sheet.dart';
+import 'tags_model.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
 
@@ -66,6 +71,13 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   _Phase _phase = _Phase.extracting;
   String _error = '';
   Map<String, dynamic> _content = const {};
+
+  /// Tags this import arrived with, editable before anything is saved.
+  /// Link extraction maps recipeCategory + recipeCuisine + keywords into
+  /// tags, so a rescued recipe can turn up carrying eight of them that the
+  /// user never chose. Seeing them here is the difference between curating a
+  /// cookbook and cleaning up after it (Arnar 2026-08-27).
+  List<String> _tags = const [];
 
   final TextEditingController _title = TextEditingController();
   List<TextEditingController> _ingredientCtrls = const [];
@@ -177,6 +189,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   /// frame is already live (initState may call it bare).
   void _seed(Map<String, dynamic> content) {
     _content = content;
+    _tags = [for (final t in (content['tags'] as List? ?? const [])) '$t'];
     _title.text = (content['title'] as String?) ?? '';
     _disposeLineCtrls();
     _confirmed.clear();
@@ -236,6 +249,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
 
   Future<void> _save() async {
     _content['title'] = _title.text.trim();
+    _content['tags'] = _tags;
     final ings = _content['ingredients'] as List? ?? const [];
     for (var i = 0; i < _ingredientCtrls.length && i < ings.length; i++) {
       (ings[i] as Map)['raw'] = _ingredientCtrls[i].text;
@@ -591,6 +605,13 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         ),
         const SizedBox(height: 14),
       ],
+      if (kRecipeTagsEnabled) ...[
+        SectionLabel(
+            _tags.isEmpty ? 'Tags' : 'Tags · ${_tags.length}'),
+        const SizedBox(height: 8),
+        _tagRow(),
+        const SizedBox(height: 14),
+      ],
       SectionLabel('Ingredients · ${_ingredientCtrls.length}'),
       const SizedBox(height: 8),
       TokenCard(
@@ -626,6 +647,43 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
             children: children,
           ),
         ),
+      ],
+    );
+  }
+
+  /// The incoming tags, each removable, plus the door that adds more. Nothing
+  /// here is saved until "Save to cookbook" — this is still just a draft.
+  Widget _tagRow() {
+    final model = context.watch<TagsModel>();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final name in _tags)
+          TagChip(
+            tag: model.chipFor(name),
+            height: 32,
+            onDeleted: () => setState(() => _tags = [
+                  for (final t in _tags)
+                    if (RecipeTag.canonical(t) != RecipeTag.canonical(name)) t
+                ]),
+          ),
+        AddTagChip(onTap: () => showTagPicker(
+              context,
+              selected: () => _tags,
+              onToggle: (name) async {
+                final on = _tags.any(
+                    (t) => RecipeTag.canonical(t) == RecipeTag.canonical(name));
+                setState(() => _tags = on
+                    ? [
+                        for (final t in _tags)
+                          if (RecipeTag.canonical(t) !=
+                              RecipeTag.canonical(name))
+                            t
+                      ]
+                    : [..._tags, name]);
+              },
+            )),
       ],
     );
   }

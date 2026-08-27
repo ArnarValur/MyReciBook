@@ -23,7 +23,11 @@ single-select filter, no tag cap, filter does not survive a restart.
   selected/unselected skin. It takes a list; today the list is hard-coded.
 - `pantry_tab` line 387 already has a "+ Category" bottom sheet — the tag
   picker on recipe detail is the same sheet with a different source list.
-- Nothing writes recipe tags today. The extractor never emits them. Clean slate.
+- ~~Nothing writes recipe tags today.~~ WRONG, found 2026-08-27 by Arnar on a
+  real library: link_extractor._tags maps recipeCategory + recipeCuisine +
+  keywords into `tags`, up to 8 per recipe. Screenshot extraction emits none.
+  So a rescued recipe arrives pre-tagged with the site's own vocabulary, and
+  the import review now shows those tags and lets them be edited before save.
 
 ## Where the two halves live
 - **Membership → the recipe file.** `"tags": ["Weeknight"]` in `<id>.json`.
@@ -128,6 +132,15 @@ detail sheet. Only English is offered today, so arb_parity_test stays green.
 - Icon catalog group names ("Dishes", "Kitchen & tools") and the picker's search
   terms are UI strings — they need keys, and search must match the localized
   term, not the English one.
+
+## Added after the first pass — 0.14.0+17
+- Tags an import ARRIVES with are shown in the review screen, each removable,
+  with the shared picker to add more. Nothing lands in the cookbook untagged
+  or over-tagged without the user having seen it.
+- One picker sheet (`ui/tag_picker_sheet.dart`) serves both the recipe page
+  and the review, so tagging reads the same before and after a save.
+- A tag the library carries but tags.json does not can be deleted straight
+  from Settings. Adopting it only to delete it was the long way round.
 
 ## Not in this track
 - Auto-tagging from the extractor. Nothing earns a tag but the user's tap.

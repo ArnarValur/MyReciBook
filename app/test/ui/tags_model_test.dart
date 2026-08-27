@@ -110,6 +110,25 @@ void main() {
     expect(model.undecoratedNames, ['Cheap']);
   });
 
+  test('a tag that arrived with an import can be deleted without adopting it',
+      () async {
+    // Link import maps recipeCategory/recipeCuisine/keywords into tags, so a
+    // rescued recipe turns up carrying names nobody invented. Deleting one
+    // must not require creating it first (Arnar 2026-08-27).
+    await seed('a', 'Burritos', ['American', 'breakfast']);
+    await seed('b', 'Dip', ['American']);
+    await library.rescan();
+    expect(model.tags, isEmpty, reason: 'nothing decorated — that is the case');
+    expect(model.undecoratedNames, ['American', 'breakfast']);
+
+    await model.delete('American');
+    await library.rescan();
+
+    expect(library.recipes.firstWhere((r) => r.id == 'a').tags, ['breakfast']);
+    expect(library.recipes.firstWhere((r) => r.id == 'b').tags, isEmpty);
+    expect(model.undecoratedNames, ['breakfast']);
+  });
+
   test('renaming onto a name that already exists is refused', () async {
     await model.create(RecipeTag(name: 'Weeknight'));
     await model.create(RecipeTag(name: 'Sunday'));

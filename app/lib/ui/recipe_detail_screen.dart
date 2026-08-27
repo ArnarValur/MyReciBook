@@ -28,8 +28,8 @@ import 'storage_model.dart';
 import 'theme.dart';
 import 'units_model.dart';
 import 'widgets/product_picker_sheet.dart';
-import '../domain/recipe_tag.dart';
 import 'tag_chip.dart';
+import 'tag_picker_sheet.dart';
 import 'tags_model.dart';
 import 'widgets/skin.dart';
 
@@ -240,7 +240,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             height: 32,
             onDeleted: () => _toggleTag(name),
           ),
-        _AddTagChip(onTap: _openTagSheet),
+        AddTagChip(onTap: _openTagSheet),
       ],
     );
   }
@@ -250,66 +250,13 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     if (mounted) setState(() => _recipe = saved);
   }
 
-  /// Pantry's "+ Category" sheet, with the user's tags as the source list —
-  /// the same shape, so nothing new has to be learned.
-  Future<void> _openTagSheet() async {
-    final model = context.read<TagsModel>();
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => ChangeNotifierProvider<TagsModel>.value(
-        value: model,
-        child: StatefulBuilder(builder: (ctx, setSheet) {
-          // Every tag that exists anywhere: decorated ones first, then names
-          // only the library knows about.
-          final decorated = model.tags;
-          final extra = model.undecoratedNames;
-          final empty = decorated.isEmpty && extra.isEmpty;
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SectionLabel('Tags'),
-                  const SizedBox(height: 10),
-                  if (empty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        'No tags yet. Make one in Settings → Tags, then come '
-                        'back and put it on this recipe.',
-                        style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                            height: 1.5,
-                            color: ctx.scheme.onSurfaceVariant),
-                      ),
-                    )
-                  else
-                    Wrap(spacing: 8, runSpacing: 8, children: [
-                      for (final tag in [
-                        ...decorated,
-                        for (final n in extra) RecipeTag(name: n),
-                      ])
-                        TagChip(
-                          tag: tag,
-                          selected: _recipe.tags.any((t) =>
-                              RecipeTag.canonical(t) ==
-                              RecipeTag.canonical(tag.name)),
-                          onTap: () async {
-                            await _toggleTag(tag.name);
-                            setSheet(() {});
-                          },
-                        ),
-                    ]),
-                ],
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
+  /// The shared picker — the same sheet the import review uses, so putting a
+  /// tag on a recipe reads the same before and after it is saved.
+  Future<void> _openTagSheet() => showTagPicker(
+        context,
+        selected: () => _recipe.tags,
+        onToggle: _toggleTag,
+      );
 
   Future<void> _saveNotes() =>
       _persist(_recipe.copyWith(notes: _notes.text), confirmation: 'Notes saved');
@@ -1008,41 +955,4 @@ String linkedIngredientLine(Ingredient ing, String productName) {
         : '$q $unit $productName';
   }
   return productName;
-}
-
-
-/// The one door that adds a tag — a dashed chip so it reads as an action and
-/// not as a tag called "Tag".
-class _AddTagChip extends StatelessWidget {
-  const _AddTagChip({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.scheme;
-    return InkWell(
-      key: const Key('add-tag-chip'),
-      borderRadius: BorderRadius.circular(999),
-      onTap: onTap,
-      child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.add_rounded, size: 15, color: scheme.primary),
-            const SizedBox(width: 4),
-            Text('Tag',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600, color: scheme.primary)),
-          ],
-        ),
-      ),
-    );
-  }
 }

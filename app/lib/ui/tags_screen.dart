@@ -80,8 +80,9 @@ class TagsScreen extends StatelessWidget {
                   const SectionLabel('FOUND IN YOUR RECIPES'),
                   const SizedBox(height: 6),
                   Text(
-                    'These are on recipes already but have no icon or colour '
-                    'yet. Tap one to give it a look.',
+                    'These came in with recipes — link imports carry the '
+                    'site’s own category and keywords. Tap one to give it a '
+                    'look, or to take it off every recipe.',
                     style: theme.textTheme.bodySmall
                         ?.copyWith(height: 1.5, color: scheme.onSurfaceVariant),
                   ),
@@ -93,8 +94,7 @@ class TagsScreen extends StatelessWidget {
                       for (final name in orphans)
                         TagChip(
                           tag: RecipeTag(name: name),
-                          onTap: () => showTagEditor(context,
-                              initial: RecipeTag(name: name), adopting: true),
+                          onTap: () => _orphanActions(context, name),
                         ),
                     ],
                   ),
@@ -103,6 +103,84 @@ class TagsScreen extends StatelessWidget {
             ),
     );
   }
+}
+
+/// A tag the library carries but tags.json says nothing about. Adopting it
+/// first only to delete it was the long way round (Arnar 2026-08-27), so both
+/// doors are here.
+Future<void> _orphanActions(BuildContext context, String name) async {
+  final model = context.read<TagsModel>();
+  final uses = model.usageOf(name);
+  await showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(name,
+                      style: Theme.of(ctx).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600)),
+                ),
+                Text('on $uses recipe${uses == 1 ? '' : 's'}',
+                    style: Theme.of(ctx).textTheme.bodySmall
+                        ?.copyWith(color: ctx.scheme.onSurfaceVariant)),
+              ],
+            ),
+          ),
+          ListTile(
+            key: const Key('orphan-adopt'),
+            leading: const Icon(Icons.palette_outlined),
+            title: const Text('Give it an icon and colour'),
+            subtitle: const Text('Keeps it on every recipe that has it'),
+            onTap: () {
+              Navigator.pop(ctx);
+              showTagEditor(context,
+                  initial: RecipeTag(name: name), adopting: true);
+            },
+          ),
+          ListTile(
+            key: const Key('orphan-delete'),
+            leading: Icon(Icons.delete_outline_rounded, color: ctx.scheme.error),
+            title: Text('Remove from all recipes',
+                style: TextStyle(color: ctx.scheme.error)),
+            subtitle: Text(uses == 0
+                ? 'Nothing carries it'
+                : 'Takes it off $uses recipe${uses == 1 ? '' : 's'}. The '
+                    'recipes themselves are not touched.'),
+            onTap: () async {
+              Navigator.pop(ctx);
+              final ok = await showDialog<bool>(
+                context: context,
+                builder: (dctx) => AlertDialog(
+                  title: Text('Remove “$name”?'),
+                  content: Text(uses == 0
+                      ? 'It is not on any recipe.'
+                      : 'It comes off $uses recipe'
+                          '${uses == 1 ? '' : 's'}.'),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(dctx, false),
+                        child: const Text('Cancel')),
+                    TextButton(
+                        onPressed: () => Navigator.pop(dctx, true),
+                        child: const Text('Remove')),
+                  ],
+                ),
+              );
+              if (ok == true) await model.delete(name);
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
 }
 
 class _TagRow extends StatelessWidget {
