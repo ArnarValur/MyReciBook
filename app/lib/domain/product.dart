@@ -15,8 +15,10 @@ class Product {
   final String name;
   final String? brand;
 
-  /// Quantity label as printed on the pack, e.g. "1 L" — display text, never
-  /// parsed (the raw-field stance from recipes).
+  /// The pack size as printed, e.g. "1 L", "400 ml" — the product page's
+  /// SIZE field. Display text, never parsed (the raw-field stance from
+  /// recipes). Open Food Facts fills it on a scan; the user may type over it
+  /// or empty it, and empty means absent, not "".
   final String? quantity;
 
   /// 'off' (Open Food Facts) | 'manual'. Not pinned by validation — the
@@ -119,12 +121,16 @@ class Product {
         if (synonyms.isNotEmpty) 'synonyms': synonyms,
       };
 
-  /// `image:` accepts a new ref, omission (keep), or [clearImage] (remove) —
-  /// the recipe cover's tri-state rule.
+  /// `image:`, `brand:` and `quantity:` accept a new value, omission (keep),
+  /// or their clear flag (remove) — the recipe cover's tri-state rule. The
+  /// clear flags exist because the product page is the file: a field the user
+  /// empties has to leave the JSON, not sit there as "".
   Product copyWith({
     String? name,
     String? brand,
+    bool clearBrand = false,
     String? quantity,
+    bool clearQuantity = false,
     Nutriments? nutriments,
     String? image,
     bool clearImage = false,
@@ -138,8 +144,8 @@ class Product {
         schemaVersion: schemaVersion,
         barcode: barcode,
         name: name ?? this.name,
-        brand: brand ?? this.brand,
-        quantity: quantity ?? this.quantity,
+        brand: clearBrand ? null : (brand ?? this.brand),
+        quantity: clearQuantity ? null : (quantity ?? this.quantity),
         source: source,
         addedAt: addedAt,
         nutriments: nutriments ?? this.nutriments,
