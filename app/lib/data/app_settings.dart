@@ -130,6 +130,21 @@ class AppSettings {
   /// language dropped in a later version, is a default, not a crash.
   String get language => _data['language'] as String? ?? 'system';
 
+  /// Pantry shelf sections the user left open, by category name. Portable:
+  /// "I keep Spices folded" is true of the person, not of the phone.
+  ///
+  /// Null means the key was never written — nobody has touched a header yet,
+  /// so the shelf applies its own default (everything open but the starter
+  /// packs). An EMPTY list is a real answer: they closed every section.
+  List<String>? get pantryOpenSections {
+    final v = _data['pantry_open_sections'];
+    if (v is! List) return null;
+    return [
+      for (final s in v)
+        if (s is String) s
+    ];
+  }
+
   /// Daily calorie target for the diary. Null = no goal set, and the diary
   /// says "no goal yet" instead of measuring you against a number nobody
   /// chose. Zero or negative reads as unset.
@@ -179,6 +194,9 @@ class AppSettings {
   }
 
   Future<void> setMealNames(List<String> names) => _write('meal_names', names);
+
+  Future<void> setPantryOpenSections(List<String> ids) =>
+      _write('pantry_open_sections', ids);
 
   Future<void> setUnits(String units) => _write('units', units);
 

@@ -308,6 +308,11 @@ Widget buildApp({
         // Plain Provider (not a notifier): the settings footer door reads it
         // on demand. Inert default keeps the test seam file-free.
         Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),
+        // Nullable on purpose: the test seam passes no settings file, and a
+        // screen that only remembers a preference (the pantry shelf's open
+        // sections) should degrade to "forgets on restart", never crash.
+        // Read on demand — no notifier, because nothing rebuilds on a write.
+        Provider<AppSettings?>.value(value: settings),
         // Same .value rule as the models above; the inert default has no
         // settings and no reporter, so it reads the compiled-in default and
         // reports no sink — the Settings row then renders its "not available

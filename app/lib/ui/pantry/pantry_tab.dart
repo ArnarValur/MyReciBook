@@ -3,22 +3,26 @@
 // JSON lands in the user's pantry folder. Everything downstream (ingredient
 // linking, nutrition badges, diary totals) builds on this screen existing.
 //
-// Undesigned — built minimal in the app's idiom, copy flagged for a design
-// turn: the row look, the add-confirm moment (auto-save today), and the
-// empty state. Long-press a row removes it (grocery's destructive-confirm
-// shape); a not-on-OFF scan states the label-photo fallback honestly.
+// Drawn to design 1b: the two shelf actions are icons on the title row, the
+// chip bar and the flat category dump are one collapsible shelf (every
+// category at a glance, no horizontal scroll, the fold remembered), and a
+// search box flattens it back to plain rows once the shelf runs to hundreds.
+//
+// Long-press a row removes it (grocery's destructive-confirm shape); a
+// not-on-OFF scan states the label-photo fallback honestly.
 
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/app_settings.dart';
 import '../../domain/nutrient_display.dart';
 import '../../domain/product.dart';
 import '../../domain/product_categories.dart';
 import '../photo_sources.dart';
 import '../theme.dart';
-import '../widgets/category_chips.dart';
+import '../widgets/collapsible_shelf.dart';
 import '../widgets/product_row.dart';
 import '../widgets/skin.dart';
 import 'barcode_scan_screen.dart';
@@ -38,16 +42,50 @@ class PantryTab extends StatefulWidget {
 }
 
 class _PantryTabState extends State<PantryTab> {
-  /// The one tag the list is narrowed to; null shows everything. Plain
-  /// screen state — a filter is a way of looking, not data worth persisting.
-  String? _tagFilter;
+  /// What the search box holds; empty means the shelf is on screen. Plain
+  /// screen state — a search is a way of looking, not data worth persisting.
+  final _searchField = TextEditingController();
+  String _query = '';
+
+  /// The shelf sections the user has open. Null = they have never touched a
+  /// header on this install, and the default fold applies instead. Persisted,
+  /// because a shelf that forgot itself would bury the screen under 180
+  /// starter rows on every launch (design 1b).
+  Set<String>? _expanded;
+
+  /// Null under a bare pump (nothing provided it) — the shelf still works,
+  /// it just forgets the fold between launches.
+  AppSettings? _settings;
 
   @override
   void initState() {
     super.initState();
+    try {
+      _settings = context.read<AppSettings?>();
+    } on ProviderNotFoundException {
+      _settings = null;
+    }
+    _expanded = _settings?.pantryOpenSections?.toSet();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<PantryModel>().ensureLoaded();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchField.dispose();
+    super.dispose();
+  }
+
+  /// Fold or unfold one section. The full open set is written every time, so
+  /// what lands on disk is always the whole answer — no merge on read.
+  Future<void> _toggleSection(String id, Set<String> open) async {
+    final next = {...open};
+    if (!next.remove(id)) next.add(id);
+    setState(() => _expanded = next);
+    try {
+      await _settings?.setPantryOpenSections(next.toList());
+    } catch (_) {} // persistence best-effort — the shelf is already redrawn
   }
 
   /// The shelf-sweep session: the scan screen stays open, saving product
@@ -142,33 +180,69 @@ class _PantryTabState extends State<PantryTab> {
     if (ok) await model.remove(id);
   }
 
+  /// One pantry row, the shared card — the shelf, the search results and the
+  /// diary's picker all draw the same product.
+  Widget _row(PantryModel model, Product p) => ProductRow(
+        product: p,
+        imageFile: model.imageFileOf(p),
+        onTap: () => _openDetail(p),
+        onLongPress: () => _removeSheet(model, p.id, p.name),
+      );
+
+  /// A section counts as a starter pack when most of it came from the
+  /// built-in packages: one scanned broccoli must not un-fold the sixty
+  /// vegetables it landed beside.
+  static bool _isStarterPack(List<Product> members) =>
+      members.where((p) => p.source == 'starter').length > members.length / 2;
+
+  /// The fold nobody chose: starter packs closed (3×~60 rows the user never
+  /// asked to see), everything they put there themselves open. It applies
+  /// only until they touch a header — from then on their own set is the
+  /// answer, which is why a category added later arrives closed instead of
+  /// re-seeding this.
+  static Set<String> _defaultOpen(List<ShelfSection> sections) => {
+        for (final s in sections)
+          if (!s.starterPack) s.id
+      };
+
+  /// The picker's matching rule, verbatim: name, brand or synonym substring —
+  /// "Paprika" has to find Bell Pepper on this screen too.
+  static List<Product> _search(List<Product> products, String q) => [
+        for (final p in products)
+          if (p.name.toLowerCase().contains(q) ||
+              (p.brand ?? '').toLowerCase().contains(q) ||
+              p.synonyms.any((s) => s.toLowerCase().contains(q)))
+            p
+      ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final model = context.watch<PantryModel>();
 
-    // Category chips with counts, recomputed each build so they appear and
-    // vanish with the products; a filter whose category was edited away
-    // silently falls back to All instead of stranding an empty list.
-    // "Other" is render-only — untagged files stay untagged on disk.
-    final counts = categoryCounts(model.products);
-    final activeTag = counts.containsKey(_tagFilter) ? _tagFilter : null;
-    final visible = switch (activeTag) {
-      null => model.products,
-      otherCategory => [
-          for (final p in model.products)
-            if (p.tags.isEmpty) p
-        ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())),
-      final tag => [
-          for (final p in model.products)
-            if (p.tags.contains(tag)) p
-        ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase())),
-    };
-    // The chips only earn their row once something is actually categorised —
-    // a shelf that is 100% "Other" gets no filter UI to click into nothing.
-    final showChips =
-        counts.keys.any((c) => c != otherCategory) && model.products.isNotEmpty;
+    // The shelf: one folded header per category, "Other" last
+    // (compareCategories), alphabetical inside — never the scan sequence.
+    // The section list is rebuilt every frame, but the rows behind a closed
+    // header are not: CollapsibleShelf leaves those builders uncalled.
+    final sections = [
+      for (final (category, members) in groupByCategory(model.products))
+        ShelfSection(
+          id: category,
+          label: categoryLabel(category),
+          count: members.length,
+          starterPack: _isStarterPack(members),
+          builder: (_) =>
+              Column(children: [for (final p in members) _row(model, p)]),
+        ),
+    ];
+    final open = _expanded ?? _defaultOpen(sections);
+
+    // Typing flattens the shelf: categories are a way of browsing, and once
+    // you know the name you want, they are in the way.
+    final query = _query.trim().toLowerCase();
+    final results =
+        query.isEmpty ? const <Product>[] : _search(model.products, query);
 
     return Scaffold(
       body: SafeArea(
@@ -180,15 +254,38 @@ class _PantryTabState extends State<PantryTab> {
               widget.header!,
               const SizedBox(height: 16),
             ],
-            // Title row — the bulk refresh lives up here compressed
-            // (Arnar, 2026-08-20): an icon and the count, not a banner.
+            // Title row — count under the title, both shelf actions
+            // compressed to icons beside it (design 1b). Starter foods used
+            // to own a permanent full-width row for a thing you do once.
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text('Pantry',
-                      style: theme.textTheme.headlineMedium
-                          ?.copyWith(fontSize: 26, letterSpacing: -0.4)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Pantry',
+                          style: theme.textTheme.headlineMedium
+                              ?.copyWith(fontSize: 26, letterSpacing: -0.4)),
+                      const SizedBox(height: 2),
+                      Text(model.caption,
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: scheme.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+                // The un-barcoded door: fresh produce and spices come built
+                // in (starter_foods.dart) — nothing edible needs a barcode.
+                // Tooltip doubles as the semantics label; an icon-only tap
+                // target must read under TalkBack.
+                IconButton.filledTonal(
+                  key: const Key('pantry-starter-foods'),
+                  tooltip: 'Add starter foods — veggies, fruit, spices',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () =>
+                      Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                          builder: (_) => const StarterFoodsScreen())),
+                  icon: const Icon(Icons.eco_rounded, size: 19),
                 ),
                 if (model.refreshableCount > 0)
                   TextButton.icon(
@@ -202,25 +299,11 @@ class _PantryTabState extends State<PantryTab> {
                   ),
               ],
             ),
-            const SizedBox(height: 2),
-            Text(model.caption,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: scheme.onSurfaceVariant)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             FilledButton.icon(
               onPressed: model.busy ? null : _scan,
               icon: const Icon(Icons.barcode_reader),
               label: Text(model.busy ? 'Looking it up…' : 'Scan a product'),
-            ),
-            const SizedBox(height: 6),
-            // The un-barcoded door: fresh produce and spices come built in
-            // (starter_foods.dart) — nothing edible needs a barcode.
-            TextButton.icon(
-              onPressed: () =>
-                  Navigator.of(context).push<void>(MaterialPageRoute<void>(
-                      builder: (_) => const StarterFoodsScreen())),
-              icon: const Icon(Icons.eco_rounded, size: 18),
-              label: const Text('Add starter foods — veggies, fruit, spices'),
             ),
             if (model.busy) ...[
               const SizedBox(height: 10),
@@ -233,17 +316,35 @@ class _PantryTabState extends State<PantryTab> {
                       ? null
                       : model.refreshDone / model.refreshTotal),
             ],
-            // Category chips — only once something is categorised (dead-end
-            // rule: an all-"Other" shelf gets no filter UI).
-            if (showChips) ...[
-              const SizedBox(height: 14),
-              CategoryChipRow(
-                counts: counts,
-                active: activeTag,
-                onSelect: (c) => setState(() => _tagFilter = c),
+            // Nothing on the shelf, nothing to search for.
+            if (model.products.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              TextField(
+                key: const Key('pantry-search'),
+                controller: _searchField,
+                onChanged: (v) => setState(() => _query = v),
+                decoration: InputDecoration(
+                  hintText: 'Search ${model.caption}…',
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  suffixIcon: _query.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: 'Clear search',
+                          icon: const Icon(Icons.close_rounded, size: 20),
+                          onPressed: () => setState(() {
+                            _searchField.clear();
+                            _query = '';
+                          }),
+                        ),
+                  filled: true,
+                  fillColor: scheme.surfaceContainerHigh,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none),
+                ),
               ),
             ],
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             if (model.loaded && model.products.isEmpty) ...[
               // The shell's honest zero-state look (grocery's empty shape).
               const SizedBox(height: 48),
@@ -255,8 +356,8 @@ class _PantryTabState extends State<PantryTab> {
                     color: scheme.secondaryContainer.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
-                  child:
-                      Icon(Icons.kitchen_rounded, size: 32, color: scheme.primary),
+                  child: Icon(Icons.kitchen_rounded,
+                      size: 32, color: scheme.primary),
                 ),
               ),
               const SizedBox(height: 14),
@@ -268,36 +369,19 @@ class _PantryTabState extends State<PantryTab> {
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
               ),
-            ] else if (activeTag == null && showChips)
-              // The grouped shelf: category sections, alphabetical inside —
-              // never the scan sequence. Headers only when there IS more
-              // than one way to shelve things (showChips).
-              for (final (category, members) in groupByCategory(model.products)) ...[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8, top: 6),
-                  child: Text(
-                    '${categoryLabel(category)} · ${members.length}',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                        letterSpacing: 0.3),
-                  ),
-                ),
-                for (final p in members)
-                  ProductRow(
-                    product: p,
-                    imageFile: model.imageFileOf(p),
-                    onTap: () => _openDetail(p),
-                    onLongPress: () => _removeSheet(model, p.id, p.name),
-                  ),
-              ]
-            else
-              for (final p in visible)
-                ProductRow(
-                  product: p,
-                  imageFile: model.imageFileOf(p),
-                  onTap: () => _openDetail(p),
-                  onLongPress: () => _removeSheet(model, p.id, p.name),
-                ),
+            ] else if (query.isNotEmpty) ...[
+              if (results.isEmpty)
+                Text('Nothing on the shelf matches that.',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant))
+              else
+                for (final p in results) _row(model, p),
+            ] else
+              CollapsibleShelf(
+                sections: sections,
+                expanded: open,
+                onToggle: (id) => _toggleSection(id, open),
+              ),
             if (model.skipped > 0) ...[
               const SizedBox(height: 12),
               Text(

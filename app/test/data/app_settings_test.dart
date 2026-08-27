@@ -166,4 +166,41 @@ void main() {
     await s.setActiveConnector('drive'); // writable after recovery
     expect((await AppSettings.load(file())).activeConnector, 'drive');
   });
+
+  // ── The pantry shelf fold ──────────────────────────────────────────────
+  // Three states, not two: never touched (null → the shelf's own default),
+  // a chosen set, and "everything closed" — which must NOT read as untouched.
+
+  test('pantryOpenSections: absent is null, an empty list is a real answer',
+      () async {
+    final s = await AppSettings.load(file());
+    expect(s.pantryOpenSections, isNull);
+
+    await s.setPantryOpenSections(['Dairy', 'Eggs']);
+    expect(
+        (await AppSettings.load(file())).pantryOpenSections, ['Dairy', 'Eggs']);
+
+    await s.setPantryOpenSections([]);
+    expect((await AppSettings.load(file())).pantryOpenSections, isEmpty);
+  });
+
+  test('pantryOpenSections: a corrupt entry reads as untouched', () async {
+    await file().create(recursive: true);
+    await file().writeAsString(jsonEncode({'pantry_open_sections': 'Dairy'}));
+    expect((await AppSettings.load(file())).pantryOpenSections, isNull);
+
+    // A list with junk in it keeps the strings and drops the rest.
+    await file().writeAsString(jsonEncode({
+      'pantry_open_sections': ['Dairy', 7, null]
+    }));
+    expect((await AppSettings.load(file())).pantryOpenSections, ['Dairy']);
+  });
+
+  test('the fold is portable: it rides settings.json, not device.json',
+      () async {
+    final s = await AppSettings.load(file());
+    await s.setPantryOpenSections(['Dairy']);
+    expect(await deviceFile().exists(), isFalse);
+    expect(await file().readAsString(), contains('pantry_open_sections'));
+  });
 }
