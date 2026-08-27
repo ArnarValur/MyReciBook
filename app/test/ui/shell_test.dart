@@ -16,6 +16,7 @@ import 'package:myrecibook/features.dart';
 import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/app_shell.dart';
 import 'package:myrecibook/ui/folder_gate.dart';
+import 'package:myrecibook/ui/onboarding/onboarding.dart';
 import 'package:myrecibook/ui/grocery_tab.dart';
 import 'package:myrecibook/version.dart';
 
@@ -247,6 +248,10 @@ void main() {
     final settingsFile = File('${tmp.path}/settings.json');
     await tester.runAsync(() => settingsFile.writeAsString(
         jsonEncode({'tree_uri': fake.treeUri, 'migration_done': true})));
+    // Onboarding already done — this test is about the storage row, and a
+    // first run now legitimately opens the welcome flow in front of the app.
+    await tester.runAsync(() => File('${tmp.path}/device.json')
+        .writeAsString(jsonEncode({'onboarding_seen': kOnboardingVersion})));
     final settings =
         (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
 

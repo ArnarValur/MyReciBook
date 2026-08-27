@@ -47,6 +47,69 @@ void main() {
     expect((await AppSettings.load(file())).treeUri, isNull);
   });
 
+  // ── The backup split (2026-08-27) ──────────────────────────────────────
+  // A SAF grant cannot follow the user to another phone, so its pointer must
+  // not ride Android's backup. These three pin the mechanism that keeps
+  // tree_uri out of the portable file.
+
+  File deviceFile() => File('${tmp.path}/nested/device.json');
+
+  test('tree_uri is written to device.json, never to settings.json', () async {
+    final s = await AppSettings.load(file());
+    await s.setTreeUri('content://tree/x');
+    await s.setThemeMode('dark');
+
+    final portable =
+        jsonDecode(await file().readAsString()) as Map<String, dynamic>;
+    final device =
+        jsonDecode(await deviceFile().readAsString()) as Map<String, dynamic>;
+
+    expect(device['tree_uri'], 'content://tree/x');
+    expect(portable.containsKey('tree_uri'), isFalse,
+        reason: 'settings.json rides cloud backup — the folder must not');
+    // The portable half still carries what SHOULD travel.
+    expect(portable['theme_mode'], 'dark');
+  });
+
+  test('onboarding_seen lives beside it, so a fresh install replays', () async {
+    final s = await AppSettings.load(file());
+    expect(s.onboardingSeen, 0);
+    await s.setOnboardingSeen(3);
+
+    final device =
+        jsonDecode(await deviceFile().readAsString()) as Map<String, dynamic>;
+    expect(device['onboarding_seen'], 3);
+    expect((await AppSettings.load(file())).onboardingSeen, 3);
+
+    // Wiping the device file alone (what an uninstall does) resets both.
+    await deviceFile().delete();
+    final fresh = await AppSettings.load(file());
+    expect(fresh.onboardingSeen, 0);
+    expect(fresh.treeUri, isNull);
+  });
+
+  test('a pre-split settings.json is drained on load', () async {
+    // Exactly the shape that caused the bug: a restored backup handing a
+    // fresh install a folder path it has no permission for.
+    await file().create(recursive: true);
+    await file().writeAsString(jsonEncode({
+      'tree_uri': 'content://tree/old',
+      'theme_mode': 'dark',
+    }));
+
+    final s = await AppSettings.load(file());
+    expect(s.treeUri, 'content://tree/old'); // not lost on upgrade
+    expect(s.themeMode, 'dark');
+
+    final portable =
+        jsonDecode(await file().readAsString()) as Map<String, dynamic>;
+    expect(portable.containsKey('tree_uri'), isFalse,
+        reason: 'the next backup must no longer carry it');
+    final device =
+        jsonDecode(await deviceFile().readAsString()) as Map<String, dynamic>;
+    expect(device['tree_uri'], 'content://tree/old');
+  });
+
   test('activeConnector round-trips; unknown value reads as null', () async {
     final s = await AppSettings.load(file());
     expect(s.activeConnector, isNull);

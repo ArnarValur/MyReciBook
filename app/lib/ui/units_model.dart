@@ -9,7 +9,7 @@ import 'package:flutter/foundation.dart';
 import '../data/app_settings.dart';
 import '../domain/units.dart';
 
-class UnitsModel extends ChangeNotifier {
+class UnitsModel extends ChangeNotifier implements ValueListenable<UnitSystem> {
   UnitsModel({AppSettings? settings})
       : _settings = settings,
         _system = parseUnitSystem(settings?.units);
@@ -18,6 +18,11 @@ class UnitsModel extends ChangeNotifier {
   UnitSystem _system;
 
   UnitSystem get system => _system;
+
+  /// Same shape as ThemeModel: the first-run setup screen is built before the
+  /// provider tree exists, so it is handed this listenable directly.
+  @override
+  UnitSystem get value => _system;
 
   Future<void> setSystem(UnitSystem s) async {
     if (s == _system) return;

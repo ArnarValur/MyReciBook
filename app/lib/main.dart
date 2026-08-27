@@ -197,6 +197,11 @@ Future<void> main() async {
     // provider tree, so it needs the language handed to it directly.
     locale: languageModel,
     appNavigatorKey: nav,
+    // The first-run setup screen writes through the app-lifetime models, so
+    // the choice reaches every listener at once instead of on next boot.
+    units: unitsModel,
+    onUnits: unitsModel.setSystem,
+    onThemeMode: themeModel.setMode,
     appBuilder: (store, pantry, onGrantLost, onChangeFolder) {
       // A lost grant mid-sync joins the same re-pick flow as store ops.
       storage.onGrantLost = onGrantLost;

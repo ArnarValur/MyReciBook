@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- API 31+. OAuth refresh tokens (app-support/tokens.json, plaintext until the
-     pre-prod keystore hardening) must never ride cloud backup or D2D transfer.
+<!-- API 31+. Three app-support files must never ride cloud backup or D2D
+     transfer:
+       device.json — the picked SAF folder URI and the onboarding version.
+         A folder grant cannot follow the user to another phone, so restoring
+         its pointer only produced a false "your folder moved" on first launch.
+       tokens.json — OAuth refresh tokens, plaintext until the pre-prod
+         keystore hardening.
+       crash_log.json — local crash history, meaningless on another device.
      Recipes live in the user's own SAF folder — outside app data, unaffected. -->
 <data-extraction-rules>
     <cloud-backup>
+        <exclude domain="file" path="device.json"/>
+        <exclude domain="file" path="device.json.tmp"/>
         <exclude domain="file" path="tokens.json"/>
         <exclude domain="file" path="tokens.json.tmp"/>
         <exclude domain="file" path="crash_log.json"/>
         <exclude domain="file" path="crash_log.json.tmp"/>
     </cloud-backup>
     <device-transfer>
+        <exclude domain="file" path="device.json"/>
+        <exclude domain="file" path="device.json.tmp"/>
         <exclude domain="file" path="tokens.json"/>
         <exclude domain="file" path="tokens.json.tmp"/>
         <exclude domain="file" path="crash_log.json"/>

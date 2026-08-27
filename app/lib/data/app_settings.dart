@@ -1,6 +1,19 @@
-// App config that must survive restarts: the picked SAF tree and the one-shot
-// migration flag. One JSON file in app-support storage, read once at load,
-// written through on every set. Corrupt/missing file → defaults, never fatal.
+// App config that must survive restarts. TWO JSON files in app-support, split
+// by one rule: does this value make sense on a DIFFERENT phone?
+//
+//   settings.json — portable. Theme, language, units, goals. Rides Android's
+//     cloud backup and phone-to-phone transfer, and should.
+//   device.json   — this install only. The SAF tree URI and the onboarding
+//     version. EXCLUDED from backup in res/xml/*_rules.xml.
+//
+// Why the split (2026-08-27): tree_uri used to live in settings.json, so a
+// restored backup handed a fresh install a folder path it had no permission
+// for — and the boot gate correctly, uselessly, said "your recipes folder
+// moved or access was lost" as the very first screen on a brand-new phone.
+// A folder grant cannot travel between devices, so its pointer must not either.
+//
+// Both files: read once at load, written through on every set.
+// Corrupt/missing file → defaults, never fatal.
 
 import 'dart:convert';
 import 'dart:io';
@@ -9,23 +22,70 @@ import 'atomic_file.dart';
 import 'crash_reporter.dart' show kCrashReportingDefaultOn;
 
 class AppSettings {
-  AppSettings._(this._file, this._data);
+  AppSettings._(this._file, this._data, this._deviceFile, this._device);
 
   final File _file;
   final Map<String, dynamic> _data;
+  final File _deviceFile;
+  final Map<String, dynamic> _device;
 
-  static Future<AppSettings> load(File file) async {
+  /// Keys that live in device.json instead of settings.json. Adding one here
+  /// is the whole mechanism — [_write] and the getters route on this set.
+  static const _deviceKeys = {'tree_uri', 'onboarding_seen'};
+
+  /// [deviceFile] defaults to `device.json` beside [file]. Pass it explicitly
+  /// only to point the two somewhere else.
+  static Future<AppSettings> load(File file, {File? deviceFile}) async {
+    final dev = deviceFile ?? File('${file.parent.path}/device.json');
     Map<String, dynamic> data = {};
+    Map<String, dynamic> device = {};
     try {
       if (await file.exists()) {
         data = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       }
     } catch (_) {} // corrupt settings: start from defaults
-    return AppSettings._(file, data);
+    try {
+      if (await dev.exists()) {
+        device = jsonDecode(await dev.readAsString()) as Map<String, dynamic>;
+      }
+    } catch (_) {} // same stance for the device file
+    final s = AppSettings._(file, data, dev, device);
+    await s._adoptLegacyDeviceKeys();
+    return s;
+  }
+
+  /// One-shot carry-over for installs written before the split: move any
+  /// device key still sitting in settings.json into device.json and clear it
+  /// from the portable file, so the next backup can no longer carry it.
+  /// Silent on failure — a settings file we cannot write is not fatal here.
+  Future<void> _adoptLegacyDeviceKeys() async {
+    var moved = false;
+    for (final key in _deviceKeys) {
+      if (_device.containsKey(key) || !_data.containsKey(key)) continue;
+      _device[key] = _data[key];
+      _data.remove(key);
+      moved = true;
+    }
+    if (!moved) return;
+    try {
+      await writeStringAtomic(_deviceFile, jsonEncode(_device));
+      await writeStringAtomic(_file, jsonEncode(_data));
+    } catch (_) {}
   }
 
   /// Tree URI of the user-picked recipes folder; null until first pick.
-  String? get treeUri => _data['tree_uri'] as String?;
+  /// Lives in device.json — see the file header.
+  String? get treeUri => _device['tree_uri'] as String?;
+
+  /// Onboarding version this install has completed; 0 = never. Compared
+  /// against [kOnboardingVersion]: lower means the welcome flow runs again,
+  /// so bumping that constant after a notable release replays the slides for
+  /// everyone as a short "what shipped" intro (Arnar 2026-08-27).
+  /// Lives in device.json, so a fresh install always replays.
+  int get onboardingSeen {
+    final v = _device['onboarding_seen'];
+    return v is int && v > 0 ? v : 0;
+  }
 
   /// One-shot local→SAF migration already ran.
   bool get migrationDone => _data['migration_done'] as bool? ?? false;
@@ -101,6 +161,9 @@ class AppSettings {
 
   Future<void> setTreeUri(String? uri) => _write('tree_uri', uri);
 
+  Future<void> setOnboardingSeen(int version) =>
+      _write('onboarding_seen', version);
+
   Future<void> setCalorieGoal(double? kcal) =>
       _write('calorie_goal', kcal != null && kcal > 0 ? kcal : null);
 
@@ -134,9 +197,16 @@ class AppSettings {
       _write('crash_reporting', on);
 
   Future<void> _write(String key, Object? value) async {
-    _data[key] = value;
-    // Atomic: this file holds tree_uri — a truncated write here would cost
+    final device = _deviceKeys.contains(key);
+    final map = device ? _device : _data;
+    if (value == null) {
+      map.remove(key);
+    } else {
+      map[key] = value;
+    }
+    // Atomic: device.json holds tree_uri — a truncated write there would cost
     // the user their folder grant on next boot.
-    await writeStringAtomic(_file, jsonEncode(_data));
+    await writeStringAtomic(
+        device ? _deviceFile : _file, jsonEncode(map));
   }
 }

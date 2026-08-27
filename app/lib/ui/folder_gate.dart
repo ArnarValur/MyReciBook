@@ -2,6 +2,17 @@
 // folder, so BootGate owns that resolution — gate screen until a grant holds,
 // then the real app subtree via [appBuilder]. Grant lost mid-session re-enters
 // the gate with re-pick copy; the settings slot is reused, never a crash.
+//
+// Since 2026-08-27 the gate is one stop in a longer FIRST-RUN flow:
+//
+//   never picked a folder → welcome → setup (folder + units + theme) → slides
+//   folder + grant, onboarding behind → slides → app
+//   folder but grant gone  → the re-pick gate, exactly as before → app
+//
+// The three paths matter. A returning user whose grant lapsed must NOT be
+// walked through welcome and setup again — they have an app, they lost a
+// permission. And a first-run user must never meet the bare system picker as
+// screen one, which is what shipped until now.
 
 import 'dart:io';
 
@@ -16,10 +27,16 @@ import '../data/recipe_store.dart';
 import '../data/saf_pantry_store.dart';
 import '../data/saf_store.dart';
 import '../domain/app_language.dart';
+import '../domain/units.dart';
 import '../l10n/generated/app_localizations.dart';
+import 'app_shell.dart' show folderDisplayName;
+import 'onboarding/first_run_setup_screen.dart';
+import 'onboarding/onboarding.dart';
+import 'onboarding/slides_screen.dart';
+import 'onboarding/welcome_screen.dart';
 import 'theme.dart';
 
-enum _Boot { checking, gate, migrating, ready }
+enum _Boot { checking, welcome, setup, gate, migrating, slides, ready }
 
 class BootGate extends StatefulWidget {
   const BootGate({
@@ -33,8 +50,21 @@ class BootGate extends StatefulWidget {
     this.themeMode,
     this.locale,
     this.appNavigatorKey,
+    this.units,
+    this.onUnits,
+    this.onThemeMode,
     this.safChannel = const MethodChannel('com.merkurialstudio.myrecibook/saf'),
   });
+
+  /// Live unit system, for the setup screen's segmented control. Null (tests)
+  /// makes the control show the as-written default and do nothing.
+  final ValueListenable<UnitSystem>? units;
+
+  /// Setup-screen writes. They go to the app-lifetime UnitsModel/ThemeModel
+  /// rather than straight to settings, so the choice reaches every listener
+  /// immediately instead of waiting for a restart. Null (tests) = inert.
+  final ValueChanged<UnitSystem>? onUnits;
+  final ValueChanged<ThemeMode>? onThemeMode;
 
   /// The READY-phase app's navigator key (main passes the same key into
   /// buildApp). The change-folder confirm and picker-failure snackbar need a
@@ -126,9 +156,30 @@ class _BootGateState extends State<BootGate> {
         await _enter(uri);
         return;
       }
+      // Existing install whose permission lapsed. Straight to the re-pick
+      // gate — this user has an app and a folder, they lost a grant. Walking
+      // them back through welcome and setup would be theatre.
       _lost = true;
+      if (mounted) setState(() => _phase = _Boot.gate);
+      return;
     }
-    if (mounted) setState(() => _phase = _Boot.gate);
+    // No folder has ever been picked on this device: first run.
+    if (mounted) setState(() => _phase = _Boot.welcome);
+  }
+
+  /// True while this install has not finished the current onboarding revision.
+  /// Bumping [kOnboardingVersion] makes it true again for everyone, which is
+  /// the "here is what shipped" replay.
+  bool get _onboardingPending =>
+      widget.settings.onboardingSeen < kOnboardingVersion;
+
+  /// Skip, the corner X and Done all land here — one exit, marked once.
+  /// The write is best-effort: losing it costs a repeated slide, not data.
+  Future<void> _finishOnboarding() async {
+    if (mounted) setState(() => _phase = _Boot.ready);
+    try {
+      await widget.settings.setOnboardingSeen(kOnboardingVersion);
+    } catch (_) {}
   }
 
   Future<void> _pick() async {
@@ -157,6 +208,12 @@ class _BootGateState extends State<BootGate> {
       }
       await widget.settings.setTreeUri(uri);
       _changing = false;
+      if (_phase == _Boot.setup) {
+        // First run: picking is one of three choices on that screen, not the
+        // end of it. Continue is what leaves.
+        if (mounted) setState(() {});
+        return;
+      }
       await _enter(uri);
     } on PlatformException {
       // Picker failed to launch (SAF_IO): stay where we are (gate, or the
@@ -247,7 +304,7 @@ class _BootGateState extends State<BootGate> {
       setState(() {
         _store = store;
         _pantry = pantry;
-        _phase = _Boot.ready;
+        _phase = _onboardingPending ? _Boot.slides : _Boot.ready;
       });
     }
   }
@@ -276,6 +333,34 @@ class _BootGateState extends State<BootGate> {
     _pick();
   }
 
+  /// The setup screen rebuilds on its own listenables rather than through the
+  /// MaterialApp's: units and theme must reflect a tap instantly, and theme
+  /// repaints the whole gate app around it.
+  Widget _setupScreen() {
+    final uri = widget.settings.treeUri;
+    final units = widget.units;
+    final themePref = widget.themeMode;
+    Widget build(UnitSystem u, ThemeMode t) => FirstRunSetupScreen(
+          folderName: folderDisplayName(uri),
+          onPickFolder: _pick,
+          units: u,
+          onUnits: widget.onUnits ?? (_) {},
+          themeMode: t,
+          onThemeMode: widget.onThemeMode ?? (_) {},
+          // Disabled until a folder exists — Continue must never advance into
+          // an app with nowhere to save.
+          onContinue: uri == null ? null : () => _enter(uri),
+        );
+    Widget withTheme(UnitSystem u) => themePref == null
+        ? build(u, ThemeMode.system)
+        : ValueListenableBuilder<ThemeMode>(
+            valueListenable: themePref, builder: (_, t, _) => build(u, t));
+    return units == null
+        ? withTheme(UnitSystem.asWritten)
+        : ValueListenableBuilder<UnitSystem>(
+            valueListenable: units, builder: (_, u, _) => withTheme(u));
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_phase == _Boot.ready) {
@@ -291,11 +376,16 @@ class _BootGateState extends State<BootGate> {
       );
     }
     final gateHome = switch (_phase) {
+      _Boot.welcome => WelcomeScreen(
+          onContinue: () => setState(() => _phase = _Boot.setup),
+        ),
+      _Boot.setup => _setupScreen(),
       _Boot.gate => FolderGate(
           lost: _lost,
           onPick: _pick,
           onCancel: _changing && _store != null ? _resumeCurrent : null,
         ),
+      _Boot.slides => SlidesScreen(onDone: _finishOnboarding),
       _ => _Busy(
           label: _phase == _Boot.migrating ? 'Moving your recipes in…' : null),
     };
@@ -407,7 +497,11 @@ class FolderGate extends StatelessWidget {
                       lost
                           ? 'Your recipes folder moved or access was lost — '
                               'pick it again. Your files are untouched.'
-                          : 'Pick a folder on this phone. Every recipe is '
+                          // Not "on this phone": SafBridge sends a plain
+                          // OPEN_DOCUMENT_TREE, so the picker already lists
+                          // the SD card and any cloud app exposing a writable
+                          // folder. The old line was narrower than the code.
+                          : 'Pick a folder for your recipes. Every one is '
                               'saved there as a plain file — your folder, your '
                               'files. The app reads and writes only in there.',
                       textAlign: TextAlign.center,

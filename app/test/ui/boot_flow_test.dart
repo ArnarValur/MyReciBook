@@ -18,6 +18,8 @@ import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/app_shell.dart';
 import 'package:myrecibook/ui/folder_gate.dart';
 import 'package:myrecibook/ui/library_model.dart';
+import 'package:myrecibook/ui/onboarding/onboarding.dart';
+import 'package:myrecibook/ui/onboarding/onboarding_scaffold.dart';
 import 'package:myrecibook/ui/recipe_list_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -52,6 +54,7 @@ void main() {
   late FakeSafChannel fake;
   late LocalFolderStore localStore;
   late File settingsFile;
+  late File deviceFile;
   late File pick;
   late File pick2;
 
@@ -60,6 +63,7 @@ void main() {
     fake = FakeSafChannel()..install();
     localStore = LocalFolderStore(Directory('${tmp.path}/recipes'));
     settingsFile = File('${tmp.path}/settings.json');
+    deviceFile = File('${tmp.path}/device.json');
     pick = File('${tmp.path}/pick1.jpg');
     await pick.writeAsBytes([1, 2, 3]);
     pick2 = File('${tmp.path}/pick2.jpg');
@@ -82,8 +86,28 @@ void main() {
     }
   }
 
-  Future<AppSettings> loadSettings(WidgetTester tester) async =>
-      (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
+  /// Walks the first-run flow to a picked folder: welcome → setup → Continue.
+  /// For tests that need an app, not an onboarding assertion.
+  Future<void> pickThroughWelcome(WidgetTester tester) async {
+    await tester.tap(find.byKey(const Key('welcome-continue-button')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('setup-choose-folder')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('setup-continue-button')));
+    await settle(tester);
+  }
+
+  /// [onboarded] pre-marks the welcome flow as done, which is what every test
+  /// that is not ABOUT onboarding wants: they assert on the app, and a first
+  /// run now legitimately opens welcome → setup → slides in front of it.
+  Future<AppSettings> loadSettings(WidgetTester tester,
+      {bool onboarded = true}) async {
+    if (onboarded) {
+      await tester.runAsync(() => deviceFile
+          .writeAsString(jsonEncode({'onboarding_seen': kOnboardingVersion})));
+    }
+    return (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
+  }
 
   Widget boot(AppSettings settings,
       {ShareEntry? share, Extractor? extractor, LocalPantryStore? pantry}) {
@@ -122,21 +146,92 @@ void main() {
     );
   }
 
-  testWidgets('first run: gate shows, pick enters the app, uri persisted',
+  testWidgets('first run walks welcome → setup → slides into the app',
       (tester) async {
-    final settings = await loadSettings(tester);
+    final settings = await loadSettings(tester, onboarded: false);
     await tester.pumpWidget(boot(settings));
     await settle(tester);
 
-    expect(find.text('Where should your recipes live?'), findsOneWidget);
+    // Screen one is the welcome, NOT the bare folder gate — the whole point
+    // of the 2026-08-27 flow.
+    expect(find.text('MyReciBook'), findsOneWidget);
+    expect(find.text('Where should your recipes live?'), findsNothing);
     expect(find.byType(RecipeListScreen), findsNothing);
 
-    await tester.tap(find.byKey(const Key('choose-folder-button')));
+    await tester.tap(find.byKey(const Key('welcome-continue-button')));
+    await settle(tester);
+    expect(find.text('Set up MyReciBook'), findsOneWidget);
+
+    // Continue is dead until a folder exists.
+    final button = tester.widget<GradientButton>(
+        find.byKey(const Key('setup-continue-button')));
+    expect(button.onPressed, isNull);
+
+    await tester.tap(find.byKey(const Key('setup-choose-folder')));
+    await settle(tester);
+
+    // Picking stays on setup — units and theme are still to choose.
+    expect(find.text('Set up MyReciBook'), findsOneWidget);
+    expect(settings.treeUri, fake.treeUri);
+
+    await tester.tap(find.byKey(const Key('setup-continue-button')));
+    await settle(tester);
+
+    // Slides, then out.
+    expect(find.byKey(const Key('slides-next-button')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('slides-skip-button')));
     await settle(tester);
 
     expect(find.textContaining('Your book is empty'), findsOneWidget);
-    expect(settings.treeUri, fake.treeUri);
+    expect(settings.onboardingSeen, kOnboardingVersion);
     expect(settings.migrationDone, isTrue); // empty pass still sets the flag
+  });
+
+  testWidgets('onboarding is marked done and never replays at that version',
+      (tester) async {
+    final settings = await loadSettings(tester, onboarded: false);
+    await tester.pumpWidget(boot(settings));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('welcome-continue-button')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('setup-choose-folder')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('setup-continue-button')));
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('slides-close-button')));
+    await settle(tester);
+    expect(find.textContaining('Your book is empty'), findsOneWidget);
+
+    // Second boot with the same files: straight in, no welcome, no slides.
+    final again = await loadSettings(tester, onboarded: false);
+    expect(again.onboardingSeen, kOnboardingVersion);
+    await tester.pumpWidget(boot(again));
+    await settle(tester);
+    expect(find.textContaining('Your book is empty'), findsOneWidget);
+    expect(find.byKey(const Key('slides-next-button')), findsNothing);
+  });
+
+  testWidgets('a lost grant re-picks without dragging the user through setup',
+      (tester) async {
+    await tester.runAsync(() => settingsFile
+        .writeAsString(jsonEncode({'migration_done': true})));
+    await tester.runAsync(() => deviceFile.writeAsString(jsonEncode(
+        {'tree_uri': fake.treeUri, 'onboarding_seen': kOnboardingVersion})));
+    final settings = await loadSettings(tester, onboarded: false);
+    seedSafRecipe('seed-1', 'Soup');
+    fake.revoked = true;
+
+    await tester.pumpWidget(boot(settings));
+    await settle(tester);
+
+    // The re-pick gate, not the welcome flow: this user has an app.
+    expect(find.text('Pick your folder again'), findsOneWidget);
+    expect(find.text('Set up MyReciBook'), findsNothing);
+
+    fake.revoked = false;
+    await tester.tap(find.byKey(const Key('choose-folder-button')));
+    await settle(tester);
+    expect(find.text('Soup'), findsOneWidget);
   });
 
   testWidgets('grant lost at boot: re-pick copy, picking again recovers',
@@ -281,8 +376,7 @@ void main() {
 
     await tester.pumpWidget(boot(settings));
     await settle(tester);
-    await tester.tap(find.byKey(const Key('choose-folder-button')));
-    await settle(tester);
+    await pickThroughWelcome(tester);
 
     expect(find.text('Soup'), findsOneWidget);
     expect(find.text('Stew'), findsOneWidget);
@@ -304,8 +398,7 @@ void main() {
 
     await tester.pumpWidget(boot(settings, pantry: localPantry));
     await settle(tester);
-    await tester.tap(find.byKey(const Key('choose-folder-button')));
-    await settle(tester);
+    await pickThroughWelcome(tester);
 
     // The product now lives in the user's tree, and the old dir is drained.
     final pantryId = fake.findId('pantry');
@@ -371,10 +464,11 @@ void main() {
 
     await tester.pumpWidget(boot(settings, share: share));
     await settle(tester);
-    expect(find.text('Where should your recipes live?'), findsOneWidget);
+    // Held behind the first-run flow, not dropped.
+    expect(find.byKey(const Key('welcome-continue-button')), findsOneWidget);
+    expect(find.text('Recipe rescued'), findsNothing);
 
-    await tester.tap(find.byKey(const Key('choose-folder-button')));
-    await settle(tester);
+    await pickThroughWelcome(tester);
 
     expect(find.text('Recipe rescued'), findsOneWidget);
     expect(find.text('Original screenshot'), findsOneWidget);
