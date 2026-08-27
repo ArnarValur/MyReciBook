@@ -1,17 +1,17 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
 
-> **Updated:** 2026-08-22 — checkpoint
+> **Updated:** 2026-08-27
 
 ## 📍 Now
-- Phase: build. 0.11.0+10 on main. Branch i18n is level with main and is where language work continues.
-- Tag system + icon catalog PROPOSED, unratified — plan on main, five questions await Arnar. Its branch is merged and redundant.
+- Phase: build. 0.11.0+11 on main and on the phone. Branch i18n is level with main and is where language work continues.
+- Tag system + icon catalog PROPOSED, unratified — plan on main, five questions await Arnar. Branch pruned.
 - Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Verified end to end.
 - Both import doors verified on a phone through the live server (Arnar).
 - Gemini key in Secret Manager only; release build carries none. app/dev.env holds the server URL.
 - Offer in code: two weeks free, then 1200 a year. Limits 10/min, 50/day per buyer, 2000/day overall.
 - Crash reporting ships ON, switch in Settings, recipe text scrubbed, test-report door proves the pipe.
-- Build 9 on the phone and the tester link (App Distribution), no testers. Play account live and verified, nothing uploaded.
+- Build 11 installed on the phone 2026-08-27, unverified by eye. Tester link still on 9. Play account live, nothing uploaded.
 - Docs: pre-launch-audit-2026-08-21 · runbook-dev-deploy · gcp-project-facts. gcloud: ~/google-cloud-sdk/bin, not on PATH.
 - Starter foods values UNVERIFIED vs USDA — Arnar's run; patch starter_foods.dart.
 - Serving labels ignore the units pill: convertUnits touches recipe lines only, so "1 cup" shows in metric. Noted in the nutrition plan.
