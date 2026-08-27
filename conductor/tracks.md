@@ -8,6 +8,7 @@
 - **mvp-build** — engine complete through sync. Extraction server deployed and verified 2026-08-21, Gemini key out of the app, both import doors proven on a phone 2026-08-22, crash reports ship on by default. Open: privacy policy + data safety, closed test on Play. Billing seam open, unstarted. → tracks/mvp-build/plan.md
 
 ## Not open yet
+- **tags** — user-invented recipe tags (name + icon + colour, icon-only or labelled), created in Settings, filtering the cookbook; plus a curated Material Symbols Rounded food/kitchen icon catalog reusable app-wide. PROPOSED 2026-08-22, unratified — five open questions in the plan. → tracks/tags/plan.md
 - **launch** — store listing, ASO, launch content.
 
 ## Done
