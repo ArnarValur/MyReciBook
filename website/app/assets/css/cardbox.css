@@ -1,0 +1,173 @@
+/* ============================================================
+   Card-box shared primitives — used by every page in the box.
+   Page-specific styles stay scoped in their page/component.
+   ============================================================ */
+
+/* Paper carries its own ink — cards stay light in dark mode,
+   so their text stays dark regardless of the box around them. */
+.paper, .photo, .scatter, .slip {
+  --box-ink: #1a1c1e;
+  --box-ink-soft: #454652;
+  --box-ink-faint: rgba(69, 70, 82, 0.65);
+  --box-accent: #24389c;
+  --box-margin-note: rgba(36, 56, 156, 0.7);
+  color: var(--box-ink);
+}
+
+/* Paper */
+.paper {
+  position: relative;
+  background: var(--box-card);
+  border: 1px solid var(--box-edge);
+  border-radius: 8px;
+}
+.ruled {
+  background-image: repeating-linear-gradient(transparent 0 31px, var(--box-rule) 31px 32px);
+}
+.ruled-tight {
+  background-image: repeating-linear-gradient(transparent 0 26px, rgba(36, 56, 156, 0.07) 26px 27px);
+}
+.margined {
+  background-image:
+    linear-gradient(90deg, transparent 0 47px, var(--box-margin-red) 47px 48.5px, transparent 48.5px),
+    repeating-linear-gradient(transparent 0 31px, var(--box-rule) 31px 32px);
+}
+.margined-tight {
+  background-image:
+    linear-gradient(90deg, transparent 0 43px, var(--box-margin-red) 43px 44.5px, transparent 44.5px),
+    repeating-linear-gradient(transparent 0 31px, rgba(36, 56, 156, 0.08) 31px 32px);
+}
+
+/* Ink */
+.card-no {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: var(--box-stamp-red);
+}
+.marginalia {
+  font-style: italic;
+  font-size: 13px;
+  color: var(--box-margin-note);
+  line-height: 1.45;
+}
+.h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(26px, 3vw, 36px);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* Rhythm */
+.section {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 96px 24px 0;
+  scroll-margin-top: 24px;
+}
+.section-far { padding-top: 100px; }
+
+/* CTAs */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: var(--box-primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 4px 0 var(--box-primary-press);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.cta:hover {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--box-primary-press);
+}
+.cta-icon { font-size: 20px; }
+.cta-block { display: flex; margin-top: 28px; }
+.cta-quiet {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--box-primary);
+  border-bottom: 2px dotted rgba(36, 56, 156, 0.45);
+  padding-bottom: 2px;
+}
+
+/* Checks */
+.check { display: flex; align-items: center; gap: 6px; }
+.check-icon { font-size: 15px; color: #22c55e; flex: none; }
+
+/* Links inside the box never wear underlines */
+.box :where(a) { text-decoration: none; }
+
+/* Paper document (subpages: privacy, terms, contact) */
+.doc-card {
+  max-width: 760px;
+  margin: 0 auto;
+  box-shadow: 0 10px 26px rgba(80, 60, 30, 0.13);
+  padding: 46px 56px 50px;
+}
+.doc-card h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(26px, 3vw, 36px);
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+.doc-card h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  margin: 30px 0 10px;
+}
+.doc-card p, .doc-card li {
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--box-ink-soft);
+  text-wrap: pretty;
+}
+.doc-card p { margin: 0 0 12px; }
+.doc-card ul { margin: 0 0 12px; padding-left: 22px; }
+.doc-card strong { color: var(--box-ink); }
+.doc-meta {
+  font-size: 12.5px;
+  color: rgba(69, 70, 82, 0.65);
+  margin-bottom: 24px;
+}
+.doc-draft {
+  display: inline-block;
+  transform: rotate(-2deg);
+  border: 2.5px solid var(--box-stamp-red);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--box-stamp-red);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+@media (max-width: 720px) {
+  .doc-card { padding: 38px 28px 42px; }
+}
+
+/* Keyboard focus wears the ink */
+.box :where(a, button):focus-visible {
+  outline: 2.5px solid var(--box-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Tilts and lifts sit still for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .box *, .box *::before, .box *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -2,7 +2,7 @@
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
 *Live state and open questions ONLY. A shipped feature belongs in its track plan.*
 
-> **Updated:** 2026-08-28
+> **Updated:** 2026-08-29
 
 ## 📍 Now
 - Phase: build. 0.18.3+34 on main and on the phone. Branch i18n sits at 0.11.0+10.
@@ -11,35 +11,35 @@
 - Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Gemini key in
   Secret Manager only; app/dev.env holds server URL + Drive/Dropbox keys.
 - gcloud lives in ~/google-cloud-sdk/bin, not on PATH.
-- Offer in code: two weeks free, then 1200 a year. Limits 10/min, 50/day per
-  buyer, 2000/day overall. Crash reporting ships ON, recipe text scrubbed.
-- Tester link still on build 9. Play account live, nothing uploaded.
-- Full suite has not run since 2026-08-21. Everything since is per-file green only.
-- Agreed 2026-08-28: the full pass runs at bedtime, not mid-session. Arnar says
-  "going to sleep" → comb the test files first (analysis + review), THEN run the
-  whole suite detached to a log. Neither half happens without the other.
-- website/ — Nuxt 4 + @nuxt/ui, no track yet. Card-box landing ported from the
-  design canvas ("Website Card Box", docs/…website-2-mockups.zip): full page,
-  local Material Symbols, responsive folds. Copy is canvas placeholder, NOT
-  synced with decisions. Arnar is poking around, notes for a joint overview.
+- Offer in code: pay once; AI grace two weeks free, then 1200 rescues/year.
+  Limits 10/min, 50/day per buyer, 2000/day overall. Price tag NOT decided
+  ($24.99 on the site is placeholder). Crash reporting ON, recipe text scrubbed.
+- Tester link still on build 9. Play account live, nothing uploaded. Play app
+  entry not created — create as FREE + one-time IAP (trial needs free install).
+- Full suite unrun since 2026-08-21; per-file green only. Agreed: full pass at
+  bedtime — Arnar says "going to sleep" → comb test files, THEN suite to a log.
+- website/ — card-box landing COMPLETE in Nuxt 4: index + privacy/terms/contact
+  (drafts, stamped) + 404, SEO formal (sitemap/robots/schema.org/OG card),
+  real screenshots (docs/MyReciBook-Screenshots → WebP via scripts/shots.mjs),
+  dark mode "23:00 navy" (paper stays paper). Copy flags await joint overview:
+  website/copy-notes.md. Staging: deploy-staging.sh → Cloud Run on MyReciBook-Dev,
+  prepared NOT run. No track yet.
 
 ## 🚀 Active tracks
-- mvp-build — server deployed, onboarding shipped. Open: privacy policy, Play
-  data safety form, welcome slide screenshots, billing seam (unstarted).
-- diary — meal hours, pantry cold start, photos on diary cards shipped. Open:
-  device verify · Arnar re-reads the oats label (30.4 g folate predates the fix)
-  · starter_foods.dart values still UNVERIFIED vs USDA, his run.
-- tags — cookbook shelf + full-page editor shipped. Open: strings are English
-  literals, not gen_l10n keys.
+- mvp-build — server deployed, onboarding shipped. Open: privacy policy (website
+  draft exists, doubles as source), Play data safety form, welcome slide
+  screenshots, billing seam (unstarted).
+- diary — meal hours, cold start, photo cards shipped. Open: device verify ·
+  oats label re-read · starter_foods.dart UNVERIFIED vs USDA, his run.
+- tags — shelf + editor shipped. Open: strings are English literals.
 - nutrition — open: grocery package-size math, serving-label conversion.
-- i18n — foundation on branch i18n; the language control stays HIDDEN until one
-  language is finished. Open: the string sweep, inventory in coverage.md.
+- i18n — foundation on branch i18n; control HIDDEN until one language done.
 
 ## ⚠️ Blockers
-- Play grants production access only after 12 people have the app installed from
-  Play's test track for 14 days straight. Arnar is recruiting testers.
-- Privacy policy + Play data safety form: nothing written, blocks submission.
+- Play: 12 testers × 14 days before production. Arnar recruiting; app entry +
+  merchant profile not yet created in Play Console.
+- Privacy policy + data safety form: website draft awaits Arnar's approval.
 
 ## 📌 Parked
-- Quick add (kQuickAddEnabled) · typed custom emoji · net-weight landing · skipped-files tappable list · diary day-rollover hour · index-file pantry cache (the 1000+ door).
-- user feedback channel · serving rescale · step ↔ ingredient chips · label-photo fallback in recipes · copy-to-date UI · row reorder · multi-barcode per image · orphan image cleanup · roundup/listicle link import · accessibility pass · Dropbox production approval · Play key backup · audit H2, M1-M6, L1-L4.
+- share-a-copy invite text + PDF footer breadcrumb (Arnar's new session) · quick add · typed custom emoji · net-weight landing · skipped-files list · day-rollover hour · index-file pantry cache.
+- feedback channel · serving rescale · step ↔ ingredient chips · label-photo fallback · copy-to-date UI · row reorder · multi-barcode · orphan image cleanup · listicle import · accessibility pass · Dropbox approval · Play key backup · audit H2, M1-M6, L1-L4 · website OG per-page images.

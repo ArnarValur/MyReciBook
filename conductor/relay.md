@@ -1,6 +1,17 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-29 — friday night: the website grew up
+
+- Shipped: rescue strip from real screenshots (source → review → filed), hero
+  scatters wear the tiramisu page + grandma's cursive card, privacy/terms/
+  contact drafts (stamped), 404 card, SEO formal (sitemap, robots, schema.org,
+  OG index-card), WebP pipeline, Cloud Run staging script (NOT run), dark mode.
+- Arnar: footer is "Knitted and Baked by Merkurial-Studio.com · avj.info", no
+  DittoDatto; dark = 23:00 navy, not brown, paper stays paper; share-a-copy
+  invite parked for his own session; Play entry must be FREE + one-time IAP.
+- UNFINISHED: copy flags (website/copy-notes.md) → joint overview; deploy on his go.
+
 ## 2026-08-28 — the card box lands in Nuxt
 
 - Shipped: website/ carries the "Website Card Box" design canvas as a real Nuxt
@@ -117,86 +128,3 @@
 - Written up in conductor/scratchpad.md; full plan at
   ~/.claude/plans/question-if-a-link-glowing-unicorn.md. NOT ordered — he was
   asking about feasibility.
-
-## 2026-08-22 — i18n unparked, foundation up, Icelandic chosen as the stress test
-
-- 0.11.0+10, folded to main. flutter_localizations + gen_l10n, a language
-  picker in endonyms, follow-the-phone default, both MaterialApps wired.
-  Settings tab migrated as the proof. test/ui 194 green.
-- 11 .arb files seeded and reviewed by language family; 46 corrections applied.
-  Two of them were the ENGLISH source: "paste it to Arnar" and "instead of
-  forgotten" are English-only idioms every Nordic language calqued into
-  nonsense. Fixed at the source, and the developer's name is out of the string.
-- Arnar: one language at a time, Icelandic first — four cases and three genders,
-  so what survives it survives the rest. And never show the language selection
-  until a language is FINISHED — matching app_en.arb only proves a file kept up
-  with the strings extracted so far. The control hides itself; all ten .arb
-  files are parked. He is recruiting Polish testers, which serves the Play gate
-  and the Polish read-through at once.
-- Counting strings surfaced two real bugs, neither i18n: 'Veggies' is written
-  out 73 times because every starter food carries its category as a free
-  string, and convertUnits never touches serving labels, so metric users see
-  cups. Both filed.
-- UNFINISHED: the string sweep has not started. 629 literals in lib/ui, 395
-  unclassified in lib/data and lib/domain, 353 glued together with $, 21 faking
-  plurals. Inventory and handoff rules in tracks/i18n/coverage.md. Next file is
-  pantry_tab, English and Icelandic together.
-
-## 2026-08-22 — crash reports on by default, both import doors proven on a phone
-
-- Screenshot rescue and URL share both verified on the phone against the live
-  Cloud Run server (Arnar). The last unfinished step from 2026-08-21 is closed.
-- Crash reporting now ships ON — 0.10.2+10. The Settings switch still turns it
-  off, everything uploaded is scrubbed, and "Send test report" behind the
-  version footer makes the pipe visible before a real crash ever lands.
-- Arnar: dormant crash reporting defeated the point, and that "open question" a
-  previous session recorded was never his. Spend budgets and credits are his to
-  manage — conductor stopped tracking them.
-- Play's 12-testers-for-14-days gate had sat in 8 repo files since 2026-08-05
-  and no session ever said it out loud; Arnar hit it by accident. Now a pulse
-  blocker. Standing rule: a gate found in research is said, not just filed.
-- Nothing pending. Tester recruitment is the long pole; Arnar owns it.
-
-## 2026-08-21 — audited before selling, then took the server live
-
-- Audited the codebase pre-sale (docs/pre-launch-audit-2026-08-21.md): fixed a
-  confirmed crash (a bad HTML entity killed link import for a whole site),
-  stopped swallowing async errors, added opt-in crash reporting.
-- Extraction server rebuilt and DEPLOYED to Cloud Run, verified end to end.
-  Gemini key now lives only in Secret Manager; release build carries none.
-- Deploying found two fail-opens no test could: Cloud Run reserves /healthz,
-  and it does not set GOOGLE_CLOUD_PROJECT — so the first revision silently
-  ran the in-memory ledger. It now refuses to boot without a durable one.
-- Arnar: the two-week free window IS the offer, not a pre-billing artefact;
-  and it needed a per-day limit so nobody drains it. Both in code.
-- Arnar named two standing faults: identifiers get "noted" instead of written
-  to a file, and my replies use codes he has to ask about. Both saved to memory.
-- Full suite 697 green. Merged to main, branches pruned. UNFINISHED: no recipe
-  imported on a phone since extraction moved to the server.
-
-## 2026-08-20 — export shipped (PDF + Docs), and three rules rewritten
-
-- Shipped: recipe → PDF → share sheet (cover, ingredients with groups,
-  numbered method, notes, per-serving nutrition box, source). 0.9.1+7 on the
-  S21, Arnar verified the page. pdf + printing build clean under AGP 9.
-- Nutrition wording lifted into domain/nutrient_display.dart so badge and PDF
-  print identical lines.
-- Arnar caught a "test law" Claude had written unasked and signed with his
-  name, and a version number bumped once per checkpoint. Both rules rewritten:
-  tests get proposed and he decides; version follows what changed.
-- Also shipped: Google Docs export for Drive-connected users, and the JSON
-  wording per D2 — plain language leads, the format named where a technical
-  user looks. 0.10.0+8.
-- Answered: i18n is parked until paid v1 — docs/i18n-report.md.
-- Arnar, twice: one "yes please" covers the whole request. Stop re-asking at
-  every step — it reads as not listening, and it cost him the session's mood.
-- Both doors verified on the S21 by Arnar. Nothing pending.
-
-## 2026-08-20 — pantry categories end to end, one picker, test law
-- Shipped: OFF auto-categories (scan + refresh), chip row + grouped shelf,
-  drawer filter, ONE shared product picker, quick tags on product page,
-  149 starter foods in 3 packages (values unverified vs USDA). 0.8.0+5.
-- Broke: a 4-file test run hung 9m40 — tests pinned to the deleted drawer.
-- Claude wrote a "no tests" law unasked and credited it to Arnar. Corrected
-  2026-08-20: tests are proposed, Arnar decides. Icons/colours his.
-- UNFINISHED: redeploy to S21; three link-picker test files need rewrite.

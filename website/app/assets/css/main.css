@@ -58,6 +58,7 @@
 
 @import 'tailwindcss';
 @import '@nuxt/ui';
+@import './cardbox.css';
 
 @theme static {
   /* Inter for body/labels; PJS for display/headline/title (≥15px) */
@@ -178,8 +179,11 @@ h1, h2, h3, h4 {
   --box-stamp-red: rgba(186, 26, 26, 0.65); /* RECIPE Nº labels */
   --box-ink: #1a1c1e;
   --box-ink-soft: #454652;
+  --box-ink-faint: rgba(69, 70, 82, 0.65);  /* quiet text on the kraft */
   --box-primary: #24389c;                   /* moody-700, the app's light primary */
   --box-primary-press: #16256e;             /* CTA under-edge */
+  --box-accent: #24389c;                    /* on-kraft blue (brand, icons) */
+  --box-margin-note: rgba(36, 56, 156, 0.7); /* marginalia ink */
   --box-shadow-sm: 0 3px 8px rgba(80, 60, 30, 0.1);
   --box-shadow-md: 0 6px 16px rgba(80, 60, 30, 0.11);
   --box-shadow-lg: 0 14px 34px rgba(80, 60, 30, 0.16), 0 2px 6px rgba(80, 60, 30, 0.08);
@@ -189,4 +193,27 @@ h1, h2, h3, h4 {
   --cover-teal: linear-gradient(135deg, #2e6f6a, #1b4744);
   --cover-plum: linear-gradient(135deg, #8e3b62, #5b2340);
   --cover-olive: linear-gradient(135deg, #5e7346, #3b4a2b);
+}
+
+/* ── The box by lamplight — a not-so-dark dark mode.
+   Kraft dims to warm brown; PAPER STAYS PAPER (cards keep light
+   cream via the .paper scope in cardbox.css), so screenshots always
+   sit on a light frame. ─────────────────────────────────────── */
+.dark {
+  /* 23:00, not midnight: navy with the lights still on */
+  --box-kraft: #232838;
+  --box-card: #f4edde;                      /* dimmed cream, no glare */
+  --box-tab: #2e3448;
+  --box-tab-alt: #2a3042;
+  --box-tab-hover: #394059;
+  --box-line: rgba(186, 195, 255, 0.22);
+  --box-edge: rgba(120, 90, 50, 0.4);
+  --box-ink: #e4e2e6;
+  --box-ink-soft: #c5c5d4;
+  --box-ink-faint: rgba(228, 226, 230, 0.6);
+  --box-accent: #bac3ff;                    /* the app's dark primary */
+  --box-margin-note: rgba(186, 195, 255, 0.78);
+  --box-shadow-sm: 0 3px 8px rgba(0, 0, 0, 0.3);
+  --box-shadow-md: 0 6px 16px rgba(0, 0, 0, 0.32);
+  --box-shadow-lg: 0 14px 34px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
 }

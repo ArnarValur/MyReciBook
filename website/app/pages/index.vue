@@ -1,7 +1,22 @@
 <script setup lang="ts">
 // Card-box landing — ported from the design canvas
 // "MyReciBook Website Card Box" (docs/MyReciBook Flutter website-2-mockups.zip).
-// Copy is placeholder from the canvas; wording syncs with decisions later.
+// Copy audit lives in website/copy-notes.md — canvas claims not yet confirmed
+// against the app are flagged there, not silently rewritten.
+
+useSeoMeta({
+  title: 'MyReciBook — Rescue the recipes buried in your camera roll',
+  description:
+    'MyReciBook turns recipe screenshots, links and handwritten cards into a cookbook you own. Plain files on your phone. Pay once. Cook forever. Android.',
+  ogTitle: 'MyReciBook — Rescue the recipes buried in your camera roll',
+  ogDescription:
+    'Screenshots, links and grandma\'s cards become a cookbook you own — plain files, on your phone. No subscription. No account. Ever.',
+  ogType: 'website',
+  ogImage: 'https://myrecibook.com/og.png',
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  twitterCard: 'summary_large_image',
+})
 
 const tilts = ['-1.1deg', '.7deg', '-.5deg', '.9deg', '-.8deg', '.5deg']
 
@@ -15,7 +30,7 @@ const features = [
 ].map((f, i) => ({ ...f, tilt: `rotate(${tilts[i]})` }))
 
 const heroChecks = [
-  'Android today · iOS in the works',
+  'Made for Android',
   'Your recipes stay on your phone',
   'Typing them in is always unlimited',
 ]
@@ -29,31 +44,16 @@ const priceChecks = [
 </script>
 
 <template>
-  <div class="box">
-    <!-- ── Box-lid header: wordmark stamp + divider tabs ────── -->
-    <header class="lid">
-      <div class="lid-row">
-        <a href="#top" class="brand">
-          <LogoMark :size="30" />
-          <span class="brand-name">MyReciBook</span>
-        </a>
-        <span class="est">Est. in your camera roll</span>
-        <nav class="tabs">
-          <a href="#recipe" class="tab" style="transform: translateY(1px)">The recipe</a>
-          <a href="#cards" class="tab tab-alt" style="transform: translateY(3px)">The cards</a>
-          <a href="#price" class="tab" style="transform: translateY(2px)">The price</a>
-          <a href="#yours" class="tab tab-alt" style="transform: translateY(4px)">Keep it</a>
-        </nav>
-      </div>
-      <div class="lid-edge" />
-    </header>
-
+  <div>
     <!-- ── Hero: the front card of the box ─────────────────── -->
     <section id="top" class="hero">
-      <!-- scattered cards behind -->
-      <div class="scatter scatter-ruled" aria-hidden="true" />
+      <!-- scattered cards behind: where it ends, where it starts -->
+      <div class="scatter scatter-done" aria-hidden="true">
+        <img src="/screenshots/tiramisu.webp" alt="">
+      </div>
       <div class="scatter scatter-photo" aria-hidden="true">
-        <span>IMG_2041.jpg — your screenshot</span>
+        <img src="/screenshots/handwritten.webp" alt="">
+        <span>IMG_2041.jpg — grandma's card</span>
       </div>
 
       <div class="hero-card paper ruled margined">
@@ -106,7 +106,7 @@ const priceChecks = [
             <div class="col-label">Ingredients</div>
             <div class="ingredients">
               <span class="ing"><span class="ing-box" /><span><strong>1</strong> camera roll full of screenshots</span></span>
-              <span class="ing"><span class="ing-box" /><span><strong>1</strong> phone (Android today, iOS soon)</span></span>
+              <span class="ing"><span class="ing-box" /><span><strong>1</strong> Android phone</span></span>
               <span class="ing"><span class="ing-box" /><span><strong>1,200</strong> AI rescues a year — top-ups if you run out</span></span>
               <span class="ing"><span class="ing-box" /><span><strong>0</strong> subscriptions, <strong>0</strong> accounts</span></span>
               <span class="ing"><span class="ing-box" /><span>a pinch of patience while it reads cursive</span></span>
@@ -161,8 +161,36 @@ const priceChecks = [
             <span><UIcon name="i-material-symbols:dark-mode-rounded" class="point-icon" />Stitch Slate by day, Midnight by night</span>
           </div>
         </div>
-        <PhoneMockup />
+        <PhoneMockup src="/screenshots/cookbook.webp" />
       </div>
+    </section>
+
+    <!-- ── One rescue, photographed (real screenshots) ──────── -->
+    <section id="rescue" class="section">
+      <div class="cards-head">
+        <h2 class="h2">One rescue, start to finish</h2>
+        <span class="flip-hint">real screenshots, not mockups</span>
+      </div>
+      <div class="strip">
+        <figure class="photo" style="transform: rotate(-1.6deg)">
+          <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(-2deg)" />
+          <img src="/screenshots/rescue-source.webp" alt="A recipe screenshot buried in the camera roll" loading="lazy">
+          <figcaption><span class="step-tag">1</span>The screenshot, as found</figcaption>
+        </figure>
+        <div class="strip-arrow" aria-hidden="true">→</div>
+        <figure class="photo" style="transform: rotate(0.9deg)">
+          <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(2deg)" />
+          <img src="/screenshots/rescue-review.webp" alt="The rescued recipe, shown for review before saving" loading="lazy">
+          <figcaption><span class="step-tag">2</span>Rescued — you review before it's saved</figcaption>
+        </figure>
+        <div class="strip-arrow" aria-hidden="true">→</div>
+        <figure class="photo" style="transform: rotate(-0.7deg)">
+          <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(-1deg)" />
+          <img src="/screenshots/recipe-page.webp" alt="The finished recipe page, converted to metric" loading="lazy">
+          <figcaption><span class="step-tag">3</span>Filed in your book — in your units</figcaption>
+        </figure>
+      </div>
+      <div class="marginalia strip-note" aria-hidden="true">cups became grams on the way — you're welcome</div>
     </section>
 
     <!-- ── The price card ───────────────────────────────────── -->
@@ -184,7 +212,7 @@ const priceChecks = [
         <a href="#" class="cta cta-block">
           <UIcon name="i-material-symbols:download-rounded" class="cta-icon" />Get MyReciBook
         </a>
-        <div class="price-fine">No subscription. No account. Ever. · Android today, iOS in the works</div>
+        <div class="price-fine">No subscription. No account. Ever. · Made for Android</div>
       </div>
     </section>
 
@@ -213,157 +241,10 @@ const priceChecks = [
         </div>
       </div>
     </section>
-
-    <!-- ── Footer: bottom of the box ────────────────────────── -->
-    <footer class="foot">
-      <div class="lid-edge foot-edge" />
-      <div class="foot-row">
-        <span class="foot-brand">
-          <LogoMark :size="22" />
-          <span>MyReciBook</span>
-        </span>
-        <span class="foot-line">Filed under M · by Merkurial-Studio, the folks behind DittoDatto</span>
-        <nav class="foot-nav">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
-          <a href="#">Contact</a>
-        </nav>
-      </div>
-    </footer>
   </div>
 </template>
 
 <style scoped>
-/* ── The box ─────────────────────────────────────────────── */
-.box {
-  min-height: 100vh;
-  background: var(--box-kraft);
-  background-image:
-    radial-gradient(ellipse 600px 400px at 15% 8%, rgba(180, 140, 80, 0.06), transparent 60%),
-    radial-gradient(ellipse 500px 500px at 85% 30%, rgba(180, 140, 80, 0.05), transparent 60%),
-    radial-gradient(ellipse 700px 500px at 40% 80%, rgba(160, 120, 70, 0.05), transparent 60%),
-    repeating-linear-gradient(0deg, transparent 0 3px, rgba(120, 90, 50, 0.012) 3px 4px),
-    repeating-linear-gradient(90deg, transparent 0 3px, rgba(120, 90, 50, 0.012) 3px 4px);
-  overflow-x: hidden;
-  color: var(--box-ink);
-  font-family: var(--font-sans);
-}
-.box :where(a) { text-decoration: none; }
-
-/* ── Paper primitives ────────────────────────────────────── */
-.paper {
-  position: relative;
-  background: var(--box-card);
-  border: 1px solid var(--box-edge);
-  border-radius: 8px;
-}
-.ruled {
-  background-image: repeating-linear-gradient(transparent 0 31px, var(--box-rule) 31px 32px);
-}
-.ruled-tight {
-  background-image: repeating-linear-gradient(transparent 0 26px, rgba(36, 56, 156, 0.07) 26px 27px);
-}
-.margined {
-  background-image:
-    linear-gradient(90deg, transparent 0 47px, var(--box-margin-red) 47px 48.5px, transparent 48.5px),
-    repeating-linear-gradient(transparent 0 31px, var(--box-rule) 31px 32px);
-}
-.margined-tight {
-  background-image:
-    linear-gradient(90deg, transparent 0 43px, var(--box-margin-red) 43px 44.5px, transparent 44.5px),
-    repeating-linear-gradient(transparent 0 31px, rgba(36, 56, 156, 0.08) 31px 32px);
-}
-.card-no {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size: 12px;
-  letter-spacing: 1.5px;
-  color: var(--box-stamp-red);
-}
-.marginalia {
-  font-style: italic;
-  font-size: 13px;
-  color: rgba(36, 56, 156, 0.7);
-  line-height: 1.45;
-}
-.h2 {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(26px, 3vw, 36px);
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-.section {
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 96px 24px 0;
-  scroll-margin-top: 24px;
-}
-.section-far { padding-top: 100px; }
-
-/* ── CTAs ────────────────────────────────────────────────── */
-.cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 48px;
-  padding: 0 26px;
-  border-radius: 999px;
-  background: var(--box-primary);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  box-shadow: 0 4px 0 var(--box-primary-press);
-  transition: transform 0.1s, box-shadow 0.1s;
-}
-.cta:hover {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 var(--box-primary-press);
-}
-.cta-icon { font-size: 20px; }
-.cta-block { display: flex; margin-top: 28px; }
-.cta-quiet {
-  font-size: 14.5px;
-  font-weight: 600;
-  color: var(--box-primary);
-  border-bottom: 2px dotted rgba(36, 56, 156, 0.45);
-  padding-bottom: 2px;
-}
-
-/* ── Box-lid header ──────────────────────────────────────── */
-.lid { max-width: 1040px; margin: 0 auto; padding: 34px 24px 0; }
-.lid-row { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--box-primary); }
-.brand-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 22px;
-  letter-spacing: -0.01em;
-}
-.est {
-  font-size: 11px;
-  letter-spacing: 0.9px;
-  text-transform: uppercase;
-  color: rgba(69, 70, 82, 0.6);
-  padding-bottom: 4px;
-}
-.tabs { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
-.tab {
-  display: block;
-  padding: 8px 16px 10px;
-  border-radius: 10px 10px 0 0;
-  background: var(--box-tab);
-  border: 1px solid var(--box-line);
-  border-bottom: none;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: var(--box-ink-soft);
-}
-.tab-alt { background: var(--box-tab-alt); }
-.tab:hover { background: var(--box-tab-hover); color: var(--box-primary); }
-.lid-edge { height: 1.5px; background: rgba(120, 90, 50, 0.3); }
-
 /* ── Hero ────────────────────────────────────────────────── */
 .hero {
   max-width: 1040px;
@@ -377,32 +258,41 @@ const priceChecks = [
   border-radius: 6px;
   box-shadow: var(--box-shadow-sm);
 }
-.scatter-ruled {
+.scatter img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.scatter-done {
   left: 2%;
   top: 34px;
   width: 230px;
-  height: 150px;
+  height: 165px;
+  overflow: hidden;
   background: #f7efe0;
   border-color: rgba(120, 90, 50, 0.2);
   transform: rotate(-6deg);
-  background-image: repeating-linear-gradient(transparent 0 25px, rgba(36, 56, 156, 0.1) 25px 26px);
 }
 .scatter-photo {
   right: 4%;
   top: 20px;
-  width: 200px;
-  height: 140px;
+  width: 210px;
+  height: 150px;
+  overflow: hidden;
   transform: rotate(5deg);
-  background: repeating-linear-gradient(45deg, #eeeef0, #eeeef0 8px, #e2e2e5 8px, #e2e2e5 16px);
-  display: flex;
-  align-items: flex-end;
+  background: #eeeef0;
 }
 .scatter-photo span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   padding: 6px 10px;
   font-size: 10.5px;
   color: var(--box-ink-soft);
-  background: rgba(255, 255, 255, 0.7);
-  width: 100%;
+  background: rgba(255, 255, 255, 0.78);
 }
 .hero-card {
   max-width: 780px;
@@ -443,7 +333,7 @@ const priceChecks = [
 .hero-marginalia {
   position: absolute;
   right: 26px;
-  bottom: -2px;
+  bottom: 6px;
   transform: rotate(-3deg);
   max-width: 170px;
 }
@@ -465,14 +355,12 @@ const priceChecks = [
   text-align: center;
   margin-top: 30px;
   font-size: 12.5px;
-  color: rgba(69, 70, 82, 0.65);
+  color: var(--box-ink-faint);
   display: flex;
   justify-content: center;
   gap: 22px;
   flex-wrap: wrap;
 }
-.check { display: flex; align-items: center; gap: 6px; }
-.check-icon { font-size: 15px; color: #22c55e; flex: none; }
 
 /* ── Recipe Nº 002 ───────────────────────────────────────── */
 .recipe-card {
@@ -542,13 +430,13 @@ const priceChecks = [
   transform: rotate(-90deg) translateY(-100%);
   transform-origin: left bottom;
   font-size: 12px;
-  color: rgba(69, 70, 82, 0.5);
+  color: var(--box-ink-faint);
   white-space: nowrap;
 }
 
 /* ── Feature cards ───────────────────────────────────────── */
 .cards-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 40px; }
-.flip-hint { font-size: 12.5px; color: rgba(69, 70, 82, 0.6); }
+.flip-hint { font-size: 12.5px; color: var(--box-ink-faint); }
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -616,7 +504,62 @@ const priceChecks = [
   color: var(--box-ink-soft);
 }
 .pocket-points span { display: flex; align-items: center; gap: 9px; }
-.point-icon { font-size: 17px; color: var(--box-primary); flex: none; }
+.point-icon { font-size: 17px; color: var(--box-accent); flex: none; }
+
+/* ── Rescue strip ────────────────────────────────────────── */
+.strip {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 18px;
+  align-items: center;
+}
+.photo {
+  position: relative;
+  margin: 0;
+  background: var(--box-card);
+  border: 1px solid var(--box-edge);
+  border-radius: 6px;
+  box-shadow: var(--box-shadow-md);
+  padding: 12px 12px 10px;
+}
+.photo img {
+  display: block;
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 3px;
+  border: 1px solid rgba(120, 90, 50, 0.12);
+}
+.photo figcaption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 2px 2px;
+  font-size: 12.5px;
+  color: var(--box-ink-soft);
+}
+.step-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(36, 56, 156, 0.5);
+  color: var(--box-primary);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  flex: none;
+}
+.strip-arrow {
+  font-size: 26px;
+  color: var(--box-margin-note);
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+.strip-note { text-align: right; margin-top: 12px; transform: rotate(-1deg); font-size: 12.5px; }
 
 /* ── Price card ──────────────────────────────────────────── */
 .price-card {
@@ -711,26 +654,8 @@ const priceChecks = [
   font-size: 11px;
   letter-spacing: 0.9px;
   text-transform: uppercase;
-  color: rgba(69, 70, 82, 0.6);
+  color: var(--box-ink-faint);
 }
-
-/* ── Footer ──────────────────────────────────────────────── */
-.foot { max-width: 1040px; margin: 88px auto 0; padding: 0 24px 46px; }
-.foot-edge { margin-bottom: 26px; }
-.foot-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.foot-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--box-primary);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 16px;
-}
-.foot-line { font-size: 12.5px; color: rgba(69, 70, 82, 0.7); }
-.foot-nav { margin-left: auto; display: flex; gap: 20px; font-size: 12.5px; }
-.foot-nav a { color: var(--box-ink-soft); }
-.foot-nav a:hover { color: var(--box-primary); }
 
 /* ── Small screens: the box folds ────────────────────────── */
 @media (max-width: 900px) {
@@ -742,13 +667,15 @@ const priceChecks = [
 }
 @media (max-width: 720px) {
   .scatter { display: none; }
+  .strip { grid-template-columns: 1fr; }
+  .strip-arrow { transform: rotate(90deg); justify-self: center; }
+  .photo img { height: 300px; }
   .hero-card { padding: 44px 30px 40px; }
   .hero-marginalia { display: none; }
   .recipe-card { padding: 38px 28px 42px; }
   .recipe-grid { grid-template-columns: 1fr; gap: 32px; }
   .spine-note { display: none; }
   .price-card { padding: 40px 28px 38px; }
-  .tabs { width: 100%; margin-left: 0; }
 }
 @media (max-width: 600px) {
   .cards-grid { grid-template-columns: 1fr; }

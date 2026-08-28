@@ -16,6 +16,8 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@iconify-json/material-symbols": "^1.2.90"
+    "@iconify-json/material-symbols": "^1.2.90",
+    "@nuxtjs/seo": "^5.3.14",
+    "sharp": "^0.35.4"
   }
 }

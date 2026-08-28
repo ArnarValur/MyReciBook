@@ -1,10 +1,26 @@
+<script setup lang="ts">
+// Pass src="/screenshots/….png" to show a real app screenshot
+// instead of the hand-built mock screen.
+defineProps<{ src?: string }>()
+</script>
+
 <template>
   <div class="phone-wrap">
     <CardTape style="left: -24px; top: -14px; width: 110px; transform: rotate(-35deg); z-index: 2" />
     <CardTape style="right: -24px; bottom: -10px; width: 110px; transform: rotate(-35deg); z-index: 2" />
 
     <div class="frame">
-      <div class="screen">
+      <div v-if="src" class="screen">
+        <img :src="src" alt="MyReciBook on an Android phone" class="shot">
+        <div class="navpill">
+          <UIcon name="i-material-symbols:menu-book-rounded" class="nav-icon nav-active" />
+          <UIcon name="i-material-symbols:checklist-rounded" class="nav-icon" />
+          <span class="fab"><UIcon name="i-material-symbols:add-rounded" /></span>
+          <UIcon name="i-material-symbols:restaurant-rounded" class="nav-icon" />
+          <UIcon name="i-material-symbols:settings-rounded" class="nav-icon" />
+        </div>
+      </div>
+      <div v-else class="screen">
         <div class="topbar">
           <span class="wordmark">MyReciBook</span>
           <UIcon name="i-material-symbols:search-rounded" class="muted-icon" />
@@ -87,6 +103,7 @@
   display: flex;
   flex-direction: column;
 }
+.shot { width: 100%; height: 100%; object-fit: contain; object-position: top; display: block; }
 .topbar {
   display: flex;
   align-items: center;
@@ -167,7 +184,7 @@
   top: 120px;
   font-style: italic;
   font-size: 12.5px;
-  color: rgba(36, 56, 156, 0.7);
+  color: var(--box-margin-note);
   max-width: 100px;
   line-height: 1.45;
   transform: rotate(-4deg);
