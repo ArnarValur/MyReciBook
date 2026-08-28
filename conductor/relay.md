@@ -10,7 +10,9 @@
 - Arnar: footer is "Knitted and Baked by Merkurial-Studio.com · avj.info", no
   DittoDatto; dark = 23:00 navy, not brown, paper stays paper; share-a-copy
   invite parked for his own session; Play entry must be FREE + one-time IAP.
-- UNFINISHED: copy flags (website/copy-notes.md) → joint overview; deploy on his go.
+- Staging LIVE on dev Cloud Run (URL in pulse), noindex-guarded, honest 404s.
+- UNFINISHED: Arnar's tweak list + copy flags (website/copy-notes.md) tomorrow;
+  night shift armed — "run test nightshift" in a fresh session fires the plan.
 
 ## 2026-08-28 — the card box lands in Nuxt
 

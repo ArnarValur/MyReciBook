@@ -16,8 +16,11 @@
   ($24.99 on the site is placeholder). Crash reporting ON, recipe text scrubbed.
 - Tester link still on build 9. Play account live, nothing uploaded. Play app
   entry not created — create as FREE + one-time IAP (trial needs free install).
-- Full suite unrun since 2026-08-21; per-file green only. Agreed: full pass at
-  bedtime — Arnar says "going to sleep" → comb test files, THEN suite to a log.
+- Full suite unrun since 2026-08-21 (697 green then); per-file green only since.
+- NIGHT SHIFT armed: Arnar opens a session, "/conductor run test nightshift" →
+  1) flutter analyze  2) comb app/test for stale expectations + dishonest
+  coverage, findings to a file  3) full suite ONE detached run to a log, hard
+  timeout, never poll-wait  4) honest report, failures named. In that order.
 - website/ — card-box landing COMPLETE in Nuxt 4: index + privacy/terms/contact
   (drafts, stamped) + 404, SEO formal (sitemap/robots/schema.org/OG card),
   real screenshots (docs/MyReciBook-Screenshots → WebP via scripts/shots.mjs),
