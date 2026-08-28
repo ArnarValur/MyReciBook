@@ -72,6 +72,18 @@ class SafPantryStore implements ProductStore {
     return [for (final r in rows) (r as Map).cast<String, Object?>()];
   }
 
+  // ONE round trip for a directory's worth of file bytes (§4). A child the
+  // bridge could not read is absent from the map — the caller counts the gap.
+  Future<Map<String, Uint8List>> _readChildFiles(
+      String? parentDocId, String suffix) async {
+    final raw = await _invoke<Map<dynamic, dynamic>>('readChildFiles', {
+      'treeUri': treeUri,
+      'parentDocId': parentDocId,
+      'suffix': suffix,
+    });
+    return raw.cast<String, Uint8List>();
+  }
+
   Future<void> _refresh() async {
     String? dirId;
     for (final row in await _listChildren(null)) {
@@ -138,11 +150,22 @@ class SafPantryStore implements ProductStore {
     await _refresh();
     final products = <Product>[];
     var skipped = 0;
-    for (final entry in _files!.entries) {
-      if (!entry.key.endsWith('.json')) continue;
+    final names = [
+      for (final name in _files!.keys)
+        if (name.endsWith('.json')) name
+    ];
+    // GrantLostException out of the batch propagates untouched — the per-name
+    // catch below only ever sees decode/schema failures.
+    final batch = names.isEmpty
+        ? const <String, Uint8List>{}
+        : await _readChildFiles(_dirId, '.json');
+    for (final name in names) {
+      final bytes = batch[name];
+      if (bytes == null) {
+        skipped++; // listed but unreadable: counted, never fatal (§7)
+        continue;
+      }
       try {
-        final bytes = await _invoke<Uint8List>(
-            'readFile', {'treeUri': treeUri, 'docId': entry.value});
         final json = jsonDecode(utf8.decode(bytes, allowMalformed: true))
             as Map<String, dynamic>;
         if (productProblems(json).isNotEmpty) {
@@ -150,10 +173,8 @@ class SafPantryStore implements ProductStore {
           continue;
         }
         products.add(Product.fromJson(json));
-      } on GrantLostException {
-        rethrow;
       } catch (_) {
-        skipped++; // foreign/corrupt/unreadable: counted, never fatal (§7)
+        skipped++; // foreign/corrupt: counted, never fatal (§7)
       }
     }
     for (final p in products) {

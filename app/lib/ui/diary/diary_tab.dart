@@ -127,10 +127,24 @@ class _DiaryTabState extends State<DiaryTab> {
     final meal = model.day.meal(name);
     final entries = meal?.entries ?? const <DiaryEntry>[];
     final kcal = meal?.total.kcal;
+    // The meal the clock says is on — only on the real today; yesterday's
+    // page has no "now". Nothing draws until hours are set on the Meals page.
+    final isNow = model.isToday && name == model.currentMeal;
     return ShelfSection(
       id: name,
       label: name,
       count: entries.length,
+      leading: isNow
+          ? Container(
+              width: 7,
+              height: 7,
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                shape: BoxShape.circle,
+              ),
+            )
+          : null,
       trailing: Text(
         kcal == null ? '—' : '${kcal.round()} kcal',
         style: theme.textTheme.labelMedium

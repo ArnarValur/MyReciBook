@@ -364,4 +364,42 @@ void main() {
       expect(diaryDate(DateTime(2026, 12, 31)), '2026-12-31');
     });
   });
+
+  group('meal hours', () {
+    const names = ['Breakfast', 'Lunch', 'Dinner', 'Snacks'];
+
+    String? at(int h, int min, Map<String, int> starts) =>
+        currentMealName(names, (n) => starts[n], h * 60 + min);
+
+    test('day worker: the latest start that has passed wins', () {
+      const starts = {'Breakfast': 360, 'Lunch': 690, 'Dinner': 1020};
+      expect(at(7, 0, starts), 'Breakfast');
+      expect(at(11, 30, starts), 'Lunch');
+      expect(at(23, 59, starts), 'Dinner');
+      expect(at(11, 30, starts), isNot('Snacks')); // no hour, never wins
+    });
+
+    test('night worker: the last window wraps past midnight', () {
+      // Breakfast at 18:00, Lunch at 23:00, Dinner at 03:30.
+      const starts = {'Breakfast': 1080, 'Lunch': 1380, 'Dinner': 210};
+      expect(at(19, 0, starts), 'Breakfast');
+      expect(at(1, 0, starts), 'Lunch'); // 23:00 still on at 01:00
+      expect(at(4, 0, starts), 'Dinner');
+      expect(at(17, 0, starts), 'Dinner'); // until Breakfast comes round
+    });
+
+    test('no hours set means no current meal', () {
+      expect(at(12, 0, const {}), isNull);
+    });
+
+    test('HH:mm round-trips and rejects the unreadable', () {
+      expect(parseHhMm('06:00'), 360);
+      expect(parseHhMm('23:59'), 1439);
+      expect(formatHhMm(210), '03:30');
+      expect(parseHhMm(formatHhMm(1080)), 1080);
+      expect(parseHhMm('24:00'), isNull);
+      expect(parseHhMm('lunch'), isNull);
+      expect(parseHhMm(null), isNull);
+    });
+  });
 }

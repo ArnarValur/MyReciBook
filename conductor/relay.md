@@ -1,6 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-28 — meal hours, pantry cold start killed, 0.17.5 → 0.18.2+33
+
+- Shipped: Settings → Meals (rename, reorder, optional start hour per meal —
+  windows wrap midnight for night shifts, today's shelf dots the current meal);
+  pantry cold start fixed — one batched SAF read instead of 226, boot warm,
+  spinner + retry; a quarter "+" beside Scan creates a barcode-less product.
+- Broke: nothing new; diary_flow and shell tests still expected the pre-0.17.5
+  UPPERCASE meal headers — fixed to the shelf-card shape.
+- Arnar: meal hours only, day-rollover hour deferred; index-file cache parked
+  (batch read carries 1000+); "Save meal times" label is his edit.
+- UNFINISHED: oats folate re-read; full suite unrun since 2026-08-21.
+
 ## 2026-08-28 — the rough corners named and sanded, 0.16.0 → 0.17.5+29
 
 - Shipped: cookbook as a folded tag shelf (untagged flat, sections alphabetical,

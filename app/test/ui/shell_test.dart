@@ -122,7 +122,8 @@ void main() {
     if (kDiaryEnabled) {
       // Slot 2 opens on the diary; the pantry is behind the segmented pill.
       expect(find.text('Diary'), findsWidgets);
-      expect(find.text('BREAKFAST'), findsOneWidget); // SectionLabel uppercases
+      // Shelf-card headers since 0.17.5 — title case, not the old uppercase.
+      expect(find.text('Breakfast'), findsOneWidget);
       await tester.tap(find.text('Pantry').last);
       await tester.pumpAndSettle();
       expect(find.text('Scan a product'), findsOneWidget);

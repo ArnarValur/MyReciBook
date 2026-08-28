@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:myrecibook/data/app_settings.dart';
 import 'package:myrecibook/data/diary_store.dart';
 import 'package:myrecibook/domain/diary.dart';
 import 'package:myrecibook/domain/product.dart';
@@ -170,5 +171,36 @@ void main() {
     final m = model();
     await m.ensureRecents();
     expect(m.recents.single.name, 'Pizza');
+  });
+
+  group('meals settings', () {
+    Future<AppSettings> settings() =>
+        AppSettings.load(File('${root.path}/settings.json'));
+
+    test('setMeals saves names with hours; a dropped meal loses its hour',
+        () async {
+      final s = await settings();
+      final m = DiaryModel(store, settings: s, clock: () => now);
+      await m.setMeals(const ['Breakfast', 'Lunch', 'Dinner'],
+          const {'Breakfast': '18:00', 'Snacks': '15:00'});
+      expect(m.mealNames, ['Breakfast', 'Lunch', 'Dinner']);
+      // Snacks is not a meal any more, so its hour must not linger on disk.
+      expect(s.mealStarts, {'Breakfast': '18:00'});
+    });
+
+    test('currentMeal follows the clock around midnight', () async {
+      final s = await settings();
+      // Night shift: Breakfast 18:00, Lunch 23:00, Dinner 03:30. The test
+      // clock says 09:00 — Dinner's window is still the open one.
+      final m = DiaryModel(store, settings: s, clock: () => now);
+      await m.setMeals(const ['Breakfast', 'Lunch', 'Dinner', 'Snacks'],
+          const {'Breakfast': '18:00', 'Lunch': '23:00', 'Dinner': '03:30'});
+      expect(m.currentMeal, 'Dinner');
+    });
+
+    test('no hours set means no current meal', () async {
+      final m = model();
+      expect(m.currentMeal, isNull);
+    });
   });
 }

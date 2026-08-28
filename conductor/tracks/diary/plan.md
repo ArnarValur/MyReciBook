@@ -4,9 +4,17 @@
 ate into a day, from the pantry, from a recipe, or typed in, and see the day total
 against a goal. This is the piece that makes pantry, scanner and recipes one app.
 
-**Next session (Arnar, 2026-08-28):** final polishing, and explore custom meal
-hours — editing the time Breakfast and the other meals stand for (a user
-request relayed by Arnar).
+**Shipped 2026-08-28 at 0.18.2+33:** custom meal hours — Settings → Meals
+renames, reorders, adds/removes, and sets an optional "from HH:mm" per meal
+(meal_hours in settings.json; currentMealName in domain/diary.dart wraps
+midnight so a night shift's windows hold; today's shelf dots the current meal;
+renames still never rewrite past days) · pantry cold start —
+SafBridge.readChildFiles batches the folder's JSONs into ONE channel call
+(recipes too), AppShell warms the pantry post-frame, the tab shows a spinner
+then a retry on a failed first scan, ensureLoaded shares one in-flight scan ·
+scan row is 3/4 Scan + 1/4 "+" into the create screen with no barcode.
+Deferred by Arnar: the day-rollover "day starts at" hour (a 02:00 meal still
+lands on the calendar day). Index-file cache parked — batch read carries 1000+.
 
 **Sanded 2026-08-28 at 0.17.5+29:** meal sections in the CollapsibleShelf card
 (session-only folds, kcal on the header) · Trends drops all-zero micro rows

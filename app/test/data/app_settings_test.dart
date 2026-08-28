@@ -203,4 +203,21 @@ void main() {
     expect(await deviceFile().exists(), isFalse);
     expect(await file().readAsString(), contains('pantry_open_sections'));
   });
+
+  test('mealStarts round-trips; corrupt entries read as unset', () async {
+    final s = await AppSettings.load(file());
+    expect(s.mealStarts, isEmpty);
+    await s.setMealStarts({'Breakfast': '18:00', 'Dinner': '03:30'});
+    expect((await AppSettings.load(file())).mealStarts,
+        {'Breakfast': '18:00', 'Dinner': '03:30'});
+    // A hand-broken map: non-string values are dropped, not thrown on.
+    await file().writeAsString(jsonEncode({
+      'meal_hours': {'Breakfast': 1080, 'Lunch': '11:30'}
+    }));
+    expect((await AppSettings.load(file())).mealStarts, {'Lunch': '11:30'});
+    // Clearing every hour removes the key from the file.
+    final s2 = await AppSettings.load(file());
+    await s2.setMealStarts({});
+    expect(await file().readAsString(), isNot(contains('meal_hours')));
+  });
 }

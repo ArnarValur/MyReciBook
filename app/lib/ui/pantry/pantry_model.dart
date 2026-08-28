@@ -90,6 +90,9 @@ class PantryModel extends ChangeNotifier {
   List<Product> _products = const [];
   int _skipped = 0;
   bool _loaded = false;
+  bool _loading = false;
+  bool _loadFailed = false;
+  Future<void>? _scanInFlight;
   bool _busy = false;
   bool _refreshing = false;
   int _refreshDone = 0;
@@ -97,6 +100,15 @@ class PantryModel extends ChangeNotifier {
 
   List<Product> get products => List.unmodifiable(_products);
   bool get loaded => _loaded;
+
+  /// The folder scan is running — the tab shows a spinner instead of an
+  /// honest-looking "0 products". Deliberately not [busy]: a load must
+  /// never hold the Scan button.
+  bool get loading => _loading;
+
+  /// The first scan threw before anything loaded — the tab offers a retry
+  /// instead of spinning forever on a transient read failure.
+  bool get loadFailed => _loadFailed;
 
   /// A lookup is in flight — the tab shows progress and holds the scan CTA.
   bool get busy => _busy;
@@ -126,17 +138,33 @@ class PantryModel extends ChangeNotifier {
     return '$n product${n == 1 ? '' : 's'}';
   }
 
-  Future<void> ensureLoaded() async {
-    if (_loaded) return;
-    await rescan();
+  /// Idempotent in flight, not just after: every caller asking during the
+  /// first scan awaits the SAME scan — the store is read once, however many
+  /// screens boot at once.
+  Future<void> ensureLoaded() {
+    if (_loaded) return Future.value();
+    return _scanInFlight ??= rescan().whenComplete(() => _scanInFlight = null);
   }
 
   Future<void> rescan() async {
-    final res = await _store?.listAll() ?? const PantryResult([], 0);
-    _products = res.products;
-    _skipped = res.skipped;
-    _loaded = true;
+    _loading = true;
+    _loadFailed = false;
     notifyListeners();
+    try {
+      final res = await _store?.listAll() ?? const PantryResult([], 0);
+      _products = res.products;
+      _skipped = res.skipped;
+      _loaded = true;
+    } on Exception {
+      // Kept as state, never thrown: the scan also runs as a fire-and-forget
+      // boot warm, where a throw would be an unhandled async error on every
+      // start. The tab draws a retry instead of an eternal spinner; a truly
+      // lost grant is the boot gate's job on next start.
+      _loadFailed = true;
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
   }
 
   /// Scanned digits → OFF lookup → save. Never throws; every outcome is a

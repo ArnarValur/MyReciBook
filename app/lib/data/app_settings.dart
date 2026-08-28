@@ -188,6 +188,18 @@ class AppSettings {
     return names.isEmpty ? const [] : names;
   }
 
+  /// When each meal's window opens, "HH:mm" keyed by meal name. Optional per
+  /// meal — a name with no entry has no window. Unreadable entries read as
+  /// unset, never a crash.
+  Map<String, String> get mealStarts {
+    final v = _data['meal_hours'];
+    if (v is! Map) return const {};
+    return {
+      for (final e in v.entries)
+        if (e.key is String && e.value is String) e.key as String: e.value as String
+    };
+  }
+
   Future<void> setTreeUri(String? uri) => _write('tree_uri', uri);
 
   Future<void> setOnboardingSeen(int version) =>
@@ -208,6 +220,9 @@ class AppSettings {
   }
 
   Future<void> setMealNames(List<String> names) => _write('meal_names', names);
+
+  Future<void> setMealStarts(Map<String, String> byName) =>
+      _write('meal_hours', byName.isEmpty ? null : byName);
 
   Future<void> setPantryOpenSections(List<String> ids) =>
       _write('pantry_open_sections', ids);

@@ -129,6 +129,12 @@ class _PantryTabState extends State<PantryTab> {
       Navigator.of(context).push<void>(MaterialPageRoute<void>(
           builder: (_) => ManualProductScreen(barcode: barcode)));
 
+  /// The same create screen with no digits — produce, bulk goods, anything
+  /// that never had a barcode to scan.
+  Future<void> _createByHand() =>
+      Navigator.of(context).push<void>(MaterialPageRoute<void>(
+          builder: (_) => const ManualProductScreen()));
+
   /// Tap a row → pushed detail page (the recipe-detail gesture; a bottom
   /// sheet fought the device's own nav bar — Arnar's S21 pass, 2026-08-17).
   /// By id, not value: photo edits on the pushed route re-render live.
@@ -236,6 +242,46 @@ class _PantryTabState extends State<PantryTab> {
     final scheme = context.scheme;
     final model = context.watch<PantryModel>();
 
+    // First scan still reading the folder: the recipe list's
+    // spinner-when-empty shape — a "0 products" caption before the scan
+    // lands would be a lie. The header stays: it is the Diary | Pantry pill,
+    // and a spinner must never trap the user on this segment. A failed first
+    // scan gets a retry, not an eternal spinner.
+    if (!model.loaded) {
+      return Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, navBarClearance(context)),
+            children: [
+              if (widget.header != null) ...[
+                widget.header!,
+                const SizedBox(height: 16),
+              ],
+              const SizedBox(height: 140),
+              if (model.loadFailed) ...[
+                Center(
+                  child: Text('The pantry folder could not be read.',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                ),
+                const SizedBox(height: 14),
+                Center(
+                  child: FilledButton.icon(
+                    onPressed: () =>
+                        context.read<PantryModel>().ensureLoaded(),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Try again'),
+                  ),
+                ),
+              ] else
+                const Center(child: CircularProgressIndicator()),
+            ],
+          ),
+        ),
+      );
+    }
+
     // The shelf: one folded header per category, "Other" last
     // (compareCategories), alphabetical inside — never the scan sequence.
     // The section list is rebuilt every frame, but the rows behind a closed
@@ -315,11 +361,31 @@ class _PantryTabState extends State<PantryTab> {
               ],
             ),
             const SizedBox(height: 14),
-            FilledButton.icon(
-              onPressed: model.busy ? null : _scan,
-              icon: const Icon(Icons.barcode_reader),
-              label: Text(model.busy ? 'Looking it up…' : 'Scan a product'),
-            ),
+            // Scan carries the row; the quarter-width add is the same create
+            // screen the barcode-miss door opens, minus the digits — for the
+            // loose carrots no barcode will ever find (Arnar 2026-08-29).
+            Row(children: [
+              Expanded(
+                flex: 3,
+                child: FilledButton.icon(
+                  onPressed: model.busy ? null : _scan,
+                  icon: const Icon(Icons.barcode_reader),
+                  label:
+                      Text(model.busy ? 'Looking it up…' : 'Scan a product'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Tooltip(
+                  message: 'New product',
+                  child: FilledButton.tonal(
+                    key: const Key('pantry-new-product'),
+                    onPressed: _createByHand,
+                    child: const Icon(Icons.add_rounded),
+                  ),
+                ),
+              ),
+            ]),
             if (model.busy) ...[
               const SizedBox(height: 10),
               const LinearProgressIndicator(),

@@ -22,6 +22,7 @@ import '../l10n/l10n.dart';
 import '../version.dart';
 import 'crash_reporting_model.dart';
 import 'diary/diary_goal_screen.dart';
+import 'diary/meals_screen.dart';
 import 'diary/diary_model.dart';
 import 'storage_model.dart';
 import 'tags_model.dart';
@@ -337,6 +338,20 @@ class SettingsTab extends StatelessWidget {
                                 .value(
                               value: context.read<DiaryModel>(),
                               child: const DiaryGoalScreen(),
+                            ))),
+                  ),
+                  const SizedBox(height: 8),
+                  row(
+                    key: const Key('settings-meals-row'),
+                    icon: Icons.restaurant_rounded,
+                    title: 'Meals',
+                    caption: context.watch<DiaryModel>().mealsSummary,
+                    onTap: () =>
+                        Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                            builder: (_) => ChangeNotifierProvider<DiaryModel>
+                                .value(
+                              value: context.read<DiaryModel>(),
+                              child: const MealsScreen(),
                             ))),
                   ),
                   const SizedBox(height: 8),

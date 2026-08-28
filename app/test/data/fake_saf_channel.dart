@@ -39,6 +39,10 @@ class FakeSafChannel {
   String? nextPickUri; // one-shot pickFolder override (a different folder)
   int reads = 0; // readFile calls — cache-hit assertions
   int failWrites = 0; // next N writeFile calls fail SAF_IO (transient hiccup)
+  // Per-file failure injection: readFile throws SAF_IO for these docIds, and
+  // readChildFiles omits them from the batch (bridge contract: one bad child
+  // never fails the batch).
+  final Set<String> unreadableIds = {};
   int _seq = 0;
 
   void install() {
@@ -142,11 +146,26 @@ class FakeSafChannel {
         ];
       case 'readFile':
         final doc = docs[args['docId']];
-        if (doc == null || doc.isDir) {
+        if (doc == null || doc.isDir || unreadableIds.contains(args['docId'])) {
           throw PlatformException(code: 'SAF_IO', message: 'not found');
         }
         reads++;
         return doc.bytes;
+      case 'readChildFiles':
+        final parent = (args['parentDocId'] as String?) ?? rootId;
+        final suffix = args['suffix'] as String? ?? '';
+        final dir = docs[parent];
+        if (dir == null || !dir.isDir) {
+          throw PlatformException(code: 'SAF_IO', message: 'no such dir $parent');
+        }
+        return {
+          for (final e in docs.entries)
+            if (e.value.parent == parent &&
+                !e.value.isDir &&
+                e.value.name.endsWith(suffix) &&
+                !unreadableIds.contains(e.key))
+              e.value.name: e.value.bytes
+        };
       case 'createFile':
         // The real bridge is DocumentsContract.createDocument: the dir mime
         // creates a subdirectory under any parent (how pantry/images is made).

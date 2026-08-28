@@ -3,12 +3,15 @@
 // packs are the reason this exists — 3×~60 rows must not be on screen, or
 // built, just because the app shipped with them.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:myrecibook/data/app_settings.dart';
+import 'package:myrecibook/data/product_store.dart';
 import 'package:myrecibook/domain/product.dart';
+import 'package:myrecibook/ui/pantry/manual_product_screen.dart';
 import 'package:myrecibook/ui/pantry/pantry_model.dart';
 import 'package:myrecibook/ui/pantry/pantry_tab.dart';
 import 'package:myrecibook/ui/theme.dart';
@@ -157,4 +160,127 @@ void main() {
     expect(find.text('0 products'), findsOneWidget);
     expect(find.byKey(const Key('pantry-starter-foods')), findsOneWidget);
   });
+
+  testWidgets('before the first scan lands: a spinner, never "0 products"',
+      (tester) async {
+    final store = _GateStore();
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PantryModel>.value(value: PantryModel(store)),
+        Provider<AppSettings?>.value(value: null),
+      ],
+      child: MaterialApp(theme: rbLightTheme(), home: const PantryTab()),
+    ));
+    // One plain pump, no settle: the spinner animates for as long as the
+    // scan runs, and the scan is waiting on the gate.
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('0 products'), findsNothing);
+    expect(find.byIcon(Icons.kitchen_rounded), findsNothing); // no flash
+
+    store.open();
+    await tester.pumpAndSettle();
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('0 products'), findsOneWidget);
+    expect(find.byIcon(Icons.kitchen_rounded), findsOneWidget);
+  });
+
+  testWidgets('a failed first scan offers a retry, never an eternal spinner',
+      (tester) async {
+    final store = _FlakyStore();
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PantryModel>.value(value: PantryModel(store)),
+        Provider<AppSettings?>.value(value: null),
+      ],
+      child: MaterialApp(theme: rbLightTheme(), home: const PantryTab()),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('Try again'), findsOneWidget);
+    expect(find.text('0 products'), findsNothing);
+
+    await tester.tap(find.text('Try again'));
+    await tester.pumpAndSettle();
+    expect(store.listCalls, 2);
+    expect(find.text('Try again'), findsNothing);
+    expect(find.text('0 products'), findsOneWidget);
+  });
+
+  testWidgets('the quarter-width add opens the create screen, no barcode',
+      (tester) async {
+    final store = _GateStore();
+    final model = PantryModel(store);
+    store.open();
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PantryModel>.value(value: model),
+        Provider<AppSettings?>.value(value: null),
+      ],
+      child: MaterialApp(theme: rbLightTheme(), home: const PantryTab()),
+    ));
+    await model.ensureLoaded();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('pantry-new-product')));
+    await tester.pumpAndSettle();
+    final screen = tester
+        .widget<ManualProductScreen>(find.byType(ManualProductScreen));
+    expect(screen.barcode, isNull);
+    expect(screen.initial, isNull);
+  });
+
+  test('two ensureLoaded calls in flight share one store scan', () async {
+    final store = _GateStore();
+    final model = PantryModel(store);
+
+    final first = model.ensureLoaded();
+    final second = model.ensureLoaded();
+    expect(model.loading, isTrue);
+    expect(model.busy, isFalse); // a load must never hold the Scan button
+
+    store.open();
+    await Future.wait([first, second]);
+    expect(store.listCalls, 1);
+    expect(model.loading, isFalse);
+    expect(model.loaded, isTrue);
+
+    await model.ensureLoaded(); // loaded: still no second scan
+    expect(store.listCalls, 1);
+  });
+}
+
+/// Store whose first scan throws — pins the retry door on the load gate.
+class _FlakyStore implements ProductStore {
+  int listCalls = 0;
+
+  @override
+  Future<PantryResult> listAll() async {
+    listCalls++;
+    if (listCalls == 1) throw Exception('transient read failure');
+    return const PantryResult([], 0);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
+}
+
+/// Store whose scan finishes only when the test opens the gate — pins the
+/// in-flight window every ensureLoaded caller must share.
+class _GateStore implements ProductStore {
+  int listCalls = 0;
+  final _gate = Completer<PantryResult>();
+
+  void open() => _gate.complete(const PantryResult([], 0));
+
+  @override
+  Future<PantryResult> listAll() {
+    listCalls++;
+    return _gate.future;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }

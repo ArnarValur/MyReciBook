@@ -97,6 +97,16 @@ void main() {
     expect(result.skipped, 2); // the two bad .json files; .txt ignored
   });
 
+  test('a file the batch read cannot open counts as skipped', () async {
+    seedPantryProduct('111', 'Melk');
+    final lockedId = seedPantryProduct('222', 'Smør');
+    fake.unreadableIds.add(lockedId);
+
+    final result = await store.listAll();
+    expect(result.products.map((p) => p.id), ['111']);
+    expect(result.skipped, 1); // listed as .json, absent from the batch map
+  });
+
   test('empty tree lists empty; load of missing/corrupt id → null', () async {
     expect((await store.listAll()).products, isEmpty);
     expect(await store.load('nope'), isNull);

@@ -122,7 +122,8 @@ void main() {
     await pump(tester);
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('19 Aug 2026'), findsOneWidget);
-    for (final meal in ['BREAKFAST', 'LUNCH', 'DINNER', 'SNACKS']) {
+    // Shelf-card headers since 0.17.5 — title case, not the old uppercase.
+    for (final meal in ['Breakfast', 'Lunch', 'Dinner', 'Snacks']) {
       expect(find.text(meal), findsOneWidget);
     }
     // No goal set yet: the card says so instead of inventing 2000.

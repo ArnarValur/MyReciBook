@@ -41,6 +41,7 @@ import 'import_review_screen.dart';
 import 'import_sheet.dart';
 import 'manual_entry_screen.dart';
 import 'library_model.dart';
+import 'pantry/pantry_model.dart';
 import 'pantry/pantry_tab.dart';
 import 'plan_tab.dart';
 import 'recipe_list_screen.dart';
@@ -114,6 +115,10 @@ class _AppShellState extends State<AppShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       widget.share?.attach(_onShared, onLink: _onSharedLink);
+      // Warm the pantry shelf at boot so the Pantry pill and the grocery/
+      // detail hints land on a loaded shelf instead of a cold SAF scan;
+      // cheap and cached after boot (recipe detail's idiom).
+      if (kPantryEnabled) context.read<PantryModel>().ensureLoaded();
     });
   }
 

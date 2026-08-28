@@ -46,6 +46,16 @@ class SafBridge(private val activity: Activity) {
             readFile(Uri.parse(requireArg(tree)), requireArg(call.argument("docId")))
           }
         }
+        "readChildFiles" -> {
+          val tree = call.argument<String>("treeUri")
+          runIo(result, tree) {
+            readChildFiles(
+              Uri.parse(requireArg(tree)),
+              call.argument("parentDocId"),
+              requireArg(call.argument("suffix")),
+            )
+          }
+        }
         "createFile" -> {
           val tree = call.argument<String>("treeUri")
           runIo(result, tree) {
@@ -187,6 +197,36 @@ class SafBridge(private val activity: Activity) {
     val uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
     return activity.contentResolver.openInputStream(uri)?.use { it.readBytes() }
       ?: throw FileNotFoundException(docId)
+  }
+
+  // Whole-directory read in ONE channel round trip: list once, then read every
+  // child file whose name ends with [suffix] inside this executor call — the
+  // per-file channel hop is what a cold scan must never pay per document. An
+  // unreadable child is left out of the map (Dart counts the gap as skipped);
+  // SecurityException still escapes so runIo reports GRANT_LOST, same as
+  // readFile.
+  private fun readChildFiles(
+    treeUri: Uri,
+    parentDocId: String?,
+    suffix: String,
+  ): Map<String, ByteArray> {
+    val files = mutableMapOf<String, ByteArray>()
+    for (row in listChildren(treeUri, parentDocId)) {
+      if (row["isDir"] == true) continue
+      val name = row["name"] as String
+      if (!name.endsWith(suffix)) continue
+      try {
+        files[name] = readFile(treeUri, row["docId"] as String)
+      } catch (e: SecurityException) {
+        throw e
+      } catch (e: Exception) {
+        // Unreadable child: omitted, never fatal for the batch — unless the
+        // whole tree died mid-scan, which must branch to re-pick exactly as a
+        // single readFile would via runIo's grantAlive fallback.
+        if (!grantAlive(treeUri)) throw SecurityException(e.message)
+      }
+    }
+    return files
   }
 
   private fun createFile(treeUri: Uri, parentDocId: String, name: String, mime: String): String {

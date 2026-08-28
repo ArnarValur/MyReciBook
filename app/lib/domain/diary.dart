@@ -306,6 +306,52 @@ const List<String> defaultMealNames = [
   'Snacks',
 ];
 
+/// The meal whose window holds [nowMinutes] (minutes past local midnight).
+///
+/// A meal's window runs from its start to the next start, around the clock,
+/// not the calendar day — so a night worker's Breakfast at 18:00 is still
+/// "now" at 01:00 as long as no later start has passed. Meals without a start
+/// never win; no starts at all means null and the diary behaves as before.
+String? currentMealName(
+    List<String> names, int? Function(String) startOf, int nowMinutes) {
+  String? current; // latest start <= now
+  var currentStart = -1;
+  String? last; // latest start of the whole cycle — still running before dawn
+  var lastStart = -1;
+  for (final name in names) {
+    final start = startOf(name);
+    if (start == null) continue;
+    if (start <= nowMinutes && start > currentStart) {
+      currentStart = start;
+      current = name;
+    }
+    if (start > lastStart) {
+      lastStart = start;
+      last = name;
+    }
+  }
+  return current ?? last;
+}
+
+/// "HH:mm" → minutes past midnight, or null when unreadable. The settings
+/// file is user-visible JSON, so the stored form stays human, not an int.
+int? parseHhMm(String? raw) {
+  if (raw == null) return null;
+  final m = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(raw.trim());
+  if (m == null) return null;
+  final h = int.parse(m.group(1)!);
+  final min = int.parse(m.group(2)!);
+  if (h > 23 || min > 59) return null;
+  return h * 60 + min;
+}
+
+/// Minutes past midnight → "HH:mm", the storage form of a meal start.
+String formatHhMm(int minutes) {
+  final h = (minutes ~/ 60).toString().padLeft(2, '0');
+  final m = (minutes % 60).toString().padLeft(2, '0');
+  return '$h:$m';
+}
+
 /// Sums nutrient maps by key. The union, not an intersection: a day of one
 /// product that lists iron and one that doesn't still totals the iron it has.
 /// That is honest for macros (every label prints them) and deliberately

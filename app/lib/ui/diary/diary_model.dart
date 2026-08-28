@@ -61,6 +61,21 @@ class DiaryModel extends ChangeNotifier {
     return configured.isEmpty ? defaultMealNames : configured;
   }
 
+  /// When each meal's window opens, "HH:mm" by name. Empty until the user
+  /// sets hours on the Meals page.
+  Map<String, String> get mealStarts => _settings?.mealStarts ?? const {};
+
+  /// The meal the clock says is on — see [currentMealName]. Null when no
+  /// meal has an hour set. Callers guard with [isToday]: yesterday's page
+  /// has no "now".
+  String? get currentMeal {
+    final starts = mealStarts;
+    if (starts.isEmpty) return null;
+    final now = _clock();
+    return currentMealName(
+        mealNames, (n) => parseHhMm(starts[n]), now.hour * 60 + now.minute);
+  }
+
   /// Headings to draw: the configured ones, plus any name this day was
   /// actually logged under. Renaming a meal must never hide yesterday's food.
   List<String> get visibleMealNames {
@@ -164,6 +179,22 @@ class DiaryModel extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  // --- meals ---
+
+  /// The Meals page saves names and hours as one gesture. Only [names]
+  /// entries keep an hour — a deleted or renamed-away meal drops its window.
+  Future<void> setMeals(List<String> names, Map<String, String> starts) async {
+    await _settings?.setMealNames(names);
+    await _settings?.setMealStarts({
+      for (final n in names)
+        if (starts[n] != null) n: starts[n]!
+    });
+    notifyListeners();
+  }
+
+  /// One-line summary for the settings row.
+  String get mealsSummary => mealNames.join(' · ');
 
   // --- goals ---
 
