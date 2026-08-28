@@ -1,0 +1,9 @@
+# gcloud would otherwise honor .gitignore and drop .output — the whole site.
+node_modules
+.nuxt
+.output/server
+.output/nitro.json
+.data
+logs
+*.log
+scripts

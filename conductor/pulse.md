@@ -22,8 +22,9 @@
   (drafts, stamped) + 404, SEO formal (sitemap/robots/schema.org/OG card),
   real screenshots (docs/MyReciBook-Screenshots → WebP via scripts/shots.mjs),
   dark mode "23:00 navy" (paper stays paper). Copy flags await joint overview:
-  website/copy-notes.md. Staging: deploy-staging.sh → Cloud Run on MyReciBook-Dev,
-  prepared NOT run. No track yet.
+  website/copy-notes.md. Staging LIVE 2026-08-29 on MyReciBook-Dev:
+  https://myrecibook-website-staging-213431165631.europe-west1.run.app
+  (noindex-guarded; real domain unmapped on purpose). No track yet.
 
 ## 🚀 Active tracks
 - mvp-build — server deployed, onboarding shipped. Open: privacy policy (website
