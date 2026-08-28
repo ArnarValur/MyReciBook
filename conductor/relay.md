@@ -1,12 +1,13 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
-## 2026-08-28 — meal hours, pantry cold start killed, 0.17.5 → 0.18.2+33
+## 2026-08-28 — meal hours, pantry cold start killed, 0.17.5 → 0.18.3+34
 
 - Shipped: Settings → Meals (rename, reorder, optional start hour per meal —
   windows wrap midnight for night shifts, today's shelf dots the current meal);
   pantry cold start fixed — one batched SAF read instead of 226, boot warm,
-  spinner + retry; a quarter "+" beside Scan creates a barcode-less product.
+  spinner + retry; a quarter "+" beside Scan creates a barcode-less product;
+  diary cards wear the photo/cover, provenance icon as a corner badge.
 - Broke: nothing new; diary_flow and shell tests still expected the pre-0.17.5
   UPPERCASE meal headers — fixed to the shelf-card shape.
 - Arnar: meal hours only, day-rollover hour deferred; index-file cache parked
