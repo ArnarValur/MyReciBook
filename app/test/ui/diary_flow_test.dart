@@ -59,9 +59,21 @@ class _MemoryPantryStore implements ProductStore {
   @override
   Future<Product> removeImage(Product product) async => product;
 
+  final images = <String, File>{};
+
   @override
-  File? imageFile(Product product) => null;
+  File? imageFile(Product product) => images[product.id];
 }
+
+/// 1×1 transparent PNG — enough for Image.file to decode in a widget test.
+const _pngBytes = [
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, //
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, //
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, //
+  0x0D, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x62, 0x00, 0x01, 0x00, 0x00, //
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49, //
+  0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+];
 
 /// The day file kept in a map — same contract as LocalDiaryStore, no disk.
 class _MemoryDiaryStore implements DiaryStore {
@@ -128,6 +140,31 @@ void main() {
     }
     // No goal set yet: the card says so instead of inventing 2000.
     expect(find.textContaining('No daily goal set yet'), findsOneWidget);
+  });
+
+  testWidgets('a product photo rides the diary card', (tester) async {
+    final dir = Directory.systemTemp.createTempSync('recibook_diary_photo');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final photo = File('${dir.path}/oats.png')..writeAsBytesSync(_pngBytes);
+    pantryStore.images[oats().id] = photo;
+
+    await diary.ensureLoaded();
+    await diary.logProduct(oats(), oats().servings.first,
+        meal: 'Breakfast', quantity: 1);
+    // The avatar looks the product up on the LOADED pantry — the boot warm's
+    // job in the app, done by hand here.
+    final pantry = PantryModel(pantryStore);
+    await pantry.ensureLoaded();
+    await tester.pumpWidget(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<DiaryModel>.value(value: diary),
+        ChangeNotifierProvider<PantryModel>.value(value: pantry),
+      ],
+      child: MaterialApp(theme: rbLightTheme(), home: const DiaryTab()),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Image), findsOneWidget); // the photo, badge riding it
   });
 
   testWidgets('pantry food → serving → logged into the meal', (tester) async {

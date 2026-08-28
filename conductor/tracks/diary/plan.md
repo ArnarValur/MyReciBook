@@ -183,19 +183,14 @@ Built by four parallel agents from docs/MyReciBook Flutter diary-pantry-mockups.
 - UNRESOLVED: Arnar reports multiple rough corners in these surfaces, not yet
   named. First job next session is naming them on the device.
 
-## Weld-time item — product photos on every card (Arnar 2026-08-27)
-- Pantry rows show a product's photo when it has one. Diary lines and the add
-  sheet do not — same product, two different faces.
-- Recipes have the same gap wherever a row draws the book fallback instead of
-  the cover.
-- TENSION with mockup 1a, which is deliberate, not an oversight: "entry
-  avatars say where a line came from: book = logged from a recipe, fridge =
-  from the pantry". The avatar carries PROVENANCE; a photo carries IDENTITY.
-  Showing the photo wins the identity and loses the provenance.
-  Unsettled — Arnar's call at the weld: photo with a small provenance badge in
-  the corner, or photo simply replaces the icon.
-- Do it after the four design agents land; they own diary_tab, add_food_sheet
-  and pantry_tab right now.
+## Product photos on every card — SETTLED and shipped (Arnar 2026-08-28)
+- Arnar's call: photo WITH the provenance icon shrunk to a corner badge —
+  identity and provenance both kept. Shipped 0.18.3+34: _EntryAvatar in
+  diary_tab draws the product photo or recipe cover on diary lines, source
+  icon badged in the corner; icon tile unchanged when there is no photo, a
+  deleted source, or no pantry/library model (tests).
+- Add sheet already carried photos (ProductRow) and covers (_RecipeRow);
+  _RecentRow keeps its history glyph on purpose.
 
 ## Open — NEXT SESSION STARTS HERE
 - [ ] Redeploy to the S21 (it runs the phase-1-3 build; starter foods and

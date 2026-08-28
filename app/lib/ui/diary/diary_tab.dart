@@ -10,11 +10,15 @@
 // scaffold and the glass bar's 110px bottom gap — and flagged for a design
 // turn on the copy and the totals card.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/diary.dart';
 import '../../domain/nutrient_display.dart';
+import '../library_model.dart';
+import '../pantry/pantry_model.dart';
 import '../theme.dart';
 import '../widgets/collapsible_shelf.dart';
 import '../widgets/skin.dart';
@@ -442,15 +446,7 @@ class _EntryRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Row(children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(11)),
-            child: Icon(_iconFor(entry.source),
-                size: 18, color: scheme.onSecondaryContainer),
-          ),
+          _EntryAvatar(entry: entry),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -486,6 +482,112 @@ class _EntryRow extends StatelessWidget {
         DiarySources.quick => Icons.bolt_rounded,
         _ => Icons.kitchen_rounded,
       };
+}
+
+/// The face of a diary line. Mockup 1a's avatar carried PROVENANCE — book =
+/// from a recipe, fridge = from the pantry; a photo carries IDENTITY. Both
+/// stay (Arnar 2026-08-28): the product's photo or the recipe's cover when the
+/// source still has one, with the source icon shrunk to a corner badge. No
+/// photo, a deleted source, or a shell without the models (tests) → the plain
+/// icon tile, exactly as before.
+class _EntryAvatar extends StatelessWidget {
+  const _EntryAvatar({required this.entry});
+
+  final DiaryEntry entry;
+
+  static const _size = 34.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return switch (entry.source) {
+          DiarySources.product => _productPhoto(context, scheme),
+          DiarySources.recipe => _recipeCover(context, scheme),
+          _ => null,
+        } ??
+        _tile(scheme);
+  }
+
+  Widget? _productPhoto(BuildContext context, ColorScheme scheme) {
+    final pantry = _maybeWatch<PantryModel>(context);
+    if (pantry == null || entry.ref == null) return null;
+    for (final p in pantry.products) {
+      if (p.id != entry.ref) continue;
+      final file = pantry.imageFileOf(p);
+      if (file == null || !file.existsSync()) return null;
+      return _badged(scheme, _photo(scheme, file));
+    }
+    return null;
+  }
+
+  Widget? _recipeCover(BuildContext context, ColorScheme scheme) {
+    final library = _maybeWatch<LibraryModel>(context);
+    if (library == null || entry.ref == null) return null;
+    for (final r in library.recipes) {
+      if (r.id != entry.ref) continue;
+      // Only a user-picked cover pays for the file lookup — the add sheet's
+      // rule; coverFor's future is cached per ref, so no flicker on rebuild.
+      if (r.cover == null) return null;
+      return FutureBuilder<File?>(
+        future: library.coverFor(r),
+        builder: (_, snap) => snap.data == null
+            ? _tile(scheme)
+            : _badged(scheme, _photo(scheme, snap.data!)),
+      );
+    }
+    return null;
+  }
+
+  Widget _photo(ColorScheme scheme, File file) => ClipRRect(
+        borderRadius: BorderRadius.circular(11),
+        child: Image.file(file,
+            width: _size,
+            height: _size,
+            fit: BoxFit.cover,
+            cacheWidth: 102,
+            errorBuilder: (_, _, _) => _tile(scheme)),
+      );
+
+  Widget _badged(ColorScheme scheme, Widget photo) =>
+      Stack(clipBehavior: Clip.none, children: [
+        photo,
+        Positioned(
+          right: -3,
+          bottom: -3,
+          child: Container(
+            width: 15,
+            height: 15,
+            decoration: BoxDecoration(
+              color: scheme.secondaryContainer,
+              shape: BoxShape.circle,
+              border: Border.all(color: scheme.surfaceContainerLowest),
+            ),
+            child: Icon(_EntryRow._iconFor(entry.source),
+                size: 9, color: scheme.onSecondaryContainer),
+          ),
+        ),
+      ]);
+
+  Widget _tile(ColorScheme scheme) => Container(
+        width: _size,
+        height: _size,
+        decoration: BoxDecoration(
+            color: scheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(11)),
+        child: Icon(_EntryRow._iconFor(entry.source),
+            size: 18, color: scheme.onSecondaryContainer),
+      );
+}
+
+/// The add sheet's stance on optional models, shared here: the diary must
+/// work in shells (and widget tests) that never mounted pantry or library —
+/// missing just means no photo, never a crash.
+T? _maybeWatch<T>(BuildContext context) {
+  try {
+    return context.watch<T>();
+  } catch (_) {
+    return null;
+  }
 }
 
 /// "How many?" — the one edit MFP puts everywhere.
