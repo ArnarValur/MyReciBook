@@ -163,6 +163,10 @@ EXTRACTION_PROXY_URL=https://myrecibook-proxy-213431165631.europe-west1.run.app
 with `GEMINI_API_KEY` removed. Verified on a real release build: the APK
 contains the proxy URL and no `AIza` string anywhere.
 
+**Build APKs only via `app/deploy-s21.sh`.** It is the only path that injects
+`dev.env`; a plain `flutter build apk` ships no proxy URL and placeholder
+connector keys, and the app fails at import time with no useful error.
+
 To re-check after any build:
 
 ```sh

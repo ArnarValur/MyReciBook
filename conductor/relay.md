@@ -1,6 +1,16 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-28 — the card box lands in Nuxt
+
+- Shipped: website/ carries the "Website Card Box" design canvas as a real Nuxt
+  page — box-lid tabs, hero index card, recipe Nº 002, six tilted feature cards,
+  taped-in phone, price card, envelope pocket. Material Symbols now local SVGs
+  (canvas fetched Google CDN), responsive folds added, real logo mark from the zip.
+- Arnar: canvas copy stays verbatim for now, wording syncs later; full suite +
+  test comb happen at bedtime, on his "going to sleep" — written into pulse.
+- UNFINISHED: his poke-around notes → joint overview; website has no track.
+
 ## 2026-08-28 — meal hours, pantry cold start killed, 0.17.5 → 0.18.3+34
 
 - Shipped: Settings → Meals (rename, reorder, optional start hour per meal —

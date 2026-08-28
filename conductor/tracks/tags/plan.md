@@ -18,6 +18,8 @@ chip deleted · glyphs wear their colour everywhere, heart is tertiary
 everywhere. Regressions pinned: tag_editor_screen_test (a Center in
 bottomNavigationBar once shipped a blank editor), recipe_store_scan_test
 (tags.json is never a "couldn't be read" count).
+Bottom-bar spacing uses navBarClearance() in ui/widgets/skin.dart, never a flat
+constant — it is inset-aware. And bottomNavigationBar never holds a Center.
 
 **BUILT 2026-08-27 at 0.13.0+14.** Every ❓ was answered by Arnar that day:
 colour in v1 (yes, 8 tints) · emoji escape hatch (yes) · built-ins are

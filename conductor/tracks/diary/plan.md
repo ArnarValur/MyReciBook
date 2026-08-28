@@ -15,6 +15,9 @@ then a retry on a failed first scan, ensureLoaded shares one in-flight scan ·
 scan row is 3/4 Scan + 1/4 "+" into the create screen with no barcode.
 Deferred by Arnar: the day-rollover "day starts at" hour (a 02:00 meal still
 lands on the calendar day). Index-file cache parked — batch read carries 1000+.
+Both stores skip app-owned root files on scan (RecipeStore.appOwnedFiles,
+tags.json) — any future app-owned file goes in THAT list or the pantry
+adopts it as a product.
 
 **Sanded 2026-08-28 at 0.17.5+29:** meal sections in the CollapsibleShelf card
 (session-only folds, kcal on the header) · Trends drops all-zero micro rows

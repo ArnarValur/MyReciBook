@@ -1,0 +1,192 @@
+/* ============================================================
+   MyReciBook website — theme foundation
+   Carries the app's skin (app/lib/ui/theme.dart · RbColors) onto
+   Nuxt UI. Anchors: Moody Blue M3 seed #3F51B5, cream scaffold
+   #FAF8F0 (light "Stitch Slate"), deep navy #0F1117 (dark
+   "Midnight" — never black), Plus Jakarta Sans + Inter bundled.
+   ============================================================ */
+
+/* ── Bundled fonts — never runtime-fetched ─────────────────── */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+@theme static {
+  /* Inter for body/labels; PJS for display/headline/title (≥15px) */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, sans-serif;
+
+  /* ── Moody Blue ramp — anchors are real app tokens:
+     300 = #BAC3FF (dark-theme primary), 600 = #3F51B5 (seed,
+     primaryContainer), 700 = #24389C (light-theme primary).
+     In-between stops interpolated. ─────────────────────────── */
+  --color-moody-50: #f2f3ff;
+  --color-moody-100: #dee0ff;
+  --color-moody-200: #cacfff;
+  --color-moody-300: #bac3ff;
+  --color-moody-400: #8f9ce8;
+  --color-moody-500: #5b6cce;
+  --color-moody-600: #3f51b5;
+  --color-moody-700: #24389c;
+  --color-moody-800: #1c2d86;
+  --color-moody-900: #14226e;
+  --color-moody-950: #0a1347;
+
+  /* ── Secondary (soft indigo — chips, tonal fills) ──────────
+     Anchors: 300 = #B9C3FF (dark secondary), 600 = #4D5A9C
+     (light secondary), 800 = #354282 (dark secondaryContainer) */
+  --color-softindigo-50: #f1f2fc;
+  --color-softindigo-100: #dee1ff;
+  --color-softindigo-200: #abb7ff;
+  --color-softindigo-300: #b9c3ff;
+  --color-softindigo-400: #8b97d6;
+  --color-softindigo-500: #6672b1;
+  --color-softindigo-600: #4d5a9c;
+  --color-softindigo-700: #394687;
+  --color-softindigo-800: #354282;
+  --color-softindigo-900: #21326f;
+  --color-softindigo-950: #131f4d;
+}
+
+:root {
+  /* Light "Stitch Slate": warm cream scaffold under pure-white
+     cards — the warm/cool contrast is the light theme's signature */
+  --ui-bg: #faf8f0;                 /* scaffold cream */
+  --ui-bg-muted: #f3f3f6;           /* surface-container-low */
+  --ui-bg-elevated: #ffffff;        /* cards: surface-container-lowest */
+  --ui-bg-accented: #e8e8ea;        /* chips: surface-container-high */
+  --ui-bg-inverted: #2f3133;
+
+  --ui-text-dimmed: #757684;        /* outline */
+  --ui-text-muted: #454652;         /* on-surface-variant */
+  --ui-text-toned: #454652;
+  --ui-text: #1a1c1e;               /* on-surface */
+  --ui-text-highlighted: #1a1c1e;
+  --ui-text-inverted: #f0f0f3;
+
+  --ui-border: rgba(197, 197, 212, 0.5);        /* hairline */
+  --ui-border-muted: rgba(197, 197, 212, 0.35); /* separator */
+  --ui-border-accented: #c5c5d4;                /* outline-variant */
+  --ui-border-inverted: #1a1c1e;
+
+  /* Shape: the app is pill and 12 — this puts buttons/inputs at 12px */
+  --ui-radius: 0.5rem;
+
+  /* House extras (not Nuxt UI tokens — reach for them by name) */
+  --mrb-glass-fill: rgba(255, 255, 255, 0.55);
+  --mrb-glass-border: rgba(0, 0, 0, 0.08);
+  --mrb-card-shadow: 0 4px 10px rgba(36, 56, 156, 0.06); /* blue-tinted */
+  --mrb-scrim: rgba(11, 13, 22, 0.45);
+}
+
+.dark {
+  /* Dark "Midnight": deep navy, never black; depth via the
+     surface-container ladder, not shadow */
+  --ui-bg: #0f1117;
+  --ui-bg-muted: #141720;           /* surface-container-low */
+  --ui-bg-elevated: #161922;        /* surface-container */
+  --ui-bg-accented: #1c1f2b;        /* surface-container-high */
+  --ui-bg-inverted: #e4e2e6;
+
+  --ui-text-dimmed: #8f8f9e;        /* outline */
+  --ui-text-muted: #c5c5d4;         /* on-surface-variant */
+  --ui-text-toned: #c5c5d4;
+  --ui-text: #e4e2e6;               /* on-surface */
+  --ui-text-highlighted: #e4e2e6;
+  --ui-text-inverted: #2f3133;
+
+  --ui-border: rgba(69, 70, 82, 0.5);
+  --ui-border-muted: rgba(69, 70, 82, 0.35);
+  --ui-border-accented: #454652;
+  --ui-border-inverted: #e4e2e6;
+
+  --mrb-glass-fill: rgba(0, 0, 0, 0.35);
+  --mrb-glass-border: rgba(255, 255, 255, 0.12);
+  --mrb-card-shadow: none;
+  --mrb-scrim: rgba(0, 0, 0, 0.55);
+}
+
+/* Display/headline/title wear Plus Jakarta Sans, slightly tight */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   Card-box landing — kraft paper, index cards, tape.
+   Paper is paper: these do not change with the color mode.
+   Source of truth: design canvas "MyReciBook Website Card Box".
+   ============================================================ */
+:root {
+  --box-kraft: #efe4cd;                     /* the box itself */
+  --box-card: #fffdf8;                      /* index-card stock */
+  --box-tab: #e6d5b4;                       /* divider tabs */
+  --box-tab-alt: #e0cfae;
+  --box-tab-hover: #efe0c2;
+  --box-line: rgba(120, 90, 50, 0.25);      /* kraft hairlines */
+  --box-edge: rgba(120, 90, 50, 0.22);      /* card borders */
+  --box-rule: rgba(36, 56, 156, 0.09);      /* ruled ink lines */
+  --box-margin-red: rgba(186, 26, 26, 0.2); /* red margin line */
+  --box-stamp-red: rgba(186, 26, 26, 0.65); /* RECIPE Nº labels */
+  --box-ink: #1a1c1e;
+  --box-ink-soft: #454652;
+  --box-primary: #24389c;                   /* moody-700, the app's light primary */
+  --box-primary-press: #16256e;             /* CTA under-edge */
+  --box-shadow-sm: 0 3px 8px rgba(80, 60, 30, 0.1);
+  --box-shadow-md: 0 6px 16px rgba(80, 60, 30, 0.11);
+  --box-shadow-lg: 0 14px 34px rgba(80, 60, 30, 0.16), 0 2px 6px rgba(80, 60, 30, 0.08);
+
+  /* App cover gradients (phone mockup) — RbColors verbatim */
+  --cover-terracotta: linear-gradient(135deg, #b4643c, #7c3f24);
+  --cover-teal: linear-gradient(135deg, #2e6f6a, #1b4744);
+  --cover-plum: linear-gradient(135deg, #8e3b62, #5b2340);
+  --cover-olive: linear-gradient(135deg, #5e7346, #3b4a2b);
+}
