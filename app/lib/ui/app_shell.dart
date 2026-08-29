@@ -22,7 +22,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:provider/provider.dart';
 
 import '../features.dart';
@@ -129,29 +128,33 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _select(int i) => setState(() {
-        _tab = i;
-        _built[i] = true;
-      });
+    _tab = i;
+    _built[i] = true;
+  });
 
   Future<void> _import() async {
     if (_importBusy) return;
     _importBusy = true;
     try {
       // The sheet owns the pick now (3a): it pops with a typed choice.
-      final choice = await showImportSheet(context,
-          picker: widget.picker, camera: widget.camera);
+      final choice = await showImportSheet(
+        context,
+        picker: widget.picker,
+        camera: widget.camera,
+      );
       if (choice == null || !mounted) return;
       switch (choice) {
         case ImportManual():
-          await Navigator.of(context).push(MaterialPageRoute<void>(
-              builder: (_) => const ManualEntryScreen()));
+          await Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const ManualEntryScreen()),
+          );
         case ImportPicked(:final images, :final separate):
           if (images.isEmpty) return;
           if (separate) {
             // One queue item per shot (2b/3b); the sequential worker takes
             // over and the queue screen is non-blocking progress, not a gate.
             context.read<BatchModel>().addAll([
-              for (final f in images) [f]
+              for (final f in images) [f],
             ]);
             await _openImportQueue();
           } else {
@@ -164,18 +167,22 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
-  Future<void> _openImportQueue() =>
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => BatchQueueScreen(
-            extractor: widget.extractor, pickMore: widget.picker),
-      ));
+  Future<void> _openImportQueue() => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => BatchQueueScreen(
+        extractor: widget.extractor,
+        pickMore: widget.picker,
+      ),
+    ),
+  );
 
   void _onShared(List<File> images) {
     if (!mounted || images.isEmpty) return;
     if (_importBusy) {
       setState(() => _queuedShares.addAll(images));
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Screenshot saved for your next import')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Screenshot saved for your next import')),
+      );
       return;
     }
     _openShared(images);
@@ -196,7 +203,8 @@ class _AppShellState extends State<AppShell> {
     if (_importBusy) {
       setState(() => _queuedLinks.add(url));
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Link saved for your next import')));
+        const SnackBar(content: Text('Link saved for your next import')),
+      );
       return;
     }
     _openSharedLink(url);
@@ -227,14 +235,15 @@ class _AppShellState extends State<AppShell> {
     _openSharedLink(next);
   }
 
-  Future<void> _pushReview(List<File> images) =>
-      Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => ImportReviewScreen(
-          images: images,
-          extractor: widget.extractor,
-          pickMore: widget.picker,
-        ),
-      ));
+  Future<void> _pushReview(List<File> images) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => ImportReviewScreen(
+        images: images,
+        extractor: widget.extractor,
+        pickMore: widget.picker,
+      ),
+    ),
+  );
 
   /// Shared link → the same review flow, with the link extractor standing in
   /// for the vision model. No images: the page's own data is the source; a
@@ -242,92 +251,95 @@ class _AppShellState extends State<AppShell> {
   /// call, same cost as a screenshot).
   Future<void> _pushLinkReview(String url) {
     final gemini = widget.extractor;
-    return Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => ImportReviewScreen(
-        images: const [],
-        extractor: widget.linkExtractor?.call(url) ??
-            LinkExtractor(
-              url: url,
-              client: linkFetchClient(),
-              fallback: gemini is GeminiExtractor
-                  ? gemini.extractContentFromText
-                  : null,
-              fallbackModel:
-                  gemini is GeminiExtractor ? gemini.modelName : '',
-            ),
-        pickMore: widget.picker,
-        fetchCover: (imageUrl) =>
-            CoverFetcher(client: linkFetchClient()).fetch(imageUrl),
+    return Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ImportReviewScreen(
+          images: const [],
+          extractor:
+              widget.linkExtractor?.call(url) ??
+              LinkExtractor(
+                url: url,
+                client: linkFetchClient(),
+                fallback: gemini is GeminiExtractor
+                    ? gemini.extractContentFromText
+                    : null,
+                fallbackModel: gemini is GeminiExtractor
+                    ? gemini.modelName
+                    : '',
+              ),
+          pickMore: widget.picker,
+          fetchCover: (imageUrl) =>
+              CoverFetcher(client: linkFetchClient()).fetch(imageUrl),
+        ),
       ),
-    ));
+    );
   }
 
   // The drawer Storage row's destination: the 3h screen. Restore refreshes
   // the library through this context — the pushed route shares the scope.
   void _openStorage() {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => StorageScreen(
-        folderName: widget.folderName,
-        onChangeFolder: widget.onChangeFolder,
-        onRestored: () => context.read<LibraryModel>().rescan(),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => StorageScreen(
+          folderName: widget.folderName,
+          onChangeFolder: widget.onChangeFolder,
+          onRestored: () => context.read<LibraryModel>().rescan(),
+        ),
       ),
-    ));
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final batch = context.watch<BatchModel>();
-    // The shell asserts its own status-bar style so returning from a route
-    // that set its own (the black OriginalsViewer) can never leave light icons
-    // stranded on the cream theme — Arnar's S21 pass, 2026-08-06.
-    final overlay = Theme.of(context).brightness == Brightness.dark
-        ? SystemUiOverlayStyle.light
-        : SystemUiOverlayStyle.dark;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: overlay,
-      child: Scaffold(
-        extendBody: true,
-        body: IndexedStack(
-          index: _tab,
-          children: [
-            RecipeListScreen(onImport: _import, onOpenQueue: _openImportQueue),
-            _built[1] ? const GroceryTab() : const SizedBox.shrink(),
-            // Slot 2: the pantry POC borrows the slot on dev builds (Arnar's
-            // test call, 2026-08-17 — flag off restores Unlock untouched);
-            // then the Unlock pitch — or, with both flags off, the queue
-            // tab in its embedded form (no Hide/Done — a tab has nothing to
-            // pop back to).
-            if (kDiaryEnabled)
-              // Slot 3 hosts Diary + Pantry behind one segmented control.
-              _built[2] ? const FoodTab() : const SizedBox.shrink()
-            else if (kPantryEnabled)
-              _built[2] ? const PantryTab() : const SizedBox.shrink()
-            else if (kUnlockTabEnabled)
-              _built[2] ? const UnlockTab() : const SizedBox.shrink()
-            else
-              _built[2]
-                  ? BatchQueueScreen(
-                      extractor: widget.extractor,
-                      pickMore: widget.picker,
-                      embedded: true,
-                    )
-                  : const SizedBox.shrink(),
-            // Settings reuses the drawer Storage row's exact destination wiring.
-            _built[3]
-                ? SettingsTab(
-                    folderName: widget.folderName, onOpenStorage: _openStorage)
+    // Status-bar style comes from rbStatusBarAnchor (MaterialApp.builder) —
+    // the shell's own AnnotatedRegion moved there 2026-08-29 so AppBar-less
+    // routes (import review…) are covered too, not just this one.
+    return Scaffold(
+      extendBody: true,
+      body: IndexedStack(
+        index: _tab,
+        children: [
+          RecipeListScreen(onImport: _import, onOpenQueue: _openImportQueue),
+          _built[1] ? const GroceryTab() : const SizedBox.shrink(),
+          // Slot 2: the pantry POC borrows the slot on dev builds (Arnar's
+          // test call, 2026-08-17 — flag off restores Unlock untouched);
+          // then the Unlock pitch — or, with both flags off, the queue
+          // tab in its embedded form (no Hide/Done — a tab has nothing to
+          // pop back to).
+          if (kDiaryEnabled)
+            // Slot 3 hosts Diary + Pantry behind one segmented control.
+            _built[2] ? const FoodTab() : const SizedBox.shrink()
+          else if (kPantryEnabled)
+            _built[2] ? const PantryTab() : const SizedBox.shrink()
+          else if (kUnlockTabEnabled)
+            _built[2] ? const UnlockTab() : const SizedBox.shrink()
+          else
+            _built[2]
+                ? BatchQueueScreen(
+                    extractor: widget.extractor,
+                    pickMore: widget.picker,
+                    embedded: true,
+                  )
                 : const SizedBox.shrink(),
-            // Built, unreachable while kMealPlanEnabled is false — the tab
-            // exists so the switch is one line when the engine lands.
-            if (kMealPlanEnabled) const PlanTab(),
-          ],
-        ),
-        bottomNavigationBar: GlassNavBar(
-            active: _tab,
-            onTab: _select,
-            onFab: _import,
-            queueBadge:
-                batch.attention + _queuedShares.length + _queuedLinks.length),
+          // Settings reuses the drawer Storage row's exact destination wiring.
+          _built[3]
+              ? SettingsTab(
+                  folderName: widget.folderName,
+                  onOpenStorage: _openStorage,
+                )
+              : const SizedBox.shrink(),
+          // Built, unreachable while kMealPlanEnabled is false — the tab
+          // exists so the switch is one line when the engine lands.
+          if (kMealPlanEnabled) const PlanTab(),
+        ],
+      ),
+      bottomNavigationBar: GlassNavBar(
+        active: _tab,
+        onTab: _select,
+        onFab: _import,
+        queueBadge:
+            batch.attention + _queuedShares.length + _queuedLinks.length,
       ),
     );
   }

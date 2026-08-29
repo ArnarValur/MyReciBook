@@ -126,6 +126,57 @@ void main() {
     });
   }
 
+  group('times.extra', () {
+    // The cake case (Arnar 2026-08-29): Prep + Refrigerate + Total. Labels
+    // ride verbatim; a file without extra keeps its exact key set.
+    test('round-trips labels and minutes', () {
+      final t = RecipeTimes.fromJsonOrNull({
+        'prep_min': 30,
+        'cook_min': null,
+        'total_min': 270,
+        'raw': 'Prep Time: 30 mins, Refrigerate Time: 4 hrs',
+        'extra': [
+          {'label': 'Refrigerate', 'min': 240},
+        ],
+      })!;
+      expect(t.extra.single.label, 'Refrigerate');
+      expect(t.extra.single.min, 240);
+      final out = t.toJson();
+      expect(out['extra'], [
+        {'label': 'Refrigerate', 'min': 240},
+      ]);
+      expect(RecipeTimes.fromJsonOrNull(out)!.toJson(), out);
+    });
+
+    test('absent extra stays absent in JSON — old files unchanged', () {
+      final t = RecipeTimes.fromJsonOrNull(
+          {'prep_min': 5, 'cook_min': null, 'total_min': 25, 'raw': '25 min'})!;
+      expect(t.extra, isEmpty);
+      expect(t.toJson().containsKey('extra'), isFalse);
+    });
+
+    test('compactLine names every part; total-only stays short', () {
+      const cake = RecipeTimes(
+          prepMin: 30,
+          totalMin: 270,
+          extra: [ExtraTime(label: 'Refrigerate', min: 240)]);
+      expect(cake.compactLine(),
+          'Prep 30 min, Refrigerate 4 hr, Total 4 hr 30 min');
+      const totalOnly = RecipeTimes(totalMin: 25, raw: '25 min');
+      expect(totalOnly.compactLine(), '25 min');
+      const rawOnly = RecipeTimes(raw: 'ca. 1 time');
+      expect(rawOnly.compactLine(), 'ca. 1 time');
+    });
+
+    test('fmtMin renders the one duration shape', () {
+      expect(RecipeTimes.fmtMin(25), '25 min');
+      expect(RecipeTimes.fmtMin(240), '4 hr');
+      expect(RecipeTimes.fmtMin(270), '4 hr 30 min');
+      expect(RecipeTimes.fmtMin(null), isNull);
+      expect(RecipeTimes.fmtMin(0), isNull);
+    });
+  });
+
   group('Recipe.assemble', () {
     final content = <String, dynamic>{
       'title': 'Pancakes',

@@ -5,7 +5,7 @@
 > **Updated:** 2026-08-30
 
 ## 📍 Now
-- Phase: build. 0.18.3+34 on main and on the phone. Branch i18n sits at 0.11.0+10.
+- Phase: build. 0.19.0+37 on main and on the phone. Branch i18n sits at 0.11.0+10.
 - APKs ONLY via app/deploy-s21.sh — a plain `flutter build apk` ships no proxy
   URL and placeholder connector keys. docs/runbook-dev-deploy.md §5.
 - Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Gemini key in
@@ -16,25 +16,23 @@
   ($24.99 on the site is placeholder). Crash reporting ON, recipe text scrubbed.
 - Tester link still on build 9. Play account live, nothing uploaded. Play app
   entry not created — create as FREE + one-time IAP (trial needs free install).
-- Night shift 2026-08-29 ran: analyze clean; full suite 852 tests, 850 green,
-  2 red — cookbook_view stale "no covers in list view" asserts, lib is right.
-  Comb of all 72 test files: docs/test-comb-2026-08-29.md — repairs proposed
-  there (icon-binding hole, arb tautology, 5 coverage holes), Arnar undecided.
+- Test comb of all 72 files: docs/test-comb-2026-08-29.md — repairs proposed
+  (icon-binding hole, arb tautology, 5 coverage holes), Arnar undecided.
+  cookbook_view ×2 still red — stale "no covers in list view" asserts, lib right.
 - starter_foods green ≠ USDA verification — it pins the unverified transcription.
-- Suite runs are cheap when warm (55s); cadence stays analyze → touched files →
-  full suite at bedtime.
+- Cadence: analyze between changes → touched files warm → full suite at bedtime.
 - website/ — card-box landing COMPLETE in Nuxt 4: index + privacy/terms/contact
   (drafts, stamped) + 404, SEO formal (sitemap/robots/schema.org/OG card),
-  real screenshots (docs/MyReciBook-Screenshots → WebP via scripts/shots.mjs),
-  dark mode "23:00 navy" (paper stays paper). Copy flags await joint overview:
-  website/copy-notes.md. Staging LIVE 2026-08-29 on MyReciBook-Dev:
+  real screenshots, dark mode "23:00 navy". Copy flags await joint overview:
+  website/copy-notes.md. Staging LIVE on MyReciBook-Dev:
   https://myrecibook-website-staging-213431165631.europe-west1.run.app
   (noindex-guarded; real domain unmapped on purpose). No track yet.
+  NEXT SESSION IS THIS (Arnar 2026-08-30).
 
 ## 🚀 Active tracks
-- mvp-build — server deployed, onboarding shipped. Open: privacy policy (website
-  draft exists, doubles as source), Play data safety form, welcome slide
-  screenshots, billing seam (unstarted).
+- mvp-build — server deployed, onboarding shipped, rescue flow polished 0.19.0.
+  Open: privacy policy (website draft doubles as source), Play data safety
+  form, welcome slide screenshots, billing seam (unstarted).
 - diary — meal hours, cold start, photo cards shipped. Open: device verify ·
   oats label re-read · starter_foods.dart UNVERIFIED vs USDA, his run.
 - tags — shelf + editor shipped. Open: strings are English literals.

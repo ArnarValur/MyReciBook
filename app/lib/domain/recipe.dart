@@ -76,17 +76,19 @@ class Recipe {
         importedAt: importedAt.toIso8601String(),
         originalImages: originalImages,
         url: contentSource is Map ? contentSource['url'] as String? : null,
-        appHint: contentSource is Map ? contentSource['app_hint'] as String? : null,
+        appHint: contentSource is Map
+            ? contentSource['app_hint'] as String?
+            : null,
       ),
       servings: Servings.fromJsonOrNull(content['servings']),
       times: RecipeTimes.fromJsonOrNull(content['times']),
       ingredients: [
         for (final i in (content['ingredients'] as List? ?? []))
-          Ingredient.fromJson(i as Map<String, dynamic>)
+          Ingredient.fromJson(i as Map<String, dynamic>),
       ],
       steps: [
         for (final s in (content['steps'] as List? ?? []))
-          RecipeStep.fromJson(s as Map<String, dynamic>)
+          RecipeStep.fromJson(s as Map<String, dynamic>),
       ],
       tags: [for (final t in (content['tags'] as List? ?? [])) t as String],
       notes: null, // user's own field — extraction never touches it
@@ -98,53 +100,57 @@ class Recipe {
             ? (contentExtraction['overall_confidence'] as num?)?.toDouble()
             : null,
         needsReview: contentExtraction is Map
-            ? [for (final p in (contentExtraction['needs_review'] as List? ?? [])) p as String]
+            ? [
+                for (final p
+                    in (contentExtraction['needs_review'] as List? ?? []))
+                  p as String,
+              ]
             : const [],
       ),
     );
   }
 
   factory Recipe.fromJson(Map<String, dynamic> json) => Recipe(
-        schemaVersion: json['schema_version'] as int,
-        id: json['id'] as String,
-        title: json['title'] as String,
-        lang: json['lang'] as String?,
-        source: RecipeSource.fromJson(json['source'] as Map<String, dynamic>),
-        servings: Servings.fromJsonOrNull(json['servings']),
-        times: RecipeTimes.fromJsonOrNull(json['times']),
-        ingredients: [
-          for (final i in (json['ingredients'] as List? ?? []))
-            Ingredient.fromJson(i as Map<String, dynamic>)
-        ],
-        steps: [
-          for (final s in (json['steps'] as List? ?? []))
-            RecipeStep.fromJson(s as Map<String, dynamic>)
-        ],
-        tags: [for (final t in (json['tags'] as List? ?? [])) t as String],
-        notes: json['notes'] as String?,
-        favorite: json['favorite'] as bool? ?? false,
-        cover: json['cover'] as String?,
-        extraction: json['extraction'] is Map
-            ? Extraction.fromJson(json['extraction'] as Map<String, dynamic>)
-            : null,
-      );
+    schemaVersion: json['schema_version'] as int,
+    id: json['id'] as String,
+    title: json['title'] as String,
+    lang: json['lang'] as String?,
+    source: RecipeSource.fromJson(json['source'] as Map<String, dynamic>),
+    servings: Servings.fromJsonOrNull(json['servings']),
+    times: RecipeTimes.fromJsonOrNull(json['times']),
+    ingredients: [
+      for (final i in (json['ingredients'] as List? ?? []))
+        Ingredient.fromJson(i as Map<String, dynamic>),
+    ],
+    steps: [
+      for (final s in (json['steps'] as List? ?? []))
+        RecipeStep.fromJson(s as Map<String, dynamic>),
+    ],
+    tags: [for (final t in (json['tags'] as List? ?? [])) t as String],
+    notes: json['notes'] as String?,
+    favorite: json['favorite'] as bool? ?? false,
+    cover: json['cover'] as String?,
+    extraction: json['extraction'] is Map
+        ? Extraction.fromJson(json['extraction'] as Map<String, dynamic>)
+        : null,
+  );
 
   Map<String, dynamic> toJson() => {
-        'schema_version': schemaVersion,
-        'id': id,
-        'title': title,
-        'lang': lang,
-        'source': source.toJson(),
-        'servings': servings?.toJson(),
-        'times': times?.toJson(),
-        'ingredients': [for (final i in ingredients) i.toJson()],
-        'steps': [for (final s in steps) s.toJson()],
-        'tags': tags,
-        'notes': notes,
-        if (favorite) 'favorite': true,
-        if (cover != null) 'cover': cover,
-        'extraction': extraction?.toJson(),
-      };
+    'schema_version': schemaVersion,
+    'id': id,
+    'title': title,
+    'lang': lang,
+    'source': source.toJson(),
+    'servings': servings?.toJson(),
+    'times': times?.toJson(),
+    'ingredients': [for (final i in ingredients) i.toJson()],
+    'steps': [for (final s in steps) s.toJson()],
+    'tags': tags,
+    'notes': notes,
+    if (favorite) 'favorite': true,
+    if (cover != null) 'cover': cover,
+    'extraction': extraction?.toJson(),
+  };
 
   /// `cover:` accepts a new ref, omission (keep), or [clearCover] (remove) —
   /// a plain `cover: null` can't say "remove" and "leave alone" apart.
@@ -162,23 +168,22 @@ class Recipe {
     bool? favorite,
     String? cover,
     bool clearCover = false,
-  }) =>
-      Recipe(
-        schemaVersion: schemaVersion,
-        id: id,
-        title: title ?? this.title,
-        lang: lang,
-        source: source,
-        servings: servings ?? this.servings,
-        times: clearTimes ? null : (times ?? this.times),
-        ingredients: ingredients ?? this.ingredients,
-        steps: steps ?? this.steps,
-        tags: tags ?? this.tags,
-        notes: notes ?? this.notes,
-        favorite: favorite ?? this.favorite,
-        cover: clearCover ? null : (cover ?? this.cover),
-        extraction: extraction,
-      );
+  }) => Recipe(
+    schemaVersion: schemaVersion,
+    id: id,
+    title: title ?? this.title,
+    lang: lang,
+    source: source,
+    servings: servings ?? this.servings,
+    times: clearTimes ? null : (times ?? this.times),
+    ingredients: ingredients ?? this.ingredients,
+    steps: steps ?? this.steps,
+    tags: tags ?? this.tags,
+    notes: notes ?? this.notes,
+    favorite: favorite ?? this.favorite,
+    cover: clearCover ? null : (cover ?? this.cover),
+    extraction: extraction,
+  );
 }
 
 class RecipeSource {
@@ -200,22 +205,22 @@ class RecipeSource {
   });
 
   factory RecipeSource.fromJson(Map<String, dynamic> json) => RecipeSource(
-        type: json['type'] as String? ?? 'screenshot',
-        importedAt: json['imported_at'] as String?,
-        originalImages: json['original_images'] is List
-            ? [for (final p in json['original_images'] as List) p as String]
-            : null,
-        url: json['url'] as String?,
-        appHint: json['app_hint'] as String?,
-      );
+    type: json['type'] as String? ?? 'screenshot',
+    importedAt: json['imported_at'] as String?,
+    originalImages: json['original_images'] is List
+        ? [for (final p in json['original_images'] as List) p as String]
+        : null,
+    url: json['url'] as String?,
+    appHint: json['app_hint'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'type': type,
-        'imported_at': importedAt,
-        'original_images': originalImages,
-        if (url != null) 'url': url,
-        'app_hint': appHint,
-      };
+    'type': type,
+    'imported_at': importedAt,
+    'original_images': originalImages,
+    if (url != null) 'url': url,
+    'app_hint': appHint,
+  };
 }
 
 class Servings {
@@ -237,19 +242,79 @@ class RecipeTimes {
   final num? totalMin;
   final String? raw;
 
-  const RecipeTimes({this.prepMin, this.cookMin, this.totalMin, this.raw});
+  /// Durations beyond prep/cook/total — "Refrigerate", "Rise", "Marinate"…
+  /// Labelled verbatim from the source; rendered only when present. Omitted
+  /// from JSON when empty so pre-2026-08-29 files round-trip byte-identical
+  /// (favorite's rule).
+  final List<ExtraTime> extra;
 
-  static RecipeTimes? fromJsonOrNull(Object? json) => json is Map<String, dynamic>
+  const RecipeTimes({
+    this.prepMin,
+    this.cookMin,
+    this.totalMin,
+    this.raw,
+    this.extra = const [],
+  });
+
+  static RecipeTimes? fromJsonOrNull(Object? json) =>
+      json is Map<String, dynamic>
       ? RecipeTimes(
           prepMin: json['prep_min'] as num?,
           cookMin: json['cook_min'] as num?,
           totalMin: json['total_min'] as num?,
           raw: json['raw'] as String?,
+          extra: [
+            for (final e in (json['extra'] as List? ?? const []))
+              if (e is Map && e['label'] is String)
+                ExtraTime(label: e['label'] as String, min: e['min'] as num?),
+          ],
         )
       : null;
 
-  Map<String, dynamic> toJson() =>
-      {'prep_min': prepMin, 'cook_min': cookMin, 'total_min': totalMin, 'raw': raw};
+  Map<String, dynamic> toJson() => {
+    'prep_min': prepMin,
+    'cook_min': cookMin,
+    'total_min': totalMin,
+    'raw': raw,
+    if (extra.isNotEmpty) 'extra': [for (final e in extra) e.toJson()],
+  };
+
+  /// One line naming every stated part: "Prep 30 min, Refrigerate 4 hr,
+  /// Total 4 hr 30 min" — or just "25 min" when total is the only part.
+  /// The shape exports print and the editor writes back as raw, so an edited
+  /// recipe's raw never lies about what the parts say.
+  String? compactLine() {
+    final parts = <String>[
+      if (prepMin != null) 'Prep ${fmtMin(prepMin)}',
+      if (cookMin != null) 'Cook ${fmtMin(cookMin)}',
+      for (final e in extra)
+        if (e.min != null) '${e.label} ${fmtMin(e.min)}',
+    ];
+    if (parts.isEmpty) return fmtMin(totalMin) ?? raw;
+    if (totalMin != null) parts.add('Total ${fmtMin(totalMin)}');
+    return parts.join(', ');
+  }
+
+  /// "25 min" / "2 hr" / "1 hr 30 min" — the one duration shape files store
+  /// and chips display (DurationField delegates here).
+  static String? fmtMin(num? minutes) {
+    if (minutes == null || minutes <= 0) return null;
+    final t = minutes.round();
+    final h = t ~/ 60;
+    final m = t % 60;
+    if (h == 0) return '$m min';
+    if (m == 0) return '$h hr';
+    return '$h hr $m min';
+  }
+}
+
+class ExtraTime {
+  final String label;
+  final num? min;
+
+  const ExtraTime({required this.label, this.min});
+
+  Map<String, dynamic> toJson() => {'label': label, 'min': min};
 }
 
 class Ingredient {
@@ -281,41 +346,43 @@ class Ingredient {
   });
 
   factory Ingredient.fromJson(Map<String, dynamic> json) => Ingredient(
-        raw: json['raw'] as String? ?? '',
-        qty: json['qty'] as num?,
-        unit: json['unit'] as String?,
-        item: json['item'] as String?,
-        note: json['note'] as String?,
-        group: json['group'] as String?,
-        confidence: (json['confidence'] as num?)?.toDouble(),
-        productRef: json['product_ref'] as String?,
-      );
+    raw: json['raw'] as String? ?? '',
+    qty: json['qty'] as num?,
+    unit: json['unit'] as String?,
+    item: json['item'] as String?,
+    note: json['note'] as String?,
+    group: json['group'] as String?,
+    confidence: (json['confidence'] as num?)?.toDouble(),
+    productRef: json['product_ref'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'raw': raw,
-        'qty': qty,
-        'unit': unit,
-        'item': item,
-        'note': note,
-        'group': group,
-        'confidence': confidence,
-        if (productRef != null) 'product_ref': productRef,
-      };
+    'raw': raw,
+    'qty': qty,
+    'unit': unit,
+    'item': item,
+    'note': note,
+    'group': group,
+    'confidence': confidence,
+    if (productRef != null) 'product_ref': productRef,
+  };
 
   /// `productRef:` accepts a new ref, omission (keep), or [clearProductRef]
   /// (unlink) — cover's tri-state rule.
-  Ingredient copyWith(
-          {String? raw, String? productRef, bool clearProductRef = false}) =>
-      Ingredient(
-        raw: raw ?? this.raw,
-        qty: qty,
-        unit: unit,
-        item: item,
-        note: note,
-        group: group,
-        confidence: confidence,
-        productRef: clearProductRef ? null : (productRef ?? this.productRef),
-      );
+  Ingredient copyWith({
+    String? raw,
+    String? productRef,
+    bool clearProductRef = false,
+  }) => Ingredient(
+    raw: raw ?? this.raw,
+    qty: qty,
+    unit: unit,
+    item: item,
+    note: note,
+    group: group,
+    confidence: confidence,
+    productRef: clearProductRef ? null : (productRef ?? this.productRef),
+  );
 }
 
 class RecipeStep {
@@ -325,9 +392,9 @@ class RecipeStep {
   const RecipeStep({required this.raw, this.confidence});
 
   factory RecipeStep.fromJson(Map<String, dynamic> json) => RecipeStep(
-        raw: json['raw'] as String? ?? '',
-        confidence: (json['confidence'] as num?)?.toDouble(),
-      );
+    raw: json['raw'] as String? ?? '',
+    confidence: (json['confidence'] as num?)?.toDouble(),
+  );
 
   Map<String, dynamic> toJson() => {'raw': raw, 'confidence': confidence};
 
@@ -351,20 +418,20 @@ class Extraction {
   });
 
   factory Extraction.fromJson(Map<String, dynamic> json) => Extraction(
-        model: json['model'] as String?,
-        mode: json['mode'] as String?,
-        extractedAt: json['extracted_at'] as String?,
-        overallConfidence: (json['overall_confidence'] as num?)?.toDouble(),
-        needsReview: [
-          for (final p in (json['needs_review'] as List? ?? [])) p as String
-        ],
-      );
+    model: json['model'] as String?,
+    mode: json['mode'] as String?,
+    extractedAt: json['extracted_at'] as String?,
+    overallConfidence: (json['overall_confidence'] as num?)?.toDouble(),
+    needsReview: [
+      for (final p in (json['needs_review'] as List? ?? [])) p as String,
+    ],
+  );
 
   Map<String, dynamic> toJson() => {
-        'model': model,
-        'mode': mode,
-        'extracted_at': extractedAt,
-        'overall_confidence': overallConfidence,
-        'needs_review': needsReview,
-      };
+    'model': model,
+    'mode': mode,
+    'extracted_at': extractedAt,
+    'overall_confidence': overallConfidence,
+    'needs_review': needsReview,
+  };
 }

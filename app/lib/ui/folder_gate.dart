@@ -115,8 +115,13 @@ class BootGate extends StatefulWidget {
   /// callback re-enters the gate on a lost grant; the second is the
   /// deliberate change-folder door (Storage screen) — straight to the
   /// system picker, no gate screen.
-  final Widget Function(SafFolderStore store, ProductStore? pantry,
-      VoidCallback onGrantLost, VoidCallback onChangeFolder) appBuilder;
+  final Widget Function(
+    SafFolderStore store,
+    ProductStore? pantry,
+    VoidCallback onGrantLost,
+    VoidCallback onChangeFolder,
+  )
+  appBuilder;
   final MethodChannel safChannel;
 
   @override
@@ -154,8 +159,10 @@ class _BootGateState extends State<BootGate> {
     if (uri != null) {
       var ok = false;
       try {
-        ok = await widget.safChannel
-                .invokeMethod<bool>('hasGrant', {'uri': uri}) ??
+        ok =
+            await widget.safChannel.invokeMethod<bool>('hasGrant', {
+              'uri': uri,
+            }) ??
             false;
       } catch (_) {} // hasGrant never throws by contract; belt and braces
       if (ok) {
@@ -200,16 +207,18 @@ class _BootGateState extends State<BootGate> {
       final old = widget.settings.treeUri;
       if (_changing && old != null && uri != old && !await _confirmSwitch()) {
         try {
-          await widget.safChannel
-              .invokeMethod<void>('releaseGrant', {'uri': uri});
+          await widget.safChannel.invokeMethod<void>('releaseGrant', {
+            'uri': uri,
+          });
         } catch (_) {}
         _resumeCurrent();
         return;
       }
       if (old != null && old != uri) {
         try {
-          await widget.safChannel
-              .invokeMethod<void>('releaseGrant', {'uri': old});
+          await widget.safChannel.invokeMethod<void>('releaseGrant', {
+            'uri': old,
+          });
         } catch (_) {}
       }
       await widget.settings.setTreeUri(uri);
@@ -226,8 +235,11 @@ class _BootGateState extends State<BootGate> {
       // running app on a deliberate change).
       final ctx = _dialogContext;
       if (ctx != null && ctx.mounted) {
-        ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(
-            content: Text("Couldn't open the folder picker — try again")));
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          const SnackBar(
+            content: Text("Couldn't open the folder picker — try again"),
+          ),
+        );
       }
     } finally {
       _picking = false;
@@ -244,8 +256,9 @@ class _BootGateState extends State<BootGate> {
       builder: (dctx) => AlertDialog(
         title: const Text('Switch to this folder?'),
         content: const Text(
-            'Your recipes stay in the current folder — nothing is moved or '
-            'deleted. The app will show what the new folder holds.'),
+          'Your recipes stay in the current folder — nothing is moved or '
+          'deleted. The app will show what the new folder holds.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dctx, false),
@@ -279,7 +292,10 @@ class _BootGateState extends State<BootGate> {
     final pantryCache = widget.pantryImageCache;
     final pantry = localPantry != null && pantryCache != null
         ? SafPantryStore(
-            treeUri: uri, imageCache: pantryCache, channel: widget.safChannel)
+            treeUri: uri,
+            imageCache: pantryCache,
+            channel: widget.safChannel,
+          )
         : null;
     // Pantry migration has no done-flag: the drained old dir is the flag, so
     // this stays a cheap exists() on every later boot.
@@ -289,8 +305,11 @@ class _BootGateState extends State<BootGate> {
       if (mounted) setState(() => _phase = _Boot.migrating);
       try {
         if (!widget.settings.migrationDone) {
-          await migrateLocalToSaf(widget.localStore, store,
-              settings: widget.settings);
+          await migrateLocalToSaf(
+            widget.localStore,
+            store,
+            settings: widget.settings,
+          );
         }
         if (pantryPending && pantry != null) {
           await migratePantryToSaf(localPantry, pantry);
@@ -358,25 +377,29 @@ class _BootGateState extends State<BootGate> {
     final units = widget.units;
     final themePref = widget.themeMode;
     Widget build(UnitSystem u, ThemeMode t) => FirstRunSetupScreen(
-          folderName: folderDisplayName(uri),
-          onPickFolder: _pick,
-          units: u,
-          onUnits: widget.onUnits ?? (_) {},
-          themeMode: t,
-          onThemeMode: widget.onThemeMode ?? (_) {},
-          storage: widget.storage,
-          // Disabled until a folder exists — Continue must never advance into
-          // an app with nowhere to save.
-          onContinue: uri == null ? null : () => _enter(uri),
-        );
+      folderName: folderDisplayName(uri),
+      onPickFolder: _pick,
+      units: u,
+      onUnits: widget.onUnits ?? (_) {},
+      themeMode: t,
+      onThemeMode: widget.onThemeMode ?? (_) {},
+      storage: widget.storage,
+      // Disabled until a folder exists — Continue must never advance into
+      // an app with nowhere to save.
+      onContinue: uri == null ? null : () => _enter(uri),
+    );
     Widget withTheme(UnitSystem u) => themePref == null
         ? build(u, ThemeMode.system)
         : ValueListenableBuilder<ThemeMode>(
-            valueListenable: themePref, builder: (_, t, _) => build(u, t));
+            valueListenable: themePref,
+            builder: (_, t, _) => build(u, t),
+          );
     return units == null
         ? withTheme(UnitSystem.asWritten)
         : ValueListenableBuilder<UnitSystem>(
-            valueListenable: units, builder: (_, u, _) => withTheme(u));
+            valueListenable: units,
+            builder: (_, u, _) => withTheme(u),
+          );
   }
 
   @override
@@ -397,36 +420,42 @@ class _BootGateState extends State<BootGate> {
       _Boot.welcome => WelcomeScreen(onContinue: _startSetup),
       _Boot.setup => _setupScreen(),
       _Boot.gate => FolderGate(
-          lost: _lost,
-          onPick: _pick,
-          onCancel: _changing && _store != null ? _resumeCurrent : null,
-        ),
+        lost: _lost,
+        onPick: _pick,
+        onCancel: _changing && _store != null ? _resumeCurrent : null,
+      ),
       _Boot.slides => SlidesScreen(onDone: _finishOnboarding),
       _ => _Busy(
-          label: _phase == _Boot.migrating ? 'Moving your recipes in…' : null),
+        label: _phase == _Boot.migrating ? 'Moving your recipes in…' : null,
+      ),
     };
     MaterialApp app(ThemeMode mode, Locale? locale) => MaterialApp(
-          title: 'MyReciBook',
-          navigatorKey: _nav,
-          theme: rbLightTheme(),
-          darkTheme: rbDarkTheme(),
-          themeMode: mode,
-          // null = follow the phone; MaterialApp resolves it against the
-          // supported list itself.
-          locale: locale,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: kOfferedLocales,
-          home: gateHome,
-        );
+      title: 'MyReciBook',
+      navigatorKey: _nav,
+      theme: rbLightTheme(),
+      darkTheme: rbDarkTheme(),
+      builder: rbStatusBarAnchor,
+      themeMode: mode,
+      // null = follow the phone; MaterialApp resolves it against the
+      // supported list itself.
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: kOfferedLocales,
+      home: gateHome,
+    );
     final themePref = widget.themeMode;
     final localePref = widget.locale;
     Widget withLocale(ThemeMode mode) => localePref == null
         ? app(mode, null)
         : ValueListenableBuilder<Locale?>(
-            valueListenable: localePref, builder: (_, l, _) => app(mode, l));
+            valueListenable: localePref,
+            builder: (_, l, _) => app(mode, l),
+          );
     if (themePref == null) return withLocale(ThemeMode.system);
     return ValueListenableBuilder<ThemeMode>(
-        valueListenable: themePref, builder: (_, mode, _) => withLocale(mode));
+      valueListenable: themePref,
+      builder: (_, mode, _) => withLocale(mode),
+    );
   }
 }
 
@@ -445,11 +474,12 @@ class _Busy extends StatelessWidget {
             const CircularProgressIndicator(),
             if (label != null) ...[
               const SizedBox(height: 16),
-              Text(label!,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: context.scheme.onSurfaceVariant)),
+              Text(
+                label!,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: context.scheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ],
         ),
@@ -460,8 +490,12 @@ class _Busy extends StatelessWidget {
 
 /// First-run / re-pick gate — a real screen, minimal on purpose.
 class FolderGate extends StatelessWidget {
-  const FolderGate(
-      {super.key, required this.onPick, this.lost = false, this.onCancel});
+  const FolderGate({
+    super.key,
+    required this.onPick,
+    this.lost = false,
+    this.onCancel,
+  });
 
   final VoidCallback onPick;
   final bool lost;
@@ -493,11 +527,10 @@ class FolderGate extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                          lost
-                              ? Icons.folder_off_rounded
-                              : Icons.folder_rounded,
-                          size: 32,
-                          color: scheme.primary),
+                        lost ? Icons.folder_off_rounded : Icons.folder_rounded,
+                        size: 32,
+                        color: scheme.primary,
+                      ),
                     ),
                     const SizedBox(height: 18),
                     Text(
@@ -505,24 +538,28 @@ class FolderGate extends StatelessWidget {
                           ? 'Pick your folder again'
                           : 'Where should your recipes live?',
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineSmall
-                          ?.copyWith(fontSize: 22, height: 1.25),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontSize: 22,
+                        height: 1.25,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Text(
                       lost
                           ? 'Your recipes folder moved or access was lost — '
-                              'pick it again. Your files are untouched.'
+                                'pick it again. Your files are untouched.'
                           // Not "on this phone": SafBridge sends a plain
                           // OPEN_DOCUMENT_TREE, so the picker already lists
                           // the SD card and any cloud app exposing a writable
                           // folder. The old line was narrower than the code.
                           : 'Pick a folder for your recipes. Every one is '
-                              'saved there as a plain file — your folder, your '
-                              'files. The app reads and writes only in there.',
+                                'saved there as a plain file — your folder, your '
+                                'files. The app reads and writes only in there.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant, height: 1.55),
+                        color: scheme.onSurfaceVariant,
+                        height: 1.55,
+                      ),
                     ),
                   ],
                 ),

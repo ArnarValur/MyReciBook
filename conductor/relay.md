@@ -1,6 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-30 — rescue polish: times that survive their own editor
+
+- Shipped 0.19.0+37: status bar anchored app-wide, Retry confirms before
+  spending a rescue, cover photo pickable on the rescue form, times split
+  Prep/Cook/extras/Total through schema → file → review → detail → cards →
+  PDF → row editor (labeled pills); unit flip converts, cover tap ≠ originals.
+- Broke: first pass stopped at display — the editor collapsed imported parts
+  to one total and 0.19.0 was stamped unverified; Arnar caught both on device.
+- Arnar: verify-then-stamp (minor/patch after his eyes only, deploys ride
+  +build) · sew every consumer of a changed field before saying done.
+- UNFINISHED: none here — next session is the website (tweak list + copy flags).
+
 ## 2026-08-30 — the night shift: suite audited, honest for the first time
 
 - Shipped: no code. Night shift ran as armed — analyze clean; all 72 test files

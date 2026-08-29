@@ -12,6 +12,7 @@ import 'package:myrecibook/data/recipe_store.dart';
 import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
+import 'package:myrecibook/ui/import_review_screen.dart';
 
 import '../helpers/fixtures.dart';
 
@@ -102,6 +103,19 @@ void main() {
     await settle(tester);
   }
 
+  // The review form outgrew the 600px test viewport when the cover row
+  // joined it (2026-08-29) — scroll the button in like a user would.
+  Future<void> tapSave(WidgetTester tester) async {
+    final save = find.text('Save to cookbook');
+    await tester.scrollUntilVisible(save, 120,
+        scrollable: find
+            .descendant(
+                of: find.byType(ImportReviewScreen),
+                matching: find.byType(Scrollable))
+            .first);
+    await tester.tap(save);
+  }
+
   testWidgets('empty library sells the first rescue', (tester) async {
     await tester.pumpWidget(app(FakeExtractor([canned()])));
     await settle(tester);
@@ -124,7 +138,7 @@ void main() {
         find.widgetWithText(TextField, '1 cup flour'), '2 cups flour');
     await tester.enterText(
         find.widgetWithText(TextField, 'Mix everything.'), 'Whisk everything.');
-    await tester.tap(find.text('Save to cookbook'));
+    await tapSave(tester);
     await settle(tester);
 
     expect(find.text('Better Pancakes'), findsOneWidget);
@@ -146,7 +160,7 @@ void main() {
     await startImport(tester);
 
     await tester.enterText(find.widgetWithText(TextField, 'Pancakes'), '');
-    await tester.tap(find.text('Save to cookbook'));
+    await tapSave(tester);
     // Validation is synchronous — a short settle keeps the 4s snackbar alive
     // for the assertion (32 rounds × 150ms of fake clock would outlive it).
     await settle(tester, rounds: 6);
@@ -179,7 +193,7 @@ void main() {
     await startImport(tester);
     expect(find.textContaining('No steps captured'), findsOneWidget);
 
-    await tester.tap(find.text('Save to cookbook'));
+    await tapSave(tester);
     await settle(tester);
     expect(find.text('Pancakes'), findsOneWidget);
     expect(savedJsonFiles(), hasLength(1));

@@ -7,6 +7,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 
+import '../../domain/recipe.dart' show RecipeTimes;
 import '../theme.dart';
 import 'logo_mark.dart';
 
@@ -30,10 +31,9 @@ class SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = Text(
       text.toUpperCase(),
-      style: Theme.of(context)
-          .textTheme
-          .labelSmall
-          ?.copyWith(color: context.scheme.onSurfaceVariant),
+      style: Theme.of(
+        context,
+      ).textTheme.labelSmall?.copyWith(color: context.scheme.onSurfaceVariant),
     );
     if (trailing == null) return label;
     return Row(children: [label, const SizedBox(width: 6), trailing!]);
@@ -73,7 +73,8 @@ class TokenCard extends StatelessWidget {
         color: color ?? context.scheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(
-          color: borderColor ?? (selected ? context.scheme.primary : rb.hairline),
+          color:
+              borderColor ?? (selected ? context.scheme.primary : rb.hairline),
           width: borderWidth ?? (selected ? 1.5 : 1),
         ),
         boxShadow: selected ? rb.glowPrimary : (shadow ? rb.cardShadow : null),
@@ -112,8 +113,39 @@ class MetaChip extends StatelessWidget {
     );
     if (onTap == null) return chip;
     return InkWell(
-        borderRadius: BorderRadius.circular(999), onTap: onTap, child: chip);
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: chip,
+    );
   }
+}
+
+/// The time chips a recipe's stated durations earn: one per parsed part
+/// (Prep · Cook · the source's own labels like "Refrigerate" · Total), each
+/// rendered only when it has a value — a bare total or an unparsed string
+/// stays one plain chip. The clock rides the first chip only. Shared by the
+/// review screen and the detail page so the two never drift.
+List<Widget> timeMetaChips(RecipeTimes? times) {
+  if (times == null) return const [];
+  final parts = <(String, num)>[
+    if (times.prepMin != null) ('Prep', times.prepMin!),
+    if (times.cookMin != null) ('Cook', times.cookMin!),
+    for (final e in times.extra)
+      if (e.min != null && e.label.isNotEmpty) (e.label, e.min!),
+  ];
+  if (parts.isEmpty) {
+    final single = times.raw ?? RecipeTimes.fmtMin(times.totalMin);
+    if (single == null) return const [];
+    return [MetaChip(icon: Icons.schedule_rounded, label: single)];
+  }
+  if (times.totalMin != null) parts.add(('Total', times.totalMin!));
+  return [
+    for (final (i, p) in parts.indexed)
+      MetaChip(
+        icon: i == 0 ? Icons.schedule_rounded : null,
+        label: '${p.$1} ${RecipeTimes.fmtMin(p.$2)}',
+      ),
+  ];
 }
 
 /// Quiet status pill — the "On this phone" / "Synced" storage badge.
@@ -138,10 +170,10 @@ class StatusPill extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall
-                ?.copyWith(color: context.scheme.onSurfaceVariant, letterSpacing: 0.2),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: context.scheme.onSurfaceVariant,
+              letterSpacing: 0.2,
+            ),
           ),
         ],
       ),
@@ -157,22 +189,23 @@ class AppBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton(
-        tooltip: 'Back',
-        icon: const Icon(Icons.arrow_back_rounded),
-        onPressed: () => Navigator.of(context).maybePop(),
-      );
+    tooltip: 'Back',
+    icon: const Icon(Icons.arrow_back_rounded),
+    onPressed: () => Navigator.of(context).maybePop(),
+  );
 }
 
 /// 40dp frosted-glass circular button (hero overlays). [tooltip] doubles as
 /// the semantics label — icon-only tap targets must read under TalkBack.
 class GlassCircle extends StatelessWidget {
-  const GlassCircle(
-      {super.key,
-      required this.icon,
-      this.onTap,
-      this.iconColor,
-      this.filled = false,
-      this.tooltip});
+  const GlassCircle({
+    super.key,
+    required this.icon,
+    this.onTap,
+    this.iconColor,
+    this.filled = false,
+    this.tooltip,
+  });
 
   final IconData icon;
   final VoidCallback? onTap;
@@ -195,10 +228,12 @@ class GlassCircle extends StatelessWidget {
             child: SizedBox(
               width: 40,
               height: 40,
-              child: Icon(icon,
-                  size: 20,
-                  fill: filled ? 1 : 0,
-                  color: iconColor ?? context.scheme.onSurface),
+              child: Icon(
+                icon,
+                size: 20,
+                fill: filled ? 1 : 0,
+                color: iconColor ?? context.scheme.onSurface,
+              ),
             ),
           ),
         ),
@@ -214,8 +249,12 @@ class GlassCircle extends StatelessWidget {
 
 /// Frosted-glass stadium pill with icon + label (the "original ⇄" flipper).
 class GlassPill extends StatelessWidget {
-  const GlassPill(
-      {super.key, required this.icon, required this.label, this.onTap});
+  const GlassPill({
+    super.key,
+    required this.icon,
+    required this.label,
+    this.onTap,
+  });
 
   final IconData icon;
   final String label;
@@ -241,10 +280,13 @@ class GlassPill extends StatelessWidget {
                 children: [
                   Icon(icon, size: 15, color: context.scheme.onSurface),
                   const SizedBox(width: 5),
-                  Text(label,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-
-                          fontSize: 11.5, letterSpacing: 0.2)),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontSize: 11.5,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -257,7 +299,11 @@ class GlassPill extends StatelessWidget {
 
 /// The 52dp gradient FAB: primaryContainer → primary at 135°, strong glow.
 class GradientFab extends StatelessWidget {
-  const GradientFab({super.key, required this.onPressed, this.icon = Icons.add});
+  const GradientFab({
+    super.key,
+    required this.onPressed,
+    this.icon = Icons.add,
+  });
 
   final VoidCallback onPressed;
   final IconData icon;
@@ -300,16 +346,18 @@ class StripedPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.scheme;
     final a = Color.alphaBlend(
-        scheme.secondaryContainer.withValues(alpha: 0.45), scheme.surface);
+      scheme.secondaryContainer.withValues(alpha: 0.45),
+      scheme.surface,
+    );
     final b = Color.alphaBlend(
-        scheme.secondaryContainer.withValues(alpha: 0.20), scheme.surface);
+      scheme.secondaryContainer.withValues(alpha: 0.20),
+      scheme.surface,
+    );
     return CustomPaint(
       painter: _StripePainter(a, b),
       child: icon == null
           ? const SizedBox.expand()
-          : Center(
-              child:
-                  Icon(icon, size: 30, color: scheme.onSurfaceVariant)),
+          : Center(child: Icon(icon, size: 30, color: scheme.onSurfaceVariant)),
     );
   }
 }
@@ -359,9 +407,14 @@ class DashedInfoCard extends StatelessWidget {
         border: Border.all(color: scheme.outline.withValues(alpha: 0.6)),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(text,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontSize: 12.5, height: 1.5, color: scheme.onSurfaceVariant)),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          fontSize: 12.5,
+          height: 1.5,
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 }
@@ -386,11 +439,14 @@ Future<bool> showDestructiveConfirm(
         content: Text(body),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(dctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(dctx, false),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(
-                backgroundColor: scheme.error, foregroundColor: scheme.onError),
+              backgroundColor: scheme.error,
+              foregroundColor: scheme.onError,
+            ),
             onPressed: () => Navigator.pop(dctx, true),
             child: Text(verb),
           ),
@@ -404,17 +460,22 @@ Future<bool> showDestructiveConfirm(
 /// "400 g spaghetti" → bold leading quantity, regular rest. Display-only
 /// heuristic over `raw`; when no leading amount is found the line stays plain.
 TextSpan qtyBoldSpan(String raw, TextStyle? base) {
-  final m = RegExp(r'^[\d½¼¾⅓⅔][\d\s./,½¼¾⅓⅔×x–-]*\s*(?:[a-zA-Zæøåðþ]+\.?)?')
-      .firstMatch(raw);
+  final m = RegExp(
+    r'^[\d½¼¾⅓⅔][\d\s./,½¼¾⅓⅔×x–-]*\s*(?:[a-zA-Zæøåðþ]+\.?)?',
+  ).firstMatch(raw);
   if (m == null || m.end == 0 || m.end >= raw.length) {
     return TextSpan(text: raw, style: base);
   }
-  return TextSpan(style: base, children: [
-    TextSpan(
+  return TextSpan(
+    style: base,
+    children: [
+      TextSpan(
         text: raw.substring(0, m.end),
-        style: const TextStyle(fontWeight: FontWeight.w700)),
-    TextSpan(text: raw.substring(m.end)),
-  ]);
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      TextSpan(text: raw.substring(m.end)),
+    ],
+  );
 }
 
 /// Full-screen pinch-zoomable viewer over the original screenshots —
@@ -437,11 +498,12 @@ class OriginalsViewer extends StatelessWidget {
         // route that owns its overlay style.
         systemOverlayStyle: SystemUiOverlayStyle.light,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text('Original · ${images.length}',
-            style: Theme.of(context)
-                .textTheme
-                .titleLarge
-                ?.copyWith(color: Colors.white)),
+        title: Text(
+          'Original · ${images.length}',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(color: Colors.white),
+        ),
       ),
       body: PageView(
         children: [

@@ -15,6 +15,7 @@ import 'package:myrecibook/data/share_entry.dart';
 import 'package:myrecibook/domain/product.dart';
 import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/main.dart';
+import 'package:myrecibook/ui/import_review_screen.dart';
 import 'package:myrecibook/ui/app_shell.dart';
 import 'package:myrecibook/ui/folder_gate.dart';
 import 'package:myrecibook/ui/library_model.dart';
@@ -84,6 +85,19 @@ void main() {
           .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
       await tester.pump(const Duration(milliseconds: 150));
     }
+  }
+
+  // The review form outgrew the 600px test viewport when the cover row
+  // joined it (2026-08-29) — scroll the button in like a user would.
+  Future<void> tapSave(WidgetTester tester) async {
+    final save = find.text('Save to cookbook');
+    await tester.scrollUntilVisible(save, 120,
+        scrollable: find
+            .descendant(
+                of: find.byType(ImportReviewScreen),
+                matching: find.byType(Scrollable))
+            .first);
+    await tester.tap(save);
   }
 
   /// Walks the first-run flow to a picked folder: welcome → setup → Continue.
@@ -317,7 +331,7 @@ void main() {
     expect(find.text('Recipe rescued'), findsOneWidget);
 
     fake.revoked = true;
-    await tester.tap(find.text('Save to cookbook'));
+    await tapSave(tester);
     // Short settle keeps the 4s snackbar alive for the assertion.
     await settle(tester, rounds: 6);
 
@@ -327,7 +341,7 @@ void main() {
     expect(find.textContaining('Folder access was lost'), findsOneWidget);
 
     fake.revoked = false;
-    await tester.tap(find.text('Save to cookbook'));
+    await tapSave(tester);
     await settle(tester);
     expect(find.text('Pancakes'), findsOneWidget); // saved on retry
   });
@@ -473,7 +487,10 @@ void main() {
     expect(find.text('Screenshot saved for your next import'), findsOneWidget);
     expect(find.text('Recipe rescued'), findsOneWidget); // not hijacked
 
-    await tester.tap(find.text('Save to cookbook'));
+    // Let the snackbar expire first — Save now sits at the list's bottom
+    // (cover row growth) and a live snackbar would swallow the tap.
+    await settle(tester);
+    await tapSave(tester);
     await settle(tester);
 
     // The queued share re-enters the flow on its own.

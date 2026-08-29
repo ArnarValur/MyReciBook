@@ -51,6 +51,28 @@
   to app-support/device.json, excluded in both res/xml rule files; a pre-split
   settings.json is drained on load so nobody loses their folder on update.
 
+## Rescue flow polish — shipped 2026-08-30 (0.18.3 → 0.19.0+37)
+- Status bar: rbStatusBarAnchor as both MaterialApps' builder — every route
+  inherits theme-correct icons; dark screens (originals viewer, barcode scan)
+  still override locally. The photo picker used to leave white icons on cream.
+- Review header Retry confirms first (re-extract spends a rescue and wipes
+  edits); the failed screen's "Try again" stays direct.
+- Cover card always on the review form: own photo via camera/gallery beats a
+  link import's photo; ✕ clears back to the link cover or none.
+- times.extra in schema + prompt + file: Refrigerate/Rise/Marinate… as
+  {label, min}, omitted when empty so old files round-trip byte-identical.
+- Rendering: per-part chips on review and detail (value-gated), total-first on
+  cookbook cards, RecipeTimes.compactLine() for PDF/Docs export.
+- Row editor: one labeled pill per part, add-time sheet (suggestions +
+  custom), ✕ removes; untouched times ride through verbatim, touched saves
+  rebuild every field AND raw so raw never lies. Unit flip converts
+  (270 min → 4,5 hr, never 270 hr); prefill picks clean half-hours.
+- Detail hero: tap zooms only the face shown — the flip pill is the one door
+  to the screenshots viewer.
+- Seam tests added: import → save → edit → save (edit_recipe_test ×2), pill
+  conversion/prefill (editor_fields_test), extra + compactLine round-trip
+  (recipe_roundtrip_test).
+
 ## Open
 - [ ] Privacy policy URL + Play data safety form. Nothing written; blocks
       submission. Five things leave the device and all must be declared.

@@ -42,6 +42,9 @@
    - no bump — refactors, tests, conductor edits, anything invisible to a user
    - +build — ONLY when an APK is actually built for the device. It counts
      installs, not sessions.
+   - Verify-then-stamp (Arnar, 2026-08-30): minor/patch land only AFTER his
+     eyes verified the work on the device. Deploys for review ride +build
+     alone; the named bump waits for the checkpoint after it held.
    - 1.0.0 — the first paid release on Play. Nothing gets there by calendar.
    app/pubspec.yaml AND app/lib/version.dart move together (version_sync_test
    pins the pair). Say the new number in the relay entry.

@@ -4,6 +4,7 @@
 // (deep navy, never black). Elevation in dark = surface tint, not shadow.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:google_fonts/google_fonts.dart';
 
 abstract final class RbColors {
@@ -114,20 +115,21 @@ class RbTokens extends ThemeExtension<RbTokens> {
 
   static const light = RbTokens(
     cardShadow: [
-      BoxShadow(color: Color(0x0F24389C), blurRadius: 10, offset: Offset(0, 4))
+      BoxShadow(color: Color(0x0F24389C), blurRadius: 10, offset: Offset(0, 4)),
     ],
     modalShadow: [
-      BoxShadow(color: Color(0x1F24389C), blurRadius: 20, offset: Offset(0, 8))
+      BoxShadow(color: Color(0x1F24389C), blurRadius: 20, offset: Offset(0, 8)),
     ],
     glowPrimary: [
-      BoxShadow(color: Color(0x263F51B5), blurRadius: 12, spreadRadius: 2)
+      BoxShadow(color: Color(0x263F51B5), blurRadius: 12, spreadRadius: 2),
     ],
     glowFab: [
       BoxShadow(
-          color: Color(0x733F51B5),
-          blurRadius: 16,
-          spreadRadius: 2,
-          offset: Offset(0, 8))
+        color: Color(0x733F51B5),
+        blurRadius: 16,
+        spreadRadius: 2,
+        offset: Offset(0, 8),
+      ),
     ],
     hairline: Color(0x80C5C5D4),
     separator: Color(0x59C5C5D4),
@@ -137,20 +139,21 @@ class RbTokens extends ThemeExtension<RbTokens> {
 
   static const dark = RbTokens(
     cardShadow: [
-      BoxShadow(color: Color(0x66000000), blurRadius: 8, offset: Offset(0, 2))
+      BoxShadow(color: Color(0x66000000), blurRadius: 8, offset: Offset(0, 2)),
     ],
     modalShadow: [
-      BoxShadow(color: Color(0x80000000), blurRadius: 20, offset: Offset(0, 8))
+      BoxShadow(color: Color(0x80000000), blurRadius: 20, offset: Offset(0, 8)),
     ],
     glowPrimary: [
-      BoxShadow(color: Color(0x2EBAC3FF), blurRadius: 12, spreadRadius: 2)
+      BoxShadow(color: Color(0x2EBAC3FF), blurRadius: 12, spreadRadius: 2),
     ],
     glowFab: [
       BoxShadow(
-          color: Color(0x4DBAC3FF),
-          blurRadius: 18,
-          spreadRadius: 2,
-          offset: Offset(0, 8))
+        color: Color(0x4DBAC3FF),
+        blurRadius: 18,
+        spreadRadius: 2,
+        offset: Offset(0, 8),
+      ),
     ],
     hairline: Color(0x80454652),
     separator: Color(0x59454652),
@@ -175,7 +178,11 @@ TextTheme _textTheme(TextTheme base) {
   final inter = GoogleFonts.interTextTheme(base);
   TextStyle pjs(TextStyle? s, double size, FontWeight w, [double? spacing]) =>
       GoogleFonts.plusJakartaSans(
-          textStyle: s, fontSize: size, fontWeight: w, letterSpacing: spacing);
+        textStyle: s,
+        fontSize: size,
+        fontWeight: w,
+        letterSpacing: spacing,
+      );
   return inter.copyWith(
     displayLarge: pjs(base.displayLarge, 48, FontWeight.w700, -0.96),
     headlineLarge: pjs(base.headlineLarge, 32, FontWeight.w600, -0.32),
@@ -184,21 +191,29 @@ TextTheme _textTheme(TextTheme base) {
     titleLarge: pjs(base.titleLarge, 18, FontWeight.w700),
     titleMedium: pjs(base.titleMedium, 15, FontWeight.w600),
     titleSmall: GoogleFonts.inter(
-        textStyle: base.titleSmall, fontSize: 13.5, fontWeight: FontWeight.w600),
+      textStyle: base.titleSmall,
+      fontSize: 13.5,
+      fontWeight: FontWeight.w600,
+    ),
     bodyLarge: GoogleFonts.inter(textStyle: base.bodyLarge, fontSize: 14),
     bodyMedium: GoogleFonts.inter(textStyle: base.bodyMedium, fontSize: 13.5),
     bodySmall: GoogleFonts.inter(textStyle: base.bodySmall, fontSize: 12),
     labelLarge: GoogleFonts.inter(
-        textStyle: base.labelLarge, fontSize: 14, fontWeight: FontWeight.w600),
+      textStyle: base.labelLarge,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+    ),
     labelMedium: GoogleFonts.inter(
-        textStyle: base.labelMedium,
-        fontSize: 12.5,
-        fontWeight: FontWeight.w500),
+      textStyle: base.labelMedium,
+      fontSize: 12.5,
+      fontWeight: FontWeight.w500,
+    ),
     labelSmall: GoogleFonts.inter(
-        textStyle: base.labelSmall,
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.9),
+      textStyle: base.labelSmall,
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.9,
+    ),
   );
 }
 
@@ -253,8 +268,10 @@ ThemeData _theme(ColorScheme scheme, Color scaffold, RbTokens tokens) {
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
-    progressIndicatorTheme:
-        ProgressIndicatorThemeData(color: scheme.primary, linearMinHeight: 6),
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: scheme.primary,
+      linearMinHeight: 6,
+    ),
   );
 }
 
@@ -263,3 +280,18 @@ ThemeData rbLightTheme() =>
 
 ThemeData rbDarkTheme() =>
     _theme(RbColors.darkScheme, RbColors.scaffoldDark, RbTokens.dark);
+
+/// MaterialApp.builder for BOTH MaterialApps (gate and app): the status-bar
+/// anchor. Every route inherits icons matching the theme — a Scaffold with no
+/// AppBar (import review, manual entry…) used to assert nothing, so whatever
+/// the Android photo picker's dark UI left behind stuck: white clock on cream
+/// (Arnar's rescue screenshots, 2026-08-29). A route that wants its own style
+/// (black OriginalsViewer, barcode scan) still wins — inner regions beat this
+/// outer one.
+Widget rbStatusBarAnchor(BuildContext context, Widget? child) =>
+    AnnotatedRegion<SystemUiOverlayStyle>(
+      value: Theme.of(context).brightness == Brightness.dark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+      child: child ?? const SizedBox.shrink(),
+    );

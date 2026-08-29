@@ -65,7 +65,9 @@ class ServingsStepper extends StatelessWidget {
             key: const Key('servings-minus'),
             icon: Icons.remove_rounded,
             tooltip: 'Fewer servings',
-            onTap: value > min ? () => onChanged((value - 1).clamp(min, max)) : null,
+            onTap: value > min
+                ? () => onChanged((value - 1).clamp(min, max))
+                : null,
           ),
           Expanded(
             child: Text(
@@ -80,7 +82,9 @@ class ServingsStepper extends StatelessWidget {
             key: const Key('servings-plus'),
             icon: Icons.add_rounded,
             tooltip: 'More servings',
-            onTap: value < max ? () => onChanged((value + 1).clamp(min, max)) : null,
+            onTap: value < max
+                ? () => onChanged((value + 1).clamp(min, max))
+                : null,
           ),
         ],
       ),
@@ -91,8 +95,12 @@ class ServingsStepper extends StatelessWidget {
 /// 32dp round tap target for the stepper ends; greys out when [onTap] is
 /// null (value at the clamp).
 class _StepButton extends StatelessWidget {
-  const _StepButton(
-      {super.key, required this.icon, required this.onTap, this.tooltip});
+  const _StepButton({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    this.tooltip,
+  });
 
   final IconData icon;
   final VoidCallback? onTap;
@@ -107,11 +115,13 @@ class _StepButton extends StatelessWidget {
       child: SizedBox(
         width: 32,
         height: 32,
-        child: Icon(icon,
-            size: 18,
-            color: onTap == null
-                ? scheme.onSurfaceVariant.withValues(alpha: 0.4)
-                : scheme.primary),
+        child: Icon(
+          icon,
+          size: 18,
+          color: onTap == null
+              ? scheme.onSurfaceVariant.withValues(alpha: 0.4)
+              : scheme.primary,
+        ),
       ),
     );
     final label = tooltip;
@@ -135,16 +145,27 @@ class DurationField extends StatefulWidget {
     this.initialMinutes,
     required this.onChanged,
     this.hint = '25',
+    this.label,
+    this.onRemoved,
   });
 
-  /// Pre-fill: shown in hours when it is a whole number of them (120 → "2"
-  /// with hr selected), else in minutes (90 → "90" with min selected).
+  /// Pre-fill: shown in hours when it divides into clean half-hours
+  /// (120 → "2", 270 → "4,5" with hr selected), else in minutes (100 → "100"
+  /// with min selected). The 270-min cake read as "270" and invited a unit
+  /// flip that used to 60× it (Arnar 2026-08-30).
   final int? initialMinutes;
 
   /// Total minutes after every edit or unit flip; null = no duration.
   final ValueChanged<int?> onChanged;
 
   final String hint;
+
+  /// Which duration this is ("Prep", "Refrigerate"…) — shown in the pill in
+  /// place of the clock. Null keeps the plain clock pill.
+  final String? label;
+
+  /// Shows a small ✕ in the pill; the times editor removes the part with it.
+  final VoidCallback? onRemoved;
 
   /// Pure math seam (tested directly): "1,5" hours → 90. Comma decimals are
   /// normal here (Norwegian keyboards) — same rule as the parse-fix dialog.
@@ -157,21 +178,14 @@ class DurationField extends StatefulWidget {
 
   /// "25 min" / "2 hr" / "1 hr 30 min" — the raw form the file stores,
   /// matching the shape the extractor emits and MetaChips display.
-  static String? rawOf(int? totalMinutes) {
-    if (totalMinutes == null || totalMinutes <= 0) return null;
-    final h = totalMinutes ~/ 60;
-    final m = totalMinutes % 60;
-    if (h == 0) return '$m min';
-    if (m == 0) return '$h hr';
-    return '$h hr $m min';
-  }
+  static String? rawOf(int? totalMinutes) => RecipeTimes.fmtMin(totalMinutes);
 
   /// The domain form: total_min for math, raw for display. Null when there
   /// is no duration — the recipe file simply omits times then.
   static RecipeTimes? timesOf(int? totalMinutes) =>
       totalMinutes == null || totalMinutes <= 0
-          ? null
-          : RecipeTimes(totalMin: totalMinutes, raw: rawOf(totalMinutes));
+      ? null
+      : RecipeTimes(totalMin: totalMinutes, raw: rawOf(totalMinutes));
 
   @override
   State<DurationField> createState() => _DurationFieldState();
@@ -181,14 +195,23 @@ class _DurationFieldState extends State<DurationField> {
   late final TextEditingController _text;
   late DurationUnit _unit;
 
+  /// "270" → "4,5": comma decimals to match what the field accepts.
+  static String _hoursText(int minutes) {
+    if (minutes % 60 == 0) return '${minutes ~/ 60}';
+    var s = (minutes / 60).toStringAsFixed(2);
+    s = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    return s.replaceAll('.', ',');
+  }
+
   @override
   void initState() {
     super.initState();
     final m = widget.initialMinutes;
-    final wholeHours = m != null && m >= 60 && m % 60 == 0;
-    _unit = wholeHours ? DurationUnit.hours : DurationUnit.minutes;
+    final cleanHours = m != null && m >= 60 && m % 30 == 0;
+    _unit = cleanHours ? DurationUnit.hours : DurationUnit.minutes;
     _text = TextEditingController(
-        text: m == null ? '' : (wholeHours ? '${m ~/ 60}' : '$m'));
+      text: m == null ? '' : (cleanHours ? _hoursText(m) : '$m'),
+    );
   }
 
   @override
@@ -202,7 +225,18 @@ class _DurationFieldState extends State<DurationField> {
 
   void _setUnit(DurationUnit unit) {
     if (unit == _unit) return;
-    setState(() => _unit = unit);
+    // The flip preserves the duration — 270 min reads "4,5" hr, never
+    // "270 hr". Reinterpreting silently 60×'d an imported time on save
+    // (Arnar's cake, 2026-08-30). An empty field just switches the unit.
+    final minutes = DurationField.totalMinutesOf(_text.text, _unit);
+    setState(() {
+      _unit = unit;
+      if (minutes != null) {
+        _text.text = unit == DurationUnit.hours
+            ? _hoursText(minutes)
+            : '$minutes';
+      }
+    });
     _emit();
   }
 
@@ -218,23 +252,33 @@ class _DurationFieldState extends State<DurationField> {
       ),
       child: Row(
         children: [
-          Icon(Icons.schedule_rounded, size: 16, color: scheme.primary),
+          if (widget.label != null)
+            Text(
+              widget.label!,
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: scheme.primary),
+            )
+          else
+            Icon(Icons.schedule_rounded, size: 16, color: scheme.primary),
           const SizedBox(width: 6),
           Expanded(
             child: TextField(
               key: const Key('duration-value'),
               controller: _text,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
               ],
               onChanged: (_) => _emit(),
               style: Theme.of(context).textTheme.labelMedium,
               decoration: InputDecoration(
-                  isCollapsed: true,
-                  border: InputBorder.none,
-                  hintText: widget.hint),
+                isCollapsed: true,
+                border: InputBorder.none,
+                hintText: widget.hint,
+              ),
             ),
           ),
           const SizedBox(width: 4),
@@ -251,6 +295,22 @@ class _DurationFieldState extends State<DurationField> {
             selected: _unit == DurationUnit.hours,
             onTap: () => _setUnit(DurationUnit.hours),
           ),
+          if (widget.onRemoved != null) ...[
+            const SizedBox(width: 2),
+            InkWell(
+              key: const Key('duration-remove'),
+              customBorder: const CircleBorder(),
+              onTap: widget.onRemoved,
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 14,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -260,11 +320,12 @@ class _DurationFieldState extends State<DurationField> {
 /// Tiny stadium segment for the unit toggle — secondaryContainer when
 /// selected, quiet otherwise.
 class _UnitChip extends StatelessWidget {
-  const _UnitChip(
-      {super.key,
-      required this.label,
-      required this.selected,
-      required this.onTap});
+  const _UnitChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -285,12 +346,12 @@ class _UnitChip extends StatelessWidget {
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                letterSpacing: 0.2,
-                fontWeight: FontWeight.w600,
-                color: selected
-                    ? scheme.onSecondaryContainer
-                    : scheme.onSurfaceVariant,
-              ),
+            letterSpacing: 0.2,
+            fontWeight: FontWeight.w600,
+            color: selected
+                ? scheme.onSecondaryContainer
+                : scheme.onSurfaceVariant,
+          ),
         ),
       ),
     );
@@ -391,9 +452,12 @@ class CoverPickerField extends StatelessWidget {
           children: [
             Icon(Icons.add_a_photo_rounded, size: 22, color: scheme.primary),
             const SizedBox(height: 6),
-            Text('Add a cover photo',
-                style: theme.textTheme.labelLarge
-                    ?.copyWith(color: scheme.primary)),
+            Text(
+              'Add a cover photo',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: scheme.primary,
+              ),
+            ),
           ],
         ),
       );
@@ -411,8 +475,10 @@ class CoverPickerField extends StatelessWidget {
                 right: 8,
                 bottom: 8,
                 child: IgnorePointer(
-                  child:
-                      const GlassPill(icon: Icons.edit_rounded, label: 'change'),
+                  child: const GlassPill(
+                    icon: Icons.edit_rounded,
+                    label: 'change',
+                  ),
                 ),
               ),
             ],

@@ -20,4 +20,7 @@ Rules:
    in extraction.needs_review.
 10. "title" is the dish name — not the app name, not the username, not a hashtag.
 11. servings and times: parse numbers when visible, and keep the raw strings too.
+    Times beyond prep/cook/total — "Refrigerate Time", "Rise", "Marinate", "Rest",
+    "Chill"… — go into times.extra as {label, min}, label in the source's own word
+    without the word "Time". Never mash several durations into raw alone.
 12. Set extraction.mode to "image" or "ocr_text" to match your input.

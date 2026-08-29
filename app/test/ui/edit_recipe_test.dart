@@ -17,6 +17,7 @@ import 'package:myrecibook/domain/product.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/grocery_model.dart';
+import 'package:myrecibook/ui/widgets/editor_fields.dart';
 import 'package:provider/provider.dart';
 
 class NoCallExtractor implements Extractor {
@@ -183,6 +184,101 @@ void main() {
     expect(loaded!.servings?.amount, 7);
     expect(loaded.servings?.raw, '7 servings');
     expect(loaded.times?.raw, '25 min'); // untouched neighbour keeps its raw
+  });
+
+  // The cake regression (Arnar 2026-08-30): a rescue arrived with Prep +
+  // Refrigerate + Total, the editor's single-total pill collapsed them on
+  // save, and no test crossed the import → save → edit → save seam to notice.
+  Future<void> seedCake() => store.save(
+        const Recipe(
+          schemaVersion: 1,
+          id: 'e2',
+          title: 'Peach Tiramisu',
+          source: RecipeSource(
+              type: 'screenshot', importedAt: '2026-08-29T00:00:00.000Z'),
+          times: RecipeTimes(
+            prepMin: 30,
+            totalMin: 270,
+            raw: 'Prep Time: 30 mins, Refrigerate Time: 4 hrs, '
+                'Total Time: 4 hrs 30 mins',
+            extra: [ExtraTime(label: 'Refrigerate', min: 240)],
+          ),
+          ingredients: [Ingredient(raw: '4 peaches')],
+          steps: [RecipeStep(raw: 'Layer.')],
+        ),
+        const [],
+      );
+
+  Finder timeValue(String label) => find.descendant(
+      of: find.ancestor(
+          of: find.text(label), matching: find.byType(DurationField)),
+      matching: find.byKey(const Key('duration-value')));
+
+  testWidgets('imported multi-part times survive an unrelated edit',
+      (tester) async {
+    await tester.runAsync(seedCake);
+    await tester.pumpWidget(app(NoCallExtractor()));
+    await settle(tester);
+
+    await openEditor(tester, 'Peach Tiramisu');
+    // One pill per part, in the natural unit — the 270-min total reads 4,5 hr.
+    expect(tester.widget<TextField>(timeValue('Prep')).controller!.text, '30');
+    expect(tester.widget<TextField>(timeValue('Refrigerate')).controller!.text,
+        '4');
+    expect(
+        tester.widget<TextField>(timeValue('Total')).controller!.text, '4,5');
+
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Peach Tiramisu'), 'Mum\'s Tiramisu');
+    await saveChanges(tester);
+
+    final loaded = await tester.runAsync(() => store.load('e2'));
+    expect(loaded!.title, 'Mum\'s Tiramisu');
+    // Untouched times ride through whole — parts AND the verbatim raw.
+    expect(loaded.times?.prepMin, 30);
+    expect(loaded.times?.totalMin, 270);
+    expect(loaded.times?.extra.single.label, 'Refrigerate');
+    expect(loaded.times?.extra.single.min, 240);
+    expect(loaded.times?.raw,
+        'Prep Time: 30 mins, Refrigerate Time: 4 hrs, Total Time: 4 hrs 30 mins');
+  });
+
+  testWidgets('time pills: edit one, add one, remove one — the file follows',
+      (tester) async {
+    await tester.runAsync(seedCake);
+    await tester.pumpWidget(app(NoCallExtractor()));
+    await settle(tester);
+
+    await openEditor(tester, 'Peach Tiramisu');
+
+    // Edit Prep 30 → 45.
+    await tester.enterText(timeValue('Prep'), '45');
+    await tester.pump();
+
+    // Add a Cook time of 20 min through the add-time sheet.
+    await tester.tap(find.byKey(const Key('add-time')));
+    await settle(tester, rounds: 4);
+    await tester.tap(find.byKey(const Key('add-time-Cook')));
+    await settle(tester, rounds: 4);
+    await tester.enterText(timeValue('Cook'), '20');
+    await tester.pump();
+
+    // Remove Refrigerate with its pill's ✕.
+    await tester.tap(find.descendant(
+        of: find.ancestor(
+            of: find.text('Refrigerate'), matching: find.byType(DurationField)),
+        matching: find.byKey(const Key('duration-remove'))));
+    await tester.pump();
+
+    await saveChanges(tester);
+
+    final loaded = await tester.runAsync(() => store.load('e2'));
+    expect(loaded!.times?.prepMin, 45);
+    expect(loaded.times?.cookMin, 20);
+    expect(loaded.times?.totalMin, 270);
+    expect(loaded.times?.extra, isEmpty);
+    // Raw is rebuilt from the parts, so it never lies about them.
+    expect(loaded.times?.raw, 'Prep 45 min, Cook 20 min, Total 4 hr 30 min');
   });
 
   testWidgets('edit re-keys the grocery list when a line changes',

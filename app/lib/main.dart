@@ -2,7 +2,8 @@ import 'dart:convert' show utf8;
 import 'dart:io';
 import 'dart:ui' show PlatformDispatcher;
 
-import 'package:flutter/foundation.dart' show LicenseRegistry, LicenseEntryWithLineBreaks;
+import 'package:flutter/foundation.dart'
+    show LicenseRegistry, LicenseEntryWithLineBreaks;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_fonts/google_fonts.dart';
@@ -54,10 +55,14 @@ import 'l10n/generated/app_localizations.dart';
 // app/dev.env via --dart-define-from-file — it gains DRIVE_CLIENT_ID=... and
 // DROPBOX_APP_KEY=... when Arnar's Google/Dropbox registrations land. Until
 // then the placeholders keep the connectors in the honest unconfigured state.
-const _driveClientId =
-    String.fromEnvironment('DRIVE_CLIENT_ID', defaultValue: 'placeholder-drive');
-const _dropboxAppKey = String.fromEnvironment('DROPBOX_APP_KEY',
-    defaultValue: 'placeholder-dropbox');
+const _driveClientId = String.fromEnvironment(
+  'DRIVE_CLIENT_ID',
+  defaultValue: 'placeholder-drive',
+);
+const _dropboxAppKey = String.fromEnvironment(
+  'DROPBOX_APP_KEY',
+  defaultValue: 'placeholder-dropbox',
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,8 +72,9 @@ Future<void> main() async {
   // Bundled-font licenses (OFL) surface in the standard licenses page.
   LicenseRegistry.addLicense(() async* {
     for (final f in ['OFL-PlusJakartaSans.txt', 'OFL-Inter.txt']) {
-      yield LicenseEntryWithLineBreaks(
-          ['google_fonts'], await rootBundle.loadString('google_fonts/$f'));
+      yield LicenseEntryWithLineBreaks([
+        'google_fonts',
+      ], await rootBundle.loadString('google_fonts/$f'));
     }
   });
   // Two parallel batches instead of seven serial awaits — every one of these
@@ -83,8 +89,9 @@ Future<void> main() async {
     AppSettings.load(File('${support.path}/settings.json')),
     CrashLog.load(File('${support.path}/crash_log.json')),
     GroceryStore.load(
-        listFile: File('${support.path}/grocery_list.json'),
-        overridesFile: File('${support.path}/grocery_overrides.json')),
+      listFile: File('${support.path}/grocery_list.json'),
+      overridesFile: File('${support.path}/grocery_overrides.json'),
+    ),
     TokenStore.load(File('${support.path}/tokens.json')),
     loadInstallId(File('${support.path}/install_id')),
   ).wait;
@@ -115,8 +122,10 @@ Future<void> main() async {
     // visible off-device. Both layers, neither sufficient alone.
     return false;
   };
-  final crashReporting =
-      CrashReportingModel(settings: settings, reporter: crashReporter);
+  final crashReporting = CrashReportingModel(
+    settings: settings,
+    reporter: crashReporter,
+  );
 
   // THE one OAuthFlow app-wide — its constructor claims the auth channel
   // handler; a second instance would silently steal redirects.
@@ -149,8 +158,9 @@ Future<void> main() async {
   // until the gate resolves (bridge contract + arch §3.1).
   final intake = ShareIntake();
   final share = ShareEntry(
-      takePending: intake.takePending,
-      takePendingLinks: intake.takePendingLinks);
+    takePending: intake.takePending,
+    takePendingLinks: intake.takePendingLinks,
+  );
   intake.onShared = share.push;
   intake.onSharedLink = share.pushLink;
 
@@ -170,8 +180,9 @@ Future<void> main() async {
     installId: installId,
     appCheckToken: appCheck?.token,
   );
-  Future<List<File>> pickImages() async =>
-      [for (final x in await picker.pickMultiImage()) File(x.path)];
+  Future<List<File>> pickImages() async => [
+    for (final x in await picker.pickMultiImage()) File(x.path),
+  ];
   Future<List<File>> snapPage() async {
     final x = await picker.pickImage(source: ImageSource.camera);
     return x == null ? const <File>[] : [File(x.path)];
@@ -182,64 +193,66 @@ Future<void> main() async {
   // while the app is still up, now that a deliberate change skips the gate.
   final nav = GlobalKey<NavigatorState>();
 
-  runApp(BootGate(
-    settings: settings,
-    localStore: LocalFolderStore(Directory('${docs.path}/recipes')),
-    // Pre-pantry installs kept products app-private here; BootGate drains it
-    // into <tree>/pantry/ (copy-verify-delete) so pantry data lives and syncs
-    // beside the recipes from now on.
-    localPantry: LocalPantryStore(Directory('${docs.path}/pantry')),
-    imageCache: Directory('${cache.path}/saf_images'),
-    pantryImageCache: Directory('${cache.path}/pantry_images'),
-    // The gate's own MaterialApp follows the saved preference — without this
-    // it sat on ThemeMode.system and change-folder opened dark over a light
-    // app (Arnar's S21 pass, 2026-08-06).
-    themeMode: themeModel,
-    // Same reason as themeMode: the gate's own MaterialApp is built before the
-    // provider tree, so it needs the language handed to it directly.
-    locale: languageModel,
-    appNavigatorKey: nav,
-    // The first-run setup screen writes through the app-lifetime models, so
-    // the choice reaches every listener at once instead of on next boot.
-    units: unitsModel,
-    onUnits: unitsModel.setSystem,
-    onThemeMode: themeModel.setMode,
-    // Drive/Dropbox connect straight from the setup screen.
-    storage: storage,
-    appBuilder: (store, pantry, onGrantLost, onChangeFolder) {
-      // A lost grant mid-sync joins the same re-pick flow as store ops.
-      storage.onGrantLost = onGrantLost;
-      return buildApp(
-        store: store,
-        extractor: extractor,
-        picker: pickImages,
-        camera: snapPage,
-        share: share,
-        grocery: grocery,
-        // Pantry lives in the user's tree (<tree>/pantry/) via the SAF store
-        // BootGate built beside the recipe store, and the sync layout's
-        // pantry/ case mirrors it like everything else.
-        pantry: pantry,
-        // Same tree as the recipes and the pantry: <tree>/diary/.
-        diary: SafDiaryStore(treeUri: store.treeUri),
-        // tags.json at the root of the same tree, mirrored like everything
-        // else in it.
-        tags: SafTagStore(treeUri: store.treeUri),
-        settings: settings,
-        storage: storage,
-        themeModel: themeModel,
-        cookbookPrefs: cookbookPrefs,
-        unitsModel: unitsModel,
-        languageModel: languageModel,
-        crashLog: crashLog,
-        crashReporting: crashReporting,
-        onGrantLost: onGrantLost,
-        onChangeFolder: onChangeFolder,
-        folderName: folderDisplayName(settings.treeUri),
-        navigatorKey: nav,
-      );
-    },
-  ));
+  runApp(
+    BootGate(
+      settings: settings,
+      localStore: LocalFolderStore(Directory('${docs.path}/recipes')),
+      // Pre-pantry installs kept products app-private here; BootGate drains it
+      // into <tree>/pantry/ (copy-verify-delete) so pantry data lives and syncs
+      // beside the recipes from now on.
+      localPantry: LocalPantryStore(Directory('${docs.path}/pantry')),
+      imageCache: Directory('${cache.path}/saf_images'),
+      pantryImageCache: Directory('${cache.path}/pantry_images'),
+      // The gate's own MaterialApp follows the saved preference — without this
+      // it sat on ThemeMode.system and change-folder opened dark over a light
+      // app (Arnar's S21 pass, 2026-08-06).
+      themeMode: themeModel,
+      // Same reason as themeMode: the gate's own MaterialApp is built before the
+      // provider tree, so it needs the language handed to it directly.
+      locale: languageModel,
+      appNavigatorKey: nav,
+      // The first-run setup screen writes through the app-lifetime models, so
+      // the choice reaches every listener at once instead of on next boot.
+      units: unitsModel,
+      onUnits: unitsModel.setSystem,
+      onThemeMode: themeModel.setMode,
+      // Drive/Dropbox connect straight from the setup screen.
+      storage: storage,
+      appBuilder: (store, pantry, onGrantLost, onChangeFolder) {
+        // A lost grant mid-sync joins the same re-pick flow as store ops.
+        storage.onGrantLost = onGrantLost;
+        return buildApp(
+          store: store,
+          extractor: extractor,
+          picker: pickImages,
+          camera: snapPage,
+          share: share,
+          grocery: grocery,
+          // Pantry lives in the user's tree (<tree>/pantry/) via the SAF store
+          // BootGate built beside the recipe store, and the sync layout's
+          // pantry/ case mirrors it like everything else.
+          pantry: pantry,
+          // Same tree as the recipes and the pantry: <tree>/diary/.
+          diary: SafDiaryStore(treeUri: store.treeUri),
+          // tags.json at the root of the same tree, mirrored like everything
+          // else in it.
+          tags: SafTagStore(treeUri: store.treeUri),
+          settings: settings,
+          storage: storage,
+          themeModel: themeModel,
+          cookbookPrefs: cookbookPrefs,
+          unitsModel: unitsModel,
+          languageModel: languageModel,
+          crashLog: crashLog,
+          crashReporting: crashReporting,
+          onGrantLost: onGrantLost,
+          onChangeFolder: onChangeFolder,
+          folderName: folderDisplayName(settings.treeUri),
+          navigatorKey: nav,
+        );
+      },
+    ),
+  );
 }
 
 String _hexPrefix(List<int> bytes) =>
@@ -271,127 +284,134 @@ Widget buildApp({
   VoidCallback? onChangeFolder,
   String? folderName,
   GlobalKey<NavigatorState>? navigatorKey,
-}) =>
-    MultiProvider(
-      providers: [
-        // .value for the injected instance: it outlives gate re-entries
-        // (BootGate rebuilds this subtree), so the provider must not dispose it.
-        if (storage != null)
-          ChangeNotifierProvider<StorageModel>.value(value: storage)
-        else
-          ChangeNotifierProvider<StorageModel>(create: (_) => StorageModel()),
-        // Same .value rule; the inert default is stuck on ThemeMode.system —
-        // the exact pre-settings behavior, so the test seam stays unchanged.
-        if (themeModel != null)
-          ChangeNotifierProvider<ThemeModel>.value(value: themeModel)
-        else
-          ChangeNotifierProvider<ThemeModel>(create: (_) => ThemeModel()),
-        // Same .value rule; the inert default is stuck on grid — the exact
-        // pre-toggle behavior, so the test seam stays unchanged.
-        if (cookbookPrefs != null)
-          ChangeNotifierProvider<CookbookPrefs>.value(value: cookbookPrefs)
-        else
-          ChangeNotifierProvider<CookbookPrefs>(create: (_) => CookbookPrefs()),
-        // Same .value rule; the inert default is stuck on as-written — the
-        // exact pre-toggle behavior, so the test seam stays unchanged.
-        if (unitsModel != null)
-          ChangeNotifierProvider<UnitsModel>.value(value: unitsModel)
-        else
-          ChangeNotifierProvider<UnitsModel>(create: (_) => UnitsModel()),
-        // Same .value rule; the inert default follows the phone's language —
-        // the exact pre-toggle behavior, so the test seam stays unchanged.
-        if (languageModel != null)
-          ChangeNotifierProvider<LanguageModel>.value(value: languageModel)
-        else
-          ChangeNotifierProvider<LanguageModel>(
-              create: (_) => LanguageModel()),
-        // Plain Provider (not a notifier): the settings footer door reads it
-        // on demand. Inert default keeps the test seam file-free.
-        Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),
-        // Nullable on purpose: the test seam passes no settings file, and a
-        // screen that only remembers a preference (the pantry shelf's open
-        // sections) should degrade to "forgets on restart", never crash.
-        // Read on demand — no notifier, because nothing rebuilds on a write.
-        Provider<AppSettings?>.value(value: settings),
-        // Same .value rule as the models above; the inert default has no
-        // settings and no reporter, so it reads the compiled-in default and
-        // reports no sink — the Settings row then renders its "not available
-        // in this build" state, which is exactly right for tests.
-        if (crashReporting != null)
-          ChangeNotifierProvider<CrashReportingModel>.value(
-              value: crashReporting)
-        else
-          ChangeNotifierProvider<CrashReportingModel>(
-              create: (_) => CrashReportingModel()),
-        // Same stance: the cover picker on the pushed detail route reads these
-        // on demand instead of being threaded down through list and card.
-        Provider<PhotoSources>.value(
-            value: PhotoSources(gallery: picker, camera: camera)),
-        // Label reading is a capability, not a guarantee: a build or a test
-        // whose extractor cannot do it provides null, and the pantry hides
-        // the button rather than offering a dead end.
-        Provider<LabelReader?>.value(
-            value: extractor is LabelReader ? extractor as LabelReader : null),
-        ChangeNotifierProvider(
-            create: (ctx) => LibraryModel(store,
-                onGrantLost: onGrantLost,
-                // Main-level glue: library mutations schedule the debounced
-                // connector sync; LibraryModel never sees StorageModel.
-                onChanged:
-                    Provider.of<StorageModel>(ctx, listen: false).syncSoon)),
-        // Shell AND pushed routes (detail's grocery button) share this scope.
-        ChangeNotifierProvider(create: (_) => GroceryModel(grocery)),
-        // Same stance for the pantry POC: null store (test seam) degrades to
-        // in-memory; the real OffClient only fires on an actual scan.
-        ChangeNotifierProvider(create: (_) => PantryModel(pantry)),
-        // The diary reads and writes one day file at a time; a null store
-        // (widget-test seam, or a build with no folder picked) degrades to
-        // in-memory exactly like the pantry does.
-        ChangeNotifierProvider(
-            create: (_) => DiaryModel(diary, settings: settings)),
-        // Tag decorations. Null store (test seam, or no folder yet) degrades
-        // to in-memory like the pantry and the diary. It reads LibraryModel
-        // because renaming and deleting a tag rewrite the recipes that carry
-        // it — the recipe files are the truth about which tags exist.
-        ChangeNotifierProvider(
-            create: (ctx) => TagsModel(
-                  store: tags ?? MemoryTagStore(),
-                  library: ctx.read<LibraryModel>(),
-                )..load()),
-        // Session batch queue (D5): lives above the shell so it survives tab
-        // switches and pushed routes; dies with the app. Saves ride the
-        // LibraryModel seam, so grocery/storage glue comes along for free.
-        ChangeNotifierProvider(
-            create: (ctx) => BatchModel(
-                extractor: extractor,
-                save: (recipe, images) =>
-                    ctx.read<LibraryModel>().saveImported(recipe, images))),
-      ],
-      // Consumer, not a plain read: MaterialApp.themeMode must react live
-      // when the settings tab changes the preference.
-      // Consumer2, not a plain read: MaterialApp.themeMode and .locale must
-      // both react live when the settings tab changes a preference.
-      child: Consumer2<ThemeModel, LanguageModel>(
-        builder: (_, themeModel, languageModel, child) => MaterialApp(
-          title: 'MyReciBook',
-          navigatorKey: navigatorKey,
-          theme: rbLightTheme(),
-          darkTheme: rbDarkTheme(),
-          themeMode: themeModel.mode,
-          // null = follow the phone; MaterialApp then matches the device
-          // language against supportedLocales itself.
-          locale: languageModel.locale,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: kOfferedLocales,
-          home: AppShell(
-            extractor: extractor,
-            picker: picker,
-            camera: camera,
-            share: share,
-            linkExtractor: linkExtractor,
-            folderName: folderName,
-            onChangeFolder: onChangeFolder,
-          ),
-        ),
+}) => MultiProvider(
+  providers: [
+    // .value for the injected instance: it outlives gate re-entries
+    // (BootGate rebuilds this subtree), so the provider must not dispose it.
+    if (storage != null)
+      ChangeNotifierProvider<StorageModel>.value(value: storage)
+    else
+      ChangeNotifierProvider<StorageModel>(create: (_) => StorageModel()),
+    // Same .value rule; the inert default is stuck on ThemeMode.system —
+    // the exact pre-settings behavior, so the test seam stays unchanged.
+    if (themeModel != null)
+      ChangeNotifierProvider<ThemeModel>.value(value: themeModel)
+    else
+      ChangeNotifierProvider<ThemeModel>(create: (_) => ThemeModel()),
+    // Same .value rule; the inert default is stuck on grid — the exact
+    // pre-toggle behavior, so the test seam stays unchanged.
+    if (cookbookPrefs != null)
+      ChangeNotifierProvider<CookbookPrefs>.value(value: cookbookPrefs)
+    else
+      ChangeNotifierProvider<CookbookPrefs>(create: (_) => CookbookPrefs()),
+    // Same .value rule; the inert default is stuck on as-written — the
+    // exact pre-toggle behavior, so the test seam stays unchanged.
+    if (unitsModel != null)
+      ChangeNotifierProvider<UnitsModel>.value(value: unitsModel)
+    else
+      ChangeNotifierProvider<UnitsModel>(create: (_) => UnitsModel()),
+    // Same .value rule; the inert default follows the phone's language —
+    // the exact pre-toggle behavior, so the test seam stays unchanged.
+    if (languageModel != null)
+      ChangeNotifierProvider<LanguageModel>.value(value: languageModel)
+    else
+      ChangeNotifierProvider<LanguageModel>(create: (_) => LanguageModel()),
+    // Plain Provider (not a notifier): the settings footer door reads it
+    // on demand. Inert default keeps the test seam file-free.
+    Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),
+    // Nullable on purpose: the test seam passes no settings file, and a
+    // screen that only remembers a preference (the pantry shelf's open
+    // sections) should degrade to "forgets on restart", never crash.
+    // Read on demand — no notifier, because nothing rebuilds on a write.
+    Provider<AppSettings?>.value(value: settings),
+    // Same .value rule as the models above; the inert default has no
+    // settings and no reporter, so it reads the compiled-in default and
+    // reports no sink — the Settings row then renders its "not available
+    // in this build" state, which is exactly right for tests.
+    if (crashReporting != null)
+      ChangeNotifierProvider<CrashReportingModel>.value(value: crashReporting)
+    else
+      ChangeNotifierProvider<CrashReportingModel>(
+        create: (_) => CrashReportingModel(),
       ),
-    );
+    // Same stance: the cover picker on the pushed detail route reads these
+    // on demand instead of being threaded down through list and card.
+    Provider<PhotoSources>.value(
+      value: PhotoSources(gallery: picker, camera: camera),
+    ),
+    // Label reading is a capability, not a guarantee: a build or a test
+    // whose extractor cannot do it provides null, and the pantry hides
+    // the button rather than offering a dead end.
+    Provider<LabelReader?>.value(
+      value: extractor is LabelReader ? extractor as LabelReader : null,
+    ),
+    ChangeNotifierProvider(
+      create: (ctx) => LibraryModel(
+        store,
+        onGrantLost: onGrantLost,
+        // Main-level glue: library mutations schedule the debounced
+        // connector sync; LibraryModel never sees StorageModel.
+        onChanged: Provider.of<StorageModel>(ctx, listen: false).syncSoon,
+      ),
+    ),
+    // Shell AND pushed routes (detail's grocery button) share this scope.
+    ChangeNotifierProvider(create: (_) => GroceryModel(grocery)),
+    // Same stance for the pantry POC: null store (test seam) degrades to
+    // in-memory; the real OffClient only fires on an actual scan.
+    ChangeNotifierProvider(create: (_) => PantryModel(pantry)),
+    // The diary reads and writes one day file at a time; a null store
+    // (widget-test seam, or a build with no folder picked) degrades to
+    // in-memory exactly like the pantry does.
+    ChangeNotifierProvider(
+      create: (_) => DiaryModel(diary, settings: settings),
+    ),
+    // Tag decorations. Null store (test seam, or no folder yet) degrades
+    // to in-memory like the pantry and the diary. It reads LibraryModel
+    // because renaming and deleting a tag rewrite the recipes that carry
+    // it — the recipe files are the truth about which tags exist.
+    ChangeNotifierProvider(
+      create: (ctx) => TagsModel(
+        store: tags ?? MemoryTagStore(),
+        library: ctx.read<LibraryModel>(),
+      )..load(),
+    ),
+    // Session batch queue (D5): lives above the shell so it survives tab
+    // switches and pushed routes; dies with the app. Saves ride the
+    // LibraryModel seam, so grocery/storage glue comes along for free.
+    ChangeNotifierProvider(
+      create: (ctx) => BatchModel(
+        extractor: extractor,
+        save: (recipe, images) =>
+            ctx.read<LibraryModel>().saveImported(recipe, images),
+      ),
+    ),
+  ],
+  // Consumer, not a plain read: MaterialApp.themeMode must react live
+  // when the settings tab changes the preference.
+  // Consumer2, not a plain read: MaterialApp.themeMode and .locale must
+  // both react live when the settings tab changes a preference.
+  child: Consumer2<ThemeModel, LanguageModel>(
+    builder: (_, themeModel, languageModel, child) => MaterialApp(
+      title: 'MyReciBook',
+      navigatorKey: navigatorKey,
+      theme: rbLightTheme(),
+      darkTheme: rbDarkTheme(),
+      builder: rbStatusBarAnchor,
+      themeMode: themeModel.mode,
+      // null = follow the phone; MaterialApp then matches the device
+      // language against supportedLocales itself.
+      locale: languageModel.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: kOfferedLocales,
+      home: AppShell(
+        extractor: extractor,
+        picker: picker,
+        camera: camera,
+        share: share,
+        linkExtractor: linkExtractor,
+        folderName: folderName,
+        onChangeFolder: onChangeFolder,
+      ),
+    ),
+  ),
+);

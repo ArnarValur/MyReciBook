@@ -86,7 +86,7 @@ void main() {
   });
 
   group('DurationField', () {
-    testWidgets('typed minutes, unit flip to hours, comma decimals, clearing',
+    testWidgets('unit flip converts — the duration is preserved, never 60×d',
         (tester) async {
       int? out = -1;
       await tester.pumpWidget(wrap(DurationField(onChanged: (m) => out = m)));
@@ -94,23 +94,32 @@ void main() {
       await tester.enterText(find.byKey(const Key('duration-value')), '45');
       expect(out, 45);
 
-      // Flip to hours: the number stays, the meaning changes.
+      // Flip to hours: 45 min reads "0,75" hr — same duration. The old
+      // reinterpret ("the number stays, the meaning changes") silently
+      // 60×'d an imported 270 min on save (Arnar's cake, 2026-08-30).
       await tester.tap(find.byKey(const Key('duration-unit-hr')));
       await tester.pump();
-      expect(out, 45 * 60);
+      expect(out, 45);
+      expect(find.text('0,75'), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('duration-value')), '1,5');
       expect(out, 90);
 
       await tester.tap(find.byKey(const Key('duration-unit-min')));
       await tester.pump();
-      expect(out, 2); // 1.5 min rounds to 2
+      expect(out, 90);
+      expect(find.text('90'), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('duration-value')), '');
       expect(out, isNull);
+
+      // Flipping an empty field just switches the unit — nothing to convert.
+      await tester.tap(find.byKey(const Key('duration-unit-hr')));
+      await tester.pump();
+      expect(out, isNull);
     });
 
-    testWidgets('initialMinutes prefills — whole hours as hr, else minutes',
+    testWidgets('initialMinutes prefills — clean half-hours as hr, else min',
         (tester) async {
       int? out;
       await tester.pumpWidget(wrap(DurationField(
@@ -122,12 +131,22 @@ void main() {
       await tester.enterText(find.byKey(const Key('duration-value')), '3');
       expect(out, 180);
 
-      // Fresh key → fresh State, so the prefill logic runs again.
+      // 270 = 4,5 hr — the cake's total must not prefill as "270" and bait
+      // a flip. Fresh key → fresh State, so the prefill logic runs again.
+      await tester.pumpWidget(wrap(DurationField(
+          key: const Key('half-hours'),
+          initialMinutes: 270,
+          onChanged: (m) => out = m)));
+      expect(find.text('4,5'), findsOneWidget);
+      await tester.enterText(find.byKey(const Key('duration-value')), '4');
+      expect(out, 240);
+
+      // Not a clean half-hour: stays minutes.
       await tester.pumpWidget(wrap(DurationField(
           key: const Key('minutes'),
-          initialMinutes: 90,
+          initialMinutes: 100,
           onChanged: (m) => out = m)));
-      expect(find.text('90'), findsOneWidget);
+      expect(find.text('100'), findsOneWidget);
       await tester.enterText(find.byKey(const Key('duration-value')), '30');
       expect(out, 30);
     });

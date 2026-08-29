@@ -381,7 +381,8 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       groupBefore: groups,
       steps: [for (final s in _recipe.steps) convertUnits(s.raw, system)],
       servings: _recipe.servings?.raw,
-      time: _recipe.times?.raw,
+      // Every stated part, compact — an import's run-on raw never prints.
+      time: _recipe.times?.compactLine(),
       notes: _notes.text,
       sourceLine: url == null || url.isEmpty ? null : 'Source: $url',
       cover: coverBytes,
@@ -529,11 +530,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                           runSpacing: 8,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            if (_recipe.times?.raw != null)
-                              MetaChip(
-                                icon: Icons.schedule_rounded,
-                                label: _recipe.times!.raw!,
-                              ),
+                            ...timeMetaChips(_recipe.times),
                             if (_recipe.servings?.raw != null)
                               MetaChip(
                                 icon: Icons.restaurant_rounded,
@@ -804,7 +801,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
             fit: StackFit.expand,
             children: [
               GestureDetector(
-                onTap: originals.isEmpty
+                // Tap zooms what is on screen: only the original face opens
+                // the screenshots viewer. Tapping the chosen cover photo used
+                // to pop the screenshots too — wrong picture (Arnar
+                // 2026-08-30); the flip pill is the door to the originals.
+                onTap: !_showOriginal || originals.isEmpty
                     ? null
                     : () => Navigator.of(context).push(
                         MaterialPageRoute<void>(

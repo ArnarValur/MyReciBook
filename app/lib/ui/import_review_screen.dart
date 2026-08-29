@@ -16,6 +16,7 @@ import '../domain/recipe_tag.dart';
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
 import 'library_model.dart';
+import 'photo_sources.dart';
 import 'tag_chip.dart';
 import 'tag_picker_sheet.dart';
 import 'tags_model.dart';
@@ -91,6 +92,11 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   File? _linkCover;
   bool _useLinkCover = true;
 
+  // The user's own cover, picked right here on the form; beats the link
+  // cover when both exist — same precedence as the detail screen's cover
+  // door ("own photo first", Arnar 2026-08-10).
+  File? _pickedCover;
+
   @override
   void dispose() {
     _title.dispose();
@@ -119,19 +125,22 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   }
 
   List<Map<String, dynamic>> get _ings => [
-        for (final i in (_content['ingredients'] as List? ?? const []))
-          (i as Map).cast<String, dynamic>()
-      ];
+    for (final i in (_content['ingredients'] as List? ?? const []))
+      (i as Map).cast<String, dynamic>(),
+  ];
 
   List<Map<String, dynamic>> get _steps => [
-        for (final s in (_content['steps'] as List? ?? const []))
-          (s as Map).cast<String, dynamic>()
-      ];
+    for (final s in (_content['steps'] as List? ?? const []))
+      (s as Map).cast<String, dynamic>(),
+  ];
 
   List<String> get _needsReview {
     final ex = _content['extraction'];
     return ex is Map
-        ? [for (final p in (ex['needs_review'] as List? ?? const [])) p as String]
+        ? [
+            for (final p in (ex['needs_review'] as List? ?? const []))
+              p as String,
+          ]
         : const [];
   }
 
@@ -139,34 +148,36 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     if (e.httpStatus == 429) {
       return (
         title: 'Give it a minute',
-        body: 'Rate-limited — try again shortly.'
+        body: 'Rate-limited — try again shortly.',
       );
     }
     if (e.message.startsWith('offline')) {
       return (
         title: "You're offline",
-        body: 'Check your connection, then try again.'
+        body: 'Check your connection, then try again.',
       );
     }
     if (e.message.startsWith('no recipe data')) {
       // Link import (share-links spike): the page had no schema.org Recipe.
       return (
         title: 'No recipe in that link',
-        body: "The page doesn't share its recipe data — "
-            'screenshot it instead.'
+        body:
+            "The page doesn't share its recipe data — "
+            'screenshot it instead.',
       );
     }
     if (e.message.startsWith('unreadable response')) {
       return (
         title: "That site confused us",
-        body: 'Its reply made no sense to the app — '
-            'screenshot the recipe instead.'
+        body:
+            'Its reply made no sense to the app — '
+            'screenshot the recipe instead.',
       );
     }
     if (e.message.startsWith('the page answered')) {
       return (
         title: "The site wouldn't let us in",
-        body: 'It refused the request — screenshot the recipe instead.'
+        body: 'It refused the request — screenshot the recipe instead.',
       );
     }
     if (e.message.startsWith('No API key')) {
@@ -175,13 +186,14 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
       // the generic copy below and burned Arnar's time. Name it.
       return (
         title: 'This build is broken',
-        body: 'Built without the extraction key — not your screenshots. '
-            'Rebuild with dev.env.'
+        body:
+            'Built without the extraction key — not your screenshots. '
+            'Rebuild with dev.env.',
       );
     }
     return (
       title: 'That one kept its secrets',
-      body: "We read it twice and couldn't find a recipe."
+      body: "We read it twice and couldn't find a recipe.",
     );
   }
 
@@ -195,11 +207,11 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     _confirmed.clear();
     _ingredientCtrls = [
       for (final i in _ings)
-        TextEditingController(text: (i['raw'] as String?) ?? '')
+        TextEditingController(text: (i['raw'] as String?) ?? ''),
     ];
     _stepCtrls = [
       for (final s in _steps)
-        TextEditingController(text: (s['raw'] as String?) ?? '')
+        TextEditingController(text: (s['raw'] as String?) ?? ''),
     ];
     _phase = _Phase.review;
     final imageUrl = content['image_url'];
@@ -214,6 +226,34 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     final file = await fetch(url);
     if (!mounted || file == null) return;
     setState(() => _linkCover = file);
+  }
+
+  /// The header Retry sits one accidental tap from spending a rescue and
+  /// wiping every edit on the form — it asks first. The failed screen's
+  /// "Try again" stays direct: there, retrying IS the errand.
+  Future<void> _confirmRetry() async {
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (dctx) => AlertDialog(
+        title: const Text('Rescue again?'),
+        content: const Text(
+          'This re-reads the screenshots from scratch — it replaces '
+          'everything on this form, including your edits, and spends '
+          'one rescue.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dctx).pop(true),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+    if (go == true && mounted) await _extract();
   }
 
   Future<void> _extract() async {
@@ -267,33 +307,44 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
       extractorModel: widget.extractor.modelName,
       extractorMode: widget.extractor.mode,
     );
-    final blocking =
-        fileProblems(recipe.toJson()).where(isSaveBlocking).toList();
+    final blocking = fileProblems(
+      recipe.toJson(),
+    ).where(isSaveBlocking).toList();
     if (blocking.isNotEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(blocking.join(' · '))));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(blocking.join(' · '))));
       return;
     }
 
     setState(() => _saving = true);
     final Recipe saved;
     try {
-      saved = await context.read<LibraryModel>().saveImported(recipe, _images,
-          coverImage: _useLinkCover ? _linkCover : null);
+      saved = await context.read<LibraryModel>().saveImported(
+        recipe,
+        _images,
+        coverImage: _pickedCover ?? (_useLinkCover ? _linkCover : null),
+      );
     } on GrantLostException {
       // Review stays mounted — edits and extraction survive; re-pick happens
       // from the list, not by tearing down in-flight work (§7).
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Folder access was lost — your edits are kept. '
-              'Try again, or go back and re-pick your folder.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Folder access was lost — your edits are kept. '
+            'Try again, or go back and re-pick your folder.',
+          ),
+        ),
+      );
       return;
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Save failed: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Save failed: $e')));
       return;
     }
     // Pops with the saved Recipe — batch review-now (the queue marks the
@@ -318,9 +369,47 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   }
 
   void _openOriginals() {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => OriginalsViewer(images: _images),
-    ));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => OriginalsViewer(images: _images)),
+    );
+  }
+
+  /// Cover door on the form itself — "maybe I have an image I want to use
+  /// right away" (Arnar 2026-08-29). Camera + gallery only: the screenshots
+  /// already stand behind the card as provenance.
+  Future<void> _pickCover() async {
+    final photos = context.read<PhotoSources>();
+    var source = photos.gallery;
+    if (photos.camera != null) {
+      final choice = await showModalBottomSheet<String>(
+        context: context,
+        showDragHandle: true,
+        builder: (sheet) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                key: const Key('review-cover-camera'),
+                leading: const Icon(Icons.photo_camera_rounded),
+                title: const Text('Take a photo'),
+                onTap: () => Navigator.of(sheet).pop('camera'),
+              ),
+              ListTile(
+                key: const Key('review-cover-gallery'),
+                leading: const Icon(Icons.photo_library_rounded),
+                title: const Text('Choose from gallery'),
+                onTap: () => Navigator.of(sheet).pop('gallery'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (choice == null || !mounted) return;
+      if (choice == 'camera') source = photos.camera!;
+    }
+    final file = await photos.pickOne(source);
+    if (file == null || !mounted) return;
+    setState(() => _pickedCover = file);
   }
 
   @override
@@ -344,18 +433,23 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         Expanded(
           child: Row(
             children: [
-              Text(rescued ? 'Recipe rescued' : 'Rescue',
-                  style: theme.textTheme.titleLarge),
+              Text(
+                rescued ? 'Recipe rescued' : 'Rescue',
+                style: theme.textTheme.titleLarge,
+              ),
               if (rescued) ...[
                 const SizedBox(width: 6),
-                const Icon(Icons.check_circle_rounded,
-                    size: 19, color: RbColors.success),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 19,
+                  color: RbColors.success,
+                ),
               ],
             ],
           ),
         ),
         if (rescued)
-          TextButton(onPressed: _extract, child: const Text('Retry')),
+          TextButton(onPressed: _confirmRetry, child: const Text('Retry')),
       ],
     );
   }
@@ -380,11 +474,16 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                 ),
                 const SizedBox(height: 20),
                 const SizedBox(
-                    width: 160, child: LinearProgressIndicator(minHeight: 6)),
+                  width: 160,
+                  child: LinearProgressIndicator(minHeight: 6),
+                ),
                 const SizedBox(height: 14),
-                Text('Rescuing…',
-                    style: theme.textTheme.bodyMedium
-                        ?.copyWith(color: context.scheme.onSurfaceVariant)),
+                Text(
+                  'Rescuing…',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: context.scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -418,13 +517,17 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                       border: Border.all(color: context.rb.hairline),
                     ),
                     child: const StripedPlaceholder(
-                        icon: Icons.no_meals_rounded),
+                      icon: Icons.no_meals_rounded,
+                    ),
                   ),
                   const SizedBox(height: 18),
-                  Text(lines.first,
-                      textAlign: TextAlign.center,
-                      style:
-                          theme.textTheme.headlineSmall?.copyWith(fontSize: 21)),
+                  Text(
+                    lines.first,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontSize: 21,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 270),
@@ -433,7 +536,9 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                       'stays put in your gallery — nothing was deleted.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant, height: 1.55),
+                        color: scheme.onSurfaceVariant,
+                        height: 1.55,
+                      ),
                     ),
                   ),
                 ],
@@ -455,10 +560,12 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     final scheme = context.scheme;
     final rb = context.rb;
 
-    final servingsRaw =
-        (_content['servings'] is Map) ? _content['servings']['raw'] : null;
-    final timesRaw =
-        (_content['times'] is Map) ? _content['times']['raw'] : null;
+    final servingsRaw = (_content['servings'] is Map)
+        ? _content['servings']['raw']
+        : null;
+    final timeChips = timeMetaChips(
+      RecipeTimes.fromJsonOrNull(_content['times']),
+    );
 
     // Link import (share-links spike): no screenshots — the source row names
     // the page instead, and there are no originals to open.
@@ -477,15 +584,19 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: SizedBox(
-                  width: 52,
-                  height: 76,
-                  child: fromLink
-                      ? ColoredBox(
-                          color: scheme.surfaceContainerHigh,
-                          child: Icon(Icons.link_rounded,
-                              size: 24, color: scheme.onSurfaceVariant),
-                        )
-                      : CoverImage(_images.firstOrNull)),
+                width: 52,
+                height: 76,
+                child: fromLink
+                    ? ColoredBox(
+                        color: scheme.surfaceContainerHigh,
+                        child: Icon(
+                          Icons.link_rounded,
+                          size: 24,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      )
+                    : CoverImage(_images.firstOrNull),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -493,22 +604,24 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      fromLink
-                          ? 'From a link'
-                          : _images.length > 1
-                              ? 'Original screenshots · ${_images.length}'
-                              : 'Original screenshot',
-                      style:
-                          theme.textTheme.titleSmall?.copyWith(fontSize: 14)),
+                    fromLink
+                        ? 'From a link'
+                        : _images.length > 1
+                        ? 'Original screenshots · ${_images.length}'
+                        : 'Original screenshot',
+                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 14),
+                  ),
                   const SizedBox(height: 2),
                   Text(
-                      fromLink
-                          ? (Uri.tryParse(sourceUrl)?.host ?? sourceUrl)
-                          : 'tap to see what we read',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                    fromLink
+                        ? (Uri.tryParse(sourceUrl)?.host ?? sourceUrl)
+                        : 'tap to see what we read',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -517,41 +630,22 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHigh, shape: BoxShape.circle),
-                child: Icon(Icons.swap_horiz_rounded,
-                    size: 20, color: scheme.onSurfaceVariant),
+                  color: scheme.surfaceContainerHigh,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.swap_horiz_rounded,
+                  size: 20,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
           ],
         ),
       ),
-      // Cover toggle (share-links spike): only when the site's photo actually
-      // downloaded. The user decides — their folder, their cover.
-      if (_linkCover != null) ...[
-        const SizedBox(height: 12),
-        TokenCard(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: SizedBox(
-                    width: 52,
-                    height: 52,
-                    child: Image.file(_linkCover!, fit: BoxFit.cover)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text('Use their photo as the cover',
-                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 14)),
-              ),
-              Switch(
-                value: _useLinkCover,
-                onChanged: (v) => setState(() => _useLinkCover = v),
-              ),
-            ],
-          ),
-        ),
-      ],
+      // Cover row — always present: the link import's downloaded photo with
+      // its toggle, the user's own pick (which wins), or the door to add one.
+      const SizedBox(height: 12),
+      _coverCard(theme),
       const SizedBox(height: 12),
       // Title card — inline editable (D6).
       TokenCard(
@@ -565,14 +659,16 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                 controller: _title,
                 style: theme.textTheme.titleLarge,
                 decoration: const InputDecoration(
-                    isCollapsed: true, border: InputBorder.none),
+                  isCollapsed: true,
+                  border: InputBorder.none,
+                ),
               ),
             ),
             Icon(Icons.edit_rounded, size: 19, color: scheme.onSurfaceVariant),
           ],
         ),
       ),
-      if (servingsRaw != null || timesRaw != null) ...[
+      if (servingsRaw != null || timeChips.isNotEmpty) ...[
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
@@ -580,8 +676,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
           children: [
             if (servingsRaw != null)
               MetaChip(icon: Icons.restaurant_rounded, label: '$servingsRaw'),
-            if (timesRaw != null)
-              MetaChip(icon: Icons.schedule_rounded, label: '$timesRaw'),
+            ...timeChips,
           ],
         ),
       ],
@@ -594,7 +689,9 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('No steps captured — add another screenshot of the method'),
+              const Text(
+                'No steps captured — add another screenshot of the method',
+              ),
               const SizedBox(height: 4),
               TextButton(
                 onPressed: _addImages,
@@ -606,8 +703,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         const SizedBox(height: 14),
       ],
       if (kRecipeTagsEnabled) ...[
-        SectionLabel(
-            _tags.isEmpty ? 'Tags' : 'Tags · ${_tags.length}'),
+        SectionLabel(_tags.isEmpty ? 'Tags' : 'Tags · ${_tags.length}'),
         const SizedBox(height: 8),
         _tagRow(),
         const SizedBox(height: 14),
@@ -651,6 +747,78 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     );
   }
 
+  /// One card, three states: the user's own pick (wins, X clears it), the
+  /// link import's photo behind its toggle, or the door to add one. Tapping
+  /// the row always opens the picker — their folder, their cover.
+  Widget _coverCard(ThemeData theme) {
+    final scheme = context.scheme;
+    final own = _pickedCover;
+    final link = _linkCover;
+    final thumb = own ?? (link != null && _useLinkCover ? link : null);
+    return TokenCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: _pickCover,
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 52,
+                height: 52,
+                child: thumb != null
+                    ? Image.file(thumb, fit: BoxFit.cover)
+                    : ColoredBox(
+                        color: scheme.surfaceContainerHigh,
+                        child: Icon(
+                          Icons.add_photo_alternate_rounded,
+                          size: 24,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    own != null
+                        ? 'Your photo is the cover'
+                        : link != null
+                        ? 'Use their photo as the cover'
+                        : 'Add a cover photo',
+                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 14),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    own != null ? 'tap to change it' : 'tap to choose your own',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (own != null)
+              IconButton(
+                icon: const Icon(Icons.close_rounded, size: 20),
+                tooltip: 'Remove your photo',
+                onPressed: () => setState(() => _pickedCover = null),
+              )
+            else if (link != null)
+              Switch(
+                value: _useLinkCover,
+                onChanged: (v) => setState(() => _useLinkCover = v),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// The incoming tags, each removable, plus the door that adds more. Nothing
   /// here is saved until "Save to cookbook" — this is still just a draft.
   Widget _tagRow() {
@@ -663,44 +831,58 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
           TagChip(
             tag: model.chipFor(name),
             height: 32,
-            onDeleted: () => setState(() => _tags = [
-                  for (final t in _tags)
-                    if (RecipeTag.canonical(t) != RecipeTag.canonical(name)) t
-                ]),
+            onDeleted: () => setState(
+              () => _tags = [
+                for (final t in _tags)
+                  if (RecipeTag.canonical(t) != RecipeTag.canonical(name)) t,
+              ],
+            ),
           ),
-        AddTagChip(onTap: () => showTagPicker(
-              context,
-              selected: () => _tags,
-              onToggle: (name) async {
-                final on = _tags.any(
-                    (t) => RecipeTag.canonical(t) == RecipeTag.canonical(name));
-                setState(() => _tags = on
+        AddTagChip(
+          onTap: () => showTagPicker(
+            context,
+            selected: () => _tags,
+            onToggle: (name) async {
+              final on = _tags.any(
+                (t) => RecipeTag.canonical(t) == RecipeTag.canonical(name),
+              );
+              setState(
+                () => _tags = on
                     ? [
                         for (final t in _tags)
                           if (RecipeTag.canonical(t) !=
                               RecipeTag.canonical(name))
-                            t
+                            t,
                       ]
-                    : [..._tags, name]);
-              },
-            )),
+                    : [..._tags, name],
+              );
+            },
+          ),
+        ),
       ],
     );
   }
 
   List<Widget> _ingredientRows(
-      ThemeData theme, ColorScheme scheme, RbTokens rb) {
+    ThemeData theme,
+    ColorScheme scheme,
+    RbTokens rb,
+  ) {
     final rows = <Widget>[];
     String? prevGroup;
     final ings = _ings;
     for (var i = 0; i < _ingredientCtrls.length && i < ings.length; i++) {
       final group = ings[i]['group'] as String?;
       if (group != null && group != prevGroup) {
-        rows.add(Padding(
-          padding: const EdgeInsets.only(top: 10, bottom: 2),
-          child: Align(
-              alignment: Alignment.centerLeft, child: SectionLabel(group)),
-        ));
+        rows.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 2),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SectionLabel(group),
+            ),
+          ),
+        );
       }
       prevGroup = group;
       final flagged = _flagIngredient(i);
@@ -714,59 +896,70 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
           if (_flagIngredient(i)) setState(() => _confirmed.add('i$i'));
         },
         decoration: const InputDecoration(
-            isCollapsed: true, border: InputBorder.none),
+          isCollapsed: true,
+          border: InputBorder.none,
+        ),
       );
 
       if (flagged) {
         // Suggest-and-confirm: warning tint + an explicit confirm chip.
-        rows.add(Container(
-          margin: const EdgeInsets.symmetric(vertical: 3),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          decoration: BoxDecoration(
-            color: RbColors.warning.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Expanded(child: field),
-              const SizedBox(width: 8),
-              InkWell(
-                key: Key('confirm-ingredient-$i'),
-                borderRadius: BorderRadius.circular(999),
-                onTap: () => setState(() => _confirmed.add('i$i')),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 11, vertical: 4),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
+        rows.add(
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+            decoration: BoxDecoration(
+              color: RbColors.warning.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Expanded(child: field),
+                const SizedBox(width: 8),
+                InkWell(
+                  key: Key('confirm-ingredient-$i'),
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () => setState(() => _confirmed.add('i$i')),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
                         color: RbColors.warning.withValues(alpha: 0.7),
-                        width: 1.5),
-                  ),
-                  child: Text(
-                    'confirm',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 11.5,
-                      letterSpacing: 0.2,
-                      color: Color.alphaBlend(
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Text(
+                      'confirm',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontSize: 11.5,
+                        letterSpacing: 0.2,
+                        color: Color.alphaBlend(
                           RbColors.warning.withValues(alpha: 0.55),
-                          scheme.onSurface),
+                          scheme.onSurface,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ));
+        );
       } else {
-        rows.add(Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          decoration: last
-              ? null
-              : BoxDecoration(
-                  border: Border(bottom: BorderSide(color: rb.separator))),
-          child: field,
-        ));
+        rows.add(
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            decoration: last
+                ? null
+                : BoxDecoration(
+                    border: Border(bottom: BorderSide(color: rb.separator)),
+                  ),
+            child: field,
+          ),
+        );
       }
     }
     return rows;
@@ -780,9 +973,13 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
       final row = Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${i + 1}',
-              style: theme.textTheme.titleSmall
-                  ?.copyWith(color: scheme.primary, fontSize: 13.5)),
+          Text(
+            '${i + 1}',
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: scheme.primary,
+              fontSize: 13.5,
+            ),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -793,30 +990,37 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
                 if (_flagStep(i)) setState(() => _confirmed.add('s$i'));
               },
               decoration: const InputDecoration(
-                  isCollapsed: true, border: InputBorder.none),
+                isCollapsed: true,
+                border: InputBorder.none,
+              ),
             ),
           ),
         ],
       );
       if (flagged) {
-        rows.add(Container(
-          margin: const EdgeInsets.symmetric(vertical: 3),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          decoration: BoxDecoration(
-            color: RbColors.warning.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
+        rows.add(
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+            decoration: BoxDecoration(
+              color: RbColors.warning.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: row,
           ),
-          child: row,
-        ));
+        );
       } else {
-        rows.add(Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
-          decoration: last
-              ? null
-              : BoxDecoration(
-                  border: Border(bottom: BorderSide(color: rb.separator))),
-          child: row,
-        ));
+        rows.add(
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            decoration: last
+                ? null
+                : BoxDecoration(
+                    border: Border(bottom: BorderSide(color: rb.separator)),
+                  ),
+            child: row,
+          ),
+        );
       }
     }
     return rows;

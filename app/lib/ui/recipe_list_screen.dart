@@ -41,11 +41,7 @@ import 'widgets/skin.dart';
 enum _Filter { all, favorites }
 
 class RecipeListScreen extends StatefulWidget {
-  const RecipeListScreen({
-    super.key,
-    required this.onImport,
-    this.onOpenQueue,
-  });
+  const RecipeListScreen({super.key, required this.onImport, this.onOpenQueue});
 
   /// The shell's import flow (3a sheet → review) — empty-state button target.
   final VoidCallback onImport;
@@ -95,7 +91,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
       for (final r in all)
         if ((q.isEmpty || r.title.toLowerCase().contains(q)) &&
             (_filter == _Filter.all || r.favorite))
-          r
+          r,
     ];
   }
 
@@ -132,32 +128,36 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     for (final e in members.entries) {
       final decorated = tags.chipFor(spelling[e.key]!);
       final carriers = e.value;
-      sections.add(ShelfSection(
-        id: e.key,
-        label: decorated.name,
-        count: carriers.length,
-        leading: TagBadge(tag: decorated, size: 22),
-        builder: (_) => grid
-            // Non-scrolling: the outer CustomScrollView owns the scroll, this
-            // just lays the same cards two across inside the open fold.
-            ? GridView(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 4),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  mainAxisExtent: 168,
+      sections.add(
+        ShelfSection(
+          id: e.key,
+          label: decorated.name,
+          count: carriers.length,
+          leading: TagBadge(tag: decorated, size: 22),
+          builder: (_) => grid
+              // Non-scrolling: the outer CustomScrollView owns the scroll, this
+              // just lays the same cards two across inside the open fold.
+              ? GridView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 4),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    mainAxisExtent: 168,
+                  ),
+                  children: [for (final r in carriers) _RecipeCard(recipe: r)],
+                )
+              : Column(
+                  children: [for (final r in carriers) _RecipeRow(recipe: r)],
                 ),
-                children: [for (final r in carriers) _RecipeCard(recipe: r)],
-              )
-            : Column(
-                children: [for (final r in carriers) _RecipeRow(recipe: r)]),
-      ));
+        ),
+      );
     }
     sections.sort(
-        (a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
+      (a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()),
+    );
     return sections;
   }
 
@@ -176,10 +176,11 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         kRecipeTagsEnabled && _filter == _Filter.all && _query.trim().isEmpty;
     final untagged = [
       for (final r in recipes)
-        if (r.tags.isEmpty) r
+        if (r.tags.isEmpty) r,
     ];
-    final sections =
-        shelfShape ? _tagSections(recipes, grid) : const <ShelfSection>[];
+    final sections = shelfShape
+        ? _tagSections(recipes, grid)
+        : const <ShelfSection>[];
     final open = _expanded ?? {for (final s in sections) s.id};
 
     return Scaffold(
@@ -198,8 +199,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                      sliver:
-                          SliverToBoxAdapter(child: _queueStrip(theme, scheme)),
+                      sliver: SliverToBoxAdapter(
+                        child: _queueStrip(theme, scheme),
+                      ),
                     ),
                     if (emptyBook)
                       SliverFillRemaining(
@@ -210,7 +212,8 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                         sliver: SliverToBoxAdapter(
-                            child: _searchBar(theme, scheme)),
+                          child: _searchBar(theme, scheme),
+                        ),
                       ),
                       SliverToBoxAdapter(child: _filterRow(theme)),
                       if (recipes.isEmpty)
@@ -218,9 +221,12 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                           child: Padding(
                             padding: const EdgeInsets.all(32),
                             child: Center(
-                              child: Text('Nothing matches — yet.',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: scheme.onSurfaceVariant)),
+                              child: Text(
+                                'Nothing matches — yet.',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                           ),
                         )
@@ -235,11 +241,11 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                                 ? SliverGrid(
                                     gridDelegate:
                                         const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 12,
-                                      crossAxisSpacing: 12,
-                                      mainAxisExtent: 168,
-                                    ),
+                                          crossAxisCount: 2,
+                                          mainAxisSpacing: 12,
+                                          crossAxisSpacing: 12,
+                                          mainAxisExtent: 168,
+                                        ),
                                     delegate: SliverChildBuilderDelegate(
                                       (context, i) =>
                                           _RecipeCard(recipe: untagged[i]),
@@ -257,8 +263,12 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                         // 110 bottom: clears the 64dp bar hint + 16dp inset.
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding:
-                                EdgeInsets.fromLTRB(20, 12, 20, navBarClearance(context)),
+                            padding: EdgeInsets.fromLTRB(
+                              20,
+                              12,
+                              20,
+                              navBarClearance(context),
+                            ),
                             child: CollapsibleShelf(
                               sections: sections,
                               expanded: open,
@@ -269,25 +279,34 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                       ] else if (grid)
                         SliverPadding(
                           // 110 bottom: clears the 64dp bar hint + 16dp inset.
-                          padding: EdgeInsets.fromLTRB(20, 12, 20, navBarClearance(context)),
+                          padding: EdgeInsets.fromLTRB(
+                            20,
+                            12,
+                            20,
+                            navBarClearance(context),
+                          ),
                           sliver: SliverGrid(
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              mainAxisExtent: 168,
-                            ),
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  mainAxisExtent: 168,
+                                ),
                             delegate: SliverChildBuilderDelegate(
-                              (context, i) =>
-                                  _RecipeCard(recipe: recipes[i]),
+                              (context, i) => _RecipeCard(recipe: recipes[i]),
                               childCount: recipes.length,
                             ),
                           ),
                         )
                       else
                         SliverPadding(
-                          padding: EdgeInsets.fromLTRB(20, 12, 20, navBarClearance(context)),
+                          padding: EdgeInsets.fromLTRB(
+                            20,
+                            12,
+                            20,
+                            navBarClearance(context),
+                          ),
                           sliver: SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (context, i) => _RecipeRow(recipe: recipes[i]),
@@ -298,11 +317,17 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                       if (model.skipped > 0)
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(20, 0, 20, navBarClearance(context)),
+                            padding: EdgeInsets.fromLTRB(
+                              20,
+                              0,
+                              20,
+                              navBarClearance(context),
+                            ),
                             child: Text(
                               "${model.skipped} file${model.skipped == 1 ? '' : 's'} in the folder couldn't be read",
                               style: theme.textTheme.bodySmall?.copyWith(
-                                  color: scheme.onSurfaceVariant),
+                                color: scheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ),
@@ -323,8 +348,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           child: GestureDetector(
             // Debug-only door to the post-alpha design previews.
             onLongPress: kDebugMode
-                ? () => Navigator.of(context).push(MaterialPageRoute<void>(
-                    builder: (_) => const DevGallery()))
+                ? () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const DevGallery()),
+                  )
                 : null,
             child: Text(
               'MyReciBook',
@@ -367,29 +393,41 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
           decoration: BoxDecoration(
             color: Color.alphaBlend(
-                scheme.secondaryContainer.withValues(alpha: 0.4),
-                scheme.surface),
+              scheme.secondaryContainer.withValues(alpha: 0.4),
+              scheme.surface,
+            ),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Row(children: [
-            if (moving > 0)
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: scheme.primary),
-              )
-            else
-              Icon(Icons.visibility_rounded, size: 18, color: scheme.primary),
-            const SizedBox(width: 9),
-            Expanded(
-              child: Text(caption,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(fontSize: 12.5, height: 1.4)),
-            ),
-            Icon(Icons.chevron_right_rounded,
-                size: 18, color: scheme.onSurfaceVariant),
-          ]),
+          child: Row(
+            children: [
+              if (moving > 0)
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: scheme.primary,
+                  ),
+                )
+              else
+                Icon(Icons.visibility_rounded, size: 18, color: scheme.primary),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  caption,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 12.5,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: scheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -416,8 +454,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                 isCollapsed: true,
                 border: InputBorder.none,
                 hintText: 'Search your cookbook…',
-                hintStyle: theme.textTheme.bodyLarge
-                    ?.copyWith(color: scheme.onSurfaceVariant),
+                hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -474,12 +513,14 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     // covers grid ⇄ compact list).
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-      child: Row(children: [
-        chip(_Filter.all, 'All'),
-        chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
-        const Spacer(),
-        _viewToggle(),
-      ]),
+      child: Row(
+        children: [
+          chip(_Filter.all, 'All'),
+          chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
+          const Spacer(),
+          _viewToggle(),
+        ],
+      ),
     );
   }
 
@@ -493,17 +534,21 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
       key: const Key('view-toggle'),
       customBorder: const CircleBorder(),
       onTap: () => context.read<CookbookPrefs>().setView(
-          toList ? CookbookView.list : CookbookView.grid),
+        toList ? CookbookView.list : CookbookView.grid,
+      ),
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh, shape: BoxShape.circle),
+          color: scheme.surfaceContainerHigh,
+          shape: BoxShape.circle,
+        ),
         child: Icon(
-            toList ? Icons.view_list_rounded : Icons.grid_view_rounded,
-            size: 19,
-            color: scheme.onSurfaceVariant,
-            semanticLabel: toList ? 'Show as list' : 'Show as grid'),
+          toList ? Icons.view_list_rounded : Icons.grid_view_rounded,
+          size: 19,
+          color: scheme.onSurfaceVariant,
+          semanticLabel: toList ? 'Show as list' : 'Show as grid',
+        ),
       ),
     );
   }
@@ -521,19 +566,26 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
               color: scheme.secondaryContainer.withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.menu_book_rounded,
-                size: 32, color: scheme.primary),
+            child: Icon(
+              Icons.menu_book_rounded,
+              size: 32,
+              color: scheme.primary,
+            ),
           ),
           const SizedBox(height: 18),
-          Text('Your book is empty (for now)',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headlineSmall?.copyWith(fontSize: 21)),
+          Text(
+            'Your book is empty (for now)',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineSmall?.copyWith(fontSize: 21),
+          ),
           const SizedBox(height: 8),
           Text(
             'Somewhere in your camera roll, a pile of recipes is waiting to be rescued.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
@@ -554,12 +606,15 @@ List<String> _orderTags(BuildContext context, List<String> tags) {
   final model = context.read<TagsModel>();
   final rank = {
     for (var i = 0; i < model.tags.length; i++)
-      RecipeTag.canonical(model.tags[i].name): i
+      RecipeTag.canonical(model.tags[i].name): i,
   };
-  final sorted = [...tags]..sort((a, b) {
+  final sorted = [...tags]
+    ..sort((a, b) {
       final ra = rank[RecipeTag.canonical(a)] ?? 1 << 30;
       final rb = rank[RecipeTag.canonical(b)] ?? 1 << 30;
-      return ra != rb ? ra.compareTo(rb) : a.toLowerCase().compareTo(b.toLowerCase());
+      return ra != rb
+          ? ra.compareTo(rb)
+          : a.toLowerCase().compareTo(b.toLowerCase());
     });
   return sorted;
 }
@@ -584,9 +639,11 @@ class _RecipeRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 11),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-          builder: (_) => RecipeDetailScreen(recipe: recipe),
-        )),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => RecipeDetailScreen(recipe: recipe),
+          ),
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
@@ -595,75 +652,81 @@ class _RecipeRow extends StatelessWidget {
             border: Border.all(color: rb.hairline),
             boxShadow: rb.cardShadow,
           ),
-          child: Row(children: [
-            // Coverless recipes get the mini RecipeCover instead of a blank
-            // box, so a recipe keeps its title-hashed colour identity in
-            // both views.
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SizedBox(
-                width: 38,
-                height: 38,
-                child: FutureBuilder<File?>(
-                  future: model.coverFor(recipe),
-                  builder: (_, snap) {
-                    final file = snap.data;
-                    if (file == null) {
-                      return RecipeCover(file: null, title: recipe.title);
-                    }
-                    return Image.file(
-                      file,
-                      width: 38,
-                      height: 38,
-                      fit: BoxFit.cover,
-                      cacheWidth: 114,
-                      errorBuilder: (_, _, _) =>
-                          RecipeCover(file: null, title: recipe.title),
-                    );
-                  },
+          child: Row(
+            children: [
+              // Coverless recipes get the mini RecipeCover instead of a blank
+              // box, so a recipe keeps its title-hashed colour identity in
+              // both views.
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: 38,
+                  height: 38,
+                  child: FutureBuilder<File?>(
+                    future: model.coverFor(recipe),
+                    builder: (_, snap) {
+                      final file = snap.data;
+                      if (file == null) {
+                        return RecipeCover(file: null, title: recipe.title);
+                      }
+                      return Image.file(
+                        file,
+                        width: 38,
+                        height: 38,
+                        fit: BoxFit.cover,
+                        cacheWidth: 114,
+                        errorBuilder: (_, _, _) =>
+                            RecipeCover(file: null, title: recipe.title),
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    recipe.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontSize: 14, height: 1.3),
-                  ),
-                  if (meta.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      meta,
+                      recipe.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 11.5, color: scheme.onSurfaceVariant),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontSize: 14,
+                        height: 1.3,
+                      ),
                     ),
+                    if (meta.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        meta,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 11.5,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            // Tags, then the heart. Badges rather than chips: the row's job
-            // is the title, and a glyph plus its colour says which tags are
-            // on this recipe without spending any of that width on words.
-            if (kRecipeTagsEnabled && recipe.tags.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              TagBadgeRow(
-                names: _orderTags(context, recipe.tags),
-                decorate: context.watch<TagsModel>().chipFor,
-              ),
+              // Tags, then the heart. Badges rather than chips: the row's job
+              // is the title, and a glyph plus its colour says which tags are
+              // on this recipe without spending any of that width on words.
+              if (kRecipeTagsEnabled && recipe.tags.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                TagBadgeRow(
+                  names: _orderTags(context, recipe.tags),
+                  decorate: context.watch<TagsModel>().chipFor,
+                ),
+              ],
+              if (recipe.favorite) ...[
+                const SizedBox(width: 8),
+                Icon(Icons.favorite_rounded, size: 16, color: scheme.tertiary),
+              ],
             ],
-            if (recipe.favorite) ...[
-              const SizedBox(width: 8),
-              Icon(Icons.favorite_rounded, size: 16, color: scheme.tertiary),
-            ],
-          ]),
+          ),
         ),
       ),
     );
@@ -676,11 +739,12 @@ class _RecipeCard extends StatelessWidget {
   final Recipe recipe;
 
   static String metaLine(Recipe r) {
+    // Total first: cards want "8 hr 15 min", not the import's full
+    // "Prep Time: 30 mins, Refrigerate Time: 4 hrs…" run-on. Raw is the
+    // fallback for files with no parsed number at all ("ca. 1 time").
+    final time = RecipeTimes.fmtMin(r.times?.totalMin) ?? r.times?.raw;
     final parts = <String>[
-      if (r.times?.raw != null)
-        r.times!.raw!
-      else if (r.times?.totalMin != null)
-        '${r.times!.totalMin} min',
+      ?time,
       if (r.servings?.raw != null)
         r.servings!.raw!
       else if (r.servings?.amount != null)
@@ -697,9 +761,11 @@ class _RecipeCard extends StatelessWidget {
     final model = context.read<LibraryModel>();
     return InkWell(
       borderRadius: BorderRadius.circular(12),
-      onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (_) => RecipeDetailScreen(recipe: recipe),
-      )),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => RecipeDetailScreen(recipe: recipe),
+        ),
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: context.scheme.surfaceContainerLowest,
@@ -730,8 +796,10 @@ class _RecipeCard extends StatelessWidget {
                       recipe.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(fontSize: 13.5, height: 1.3),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontSize: 13.5,
+                        height: 1.3,
+                      ),
                     ),
                     if (meta.isNotEmpty) ...[
                       const SizedBox(height: 3),
@@ -740,8 +808,9 @@ class _RecipeCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodySmall?.copyWith(
-                            fontSize: 11.5,
-                            color: context.scheme.onSurfaceVariant),
+                          fontSize: 11.5,
+                          color: context.scheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                     // No badges here — the cover card's 168dp is spent on the

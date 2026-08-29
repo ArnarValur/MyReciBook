@@ -32,6 +32,18 @@
         "prep_min": { "type": ["number", "null"] },
         "cook_min": { "type": ["number", "null"] },
         "total_min": { "type": ["number", "null"] },
+        "extra": {
+          "type": ["array", "null"],
+          "description": "durations beyond prep/cook/total — Refrigerate, Rise, Marinate, Rest…",
+          "items": {
+            "type": "object",
+            "required": ["label"],
+            "properties": {
+              "label": { "type": "string", "description": "the source's own word, without 'Time' — e.g. 'Refrigerate'" },
+              "min": { "type": ["number", "null"] }
+            }
+          }
+        },
         "raw": { "type": ["string", "null"] }
       }
     },

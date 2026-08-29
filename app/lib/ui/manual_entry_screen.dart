@@ -60,7 +60,7 @@ class ManualEntryScreen extends StatefulWidget {
 /// the user corrected the parse by hand, the override.
 class _EntryRow {
   _EntryRow([String initial = ''])
-      : text = TextEditingController(text: initial);
+    : text = TextEditingController(text: initial);
 
   final TextEditingController text;
   final FocusNode focus = FocusNode();
@@ -87,6 +87,15 @@ class _EntryRow {
   }
 }
 
+/// One duration pill: "Prep", "Cook", "Total", or the source's own label
+/// ("Refrigerate", "Rise"…). Minutes null = pill shown empty, part not saved.
+class _TimePart {
+  _TimePart(this.label, this.minutes);
+
+  final String label;
+  int? minutes;
+}
+
 class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final _title = TextEditingController();
   final List<_EntryRow> _ings = [];
@@ -99,7 +108,11 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   // save that didn't touch it.
   int _servingsValue = 4;
   bool _servingsTouched = false;
-  int? _minutes;
+
+  // Every duration the file states, one pill each — Prep, Cook, the source's
+  // own labels (Refrigerate…), Total. The single-total pill collapsed all of
+  // them on save and silently destroyed an import's parts (Arnar 2026-08-30).
+  final List<_TimePart> _times = [];
   bool _timesTouched = false;
 
   // Cover: the shown file, and whether the user changed it this session.
@@ -125,7 +138,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     if (initial != null) {
       _title.text = initial.title;
       _servingsValue = (servingsAmount(initial)?.round() ?? 4).clamp(1, 99);
-      _minutes = _initialMinutes(initial.times);
+      _seedTimes(initial.times);
       for (final ing in initial.ingredients) {
         final row = _makeRow(ing.raw)
           ..productRef = ing.productRef
@@ -133,8 +146,11 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         // The file's parse (extractor's or a previous save's) rides in as
         // the override: preserved verbatim until the text changes.
         if (ing.qty != null || ing.unit != null || ing.item != null) {
-          row.override =
-              ParsedQty(qty: ing.qty, unit: ing.unit, item: ing.item ?? '');
+          row.override = ParsedQty(
+            qty: ing.qty,
+            unit: ing.unit,
+            item: ing.item ?? '',
+          );
         }
         _ings.add(row);
       }
@@ -147,6 +163,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     }
     if (_ings.isEmpty) _ings.add(_makeRow());
     if (_steps.isEmpty) _steps.add(_makeRow());
+    // New recipes get the empty Total pill as the affordance, same as a file
+    // without times.
+    if (_times.isEmpty) _times.add(_TimePart('Total', null));
   }
 
   @override
@@ -185,6 +204,169 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     if (mounted && !_coverTouched) setState(() => _coverFile = file);
   }
 
+  /// One pill per stated duration, in the order the file states them.
+  /// A raw-only file (old manual saves, "ca. 1 time") seeds a Total pill from
+  /// the light raw parse; a file with no times at all gets an empty Total
+  /// pill as the affordance — same as a brand-new recipe.
+  void _seedTimes(RecipeTimes? t) {
+    if (t != null) {
+      if (t.prepMin != null) {
+        _times.add(_TimePart('Prep', t.prepMin!.round()));
+      }
+      if (t.cookMin != null) {
+        _times.add(_TimePart('Cook', t.cookMin!.round()));
+      }
+      for (final e in t.extra) {
+        if (e.min != null) _times.add(_TimePart(e.label, e.min!.round()));
+      }
+      if (t.totalMin != null) {
+        _times.add(_TimePart('Total', t.totalMin!.round()));
+      } else if (_times.isEmpty) {
+        final parsed = _initialMinutes(t);
+        if (parsed != null) _times.add(_TimePart('Total', parsed));
+      }
+    }
+    if (_times.isEmpty) _times.add(_TimePart('Total', null));
+  }
+
+  /// Rebuilds the file's times from the pills — every part carried, raw
+  /// regenerated so it never lies about the parts. Null when nothing is set.
+  RecipeTimes? _rebuiltTimes() {
+    int? named(String label) {
+      for (final p in _times) {
+        if (p.label == label && p.minutes != null) return p.minutes;
+      }
+      return null;
+    }
+
+    final prep = named('Prep');
+    final cook = named('Cook');
+    final total = named('Total');
+    final extras = [
+      for (final p in _times)
+        if (p.label != 'Prep' &&
+            p.label != 'Cook' &&
+            p.label != 'Total' &&
+            p.minutes != null)
+          ExtraTime(label: p.label, min: p.minutes),
+    ];
+    if (prep == null && cook == null && total == null && extras.isEmpty) {
+      return null;
+    }
+    final t = RecipeTimes(
+      prepMin: prep,
+      cookMin: cook,
+      totalMin: total,
+      extra: extras,
+    );
+    return RecipeTimes(
+      prepMin: prep,
+      cookMin: cook,
+      totalMin: total,
+      extra: extras,
+      raw: t.compactLine(),
+    );
+  }
+
+  /// A labeled duration pill bound to `_times[i]`. State follows the part
+  /// object (ObjectKey), not the index, so removing a pill can't reseed a
+  /// neighbour. Touched only marks when a value actually changes — adding an
+  /// empty pill and saving leaves the file byte-identical.
+  Widget _timePill(int i) {
+    final part = _times[i];
+    return KeyedSubtree(
+      key: ObjectKey(part),
+      child: DurationField(
+        label: part.label,
+        initialMinutes: part.minutes,
+        onChanged: (m) => setState(() {
+          if (part.minutes == m) return;
+          part.minutes = m;
+          _timesTouched = true;
+        }),
+        onRemoved: () => setState(() {
+          if (part.minutes != null) _timesTouched = true;
+          _times.remove(part);
+        }),
+      ),
+    );
+  }
+
+  /// The add-time door: the labels an import can arrive with, minus the ones
+  /// already on screen, plus a free-text custom label.
+  Future<void> _addTimePart() async {
+    const suggestions = [
+      'Prep',
+      'Cook',
+      'Total',
+      'Refrigerate',
+      'Rise',
+      'Marinate',
+      'Rest',
+    ];
+    final present = {for (final p in _times) p.label};
+    final label = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final s in suggestions)
+              if (!present.contains(s))
+                ListTile(
+                  key: Key('add-time-$s'),
+                  leading: const Icon(Icons.schedule_rounded),
+                  title: Text(s),
+                  onTap: () => Navigator.of(sheet).pop(s),
+                ),
+            ListTile(
+              key: const Key('add-time-custom'),
+              leading: const Icon(Icons.edit_rounded),
+              title: const Text('Something else…'),
+              onTap: () async {
+                final custom = await _askCustomLabel(sheet);
+                if (custom != null && sheet.mounted) {
+                  Navigator.of(sheet).pop(custom);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    if (label == null || label.trim().isEmpty || !mounted) return;
+    setState(() => _times.add(_TimePart(label.trim(), null)));
+  }
+
+  Future<String?> _askCustomLabel(BuildContext sheet) => showDialog<String>(
+    context: sheet,
+    builder: (dctx) {
+      final ctrl = TextEditingController();
+      return AlertDialog(
+        title: const Text('Name this time'),
+        content: TextField(
+          key: const Key('custom-time-label'),
+          controller: ctrl,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(hintText: 'e.g. Proof'),
+          onSubmitted: (v) => Navigator.of(dctx).pop(v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dctx).pop(ctrl.text),
+            child: const Text('Add'),
+          ),
+        ],
+      );
+    },
+  );
+
   /// Pre-fill for the duration pill: the structured total when the file has
   /// one, else a light read of the raw ("25 min", "1 hr 30 min", "1,5 hr").
   static int? _initialMinutes(RecipeTimes? times) {
@@ -194,8 +376,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     final raw = times.raw?.toLowerCase();
     if (raw == null || raw.isEmpty) return null;
     num sum = 0;
-    final h = RegExp(r'(\d+(?:[.,]\d+)?)\s*(?:hours?|hrs?|hr|h|timer?)(?![a-z])')
-        .firstMatch(raw);
+    final h = RegExp(
+      r'(\d+(?:[.,]\d+)?)\s*(?:hours?|hrs?|hr|h|timer?)(?![a-z])',
+    ).firstMatch(raw);
     final m = RegExp(r'(\d+(?:[.,]\d+)?)\s*min').firstMatch(raw);
     if (h != null) sum += num.parse(h.group(1)!.replaceAll(',', '.')) * 60;
     if (m != null) sum += num.parse(m.group(1)!.replaceAll(',', '.'));
@@ -320,7 +503,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       _closeInlineEditors();
       _qtyEditRow = i;
       _inlineCtrl = TextEditingController(
-          text: parsed.qty == null ? '' : _trimNum(parsed.qty!));
+        text: parsed.qty == null ? '' : _trimNum(parsed.qty!),
+      );
     });
   }
 
@@ -351,8 +535,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     final row = _ings[i];
     final cur = row.parsed;
     setState(() {
-      row.override =
-          ParsedQty(qty: cur.qty, unit: cur.unit, item: text.trim());
+      row.override = ParsedQty(qty: cur.qty, unit: cur.unit, item: text.trim());
       _closeInlineEditors();
     });
   }
@@ -381,8 +564,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   /// already parse to tbsp/tsp/piece — the file and the chips speak
   /// canonical, so the menu does too).
   List<String> _unitOptions(_EntryRow row, PantryModel? pantry) {
-    final linked =
-        row.productRef == null ? null : pantry?.byId(row.productRef!);
+    final linked = row.productRef == null
+        ? null
+        : pantry?.byId(row.productRef!);
     if (linked == null) return _commonUnits;
     return _isMlBased(linked) ? _mlUnits : _gUnits;
   }
@@ -398,9 +582,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   /// or any named portion ("1 dl") says so. No volume token anywhere reads
   /// as a weight product — the honest default for food.
   static bool _isMlBased(Product p) {
-    final hay = [p.quantity ?? '', for (final s in p.servings) s.label]
-        .join(' ')
-        .toLowerCase();
+    final hay = [
+      p.quantity ?? '',
+      for (final s in p.servings) s.label,
+    ].join(' ').toLowerCase();
     return RegExp(r'(^|\d|\s)(ml|cl|dl|l)\b').hasMatch(hay);
   }
 
@@ -409,8 +594,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
   // --- save ---
 
-  static List<_EntryRow> _filled(List<_EntryRow> rows) =>
-      [for (final r in rows) if (r.text.text.trim().isNotEmpty) r];
+  static List<_EntryRow> _filled(List<_EntryRow> rows) => [
+    for (final r in rows)
+      if (r.text.text.trim().isNotEmpty) r,
+  ];
 
   Ingredient _ingredientOf(_EntryRow row) {
     final parsed = row.parsed;
@@ -447,11 +634,13 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         // No extraction envelope, no images: nothing was extracted (rule 2 —
         // metadata is stamped by our code only when it is true).
         source: RecipeSource(
-            type: 'manual', importedAt: DateTime.now().toIso8601String()),
+          type: 'manual',
+          importedAt: DateTime.now().toIso8601String(),
+        ),
         // Structured from the first save: amount + raw exactly as displayed
         // (what recipe_nutrition prefers).
         servings: ServingsStepper.servingsOf(_servingsValue),
-        times: DurationField.timesOf(_minutes),
+        times: _rebuiltTimes(),
         // Born parsed (Arnar, 2026-08-19): the parse — or the user's
         // correction of it — and the pantry link are stored on save.
         ingredients: [for (final r in _filled(_ings)) _ingredientOf(r)],
@@ -469,17 +658,19 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         servings: _servingsTouched
             ? ServingsStepper.servingsOf(_servingsValue)
             : null,
-        times: _timesTouched ? DurationField.timesOf(_minutes) : null,
-        clearTimes: _timesTouched && _minutes == null,
+        times: _timesTouched ? _rebuiltTimes() : null,
+        clearTimes: _timesTouched && _rebuiltTimes() == null,
         clearCover: _coverTouched && _coverFile == null,
       );
     }
 
-    final blocking =
-        fileProblems(recipe.toJson()).where(isSaveBlocking).toList();
+    final blocking = fileProblems(
+      recipe.toJson(),
+    ).where(isSaveBlocking).toList();
     if (blocking.isNotEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(blocking.join(' · '))));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(blocking.join(' · '))));
       return;
     }
 
@@ -490,20 +681,28 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       // The cover file only travels when this session picked one — passing
       // the already-stored file back would just copy it onto itself.
       saved = await context.read<LibraryModel>().saveImported(
-          recipe, const [],
-          coverImage: _coverTouched ? _coverFile : null);
+        recipe,
+        const [],
+        coverImage: _coverTouched ? _coverFile : null,
+      );
     } on GrantLostException {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Folder access was lost — your recipe is kept here. '
-              'Try again, or go back and re-pick your folder.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Folder access was lost — your recipe is kept here. '
+            'Try again, or go back and re-pick your folder.',
+          ),
+        ),
+      );
       return;
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Save failed: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Save failed: $e')));
       return;
     }
     // Pops with the saved Recipe — the detail screen awaits it in edit mode.
@@ -514,8 +713,12 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
   /// A tiny muted parse chip — the structure the line was read as. Tap to
   /// correct it in place.
-  Widget _parseChip(String label, VoidCallback onTap,
-      {Key? key, bool active = false}) {
+  Widget _parseChip(
+    String label,
+    VoidCallback onTap, {
+    Key? key,
+    bool active = false,
+  }) {
     final scheme = context.scheme;
     return InkWell(
       key: key,
@@ -524,15 +727,19 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
         decoration: BoxDecoration(
-          color:
-              active ? scheme.secondaryContainer : scheme.surfaceContainerHigh,
+          color: active
+              ? scheme.secondaryContainer
+              : scheme.surfaceContainerHigh,
           borderRadius: BorderRadius.circular(999),
         ),
-        child: Text(label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: active
-                    ? scheme.onSecondaryContainer
-                    : scheme.onSurfaceVariant)),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: active
+                ? scheme.onSecondaryContainer
+                : scheme.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }
@@ -561,7 +768,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         keyboardType: keyboardType,
         style: Theme.of(context).textTheme.labelSmall,
         decoration: const InputDecoration(
-            isCollapsed: true, border: InputBorder.none),
+          isCollapsed: true,
+          border: InputBorder.none,
+        ),
         onSubmitted: onDone,
         onTapOutside: (_) => onDone(ctrl.text),
       ),
@@ -583,16 +792,15 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     final parsed = row.parsed;
     // A product deleted mid-session resolves to null → the chip honestly
     // falls back to 'Link' (dangling refs are display noise, never errors).
-    final linked =
-        row.productRef == null ? null : pantry?.byId(row.productRef!);
+    final linked = row.productRef == null
+        ? null
+        : pantry?.byId(row.productRef!);
     final onlyEmptyRow = _ings.length == 1 && !hasText;
     // Linked rows show the product's name in the line (the detail screen's
     // substitution rule) — the typed text comes back the moment the row is
     // tapped for editing, and stays what the file stores.
-    final showLinkedLine = linked != null &&
-        hasText &&
-        !row.focus.hasFocus &&
-        _textEditRow != i;
+    final showLinkedLine =
+        linked != null && hasText && !row.focus.hasFocus && _textEditRow != i;
 
     final Widget line;
     if (showLinkedLine) {
@@ -603,16 +811,22 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Text.rich(
-            TextSpan(children: [
-              TextSpan(
-                  text: linkedIngredientLine(_ingredientOf(row), linked.name)),
-              const WidgetSpan(child: SizedBox(width: 5)),
-              WidgetSpan(
-                alignment: PlaceholderAlignment.middle,
-                child: Icon(Icons.kitchen_rounded,
-                    size: 12, color: context.scheme.primary),
-              ),
-            ]),
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: linkedIngredientLine(_ingredientOf(row), linked.name),
+                ),
+                const WidgetSpan(child: SizedBox(width: 5)),
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Icon(
+                    Icons.kitchen_rounded,
+                    size: 12,
+                    color: context.scheme.primary,
+                  ),
+                ),
+              ],
+            ),
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
@@ -630,9 +844,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         onChanged: (_) => setState(() => row.override = null),
         style: Theme.of(context).textTheme.bodyMedium,
         decoration: const InputDecoration(
-            isCollapsed: true,
-            border: InputBorder.none,
-            hintText: 'e.g. 2 dl melk'),
+          isCollapsed: true,
+          border: InputBorder.none,
+          hintText: 'e.g. 2 dl melk',
+        ),
       );
     }
 
@@ -643,17 +858,22 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Expanded(child: line),
-              if (!onlyEmptyRow)
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(Icons.close_rounded,
-                      size: 17, color: context.scheme.onSurfaceVariant),
-                  onPressed: () => _removeRow(_ings, i),
-                  tooltip: 'Remove',
-                ),
-            ]),
+            Row(
+              children: [
+                Expanded(child: line),
+                if (!onlyEmptyRow)
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 17,
+                      color: context.scheme.onSurfaceVariant,
+                    ),
+                    onPressed: () => _removeRow(_ings, i),
+                    tooltip: 'Remove',
+                  ),
+              ],
+            ),
             if (hasText) ...[
               const SizedBox(height: 6),
               Wrap(
@@ -666,16 +886,22 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                       fieldKey: Key('qty-edit-$i'),
                       width: 56,
                       keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true),
+                        decimal: true,
+                      ),
                       onDone: (t) => _commitQty(i, t),
                     )
                   else
                     _parseChip(
-                        parsed.qty == null ? '?' : _trimNum(parsed.qty!),
-                        () => _openQtyEdit(i),
-                        key: Key('ing-qty-$i')),
-                  _parseChip(parsed.unit ?? 'unit?', () => _toggleUnitPicker(i),
-                      key: Key('ing-unit-$i'), active: _unitPickerRow == i),
+                      parsed.qty == null ? '?' : _trimNum(parsed.qty!),
+                      () => _openQtyEdit(i),
+                      key: Key('ing-qty-$i'),
+                    ),
+                  _parseChip(
+                    parsed.unit ?? 'unit?',
+                    () => _toggleUnitPicker(i),
+                    key: Key('ing-unit-$i'),
+                    active: _unitPickerRow == i,
+                  ),
                   if (_itemEditRow == i)
                     _inlineEdit(
                       fieldKey: Key('item-edit-$i'),
@@ -683,9 +909,11 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                       onDone: (t) => _commitItem(i, t),
                     )
                   else
-                    _parseChip(parsed.item.isEmpty ? '?' : parsed.item,
-                        () => _openItemEdit(i),
-                        key: Key('ing-item-$i')),
+                    _parseChip(
+                      parsed.item.isEmpty ? '?' : parsed.item,
+                      () => _openItemEdit(i),
+                      key: Key('ing-item-$i'),
+                    ),
                   if (pantry != null)
                     MetaChip(
                       icon: linked == null
@@ -729,11 +957,12 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 1),
-              child: Text('${i + 1}.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: context.scheme.primary)),
+              child: Text(
+                '${i + 1}.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: context.scheme.primary),
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -745,21 +974,24 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 onSubmitted: (_) => _submitRow(_steps, i),
                 onChanged: (_) => setState(() {}),
                 maxLines: null,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(height: 1.4),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(height: 1.4),
                 decoration: const InputDecoration(
-                    isCollapsed: true,
-                    border: InputBorder.none,
-                    hintText: 'What happens next?'),
+                  isCollapsed: true,
+                  border: InputBorder.none,
+                  hintText: 'What happens next?',
+                ),
               ),
             ),
             if (!onlyEmptyRow)
               IconButton(
                 visualDensity: VisualDensity.compact,
-                icon: Icon(Icons.close_rounded,
-                    size: 17, color: context.scheme.onSurfaceVariant),
+                icon: Icon(
+                  Icons.close_rounded,
+                  size: 17,
+                  color: context.scheme.onSurfaceVariant,
+                ),
                 onPressed: () => _removeRow(_steps, i),
                 tooltip: 'Remove',
               ),
@@ -776,15 +1008,18 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(children: [
-          Icon(Icons.add_rounded, size: 18, color: scheme.primary),
-          const SizedBox(width: 6),
-          Text(label,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: scheme.primary)),
-        ]),
+        child: Row(
+          children: [
+            Icon(Icons.add_rounded, size: 18, color: scheme.primary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(color: scheme.primary),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -803,22 +1038,29 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         borderRadius: BorderRadius.circular(10),
         onTap: fromLink || originals.isEmpty
             ? null
-            : () => Navigator.of(context).push(MaterialPageRoute<void>(
-                builder: (_) => OriginalsViewer(images: originals))),
+            : () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => OriginalsViewer(images: originals),
+                ),
+              ),
         child: Row(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: SizedBox(
-                  width: 52,
-                  height: 76,
-                  child: fromLink
-                      ? ColoredBox(
-                          color: scheme.surfaceContainerHigh,
-                          child: Icon(Icons.link_rounded,
-                              size: 24, color: scheme.onSurfaceVariant),
-                        )
-                      : CoverImage(originals.firstOrNull)),
+                width: 52,
+                height: 76,
+                child: fromLink
+                    ? ColoredBox(
+                        color: scheme.surfaceContainerHigh,
+                        child: Icon(
+                          Icons.link_rounded,
+                          size: 24,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      )
+                    : CoverImage(originals.firstOrNull),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -826,22 +1068,24 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      fromLink
-                          ? 'From a link'
-                          : originals.length > 1
-                              ? 'Original screenshots · ${originals.length}'
-                              : 'Original screenshot',
-                      style:
-                          theme.textTheme.titleSmall?.copyWith(fontSize: 14)),
+                    fromLink
+                        ? 'From a link'
+                        : originals.length > 1
+                        ? 'Original screenshots · ${originals.length}'
+                        : 'Original screenshot',
+                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 14),
+                  ),
                   const SizedBox(height: 2),
                   Text(
-                      fromLink
-                          ? (Uri.tryParse(sourceUrl)?.host ?? sourceUrl)
-                          : 'tap to see what we read',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant)),
+                    fromLink
+                        ? (Uri.tryParse(sourceUrl)?.host ?? sourceUrl)
+                        : 'tap to see what we read',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -850,10 +1094,14 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHigh,
-                    shape: BoxShape.circle),
-                child: Icon(Icons.swap_horiz_rounded,
-                    size: 20, color: scheme.onSurfaceVariant),
+                  color: scheme.surfaceContainerHigh,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.swap_horiz_rounded,
+                  size: 20,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
           ],
         ),
@@ -866,7 +1114,8 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final pantry = _pantry();
-    final showSourcePane = _isEdit &&
+    final showSourcePane =
+        _isEdit &&
         (widget.originals.isNotEmpty || widget.initial?.source.url != null);
     return Scaffold(
       body: SafeArea(
@@ -877,8 +1126,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               child: Row(
                 children: [
                   const AppBackButton(),
-                  Text(_isEdit ? 'Edit recipe' : 'New Recipe',
-                      style: theme.textTheme.titleLarge),
+                  Text(
+                    _isEdit ? 'Edit recipe' : 'New Recipe',
+                    style: theme.textTheme.titleLarge,
+                  ),
                 ],
               ),
             ),
@@ -897,7 +1148,9 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                   const SizedBox(height: 12),
                   TokenCard(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -906,13 +1159,17 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                             controller: _title,
                             style: theme.textTheme.titleLarge,
                             decoration: const InputDecoration(
-                                isCollapsed: true,
-                                border: InputBorder.none,
-                                hintText: 'Recipe title'),
+                              isCollapsed: true,
+                              border: InputBorder.none,
+                              hintText: 'Recipe title',
+                            ),
                           ),
                         ),
-                        Icon(Icons.edit_rounded,
-                            size: 19, color: scheme.onSurfaceVariant),
+                        Icon(
+                          Icons.edit_rounded,
+                          size: 19,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ],
                     ),
                   ),
@@ -930,33 +1187,52 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: DurationField(
-                          key: const Key('manual-duration'),
-                          initialMinutes: _minutes,
-                          onChanged: (m) => setState(() {
-                            _minutes = m;
-                            _timesTouched = true;
-                          }),
-                        ),
+                        child: _times.isEmpty
+                            ? const SizedBox.shrink()
+                            : _timePill(0),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  for (var i = 1; i < _times.length; i += 2) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(child: _timePill(i)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: i + 1 < _times.length
+                              ? _timePill(i + 1)
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                    ),
+                  ],
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      key: const Key('add-time'),
+                      onPressed: _addTimePart,
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Add time'),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                   const SectionLabel('Ingredients'),
                   const SizedBox(height: 4),
                   Text(
                     'Type a line like "2 dl melk" — it reads itself. Link a '
                     'line to your pantry and the recipe can count calories.',
                     style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant, height: 1.4),
+                      color: scheme.onSurfaceVariant,
+                      height: 1.4,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   for (var i = 0; i < _ings.length; i++)
                     _ingredientRow(i, pantry),
                   _addButton('Add ingredient', () => _addRow(_ings)),
                   if (pantry != null)
-                    _addButton(
-                        'Add from pantry', () => _addFromPantry(pantry)),
+                    _addButton('Add from pantry', () => _addFromPantry(pantry)),
                   const SizedBox(height: 14),
                   const SectionLabel('Steps'),
                   const SizedBox(height: 8),
@@ -968,14 +1244,15 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                       'Typed-in recipes are always unlimited — no AI involved.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 12, color: scheme.onSurfaceVariant),
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 8),
                   ],
                   FilledButton(
                     onPressed: _saving ? null : _save,
-                    child: Text(
-                        _isEdit ? 'Save changes' : 'Save to cookbook'),
+                    child: Text(_isEdit ? 'Save changes' : 'Save to cookbook'),
                   ),
                 ],
               ),
@@ -986,4 +1263,3 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     );
   }
 }
-
