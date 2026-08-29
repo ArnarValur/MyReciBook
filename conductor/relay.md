@@ -1,6 +1,17 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-30 — the night shift: suite audited, honest for the first time
+
+- Shipped: no code. Night shift ran as armed — analyze clean; all 72 test files
+  combed by four agents against lib, findings in docs/test-comb-2026-08-29.md;
+  full suite ONE detached run, 55s: 852 tests, 850 green, 2 red.
+- Broke: nothing new — the 2 red are cookbook_view's stale "no covers in list
+  view" asserts; lib draws list thumbs since 2026-08-28. Left red, his call.
+- Arnar: keep the cadence — analyze between changes, warm touched files, full
+  suite at bedtime; slow TDD was cold-compile-per-tic, not the tool.
+- UNFINISHED: comb repairs undecided · website tweak list + copy flags his.
+
 ## 2026-08-29 — friday night: the website grew up
 
 - Shipped: rescue strip from real screenshots (source → review → filed), hero

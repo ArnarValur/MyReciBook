@@ -25,9 +25,9 @@
 - Agreed run: hard `timeout 120`, output visible, one invocation. Ceiling hit
   means broken — kill it, say so, never sit and wait.
 - Full suite: only before a release ships, Arnar's call, detached to a log.
-- Known-bad tests get named out loud, not silently dodged. None open right now:
-  the three link-picker files were checked 2026-08-21 — manual_entry (5) and
-  edit_recipe (4) both pass, recipe_detail_link no longer exists.
+- Known-bad tests get named out loud, not silently dodged. Open right now:
+  cookbook_view_test ×2 red since 2026-08-29 — stale "no covers in list view"
+  asserts, lib is right; repair proposed in docs/test-comb-2026-08-29.md.
 - Why the caution: flutter test cold-compiles per invocation and has no default
   timeout, so a hung test sits silent forever.
 

@@ -2,7 +2,7 @@
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
 *Live state and open questions ONLY. A shipped feature belongs in its track plan.*
 
-> **Updated:** 2026-08-29
+> **Updated:** 2026-08-30
 
 ## 📍 Now
 - Phase: build. 0.18.3+34 on main and on the phone. Branch i18n sits at 0.11.0+10.
@@ -16,11 +16,13 @@
   ($24.99 on the site is placeholder). Crash reporting ON, recipe text scrubbed.
 - Tester link still on build 9. Play account live, nothing uploaded. Play app
   entry not created — create as FREE + one-time IAP (trial needs free install).
-- Full suite unrun since 2026-08-21 (697 green then); per-file green only since.
-- NIGHT SHIFT armed: Arnar opens a session, "/conductor run test nightshift" →
-  1) flutter analyze  2) comb app/test for stale expectations + dishonest
-  coverage, findings to a file  3) full suite ONE detached run to a log, hard
-  timeout, never poll-wait  4) honest report, failures named. In that order.
+- Night shift 2026-08-29 ran: analyze clean; full suite 852 tests, 850 green,
+  2 red — cookbook_view stale "no covers in list view" asserts, lib is right.
+  Comb of all 72 test files: docs/test-comb-2026-08-29.md — repairs proposed
+  there (icon-binding hole, arb tautology, 5 coverage holes), Arnar undecided.
+- starter_foods green ≠ USDA verification — it pins the unverified transcription.
+- Suite runs are cheap when warm (55s); cadence stays analyze → touched files →
+  full suite at bedtime.
 - website/ — card-box landing COMPLETE in Nuxt 4: index + privacy/terms/contact
   (drafts, stamped) + 404, SEO formal (sitemap/robots/schema.org/OG card),
   real screenshots (docs/MyReciBook-Screenshots → WebP via scripts/shots.mjs),
