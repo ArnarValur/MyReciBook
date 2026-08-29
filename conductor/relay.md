@@ -1,6 +1,15 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-30 — website i18n foundation, UK flag on the lid
+
+- Shipped: @nuxtjs/i18n 10.6.0 en-only foundation (prefix_except_default, no
+  browser detection, strictMessage off for inline markup); frontpage + layout
+  fully keyed into website/i18n/locales/en.json; sitemap now per-locale.
+- Arnar: switcher visible now — flag-only button (UK flag), labels in the
+  dropdown, next to the lamp. Staging redeployed on his go.
+- UNFINISHED: privacy/terms/contact/404 still English literals; no language two.
+
 ## 2026-08-29 — website polish: one story per theme
 
 - Shipped: 410px mobile pass, all 13 items in website/polish-list.md ☑; rescue

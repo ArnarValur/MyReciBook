@@ -4,13 +4,13 @@
 // Copy audit lives in website/copy-notes.md — canvas claims not yet confirmed
 // against the app are flagged there, not silently rewritten.
 
+const { t, tm, rt } = useI18n()
+
 useSeoMeta({
-  title: 'MyReciBook — Rescue the recipes buried in your camera roll',
-  description:
-    'MyReciBook turns recipe screenshots, links and handwritten cards into a cookbook you own. Plain files on your phone. Pay once. Cook forever. Android.',
-  ogTitle: 'MyReciBook — Rescue the recipes buried in your camera roll',
-  ogDescription:
-    'Screenshots, links and grandma\'s cards become a cookbook you own — plain files, on your phone. No subscription. No account. Ever.',
+  title: t('index.seo.title'),
+  description: t('index.seo.description'),
+  ogTitle: t('index.seo.ogTitle'),
+  ogDescription: t('index.seo.ogDescription'),
   ogType: 'website',
   ogImage: 'https://myrecibook.com/og.png',
   ogImageWidth: 1200,
@@ -18,29 +18,31 @@ useSeoMeta({
   twitterCard: 'summary_large_image',
 })
 
+// tm() hands back compiled messages, one rt() each renders them to strings
+const list = (key: string): string[] => (tm(key) as unknown[]).map((m) => rt(m as never))
+
 const tilts = ['-1.1deg', '.7deg', '-.5deg', '.9deg', '-.8deg', '.5deg']
 
-const features = [
-  { icon: 'i-material-symbols:timer-rounded', tab: 'Card 04', title: 'Cook mode', body: 'One step at a time in big, kitchen-proof type. Tap zones sized for floury thumbs, timers built in.' },
-  { icon: 'i-material-symbols:checklist-rounded', tab: 'Card 05', title: 'Grocery list', body: '“9 items · from 3 planned recipes” — merged, deduplicated, and it asks before combining 2 lemons with 4.' },
-  { icon: 'i-material-symbols:kitchen-rounded', tab: 'Card 06', title: 'Pantry', body: "Know what's on the shelf. Categories fold away, recents float up, and the grocery list checks against it." },
-  { icon: 'i-material-symbols:restaurant-rounded', tab: 'Card 07', title: 'Food diary', body: 'Log meals straight from your recipes and pantry — no double typing. Trends show your week without the guilt trip.' },
-  { icon: 'i-material-symbols:barcode-scanner-rounded', tab: 'Card 08', title: 'Barcode scanner', body: 'Point it at the package. Open Food Facts fills in the product and its nutrition — most countries covered.' },
-  { icon: 'i-material-symbols:monitoring-rounded', tab: 'Card 09', title: 'Nutrition tracking', body: 'Energy, macros and micros per day, week and year — with coverage you can actually see, not just totals.' },
-].map((f, i) => ({ ...f, tilt: `rotate(${tilts[i]})` }))
+const featureIcons = {
+  cookMode: 'i-material-symbols:timer-rounded',
+  grocery: 'i-material-symbols:checklist-rounded',
+  pantry: 'i-material-symbols:kitchen-rounded',
+  diary: 'i-material-symbols:restaurant-rounded',
+  barcode: 'i-material-symbols:barcode-scanner-rounded',
+  nutrition: 'i-material-symbols:monitoring-rounded',
+}
+const features = Object.entries(featureIcons).map(([key, icon], i) => ({
+  icon,
+  tab: t(`index.cards.features.${key}.tab`),
+  title: t(`index.cards.features.${key}.title`),
+  body: t(`index.cards.features.${key}.body`),
+  tilt: `rotate(${tilts[i]})`,
+}))
 
-const heroChecks = [
-  'Your recipes stay on your phone',
-  'Google Drive & Dropbox are available for backup',
-  'Typing them in is always unlimited',
-]
-
-const priceChecks = [
-  'Everything — cookbook, cook mode, grocery, pantry, diary',
-  '1,200 AI rescues a year — included in the price',
-  'Typing recipes in yourself — always unlimited',
-  'Ran out? Top up the AI — still no subscription',
-]
+const heroChecks = list('index.hero.checks')
+const priceChecks = list('index.price.checks')
+const ingredients = list('index.recipe.ingredients')
+const methodSteps = list('index.recipe.steps')
 </script>
 
 <template>
@@ -53,7 +55,7 @@ const priceChecks = [
       </div>
       <div class="scatter scatter-photo" aria-hidden="true">
         <img src="/screenshots/handwritten.webp" alt="">
-        <span>IMG_2041.jpg — grandma's card</span>
+        <span>{{ $t('index.hero.scatterCaption') }}</span>
       </div>
 
       <div class="hero-card paper ruled margined">
@@ -61,28 +63,24 @@ const priceChecks = [
         <CardTape style="right: -30px; top: 16px; transform: rotate(42deg)" />
 
         <div class="card-heading">
-          <span class="card-no">RECIPE Nº 001</span>
-          <span class="card-from">From the kitchen of · you</span>
+          <span class="card-no">{{ $t('index.hero.cardNo') }}</span>
+          <span class="card-from">{{ $t('index.hero.cardFrom') }}</span>
         </div>
         <h1 class="hero-title">
-          Rescue the recipes buried in your <span class="hero-mark">camera roll.</span>
+          {{ $t('index.hero.titlePre') }} <span class="hero-mark">{{ $t('index.hero.titleMark') }}</span>
         </h1>
-        <p class="hero-lede">
-          MyReciBook reads screenshots, links and handwritten cards — and files
-          them into a cookbook you actually own. On your phone, like a card in
-          a box. No subscription. No account. Ever.
-        </p>
+        <p class="hero-lede">{{ $t('index.hero.lede') }}</p>
         <div class="hero-ctas">
           <a href="#price" class="cta">
-            <UIcon name="i-material-symbols:photo-library-rounded" class="cta-icon" />Rescue your first recipe
+            <UIcon name="i-material-symbols:photo-library-rounded" class="cta-icon" />{{ $t('index.hero.ctaRescue') }}
           </a>
-          <a href="#recipe" class="cta-quiet">Read the recipe for this app ↓</a>
+          <a href="#recipe" class="cta-quiet">{{ $t('index.hero.ctaQuiet') }}</a>
         </div>
 
         <div class="marginalia hero-marginalia" aria-hidden="true">
-          grandma's handwriting welcome — we read cursive
+          {{ $t('index.hero.marginalia') }}
         </div>
-        <div class="stamp" aria-hidden="true">Pay once<br>cook forever</div>
+        <div class="stamp" aria-hidden="true">{{ $t('index.hero.stampTop') }}<br>{{ $t('index.hero.stampBottom') }}</div>
       </div>
 
       <div class="hero-checks">
@@ -97,39 +95,33 @@ const priceChecks = [
       <div class="recipe-card paper">
         <CardTape style="left: 50%; top: -13px; width: 120px; height: 28px; transform: translateX(-50%) rotate(-1deg)" />
         <div class="recipe-head">
-          <span class="card-no">RECIPE Nº 002</span>
-          <h2 class="recipe-title">A cookbook you own</h2>
-          <span class="recipe-meta">Prep: 30 sec · Serves: you, forever</span>
+          <span class="card-no">{{ $t('index.recipe.cardNo') }}</span>
+          <h2 class="recipe-title">{{ $t('index.recipe.title') }}</h2>
+          <span class="recipe-meta">{{ $t('index.recipe.meta') }}</span>
         </div>
         <div class="recipe-grid">
           <div>
-            <div class="col-label">Ingredients</div>
+            <div class="col-label">{{ $t('index.recipe.ingredientsLabel') }}</div>
             <div class="ingredients">
-              <span class="ing"><span class="ing-box" /><span><strong>1</strong> camera roll full of screenshots</span></span>
-              <span class="ing"><span class="ing-box" /><span><strong>1</strong> Android phone</span></span>
-              <span class="ing"><span class="ing-box" /><span><strong>1,200</strong> AI rescues a year — top-ups if you run out</span></span>
-              <span class="ing"><span class="ing-box" /><span><strong>0</strong> subscriptions, <strong>0</strong> accounts</span></span>
-              <span class="ing"><span class="ing-box" /><span>a pinch of patience while it reads cursive</span></span>
+              <span v-for="ing in ingredients" :key="ing" class="ing"><span class="ing-box" /><span v-html="ing" /></span>
             </div>
           </div>
           <div>
-            <div class="col-label">Method</div>
+            <div class="col-label">{{ $t('index.recipe.methodLabel') }}</div>
             <div class="method">
-              <div class="step"><span class="step-no">1.</span><p>Share a screenshot, paste a link, or snap grandma's card with the camera.</p></div>
-              <div class="step"><span class="step-no">2.</span><p>The AI turns it into a proper recipe — ingredients, steps and timings — and shows you the result to review before it's saved.</p></div>
-              <div class="step"><span class="step-no">3.</span><p>File it in your book. It lives on your phone; export a PDF or document whenever you like.</p></div>
+              <div v-for="(s, i) in methodSteps" :key="s" class="step"><span class="step-no">{{ i + 1 }}.</span><p>{{ s }}</p></div>
             </div>
           </div>
         </div>
-        <div class="marginalia spine-note" aria-hidden="true">tested 1,200 times a year</div>
+        <div class="marginalia spine-note" aria-hidden="true">{{ $t('index.recipe.spineNote') }}</div>
       </div>
     </section>
 
     <!-- ── The cards (features as index cards) ─────────────── -->
     <section id="cards" class="section">
       <div class="cards-head">
-        <h2 class="h2">What's filed in the box</h2>
-        <span class="flip-hint">flip through ↓</span>
+        <h2 class="h2">{{ $t('index.cards.heading') }}</h2>
+        <span class="flip-hint">{{ $t('index.cards.hint') }}</span>
       </div>
       <div class="cards-grid">
         <div v-for="f in features" :key="f.title" class="feature" :style="{ transform: f.tilt }">
@@ -149,16 +141,12 @@ const priceChecks = [
     <section class="section">
       <div class="pocket-grid">
         <div>
-          <h2 class="h2 pocket-title">The box, in your pocket.</h2>
-          <p class="pocket-lede">
-            Coverless recipes get a hand-me-down gradient cover, picked by the
-            title so it never changes. Search, filters and your shelves — one
-            thumb, one screen.
-          </p>
+          <h2 class="h2 pocket-title">{{ $t('index.pocket.title') }}</h2>
+          <p class="pocket-lede">{{ $t('index.pocket.lede') }}</p>
           <div class="pocket-points">
-            <span><UIcon name="i-material-symbols:barcode-scanner-rounded" class="point-icon" />Barcode scanner with Open Food Facts behind it — most countries covered</span>
-            <span><UIcon name="i-material-symbols:monitoring-rounded" class="point-icon" />Nutrition trends by day, week and year — no guilt trip</span>
-            <span><UIcon name="i-material-symbols:dark-mode-rounded" class="point-icon" />Stitch Slate by day, Midnight by night</span>
+            <span><UIcon name="i-material-symbols:barcode-scanner-rounded" class="point-icon" />{{ $t('index.pocket.pointBarcode') }}</span>
+            <span><UIcon name="i-material-symbols:monitoring-rounded" class="point-icon" />{{ $t('index.pocket.pointTrends') }}</span>
+            <span><UIcon name="i-material-symbols:dark-mode-rounded" class="point-icon" />{{ $t('index.pocket.pointTheme') }}</span>
           </div>
         </div>
         <PhoneMockup src="/screenshots/cookbook.webp" />
@@ -168,42 +156,42 @@ const priceChecks = [
     <!-- ── One rescue, photographed (real screenshots) ──────── -->
     <section id="rescue" class="section">
       <div class="cards-head">
-        <h2 class="h2">One rescue, start to finish</h2>
-        <span class="flip-hint">real screenshots, not mockups</span>
+        <h2 class="h2">{{ $t('index.rescue.heading') }}</h2>
+        <span class="flip-hint">{{ $t('index.rescue.hint') }}</span>
       </div>
       <div class="strip">
         <figure class="photo" style="transform: rotate(-1.6deg)">
           <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(-2deg)" />
-          <img class="light-shot" src="/screenshots/rescue-source-light.webp" alt="A recipe screenshot buried in the camera roll" loading="lazy">
-          <img class="dark-shot" src="/screenshots/rescue-source.webp" alt="A recipe screenshot buried in the camera roll" loading="lazy">
-          <figcaption><span class="step-tag">1</span>The screenshot, as found</figcaption>
+          <img class="light-shot" src="/screenshots/rescue-source-light.webp" :alt="$t('index.rescue.step1Alt')" loading="lazy">
+          <img class="dark-shot" src="/screenshots/rescue-source.webp" :alt="$t('index.rescue.step1Alt')" loading="lazy">
+          <figcaption><span class="step-tag">1</span>{{ $t('index.rescue.step1Caption') }}</figcaption>
         </figure>
         <div class="strip-arrow" aria-hidden="true">→</div>
         <figure class="photo" style="transform: rotate(0.9deg)">
           <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(2deg)" />
-          <img class="light-shot" src="/screenshots/rescue-review-light.webp" alt="The rescued recipe, shown for review before saving" loading="lazy">
-          <img class="dark-shot" src="/screenshots/rescue-review.webp" alt="The rescued recipe, shown for review before saving" loading="lazy">
-          <figcaption><span class="step-tag">2</span>Rescued — you review before it's saved</figcaption>
+          <img class="light-shot" src="/screenshots/rescue-review-light.webp" :alt="$t('index.rescue.step2Alt')" loading="lazy">
+          <img class="dark-shot" src="/screenshots/rescue-review.webp" :alt="$t('index.rescue.step2Alt')" loading="lazy">
+          <figcaption><span class="step-tag">2</span>{{ $t('index.rescue.step2Caption') }}</figcaption>
         </figure>
         <div class="strip-arrow" aria-hidden="true">→</div>
         <figure class="photo" style="transform: rotate(-0.7deg)">
           <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(-1deg)" />
-          <img class="light-shot" src="/screenshots/recipe-page-light.webp" alt="The finished recipe page, converted to metric" loading="lazy">
-          <img class="dark-shot" src="/screenshots/recipe-page.webp" alt="The finished recipe page, converted to metric" loading="lazy">
-          <figcaption><span class="step-tag">3</span>Filed in your book — in your units</figcaption>
+          <img class="light-shot" src="/screenshots/recipe-page-light.webp" :alt="$t('index.rescue.step3Alt')" loading="lazy">
+          <img class="dark-shot" src="/screenshots/recipe-page.webp" :alt="$t('index.rescue.step3Alt')" loading="lazy">
+          <figcaption><span class="step-tag">3</span>{{ $t('index.rescue.step3Caption') }}</figcaption>
         </figure>
       </div>
-      <div class="marginalia strip-note" aria-hidden="true">cups became grams on the way — you're welcome</div>
+      <div class="marginalia strip-note" aria-hidden="true">{{ $t('index.rescue.note') }}</div>
     </section>
 
     <!-- ── The price card ───────────────────────────────────── -->
     <section id="price" class="section section-far">
       <div class="price-card paper ruled margined-tight">
-        <div class="onetime" aria-hidden="true">One-time</div>
-        <div class="card-no price-no">RECIPE Nº 003 · THE PRICE</div>
+        <div class="onetime" aria-hidden="true">{{ $t('index.price.onetime') }}</div>
+        <div class="card-no price-no">{{ $t('index.price.cardNo') }}</div>
         <div class="price-row">
-          <span class="price">$25</span>
-          <span class="price-note">once. Like a good knife.</span>
+          <span class="price">{{ $t('index.price.amount') }}</span>
+          <span class="price-note">{{ $t('index.price.note') }}</span>
         </div>
         <div class="price-rule" />
         <div class="price-checks">
@@ -212,34 +200,30 @@ const priceChecks = [
           </span>
         </div>
         <a href="#" class="cta cta-block">
-          <UIcon name="i-material-symbols:download-rounded" class="cta-icon" />Get MyReciBook
+          <UIcon name="i-material-symbols:download-rounded" class="cta-icon" />{{ $t('index.price.cta') }}
         </a>
-        <div class="price-fine">No subscription. No account. Ever.</div>
+        <div class="price-fine">{{ $t('index.price.fine') }}</div>
       </div>
     </section>
 
     <!-- ── Keep it (ownership pocket) ───────────────────────── -->
     <section id="yours" class="section section-far">
       <div class="yours">
-        <h2 class="h2 yours-title">If MyReciBook vanished tomorrow,<br>your recipes wouldn't, unless...</h2>
-        <p class="yours-lede">
-          So your cookbook lives on your phone — not on someone else's cloud server.
-          But you can back it up to your Drive, Dropbox and export any recipe as a PDF or other formats.
-          <br><b>That way if you drop your phone into a volcano, your data is saved. :)</b>
-        </p>
+        <h2 class="h2 yours-title" v-html="$t('index.yours.title')" />
+        <p class="yours-lede" v-html="$t('index.yours.lede')" />
         <div class="envelope">
           <div class="slip slip-pdf">
-            <UIcon name="i-material-symbols:picture-as-pdf-rounded" class="slip-icon" />PDF
+            <UIcon name="i-material-symbols:picture-as-pdf-rounded" class="slip-icon" />{{ $t('index.yours.slipPdf') }}
           </div>
           <div class="slip slip-doc">
-            <UIcon name="i-material-symbols:description-rounded" class="slip-icon" />Document
+            <UIcon name="i-material-symbols:description-rounded" class="slip-icon" />{{ $t('index.yours.slipDoc') }}
           </div>
           <div class="slip slip-send">
-            <UIcon name="i-material-symbols:send-rounded" class="slip-icon" />Send a copy
+            <UIcon name="i-material-symbols:send-rounded" class="slip-icon" />{{ $t('index.yours.slipSend') }}
           </div>
           <div class="envelope-front">
             <LogoMark :size="40" class="envelope-mark" />
-            <span>Yours · Printable · Portable</span>
+            <span>{{ $t('index.yours.envelope') }}</span>
           </div>
         </div>
       </div>

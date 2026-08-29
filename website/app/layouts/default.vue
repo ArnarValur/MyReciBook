@@ -4,6 +4,19 @@ const isDark = computed({
   get: () => colorMode.value === 'dark',
   set: (v) => { colorMode.preference = v ? 'dark' : 'light' },
 })
+
+const { locale, locales, setLocale } = useI18n()
+// English carries the UK flag by Arnar's choice; each new language adds its pair here
+const localeFlags: Record<string, string> = {
+  en: 'i-circle-flags:gb',
+}
+const localeItems = computed(() =>
+  locales.value.map((l) => ({
+    label: l.name,
+    icon: localeFlags[l.code],
+    onSelect: () => setLocale(l.code),
+  })),
+)
 </script>
 
 <template>
@@ -15,21 +28,32 @@ const isDark = computed({
           <LogoMark :size="30" />
           <span class="brand-name">MyReciBook</span>
         </NuxtLink>
-        <span class="est">Est. in your camera roll</span>
+        <span class="est">{{ $t('layout.est') }}</span>
         <nav class="tabs">
-          <NuxtLink to="/#recipe" class="tab" style="transform: translateY(1px)">The recipe</NuxtLink>
-          <NuxtLink to="/#cards" class="tab tab-alt" style="transform: translateY(3px)">The cards</NuxtLink>
-          <NuxtLink to="/#price" class="tab" style="transform: translateY(2px)">The price</NuxtLink>
-          <NuxtLink to="/#yours" class="tab tab-alt" style="transform: translateY(4px)">Keep it</NuxtLink>
+          <NuxtLink to="/#recipe" class="tab" style="transform: translateY(1px)">{{ $t('layout.tabRecipe') }}</NuxtLink>
+          <NuxtLink to="/#cards" class="tab tab-alt" style="transform: translateY(3px)">{{ $t('layout.tabCards') }}</NuxtLink>
+          <NuxtLink to="/#price" class="tab" style="transform: translateY(2px)">{{ $t('layout.tabPrice') }}</NuxtLink>
+          <NuxtLink to="/#yours" class="tab tab-alt" style="transform: translateY(4px)">{{ $t('layout.tabYours') }}</NuxtLink>
         </nav>
-        <UButton
-          :icon="isDark ? 'i-material-symbols:light-mode-rounded' : 'i-material-symbols:dark-mode-rounded'"
-          color="neutral"
-          variant="ghost"
-          class="lamp"
-          aria-label="Toggle the lamp"
-          @click="isDark = !isDark"
-        />
+        <div class="lid-actions">
+          <UDropdownMenu :items="localeItems">
+            <UButton
+              :icon="localeFlags[locale]"
+              color="neutral"
+              variant="ghost"
+              class="lamp"
+              :aria-label="$t('layout.language')"
+            />
+          </UDropdownMenu>
+          <UButton
+            :icon="isDark ? 'i-material-symbols:light-mode-rounded' : 'i-material-symbols:dark-mode-rounded'"
+            color="neutral"
+            variant="ghost"
+            class="lamp"
+            :aria-label="$t('layout.lamp')"
+            @click="isDark = !isDark"
+          />
+        </div>
       </div>
       <div class="lid-edge" />
     </header>
@@ -44,11 +68,11 @@ const isDark = computed({
           <LogoMark :size="22" />
           <span>MyReciBook</span>
         </span>
-        <span class="foot-line">Knitted and Baked by <a href="https://merkurial-studio.com" class="foot-link">Merkurial-Studio.com</a> · <a href="https://avj.info" class="foot-link">avj.info</a></span>
+        <span class="foot-line">{{ $t('layout.footLine') }} <a href="https://merkurial-studio.com" class="foot-link">Merkurial-Studio.com</a> · <a href="https://avj.info" class="foot-link">avj.info</a></span>
         <nav class="foot-nav">
-          <NuxtLink to="/privacy">Privacy</NuxtLink>
-          <NuxtLink to="/terms">Terms</NuxtLink>
-          <NuxtLink to="/contact">Contact</NuxtLink>
+          <NuxtLink to="/privacy">{{ $t('layout.privacy') }}</NuxtLink>
+          <NuxtLink to="/terms">{{ $t('layout.terms') }}</NuxtLink>
+          <NuxtLink to="/contact">{{ $t('layout.contact') }}</NuxtLink>
         </nav>
       </div>
     </footer>
@@ -110,7 +134,8 @@ const isDark = computed({
 .tab-alt { background: var(--box-tab-alt); }
 .tab:hover { background: var(--box-tab-hover); color: var(--box-accent); }
 .lid-edge { height: 1.5px; background: var(--box-line); }
-.lamp { color: var(--box-ink-soft); align-self: center; }
+.lid-actions { align-self: center; display: flex; align-items: center; gap: 2px; }
+.lamp { color: var(--box-ink-soft); }
 
 /* ── Footer ──────────────────────────────────────────────── */
 .foot { max-width: 1040px; margin: 88px auto 0; padding: 0 24px 46px; }
@@ -133,10 +158,10 @@ const isDark = computed({
 .foot-nav a:hover { color: var(--box-accent); }
 
 @media (max-width: 720px) {
-  /* Row 1: brand + est with the lamp pinned right; row 2: the four tabs,
+  /* Row 1: brand + est with flag + lamp pinned right; row 2: the four tabs,
      evenly spread, one line each — no wrapped pills, no lonely moon row */
-  .lid-row { position: relative; padding-right: 44px; }
-  .lamp { position: absolute; right: 0; top: 0; align-self: auto; }
+  .lid-row { position: relative; padding-right: 84px; }
+  .lid-actions { position: absolute; right: 0; top: 0; align-self: auto; }
   .tabs { width: 100%; margin-left: 0; gap: 5px; }
   .tab {
     flex: 1;

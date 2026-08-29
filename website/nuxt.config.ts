@@ -2,8 +2,24 @@
 export default defineNuxtConfig({
   compatibilityDate: '2026-08-28',
   devtools: { enabled: true },
-  modules: ['@nuxt/ui', '@nuxtjs/seo'],
+  modules: ['@nuxt/ui', '@nuxtjs/seo', '@nuxtjs/i18n'],
   css: ['~/assets/css/main.css'],
+
+  // i18n foundation — English only until a second language is fully translated
+  // (mirrors the app: no visible switcher before one language is done).
+  // Locale files live in i18n/locales/. With prefix_except_default and a single
+  // locale, routes and sitemap are unchanged.
+  i18n: {
+    defaultLocale: 'en',
+    // A few messages carry inline <strong>/<br> — our own locale files, not user input
+    compilation: { strictMessage: false },
+    strategy: 'prefix_except_default',
+    baseUrl: 'https://myrecibook.com',
+    detectBrowserLanguage: false,
+    locales: [
+      { code: 'en', language: 'en', name: 'English', file: 'en.json' },
+    ],
+  },
 
   // SEO foundation — sitemap, robots, canonicals and schema.org all key off this
   site: {

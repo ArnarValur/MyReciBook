@@ -21,12 +21,13 @@
   cookbook_view ×2 still red — stale "no covers in list view" asserts, lib right.
 - starter_foods green ≠ USDA verification — it pins the unverified transcription.
 - Cadence: analyze between changes → touched files warm → full suite at bedtime.
-- website/ — card-box landing COMPLETE + polished in Nuxt 4: index +
-  privacy/terms/contact (drafts, stamped) + 404, SEO formal, dark mode.
-  410px mobile pass done (website/polish-list.md, all ☑). Rescue strip is
-  theme-matched: tiramisu light set / beef-broccoli dark set. Price shown $25
-  (still placeholder, swept repo-wide incl. kUnlockPrice). Remaining copy
-  flags: website/copy-notes.md. Staging on MyReciBook-Dev:
+- website/ — card-box landing complete + polished in Nuxt 4: index +
+  privacy/terms/contact (drafts, stamped) + 404, SEO formal, dark mode,
+  410px pass, theme-matched rescue strip. Price shown $25 (placeholder).
+  i18n foundation in: @nuxtjs/i18n en-only, frontpage + layout fully keyed
+  (i18n/locales/en.json), flag-only switcher (UK flag) beside the lamp,
+  sitemap per-locale. privacy/terms/contact/404 still English literals.
+  Copy flags: website/copy-notes.md. Staging on MyReciBook-Dev:
   https://myrecibook-website-staging-213431165631.europe-west1.run.app
   (noindex-guarded; real domain unmapped on purpose). No track yet.
 

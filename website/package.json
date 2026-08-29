@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@nuxt/ui": "^4.0.0",
+    "@nuxtjs/i18n": "^10.6.0",
     "nuxt": "^4.0.0",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@iconify-json/circle-flags": "^1.2.10",
     "@iconify-json/material-symbols": "^1.2.90",
     "@nuxtjs/seo": "^5.3.14",
     "sharp": "^0.35.4"

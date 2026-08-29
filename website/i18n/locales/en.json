@@ -1,0 +1,137 @@
+{
+  "layout": {
+    "est": "Est. in your camera roll",
+    "tabRecipe": "The recipe",
+    "tabCards": "The cards",
+    "tabPrice": "The price",
+    "tabYours": "Keep it",
+    "lamp": "Toggle the lamp",
+    "language": "Change language",
+    "footLine": "Knitted and Baked by",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact"
+  },
+  "index": {
+    "seo": {
+      "title": "MyReciBook — Rescue the recipes buried in your camera roll",
+      "description": "MyReciBook turns recipe screenshots, links and handwritten cards into a cookbook you own. Plain files on your phone. Pay once. Cook forever. Android.",
+      "ogTitle": "MyReciBook — Rescue the recipes buried in your camera roll",
+      "ogDescription": "Screenshots, links and grandma's cards become a cookbook you own — plain files, on your phone. No subscription. No account. Ever."
+    },
+    "hero": {
+      "scatterCaption": "IMG_2041.jpg — grandma's card",
+      "cardNo": "RECIPE Nº 001",
+      "cardFrom": "From the kitchen of · you",
+      "titlePre": "Rescue the recipes buried in your",
+      "titleMark": "camera roll.",
+      "lede": "MyReciBook reads screenshots, links and handwritten cards — and files them into a cookbook you actually own. On your phone, like a card in a box. No subscription. No account. Ever.",
+      "ctaRescue": "Rescue your first recipe",
+      "ctaQuiet": "Read the recipe for this app ↓",
+      "marginalia": "grandma's handwriting welcome — we read cursive",
+      "stampTop": "Pay once",
+      "stampBottom": "cook forever",
+      "checks": [
+        "Your recipes stay on your phone",
+        "Google Drive & Dropbox are available for backup",
+        "Typing them in is always unlimited"
+      ]
+    },
+    "recipe": {
+      "cardNo": "RECIPE Nº 002",
+      "title": "A cookbook you own",
+      "meta": "Prep: 30 sec · Serves: you, forever",
+      "ingredientsLabel": "Ingredients",
+      "methodLabel": "Method",
+      "ingredients": [
+        "<strong>1</strong> camera roll full of screenshots",
+        "<strong>1</strong> Android phone",
+        "<strong>1,200</strong> AI rescues a year — top-ups if you run out",
+        "<strong>0</strong> subscriptions, <strong>0</strong> accounts",
+        "a pinch of patience while it reads cursive"
+      ],
+      "steps": [
+        "Share a screenshot, paste a link, or snap grandma's card with the camera.",
+        "The AI turns it into a proper recipe — ingredients, steps and timings — and shows you the result to review before it's saved.",
+        "File it in your book. It lives on your phone; export a PDF or document whenever you like."
+      ],
+      "spineNote": "tested 1,200 times a year"
+    },
+    "cards": {
+      "heading": "What's filed in the box",
+      "hint": "flip through ↓",
+      "features": {
+        "cookMode": {
+          "tab": "Card 04",
+          "title": "Cook mode",
+          "body": "One step at a time in big, kitchen-proof type. Tap zones sized for floury thumbs, timers built in."
+        },
+        "grocery": {
+          "tab": "Card 05",
+          "title": "Grocery list",
+          "body": "“9 items · from 3 planned recipes” — merged, deduplicated, and it asks before combining 2 lemons with 4."
+        },
+        "pantry": {
+          "tab": "Card 06",
+          "title": "Pantry",
+          "body": "Know what's on the shelf. Categories fold away, recents float up, and the grocery list checks against it."
+        },
+        "diary": {
+          "tab": "Card 07",
+          "title": "Food diary",
+          "body": "Log meals straight from your recipes and pantry — no double typing. Trends show your week without the guilt trip."
+        },
+        "barcode": {
+          "tab": "Card 08",
+          "title": "Barcode scanner",
+          "body": "Point it at the package. Open Food Facts fills in the product and its nutrition — most countries covered."
+        },
+        "nutrition": {
+          "tab": "Card 09",
+          "title": "Nutrition tracking",
+          "body": "Energy, macros and micros per day, week and year — with coverage you can actually see, not just totals."
+        }
+      }
+    },
+    "pocket": {
+      "title": "The box, in your pocket.",
+      "lede": "Coverless recipes get a hand-me-down gradient cover, picked by the title so it never changes. Search, filters and your shelves — one thumb, one screen.",
+      "pointBarcode": "Barcode scanner with Open Food Facts behind it — most countries covered",
+      "pointTrends": "Nutrition trends by day, week and year — no guilt trip",
+      "pointTheme": "Stitch Slate by day, Midnight by night"
+    },
+    "rescue": {
+      "heading": "One rescue, start to finish",
+      "hint": "real screenshots, not mockups",
+      "step1Alt": "A recipe screenshot buried in the camera roll",
+      "step1Caption": "The screenshot, as found",
+      "step2Alt": "The rescued recipe, shown for review before saving",
+      "step2Caption": "Rescued — you review before it's saved",
+      "step3Alt": "The finished recipe page, converted to metric",
+      "step3Caption": "Filed in your book — in your units",
+      "note": "cups became grams on the way — you're welcome"
+    },
+    "price": {
+      "onetime": "One-time",
+      "cardNo": "RECIPE Nº 003 · THE PRICE",
+      "amount": "$25",
+      "note": "once. Like a good knife.",
+      "checks": [
+        "Everything — cookbook, cook mode, grocery, pantry, diary",
+        "1,200 AI rescues a year — included in the price",
+        "Typing recipes in yourself — always unlimited",
+        "Ran out? Top up the AI — still no subscription"
+      ],
+      "cta": "Get MyReciBook",
+      "fine": "No subscription. No account. Ever."
+    },
+    "yours": {
+      "title": "If MyReciBook vanished tomorrow,<br>your recipes wouldn't, unless...",
+      "lede": "So your cookbook lives on your phone — not on someone else's cloud server. But you can back it up to your Drive, Dropbox and export any recipe as a PDF or other formats.<br><b>That way if you drop your phone into a volcano, your data is saved. :)</b>",
+      "slipPdf": "PDF",
+      "slipDoc": "Document",
+      "slipSend": "Send a copy",
+      "envelope": "Yours · Printable · Portable"
+    }
+  }
+}
