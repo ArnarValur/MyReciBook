@@ -1,6 +1,15 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-29 — website polish: one story per theme
+
+- Shipped: 410px mobile pass, all 13 items in website/polish-list.md ☑; rescue
+  strip theme-matched (tiramisu by day, beef-broccoli by night, CSS swap).
+- Copy: "Made for Android" dupes + cap-reset line cut; "fair-use cap, in
+  writing" → "included in the price". Staging redeployed on his go.
+- Arnar: $25 flat, no .99 — swept repo-wide incl. kUnlockPrice (placeholder).
+- UNFINISHED: remaining copy flags in website/copy-notes.md, his call.
+
 ## 2026-08-30 — rescue polish: times that survive their own editor
 
 - Shipped 0.19.0+37: status bar anchored app-wide, Retry confirms before

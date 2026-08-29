@@ -218,7 +218,7 @@ This is the second-biggest selling point after the screenshots. Give it real spa
 
 ## 4 · Pricing and the cap — state it exactly, it can never be walked back
 
-- **One-time purchase.** Working number: **$24.99**. Not final — confirm with Arnar before
+- **One-time purchase.** Working number: **$25**. Not final — confirm with Arnar before
   it goes on a public page.
 - **Hard paywall.** No subscription. No account.
 - **A fair-use AI cap must be stated in writing from day one**, on the page and in the store

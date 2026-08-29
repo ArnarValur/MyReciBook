@@ -21,7 +21,7 @@ first post. Counting back from today, that means copy locked and page live withi
 | "None of them can follow quickly" | Holds **only** for Crouton/Mela/Pestle (Apple-locked, verified still Apple-only Aug 2026). ReciMe already followed. | `marketing-channels.md` §7 reached the same conclusion. |
 | "No Android" is the top complaint vs Crouton/Mela/Pestle | Plausible, **unproven** — Reddit is unreachable from research tooling. Indirect: rivals run "Crouton alternative for Android" SEO pages; press tells Android users to use Samsung Food. | Internal aiming only. Never page copy. |
 | The moat | **Restate it.** The unoccupied ground is the *combination*: AI screenshot import **+** plain local files **+** no account **+** pay once. No mainstream Android app has it. Every AI-quality importer is subscription + cloud account. The closest exceptions are small or partial (Recipe One: one-time but OCR-tier and unproven; Recipe Keeper: OCR, no AI; RecetteTek/Cookmate: own-cloud files, no AI). | Competitor research pass, section 3–4. |
-| $24.99 one-time | **Holds, with the right anchor.** It equals Crouton Plus exactly — and Crouton *still* charges $1.99/mo extra for AI import, which produces its angriest reviews. It's less than one year of ReciMe ($39.99/yr) or Samsung Food+ ($59.99/yr), equal to one year of Pestle ($24.99/yr, lifetime $39.99–49.99). Against Paprika ($4.99) or Mela ($6.99) it looks greedy — never let those be the comparison; neither includes server-side AI. | Pricing pass, sections 2–3. |
+| $25 one-time | **Holds, with the right anchor.** It equals Crouton Plus exactly — and Crouton *still* charges $1.99/mo extra for AI import, which produces its angriest reviews. It's less than one year of ReciMe ($39.99/yr) or Samsung Food+ ($59.99/yr), equal to one year of Pestle ($25/yr, lifetime $39.99–49.99). Against Paprika ($4.99) or Mela ($6.99) it looks greedy — never let those be the comparison; neither includes server-side AI. | Pricing pass, sections 2–3. |
 | Stated AI cap with one-time price | **Normalized, not weird.** AppSumo now says openly that AI-era lifetime deals ship with stated allowances; 1min.AI sells a $24.97 lifetime with a stated monthly credit cap. Rule: denominate in the user's unit ("recipe rescues"), never abstract credits. | Pricing pass, section 3. |
 | "Own your files" has an audience | **Confirmed.** Obsidian (~1.5M MAU) monetizes optional sync on top of free local files; "File over app" is a rallying cry; HN quotes on recipe apps: "I'd much rather pay once upfront than a subscription", "an alternative that belongs to the user, not a subscription service". Anova's $1.99/mo move caused a documented user revolt. | Pricing pass, sections 4–5. |
 | Brief's page spine (capture at the bottom) | **Amend.** Waitlist evidence says: email field in the hero, one CTA, no site navigation, under two scrolls, founder block for trust. All six competitor sites do zero email capture — they're launched; their structure is the wrong template. Their *proof* patterns transfer (Pestle's is best: real UI in motion + dated reviews + honest pricing table). | Landing-page pass, sections 1–2. |
@@ -130,7 +130,7 @@ the ONE-TIME badge.
 
 **6. Pay once — price block**
 - "Pay once. Cook forever." + **ONE-TIME** badge (tertiary, the page's only use).
-- Price: **$24.99 — confirmed by Arnar 2026-08-19.** Safe for public copy; carry it
+- Price: **$25 — confirmed by Arnar 2026-08-19.** Safe for public copy; carry it
   into the next conductor checkpoint so the app, listing and page all say the same number.
 - The in-app paywall card, mirrored: every recipe, forever, in your storage ·
   600 AI rescues a year — fair-use cap, in writing · a grocery list that actually
@@ -216,7 +216,7 @@ note, the cap stated in writing, and restraint.
 
 ## 8 · Open decisions for Arnar
 
-1. ~~Price~~ — **decided: $24.99** (Arnar, 2026-08-19).
+1. ~~Price~~ — **decided: $25** (Arnar, 2026-08-19).
 2. **Cap number** — 600/year is the working strawman and usage is unmeasured;
    it can be raised later, never lowered, so confirm you're happy committing to it
    in public writing.

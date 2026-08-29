@@ -133,6 +133,20 @@ const isDark = computed({
 .foot-nav a:hover { color: var(--box-accent); }
 
 @media (max-width: 720px) {
-  .tabs { width: 100%; margin-left: 0; }
+  /* Row 1: brand + est with the lamp pinned right; row 2: the four tabs,
+     evenly spread, one line each — no wrapped pills, no lonely moon row */
+  .lid-row { position: relative; padding-right: 44px; }
+  .lamp { position: absolute; right: 0; top: 0; align-self: auto; }
+  .tabs { width: 100%; margin-left: 0; gap: 5px; }
+  .tab {
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+    padding: 7px 8px 9px;
+    font-size: 11.5px;
+    letter-spacing: 0.3px;
+  }
+  .foot-row { flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+  .foot-nav { margin-left: 0; }
 }
 </style>

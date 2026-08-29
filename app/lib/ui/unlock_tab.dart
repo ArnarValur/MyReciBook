@@ -10,7 +10,7 @@
 // dead end. Spread-the-word rows wait behind [kSpreadWordEnabled] for a
 // live destination.
 //
-// $24.99 and 600/yr stay working numbers until Arnar prices for real.
+// $25 and 600/yr stay working numbers until Arnar prices for real.
 
 import 'package:flutter/material.dart';
 
@@ -19,7 +19,7 @@ import 'theme.dart';
 import 'widgets/skin.dart';
 
 /// One-time price — single source for the card and the CTA label.
-const String kUnlockPrice = '\$24.99';
+const String kUnlockPrice = '\$25';
 
 /// The 3g pitch: headline, price card, why-not-a-subscription card.
 /// Shared by [UnlockTab] and the DevGallery's PaywallPreview so the copy
@@ -33,15 +33,21 @@ class PaywallPitch extends StatelessWidget {
     final scheme = context.scheme;
 
     Widget check(String text) => Padding(
-          padding: const EdgeInsets.only(top: 9),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(Icons.check_rounded, size: 18, color: scheme.primary),
-            const SizedBox(width: 9),
-            Expanded(
-                child: Text(text,
-                    style: theme.textTheme.bodyMedium?.copyWith(height: 1.4))),
-          ]),
-        );
+      padding: const EdgeInsets.only(top: 9),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.check_rounded, size: 18, color: scheme.primary),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -51,22 +57,34 @@ class PaywallPitch extends StatelessWidget {
             width: 68,
             height: 68,
             decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(22)),
-            child: Icon(Icons.menu_book_rounded,
-                size: 34, color: scheme.onSecondaryContainer),
+              color: scheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Icon(
+              Icons.menu_book_rounded,
+              size: 34,
+              color: scheme.onSecondaryContainer,
+            ),
           ),
         ),
         const SizedBox(height: 14),
-        Text('Pay once.\nCook forever.',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineMedium?.copyWith(
-                fontSize: 29, height: 1.15, letterSpacing: -0.58)),
+        Text(
+          'Pay once.\nCook forever.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontSize: 29,
+            height: 1.15,
+            letterSpacing: -0.58,
+          ),
+        ),
         const SizedBox(height: 8),
-        Text('No subscription. No account. Ever.',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge
-                ?.copyWith(color: scheme.onSurfaceVariant)),
+        Text(
+          'No subscription. No account. Ever.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: scheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 14),
         TokenCard(
           radius: 16,
@@ -78,22 +96,32 @@ class PaywallPitch extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(kUnlockPrice,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                          fontSize: 24, fontWeight: FontWeight.w800)),
+                  Text(
+                    kUnlockPrice,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                   // The app's ONE tertiary moment — the commerce accent.
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                        color: scheme.tertiaryContainer,
-                        borderRadius: BorderRadius.circular(8)),
-                    child: Text('ONE-TIME',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
-                            color: scheme.onTertiaryContainer)),
+                      color: scheme.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'ONE-TIME',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                        color: scheme.onTertiaryContainer,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -111,17 +139,19 @@ class PaywallPitch extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Why not a subscription?',
-                  style:
-                      theme.textTheme.titleSmall?.copyWith(fontSize: 13.5)),
+              Text(
+                'Why not a subscription?',
+                style: theme.textTheme.titleSmall?.copyWith(fontSize: 13.5),
+              ),
               const SizedBox(height: 7),
               Text(
                 "Because your recipe box shouldn't have a landlord. You "
                 'buy MyReciBook like you\'d buy a good knife: once.',
                 style: theme.textTheme.bodySmall?.copyWith(
-                    fontSize: 12.5,
-                    height: 1.55,
-                    color: scheme.onSurfaceVariant),
+                  fontSize: 12.5,
+                  height: 1.55,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -159,8 +189,10 @@ class UnlockTab extends StatelessWidget {
               'Google Play billing connects when MyReciBook reaches the '
               'store — nothing to buy just yet.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+                height: 1.5,
+              ),
             ),
             if (kSpreadWordEnabled) ...[
               const SizedBox(height: 24),
@@ -186,8 +218,11 @@ class UnlockTab extends StatelessWidget {
   }
 
   static void _notWired(BuildContext context, String what) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('$what lands with the store listing — not long now.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$what lands with the store listing — not long now.'),
+      ),
+    );
   }
 }
 
@@ -217,32 +252,45 @@ class _SpreadRow extends StatelessWidget {
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(13),
-            child: Row(children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
                     color: scheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(12)),
-                child: Icon(icon, size: 21, color: scheme.primary),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, size: 21, color: scheme.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title,
-                          style: theme.textTheme.titleSmall
-                              ?.copyWith(fontSize: 14.5)),
+                      Text(
+                        title,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontSize: 14.5,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text(caption,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: scheme.onSurfaceVariant)),
-                    ]),
-              ),
-              Icon(Icons.chevron_right_rounded,
-                  size: 20, color: scheme.onSurfaceVariant),
-            ]),
+                      Text(
+                        caption,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -42,7 +42,7 @@ The one-sentence version: the tech is cheap and easy (extraction costs ~$0.001�
 |---|---|---|
 | **Paprika 3** | $4.99 one-time (mobile) | **#1 Top Paid Food & Drink for years.** No AI, no video import, no OCR. |
 | **Recipe Keeper** | ~$10–20 one-time per platform | Strong cookbook/handwriting OCR; 2.5M+ Play downloads; confusing per-platform pricing |
-| **Crouton** | $24.99 one-time (+$1.99/mo tier) | Apple Design Award 2024; Apple-only; solo dev **sold it to a hardware company** rather than run it |
+| **Crouton** | $25 one-time (+$1.99/mo tier) | Apple Design Award 2024; Apple-only; solo dev **sold it to a hardware company** rather than run it |
 | **Mela** | $4.99 one-time | Beautiful; caption-based video import; ~$9K/mo est. revenue — a *best-case* solo outcome |
 | **Umami** | $0.99/mo or $19.99 lifetime | Tiny (~413 ratings) — shows what a well-made me-too app actually achieves |
 
@@ -100,7 +100,7 @@ These are strategy, not oversights. Each would undercut the funded-growth model:
 
 **Not head-on — and you don't need to.** Ranked by odds:
 
-1. **One-time pricing + local-first (best odds — structural).** ReciMe *cannot* follow you here without dismantling its own business model; its investors bought MRR. This is the only wedge where the incumbent's strength (funding) is your protection. Crouton proves the combination ships and passes review at $24.99 (§6.2).
+1. **One-time pricing + local-first (best odds — structural).** ReciMe *cannot* follow you here without dismantling its own business model; its investors bought MRR. This is the only wedge where the incumbent's strength (funding) is your protection. Crouton proves the combination ships and passes review at $25 (§6.2).
 2. **Grocery-list quality (good odds — but copyable).** It's a feature gap, not a structural one; ReciMe could fix it in a couple of sprints. The evidence it won't soon: the same complaints have sat in reviews for 2+ years while the team ships import sources and content. Treat it as your retention layer, not your billboard (§6.3).
 3. **Offline/privacy alone (weak as a standalone).** Too abstract to market by itself; it works as the supporting argument for wedge #1 ("your recipes outlive any company" — post-Yummly, that lands).
 
@@ -239,7 +239,7 @@ The leader is caption-first with fallbacks (§2.1); nobody reliably handles sile
 - Apple's Vision framework does OCR **on-device, free, on any iPhone** (document recognition expanded in iOS 26).
 - The **Foundation Models framework (iOS 26+)** gives third-party apps free access to the on-device ~3B Apple Intelligence model — no API key, no per-call cost, works offline. Structured output is a first-class feature: `@Generable`/`@Guide` macros constrain generation to Swift structs, and **Apple's own documentation examples are literally recipe-shaped types** (ingredients arrays, cook time). This is your use case, blessed by the platform.
 - Hard limits: **4,096-token context per session** (fits one OCR'd recipe + schema; long blog dumps need chunking), occasional blank fields on large structs (validate + cloud fallback), and it only runs on **Apple Intelligence devices (iPhone 15 Pro and later)** — older devices need the cloud path.
-- Precedents that this model sustains a one-time price: **Pestle** does its Reels/TikTok caption parsing with on-device ML specifically to avoid third-party AI costs; **MacWhisper** built a sustainable ~$59–79 one-time license on on-device Whisper transcription; **Crouton advertises "AI IMPORTING — import a recipe from a single photo" inside its $24.99 one-time purchase** — the closest existing proof that one-time + AI import ships and passes App Review.
+- Precedents that this model sustains a one-time price: **Pestle** does its Reels/TikTok caption parsing with on-device ML specifically to avoid third-party AI costs; **MacWhisper** built a sustainable ~$59–79 one-time license on on-device Whisper transcription; **Crouton advertises "AI IMPORTING — import a recipe from a single photo" inside its $25 one-time purchase** — the closest existing proof that one-time + AI import ships and passes App Review.
 
 **Mechanism B — non-expiring credit packs for cloud-grade extraction (legal, precedented).**
 
@@ -270,7 +270,7 @@ The leader is caption-first with fallbacks (§2.1); nobody reliably handles sile
 | Mela | ~$5–10 |
 | Recipe Keeper Pro | $9.99/platform |
 | Umami lifetime | $19.99 |
-| Crouton Plus | $24.99 (includes AI photo import) |
+| Crouton Plus | $25 (includes AI photo import) |
 | Pestle lifetime | $39.99 (the high end) |
 
 Rule of thumb from RevenueCat's lifetime-pricing guide: lifetime SKUs typically price at **2–12x the annual sub**. Against ReciMe's $39.99/yr, a $19.99–29.99 lifetime with capped/credited AI is aggressive but inside category norms.
@@ -430,7 +430,7 @@ Grocery prices don't belong in the MVP. The data layer is fragmented per country
 1. Margins ~80%; total build cost is nights-and-weekends + ~$150/yr fixed.
 2. Two verified gaps with named, quotable user demand: the one-time/local-first quadrant (§6.2) and grocery-list quality (§6.3) — you'd launch with an actual answer to "why you?"
 3. Demand is proven (ReciMe #2 grossing) and the pain point recurs monthly on Reddit.
-4. Every mechanic you'd need is precedented: Crouton ships AI import inside a $24.99 one-time price, Pestle proved on-device parsing solo, Lensa proved consumable AI credits pass review, AnyList proves people pay yearly just for a good list.
+4. Every mechanic you'd need is precedented: Crouton ships AI import inside a $25 one-time price, Pestle proved on-device parsing solo, Lensa proved consumable AI credits pass review, AnyList proves people pay yearly just for a good list.
 5. Your primary wedge (§6.2) is the one thing the funded incumbent structurally can't copy (§2.4).
 
 ### Strongest case AGAINST
@@ -444,7 +444,7 @@ Grocery prices don't belong in the MVP. The data layer is fragmented per country
 
 1. **Weekend 1 — validate extraction AND detection (2 days, ~$1 in API calls).** Script: your own backlog of recipe screenshots → Gemini Flash-Lite / GPT-5-nano → structured JSON, plus 5 handwritten recipe cards. Also test the §6.5 batch hook: run on-device OCR + a keyword heuristic over your full screenshot folder and measure "is this a recipe" detection precision — ~100 real screenshots is a perfect test set. If you're on the iOS 26 SDK, spike Vision OCR → Foundation Models on-device structuring — §6.2 hinges on it. Pass bars: ≥90% of recipes usable without edits; detection good enough that the onboarding grid isn't full of junk. *If handwriting, on-device structuring, or detection fails badly, the differentiators die here — better now than after 3 months of SwiftUI.*
 2. **Week 2 — validate demand (3–5 evenings, optional ~$100 ads).** One landing page, positionings A/B'd: (a) **"Rescue the recipes buried in your camera roll"** (the §6.5 cleanup framing — cleaner-app economics suggest this converts, but it's untested for recipes), (b) "Own your recipes forever — one-time price, AI import, no subscription," (c) "Digitize the family recipe box — grandma's handwriting included," (d) optionally a §7 language-market variant (e.g. Dutch or Polish copy). Post where the pain already surfaces (r/Cooking-adjacent threads, cooking Facebook groups). Pass bar: ~200 signups or one clearly winning message.
-3. **Weeks 3–12 — MVP only if 1 and 2 pass (6–10 weeks of nights).** iOS-only, the §6.5 architecture: local files + iCloud default (no accounts), optional Drive (`drive.file`) / Dropbox app-folder connectors, one-file-per-recipe. **Batch onboarding** via the permission-free screenshots picker (full auto-scan as opt-in), share-sheet screenshot import as the everyday path, delete-after-import prompt, on-device OCR + structuring with cloud-credit fallback. Link import: bonus only, behind a feature flag you can kill remotely. Grocery list does the three things leaders provably fail at: **merge duplicates (suggest-and-confirm), live plan→list sync, remember category corrections**. **Hard paywall, $19.99–24.99 one-time with a stated fair-use AI cap** (hard paywall converts 12.1% vs 2.2% freemium; the cap keeps Guideline 3.1.2(a) from ever trapping you). No backend beyond a thin API proxy for cloud extraction.
+3. **Weeks 3–12 — MVP only if 1 and 2 pass (6–10 weeks of nights).** iOS-only, the §6.5 architecture: local files + iCloud default (no accounts), optional Drive (`drive.file`) / Dropbox app-folder connectors, one-file-per-recipe. **Batch onboarding** via the permission-free screenshots picker (full auto-scan as opt-in), share-sheet screenshot import as the everyday path, delete-after-import prompt, on-device OCR + structuring with cloud-credit fallback. Link import: bonus only, behind a feature flag you can kill remotely. Grocery list does the three things leaders provably fail at: **merge duplicates (suggest-and-confirm), live plan→list sync, remember category corrections**. **Hard paywall, $19.99–25 one-time with a stated fair-use AI cap** (hard paywall converts 12.1% vs 2.2% freemium; the cap keeps Guideline 3.1.2(a) from ever trapping you). No backend beyond a thin API proxy for cloud extraction.
 4. **Kill criterion — set it now, in writing.** Example: if 3 months post-launch you haven't hit 1,000 downloads and ~$500 total revenue with honest ASO + a few content posts, stop building and keep it as a portfolio piece. *Without a pre-committed kill line, sunk-cost will eat a year — that's the single most common indie failure mode in every case study reviewed.*
 
 ### If the goal is dependable work-from-home income on a timeline

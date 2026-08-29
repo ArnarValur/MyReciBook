@@ -155,6 +155,9 @@
 }
 @media (max-width: 720px) {
   .doc-card { padding: 38px 28px 42px; }
+  /* Tighter vertical rhythm — the desktop gaps read as dead space on a phone */
+  .section { padding-top: 60px; }
+  .section-far { padding-top: 68px; }
 }
 
 /* Keyboard focus wears the ink */

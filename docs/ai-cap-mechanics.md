@@ -23,7 +23,7 @@ $2.50/M output, thinking set to minimum):
 | Blended (70/10/20 mix) | **~$0.0032 — a third of a cent** |
 
 - A user who maxes all 600 rescues costs **~$1.91/year** ($3.36 if every one were
-  a webpage fallback). One $24.99 sale nets ~$21.24 after Play's 15% — that
+  a webpage fallback). One $25 sale nets ~$21.24 after Play's 15% — that
   covers **11 years of a maxed-out user**, ~44 years of a realistic one (150/yr).
 - Fleet: 1,000 active importers ≈ $41/mo; 5,000 ≈ $207/mo — against ~$106K gross
   from those 5,000 sales. Hosting and the counter are ~$0 (free tiers cover both).
@@ -199,7 +199,7 @@ later call; the shape is the decision.
 - The store listing will show "In-app purchases" next to the price the moment
   the unlock IAP exists — top-ups don't change the label, and "pay once"
   stays accurate marketing for the app itself.
-- **Framing rules — the exact inverse of Crouton's mistake** (it charges $24.99
+- **Framing rules — the exact inverse of Crouton's mistake** (it charges $25
   once, then $1.99/*month* for AI import; that's its angriest review theme):
   1. Disclosed before purchase, on the same card as the cap.
   2. Nothing recurs. Ever. Packs are non-renewing by construction.
@@ -253,7 +253,7 @@ blocks adding a small free taste (e.g. 3 rescues) later if evidence wants it.
    2026-08-19; `conductor/context.md` updated).
 2. Parked "durable cap store" now has its design: Firestore, one doc per token
    hash, increment-in-transaction.
-3. Billing seam gets pinned: **free download + $24.99 non-consumable unlock
+3. Billing seam gets pinned: **free download + $25 non-consumable unlock
    IAP** — not an upfront-paid app. A paid app yields no purchase token at all
    (nothing to meter against), and is Family-Library-shareable; the IAP unlock
    is neither. Flutter: `in_app_purchase_android` ≥ 0.5.2 (Billing Library 8 —

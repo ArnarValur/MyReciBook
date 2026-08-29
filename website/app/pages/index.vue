@@ -30,14 +30,14 @@ const features = [
 ].map((f, i) => ({ ...f, tilt: `rotate(${tilts[i]})` }))
 
 const heroChecks = [
-  'Made for Android',
   'Your recipes stay on your phone',
+  'Google Drive & Dropbox are available for backup',
   'Typing them in is always unlimited',
 ]
 
 const priceChecks = [
   'Everything — cookbook, cook mode, grocery, pantry, diary',
-  '1,200 AI rescues a year — fair-use cap, in writing',
+  '1,200 AI rescues a year — included in the price',
   'Typing recipes in yourself — always unlimited',
   'Ran out? Top up the AI — still no subscription',
 ]
@@ -174,19 +174,22 @@ const priceChecks = [
       <div class="strip">
         <figure class="photo" style="transform: rotate(-1.6deg)">
           <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(-2deg)" />
-          <img src="/screenshots/rescue-source.webp" alt="A recipe screenshot buried in the camera roll" loading="lazy">
+          <img class="light-shot" src="/screenshots/rescue-source-light.webp" alt="A recipe screenshot buried in the camera roll" loading="lazy">
+          <img class="dark-shot" src="/screenshots/rescue-source.webp" alt="A recipe screenshot buried in the camera roll" loading="lazy">
           <figcaption><span class="step-tag">1</span>The screenshot, as found</figcaption>
         </figure>
         <div class="strip-arrow" aria-hidden="true">→</div>
         <figure class="photo" style="transform: rotate(0.9deg)">
           <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(2deg)" />
-          <img src="/screenshots/rescue-review.webp" alt="The rescued recipe, shown for review before saving" loading="lazy">
+          <img class="light-shot" src="/screenshots/rescue-review-light.webp" alt="The rescued recipe, shown for review before saving" loading="lazy">
+          <img class="dark-shot" src="/screenshots/rescue-review.webp" alt="The rescued recipe, shown for review before saving" loading="lazy">
           <figcaption><span class="step-tag">2</span>Rescued — you review before it's saved</figcaption>
         </figure>
         <div class="strip-arrow" aria-hidden="true">→</div>
         <figure class="photo" style="transform: rotate(-0.7deg)">
           <CardTape style="left: 50%; top: -12px; width: 90px; height: 26px; transform: translateX(-50%) rotate(-1deg)" />
-          <img src="/screenshots/recipe-page.webp" alt="The finished recipe page, converted to metric" loading="lazy">
+          <img class="light-shot" src="/screenshots/recipe-page-light.webp" alt="The finished recipe page, converted to metric" loading="lazy">
+          <img class="dark-shot" src="/screenshots/recipe-page.webp" alt="The finished recipe page, converted to metric" loading="lazy">
           <figcaption><span class="step-tag">3</span>Filed in your book — in your units</figcaption>
         </figure>
       </div>
@@ -199,7 +202,7 @@ const priceChecks = [
         <div class="onetime" aria-hidden="true">One-time</div>
         <div class="card-no price-no">RECIPE Nº 003 · THE PRICE</div>
         <div class="price-row">
-          <span class="price">$24.99</span>
+          <span class="price">$25</span>
           <span class="price-note">once. Like a good knife.</span>
         </div>
         <div class="price-rule" />
@@ -208,34 +211,34 @@ const priceChecks = [
             <UIcon name="i-material-symbols:check-rounded" class="check-icon" />{{ c }}
           </span>
         </div>
-        <div class="marginalia price-marginalia" aria-hidden="true">the cap resets 1 January, by the way</div>
         <a href="#" class="cta cta-block">
           <UIcon name="i-material-symbols:download-rounded" class="cta-icon" />Get MyReciBook
         </a>
-        <div class="price-fine">No subscription. No account. Ever. · Made for Android</div>
+        <div class="price-fine">No subscription. No account. Ever.</div>
       </div>
     </section>
 
     <!-- ── Keep it (ownership pocket) ───────────────────────── -->
     <section id="yours" class="section section-far">
       <div class="yours">
-        <h2 class="h2 yours-title">If MyReciBook vanished tomorrow,<br>your recipes wouldn't.</h2>
+        <h2 class="h2 yours-title">If MyReciBook vanished tomorrow,<br>your recipes wouldn't, unless...</h2>
         <p class="yours-lede">
-          Your cookbook lives on your phone — not on someone else's server.
-          Back it up to your Drive, export any recipe as a PDF or document,
-          share it however you like. Nothing to shut down.
+          So your cookbook lives on your phone — not on someone else's cloud server.
+          But you can back it up to your Drive, Dropbox and export any recipe as a PDF or other formats.
+          <br><b>That way if you drop your phone into a volcano, your data is saved. :)</b>
         </p>
         <div class="envelope">
-          <div class="slip" style="transform: translateX(-150%) rotate(-4deg); bottom: 104px">
+          <div class="slip slip-pdf">
             <UIcon name="i-material-symbols:picture-as-pdf-rounded" class="slip-icon" />PDF
           </div>
-          <div class="slip" style="transform: translateX(-50%) rotate(1deg); bottom: 112px">
+          <div class="slip slip-doc">
             <UIcon name="i-material-symbols:description-rounded" class="slip-icon" />Document
           </div>
-          <div class="slip" style="transform: translateX(50%) rotate(5deg); bottom: 100px">
+          <div class="slip slip-send">
             <UIcon name="i-material-symbols:send-rounded" class="slip-icon" />Send a copy
           </div>
           <div class="envelope-front">
+            <LogoMark :size="40" class="envelope-mark" />
             <span>Yours · Printable · Portable</span>
           </div>
         </div>
@@ -254,9 +257,11 @@ const priceChecks = [
 }
 .scatter {
   position: absolute;
-  border: 1px solid var(--box-line);
+  padding: 6px;
+  background: var(--box-card);
+  border: 1px solid var(--box-edge);
   border-radius: 6px;
-  box-shadow: var(--box-shadow-sm);
+  box-shadow: var(--box-shadow-md);
 }
 .scatter img {
   display: block;
@@ -264,6 +269,8 @@ const priceChecks = [
   height: 100%;
   object-fit: cover;
   object-position: top;
+  border-radius: 3px;
+  border: 1px solid rgba(120, 90, 50, 0.14);
 }
 .scatter-done {
   left: 2%;
@@ -286,13 +293,14 @@ const priceChecks = [
 }
 .scatter-photo span {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
   padding: 6px 10px;
   font-size: 10.5px;
   color: var(--box-ink-soft);
   background: rgba(255, 255, 255, 0.78);
+  border-radius: 0 0 3px 3px;
 }
 .hero-card {
   max-width: 780px;
@@ -302,6 +310,7 @@ const priceChecks = [
   padding: 58px 64px 50px;
 }
 .card-heading { display: flex; align-items: baseline; gap: 12px; margin-bottom: 26px; }
+.card-heading .card-no { white-space: nowrap; }
 .card-from {
   font-size: 11px;
   letter-spacing: 0.9px;
@@ -531,6 +540,10 @@ const priceChecks = [
   border-radius: 3px;
   border: 1px solid rgba(120, 90, 50, 0.12);
 }
+/* One rescue story per theme: peach tiramisu by day, beef & broccoli by night */
+.photo img.dark-shot { display: none; }
+.dark .photo img.dark-shot { display: block; }
+.dark .photo img.light-shot { display: none; }
 .photo figcaption {
   display: flex;
   align-items: center;
@@ -598,12 +611,6 @@ const priceChecks = [
 .price-checks { display: flex; flex-direction: column; gap: 12px; font-size: 14.5px; }
 .price-check { gap: 11px; }
 .price-check .check-icon { font-size: 18px; }
-.price-marginalia {
-  text-align: right;
-  margin-top: 14px;
-  transform: rotate(-1.5deg);
-  font-size: 12.5px;
-}
 .price-fine { text-align: center; font-size: 12px; color: var(--box-ink-soft); margin-top: 12px; }
 
 /* ── Keep it ─────────────────────────────────────────────── */
@@ -617,7 +624,7 @@ const priceChecks = [
   max-width: 520px;
   text-wrap: pretty;
 }
-.envelope { position: relative; max-width: 560px; margin: 0 auto; height: 190px; }
+.envelope { position: relative; max-width: 560px; margin: 0 auto; height: 162px; }
 .slip {
   position: absolute;
   left: 50%;
@@ -635,12 +642,15 @@ const priceChecks = [
   justify-content: center;
 }
 .slip-icon { font-size: 18px; color: var(--box-primary); }
+.slip-pdf { transform: translateX(-150%) rotate(-4deg); bottom: 76px; }
+.slip-doc { transform: translateX(-50%) rotate(1deg); bottom: 84px; }
+.slip-send { transform: translateX(50%) rotate(5deg); bottom: 72px; }
 .envelope-front {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 120px;
+  height: 92px;
   background: var(--box-tab-alt);
   border: 1px solid rgba(120, 90, 50, 0.3);
   border-radius: 10px 10px 12px 12px;
@@ -650,11 +660,18 @@ const priceChecks = [
   justify-content: center;
   padding-bottom: 18px;
 }
+.envelope-mark {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  color: var(--box-accent);
+}
 .envelope-front span {
   font-size: 11px;
   letter-spacing: 0.9px;
   text-transform: uppercase;
-  color: var(--box-ink-faint);
+  color: var(--box-accent);
 }
 
 /* ── Small screens: the box folds ────────────────────────── */
@@ -672,10 +689,40 @@ const priceChecks = [
   .photo img { height: 300px; }
   .hero-card { padding: 44px 30px 40px; }
   .hero-marginalia { display: none; }
-  .recipe-card { padding: 38px 28px 42px; }
+  .recipe-card { padding: 38px 28px 34px; }
   .recipe-grid { grid-template-columns: 1fr; gap: 32px; }
   .spine-note { display: none; }
   .price-card { padding: 40px 28px 38px; }
+
+  /* Hero heading stacks clear of the stamp — no more ink collision */
+  .stamp { right: 18px; top: 28px; font-size: 10px; padding: 5px 9px; letter-spacing: 1.5px; }
+  .card-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-right: 112px;
+    margin-bottom: 20px;
+  }
+
+  /* One check per line, centered — no orphaned third check */
+  .hero-checks { flex-direction: column; align-items: center; gap: 9px; margin-top: 24px; }
+
+  /* Section heads stack; the hint tucks under the heading */
+  .cards-head { flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 28px; }
+
+  /* Pocket bullets: icon and text hang together, left-ragged */
+  .pocket-points span { text-align: left; align-items: flex-start; max-width: 360px; }
+  .point-icon { margin-top: 2px; }
+
+  /* Price note drops under the big number instead of wrapping beside it */
+  .price-row { flex-direction: column; align-items: flex-start; gap: 0; }
+
+  /* Export slips shrink and fan inside the viewport */
+  .envelope { max-width: 100%; }
+  .slip { width: 118px; padding: 12px 8px 34px; font-size: 11.5px; gap: 6px; }
+  .slip-icon { font-size: 16px; }
+  .slip-pdf { transform: translateX(-138%) rotate(-4deg); }
+  .slip-send { transform: translateX(38%) rotate(5deg); }
 }
 @media (max-width: 600px) {
   .cards-grid { grid-template-columns: 1fr; }

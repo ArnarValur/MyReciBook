@@ -4,16 +4,19 @@
 ## Fixed in code
 - "Android today · iOS in the works" / "iOS soon" → "Made for Android".
   Hard constraint: no Mac, no Swift path; Android-first IS the moat.
+- "Made for Android" removed from hero checks + price fine print (Arnar
+  2026-08-29 — appeared twice, wants the lines gone).
+- "the cap resets 1 January" marginalia removed (never discussed, unverified).
+- "fair-use cap, in writing" → "included in the price" (Arnar 2026-08-29).
 
 ## Flags — need Arnar
-- **$24.99** — the number only. Pay-once stands (grilled, in code:
+- **$25** — the number only. Pay-once stands (grilled, in code:
   proxy/lib/usage_counter.dart — two weeks free = AI grace window, 1200/year
   = rescue cap, not money). Exact price tag still Arnar's to name.
 - **Grocery list card** ("merged, deduplicated, asks before combining") — in
   the bet, not shipped as described.
 - **"1,200 AI rescues a year"** — TRUE (kDefaultYearlyCap). "Top-ups if you
   run out" = billing seam, unstarted — the one soft claim on that card.
-- **"the cap resets 1 January"** — unverified against proxy code.
 - **"we read cursive"** — handwriting import untested as a claim; charming
   but risky in writing.
 - **support@myrecibook.com** (contact page) — domain owned, mailbox not set

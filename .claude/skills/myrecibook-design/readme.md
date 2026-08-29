@@ -8,7 +8,7 @@ yearly fair-use cap (600/yr working number); typing recipes in is always
 unlimited.
 
 > **Pitch:** *"Rescue the recipes buried in your camera roll."*
-> **Pricing:** *"Pay once. Cook forever."* ($24.99 one-time, working number)
+> **Pricing:** *"Pay once. Cook forever."* ($25 one-time, working number)
 
 It shares Merkurial-Studio's house visual language with the **DittoDatto**
 design system (Moody Blue M3 palette, PJS+Inter, glass, blue-tinted shadows)
@@ -231,7 +231,7 @@ pager over source screenshots, "Original · N" title).
 
 - **UI kit not yet built** — the screen inventory and every value needed are
   in `DESIGN-as-built.md` and the mounted `ui/` codebase.
-- $24.99 / 600 rescues/yr are **working numbers** — placeholders in mocks too.
+- $25 / 600 rescues/yr are **working numbers** — placeholders in mocks too.
 - **Known gaps** (drift the app ships with — don't design against them):
   no `info` color, no third elevation step, glass blur 12/20 (24 unused),
   reduced-motion unchecked, six unrounded icon call sites, outlined buttons

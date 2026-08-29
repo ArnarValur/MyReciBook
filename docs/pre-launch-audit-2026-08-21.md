@@ -30,7 +30,7 @@ the extracted `libapp.so` finds it in seconds. From there anyone writes a loop t
 UUID per request and gets **unmetered Gemini on your card**. There is no per-IP limit, no shared
 secret, and no global ceiling.
 
-> This is the single largest exposure in the project. It converts a fixed $24.99 sale into an
+> This is the single largest exposure in the project. It converts a fixed $25 sale into an
 > open-ended liability.
 
 **Fix:** Play Integrity API (or Firebase App Check) attestation on every request — the standard

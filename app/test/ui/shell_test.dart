@@ -46,23 +46,23 @@ class FakeExtractor implements Extractor {
 }
 
 Map<String, dynamic> canned({String title = 'Pancakes'}) => {
-      'title': title,
-      'ingredients': [
-        {'raw': '2 eggs', 'qty': 2, 'item': 'eggs', 'confidence': 0.95},
-      ],
-      'steps': [
-        {'raw': 'Mix everything.', 'confidence': 0.9},
-      ],
-      'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
-    };
+  'title': title,
+  'ingredients': [
+    {'raw': '2 eggs', 'qty': 2, 'item': 'eggs', 'confidence': 0.95},
+  ],
+  'steps': [
+    {'raw': 'Mix everything.', 'confidence': 0.9},
+  ],
+  'extraction': {'overall_confidence': 0.9, 'needs_review': <Object?>[]},
+};
 
 /// Nav slot 2's label follows the flags: Food (Diary + Pantry) → Pantry →
 /// Unlock → Queue. Tests tap the one that is actually there.
 final String kSlot2Label = kDiaryEnabled
     ? 'Food'
     : kPantryEnabled
-        ? 'Pantry'
-        : (kUnlockTabEnabled ? 'Unlock' : 'Queue');
+    ? 'Pantry'
+    : (kUnlockTabEnabled ? 'Unlock' : 'Queue');
 
 void main() {
   late Directory tmp;
@@ -82,27 +82,32 @@ void main() {
 
   Future<void> settle(WidgetTester tester, {int rounds = 32}) async {
     for (var i = 0; i < rounds; i++) {
-      await tester
-          .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
       await tester.pump(const Duration(milliseconds: 150));
     }
   }
 
-  Widget app({ShareEntry? share, Extractor Function(String url)? linkExtractor}) =>
-      buildApp(
-          store: store,
-          extractor: FakeExtractor([canned()]),
-          picker: () async => [pick],
-          share: share,
-          linkExtractor: linkExtractor);
+  Widget app({
+    ShareEntry? share,
+    Extractor Function(String url)? linkExtractor,
+  }) => buildApp(
+    store: store,
+    extractor: FakeExtractor([canned()]),
+    picker: () async => [pick],
+    share: share,
+    linkExtractor: linkExtractor,
+  );
 
   // .first: the shell's own tab stack. The Food tab nests a second
   // IndexedStack for its Diary/Pantry segments.
   int? stackIndex(WidgetTester tester) =>
       tester.widget<IndexedStack>(find.byType(IndexedStack).first).index;
 
-  testWidgets('nav bar switches tabs; cookbook survives offstage',
-      (tester) async {
+  testWidgets('nav bar switches tabs; cookbook survives offstage', (
+    tester,
+  ) async {
     await tester.pumpWidget(app());
     await settle(tester);
     expect(stackIndex(tester), 0);
@@ -135,10 +140,13 @@ void main() {
       expect(find.text('No subscription. No account. Ever.'), findsOneWidget);
       expect(find.text('ONE-TIME'), findsOneWidget);
       // Constraint 2: the fair-use cap is stated where the money is.
-      expect(find.text('600 AI rescues a year — fair-use cap, in writing'),
-          findsOneWidget);
-      final cta = tester.widget<FilledButton>(find.widgetWithText(
-          FilledButton, 'Unlock MyReciBook — \$24.99'));
+      expect(
+        find.text('600 AI rescues a year — fair-use cap, in writing'),
+        findsOneWidget,
+      );
+      final cta = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Unlock MyReciBook — \$25'),
+      );
       expect(cta.onPressed, isNull);
       expect(find.textContaining('nothing to buy just yet'), findsOneWidget);
       // Spread-the-word waits for a live destination (kSpreadWordEnabled).
@@ -157,8 +165,9 @@ void main() {
     expect(find.textContaining('Your book is empty'), findsOneWidget);
   });
 
-  testWidgets('no drawer: bar + Settings carry everything, honestly',
-      (tester) async {
+  testWidgets('no drawer: bar + Settings carry everything, honestly', (
+    tester,
+  ) async {
     await tester.pumpWidget(app());
     await settle(tester);
 
@@ -176,8 +185,11 @@ void main() {
     // The footer is last in a scrolling list and the crash-report block above
     // it (2026-08-21) pushed it off a 360dp screen, so scroll before looking.
     final footer = find.text('MyReciBook $kAppVersion');
-    await tester.scrollUntilVisible(footer, 120,
-        scrollable: find.byType(Scrollable).last);
+    await tester.scrollUntilVisible(
+      footer,
+      120,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.pump();
     expect(footer, findsOneWidget);
     expect(find.textContaining('you own this copy'), findsNothing);
@@ -214,20 +226,24 @@ void main() {
     expect(find.text('Recipe rescued'), findsOneWidget);
   });
 
-  testWidgets('shared link lands in review with the link source row',
-      (tester) async {
+  testWidgets('shared link lands in review with the link source row', (
+    tester,
+  ) async {
     const url = 'https://example.com/best-buns';
     final share = ShareEntry();
     // Canned link content the way LinkExtractor stamps it: source.url set,
     // no images anywhere.
     final linkContent = canned(title: 'Best Buns')
       ..['source'] = {'type': 'link', 'url': url, 'app_hint': 'example.com'};
-    await tester.pumpWidget(app(
+    await tester.pumpWidget(
+      app(
         share: share,
         linkExtractor: (u) {
           expect(u, url);
           return FakeExtractor([linkContent]);
-        }));
+        },
+      ),
+    );
     await settle(tester);
 
     share.pushLink(url);
@@ -241,35 +257,43 @@ void main() {
     expect(find.text('Original screenshot'), findsNothing);
   });
 
-  testWidgets(
-      'Settings storage row shows the real folder and reaches re-pick '
+  testWidgets('Settings storage row shows the real folder and reaches re-pick '
       'through the storage screen', (tester) async {
     final fake = FakeSafChannel()..install();
     addTearDown(fake.uninstall);
     final settingsFile = File('${tmp.path}/settings.json');
-    await tester.runAsync(() => settingsFile.writeAsString(
-        jsonEncode({'tree_uri': fake.treeUri, 'migration_done': true})));
+    await tester.runAsync(
+      () => settingsFile.writeAsString(
+        jsonEncode({'tree_uri': fake.treeUri, 'migration_done': true}),
+      ),
+    );
     // Onboarding already done — this test is about the storage row, and a
     // first run now legitimately opens the welcome flow in front of the app.
-    await tester.runAsync(() => File('${tmp.path}/device.json')
-        .writeAsString(jsonEncode({'onboarding_seen': kOnboardingVersion})));
-    final settings =
-        (await tester.runAsync(() => AppSettings.load(settingsFile)))!;
+    await tester.runAsync(
+      () => File(
+        '${tmp.path}/device.json',
+      ).writeAsString(jsonEncode({'onboarding_seen': kOnboardingVersion})),
+    );
+    final settings = (await tester.runAsync(
+      () => AppSettings.load(settingsFile),
+    ))!;
 
-    await tester.pumpWidget(BootGate(
-      settings: settings,
-      localStore: store,
-      imageCache: Directory('${tmp.path}/saf_images'),
-      safChannel: fake.channel,
-      appBuilder: (safStore, pantry, onGrantLost, onChangeFolder) => buildApp(
-        store: safStore,
-        extractor: FakeExtractor([canned()]),
-        picker: () async => [pick],
-        onGrantLost: onGrantLost,
-        onChangeFolder: onChangeFolder,
-        folderName: folderDisplayName(settings.treeUri),
+    await tester.pumpWidget(
+      BootGate(
+        settings: settings,
+        localStore: store,
+        imageCache: Directory('${tmp.path}/saf_images'),
+        safChannel: fake.channel,
+        appBuilder: (safStore, pantry, onGrantLost, onChangeFolder) => buildApp(
+          store: safStore,
+          extractor: FakeExtractor([canned()]),
+          picker: () async => [pick],
+          onGrantLost: onGrantLost,
+          onChangeFolder: onChangeFolder,
+          folderName: folderDisplayName(settings.treeUri),
+        ),
       ),
-    ));
+    );
     await settle(tester);
     expect(find.textContaining('Your book is empty'), findsOneWidget);
 
