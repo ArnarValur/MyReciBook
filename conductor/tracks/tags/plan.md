@@ -155,6 +155,10 @@ detail sheet. Only English is offered today, so arb_parity_test stays green.
 - A tag the library carries but tags.json does not can be deleted straight
   from Settings. Adopting it only to delete it was the long way round.
 
+## Graduated 2026-08-30
+- Track closed. Last open item — tag UI strings are English literals — handed
+  to the i18n string sweep (tracks/i18n/coverage.md).
+
 ## Not in this track
 - Auto-tagging from the extractor. Nothing earns a tag but the user's tap.
 - Tag-driven meal planning, tag search syntax, tags on the grocery list.

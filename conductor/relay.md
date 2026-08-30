@@ -1,6 +1,16 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-30 — housekeeping night: deploy, one graduation, stale items culled
+
+- Shipped: no code. Counter+BYOK build onto the S21 as debug-over-debug with
+  dev.env keys — data and folder grant kept; release path stays blocked.
+- tags graduated to Done (string sweep item handed to i18n); diary pruned to
+  device verify + USDA seeded-pack check — photos item was already shipped.
+- Arnar: oats re-read dropped (not operational) · burn down remaining code
+  work — package-size math, quota feed — until only i18n stays open.
+- UNFINISHED: nutrition package-size math (confirmed unbuilt) — next session.
+
 ## 2026-08-30 — the counter gets a face, BYOK goes from parked to code
 
 - Shipped: QuotaCounterCard atop Settings (demo numbers, no proxy feed) with

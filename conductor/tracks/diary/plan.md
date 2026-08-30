@@ -195,20 +195,18 @@ Built by four parallel agents from docs/MyReciBook Flutter diary-pantry-mockups.
 - Add sheet already carried photos (ProductRow) and covers (_RecipeRow);
   _RecentRow keeps its history glyph on purpose.
 
-## Open — NEXT SESSION STARTS HERE
-- [ ] Redeploy to the S21 (it runs the phase-1-3 build; starter foods and
-      the picker consolidation are newer). Then Arnar's eyes on: chips,
-      grouped shelf, starter import, "Paprika" search, quick tags.
-- [ ] Picker collapse chip ("Show all N") untested with >3 recipes
-- [ ] Row reorder (drag) in the manual entry editor
-- [ ] Density table is ~30 staples — a volume line that misses it stays
-      uncovered by design; grow the table from real recipes, not guesses
-- [ ] Manual-entry links die when a line is edited (keyed by line text) —
-      fine for v1, revisit if it annoys
-- [ ] Meal names editable in settings (the engine already reads them; no UI)
-- [ ] "Copy to date" in the UI (`DiaryModel.copyMealFrom` exists, no door)
-- [ ] Nutrition detail for a day: the full nutrient table, not just the macros
-- [ ] Water, and a weight log, if Arnar ever wants them — not scheduled
+## Open — pruned 2026-08-30 (redeploy, meal names, photos: shipped; oats
+## re-read dropped as not operational)
+- [ ] Device verify — Arnar's eyes on meal hours, warm pantry boot, quarter
+      "+" product creation (build of 2026-08-30 carries it all)
+- [ ] Seeded starter packs: spot-check values against USDA
+
+## Known gaps — fine for v1, revisit only if they annoy
+- Picker collapse chip ("Show all N") untested with >3 recipes
+- Manual-entry links die when a line is edited (keyed by line text)
+- Density table is ~30 staples — grow from real recipes, not guesses
+- Nutrition detail for a day: full nutrient table, not just macros — unscheduled
+- Row reorder and copy-to-date UI live in pulse Parked
 
 ## Not doing — say no out loud
 - Exercise, weight, water, steps. That is a fitness tracker, not a recipe app.
