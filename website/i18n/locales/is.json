@@ -1,0 +1,137 @@
+{
+  "layout": {
+    "est": "Stofnað í myndasafninu þínu",
+    "tabRecipe": "Uppskriftin",
+    "tabCards": "Spjöldin",
+    "tabPrice": "Verðið",
+    "tabYours": "Þín eign",
+    "lamp": "Kveikja eða slökkva á lampanum",
+    "language": "Skipta um tungumál",
+    "footLine": "Prjónað og bakað af",
+    "privacy": "Persónuvernd",
+    "terms": "Skilmálar",
+    "contact": "Hafa samband"
+  },
+  "index": {
+    "seo": {
+      "title": "MyReciBook — Bjargaðu uppskriftunum sem liggja grafnar í myndasafninu",
+      "description": "MyReciBook breytir uppskriftaskjáskotum, hlekkjum og handskrifuðum spjöldum í matreiðslubók í þinni eigu. Venjulegar skrár í símanum þínum. Borgaðu einu sinni. Eldaðu að eilífu. Android.",
+      "ogTitle": "MyReciBook — Bjargaðu uppskriftunum sem liggja grafnar í myndasafninu",
+      "ogDescription": "Skjáskot, hlekkir og spjöldin hennar ömmu verða að matreiðslubók í þinni eigu — venjulegar skrár, í símanum þínum. Engin áskrift. Enginn aðgangur. Aldrei."
+    },
+    "hero": {
+      "scatterCaption": "IMG_2041.jpg — spjaldið hennar ömmu",
+      "cardNo": "UPPSKRIFT NR. 001",
+      "cardFrom": "Úr eldhúsinu hjá · þér",
+      "titlePre": "Bjargaðu uppskriftunum sem liggja grafnar í",
+      "titleMark": "myndasafninu.",
+      "lede": "MyReciBook les skjáskot, hlekki og handskrifuð spjöld — og raðar þeim í matreiðslubók sem þú átt í alvöru. Í símanum þínum, eins og spjald í kassa. Engin áskrift. Enginn aðgangur. Aldrei.",
+      "ctaRescue": "Bjargaðu fyrstu uppskriftinni",
+      "ctaQuiet": "Lestu uppskriftina að þessu appi ↓",
+      "marginalia": "rithönd ömmu er velkomin — við lesum tengiskrift",
+      "stampTop": "Borgaðu einu sinni",
+      "stampBottom": "eldaðu að eilífu",
+      "checks": [
+        "Uppskriftirnar þínar eru áfram í símanum þínum",
+        "Google Drive og Dropbox í boði fyrir öryggisafrit",
+        "Að handskrá uppskriftir er alltaf ótakmarkað"
+      ]
+    },
+    "recipe": {
+      "cardNo": "UPPSKRIFT NR. 002",
+      "title": "Matreiðslubók í þinni eigu",
+      "meta": "Undirbúningur: 30 sek · Fyrir: þig, að eilífu",
+      "ingredientsLabel": "Hráefni",
+      "methodLabel": "Aðferð",
+      "ingredients": [
+        "<strong>1</strong> myndasafn fullt af skjáskotum",
+        "<strong>1</strong> Android-sími",
+        "<strong>1.200</strong> AI-bjarganir á ári — hægt að bæta við ef þær klárast",
+        "<strong>0</strong> áskriftir, <strong>0</strong> aðgangar",
+        "ein klípa af þolinmæði á meðan tengiskriftin er lesin"
+      ],
+      "steps": [
+        "Deildu skjáskoti, límdu hlekk eða smelltu mynd af spjaldinu hennar ömmu.",
+        "Gervigreindin breytir því í almennilega uppskrift — hráefni, skref og tíma — og sýnir þér útkomuna til yfirferðar áður en hún er vistuð.",
+        "Raðaðu henni í bókina þína. Hún býr í símanum þínum; flyttu hana út sem PDF eða skjal hvenær sem er."
+      ],
+      "spineNote": "prófuð 1.200 sinnum á ári"
+    },
+    "cards": {
+      "heading": "Það sem er raðað í kassann",
+      "hint": "flettu í gegn ↓",
+      "features": {
+        "cookMode": {
+          "tab": "Spjald 04",
+          "title": "Eldunarhamur",
+          "body": "Eitt skref í einu með stóru, eldhúsheldu letri. Snertisvæði sniðin fyrir hveitiputta, tímamælar innbyggðir."
+        },
+        "grocery": {
+          "tab": "Spjald 05",
+          "title": "Innkaupalisti",
+          "body": "„9 vörur · úr 3 skipulögðum uppskriftum“ — sameinað, án tvítekninga, og hann spyr áður en 2 sítrónur eru lagðar saman við 4."
+        },
+        "pantry": {
+          "tab": "Spjald 06",
+          "title": "Búrið",
+          "body": "Veistu hvað er til í hillunni. Flokkar leggjast saman, það nýlega flýtur upp og innkaupalistinn ber sig saman við búrið."
+        },
+        "diary": {
+          "tab": "Spjald 07",
+          "title": "Matardagbók",
+          "body": "Skráðu máltíðir beint úr uppskriftunum og búrinu — ekkert tvíverk. Þróunin sýnir vikuna þína án samviskubits."
+        },
+        "barcode": {
+          "tab": "Spjald 08",
+          "title": "Strikamerkjaskanni",
+          "body": "Beindu honum að umbúðunum. Open Food Facts fyllir inn vöruna og næringargildin — flest lönd studd."
+        },
+        "nutrition": {
+          "tab": "Spjald 09",
+          "title": "Næringarskráning",
+          "body": "Orka, orkuefni og snefilefni eftir degi, viku og ári — með þekju sem þú sérð í alvöru, ekki bara samtölur."
+        }
+      }
+    },
+    "pocket": {
+      "title": "Kassinn, í vasanum.",
+      "lede": "Uppskriftir án myndar fá kápu í arf — litastigul sem titillinn velur, svo hún breytist aldrei. Leit, síur og hillurnar þínar — einn þumall, einn skjár.",
+      "pointBarcode": "Strikamerkjaskanni með Open Food Facts að baki — flest lönd studd",
+      "pointTrends": "Næringarþróun eftir degi, viku og ári — ekkert samviskubit",
+      "pointTheme": "Stitch Slate á daginn, Midnight á nóttunni"
+    },
+    "rescue": {
+      "heading": "Ein björgun, frá upphafi til enda",
+      "hint": "alvöru skjáskot, engar eftirlíkingar",
+      "step1Alt": "Uppskriftarskjáskot grafið í myndasafninu",
+      "step1Caption": "Skjáskotið, eins og það fannst",
+      "step2Alt": "Bjargaða uppskriftin, sýnd til yfirferðar fyrir vistun",
+      "step2Caption": "Bjargað — þú ferð yfir áður en það vistast",
+      "step3Alt": "Fullbúna uppskriftarsíðan, umreiknuð í metrakerfið",
+      "step3Caption": "Raðað í bókina þína — í þínum einingum",
+      "note": "bollar urðu að grömmum á leiðinni — ekkert að þakka"
+    },
+    "price": {
+      "onetime": "Eitt skipti",
+      "cardNo": "UPPSKRIFT NR. 003 · VERÐIÐ",
+      "amount": "$25",
+      "note": "einu sinni. Eins og góður hnífur.",
+      "checks": [
+        "Allt — matreiðslubók, eldunarhamur, innkaup, búr, dagbók",
+        "1.200 AI-bjarganir á ári — innifaldar í verðinu",
+        "Að handskrá uppskriftir sjálf — alltaf ótakmarkað",
+        "Kláraðist? Bættu við AI-björgunum — samt engin áskrift"
+      ],
+      "cta": "Náðu í MyReciBook",
+      "fine": "Engin áskrift. Enginn aðgangur. Aldrei."
+    },
+    "yours": {
+      "title": "Þó MyReciBook hyrfi á morgun,<br>hyrfu uppskriftirnar þínar ekki, nema...",
+      "lede": "Matreiðslubókin þín býr nefnilega í símanum þínum — ekki á skýjaþjóni einhvers annars. En þú getur tekið öryggisafrit á Drive eða Dropbox og flutt hvaða uppskrift sem er út sem PDF eða á öðru sniði.<br><b>Þannig að ef síminn þinn dettur ofan í eldfjall er gögnunum þínum borgið. :)</b>",
+      "slipPdf": "PDF",
+      "slipDoc": "Skjal",
+      "slipSend": "Senda afrit",
+      "envelope": "Þín eign · Prentanleg · Færanleg"
+    }
+  }
+}

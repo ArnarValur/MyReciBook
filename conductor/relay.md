@@ -1,6 +1,15 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-30 — the website tries Icelandic and Swedish
+
+- Shipped: is.json + sv.json drafted from en.json, locales + flags wired,
+  staging redeployed with both — /is/ and /sv/ live behind the dropdown.
+- Broke: lid tabs + footer dropped the /is/ prefix — every layout NuxtLink now
+  goes through localePath(). No version bump: website, no APK.
+- Arnar: draft Icelandic too formal, he rewrites it himself; Höddi gets the
+  Swedish. UNFINISHED: both reviews out · privacy/terms/contact/404 unkeyed.
+
 ## 2026-08-30 — extraction v2 in the app, split lines grouped in review
 
 - Shipped 0.19.0+38/+39 to S21: model gets trimmed extract.schema.json (no

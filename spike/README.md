@@ -1,4 +1,10 @@
-# Extraction spike (T1 → Gate 1)
+# Extraction spike (T1 → Gate 1) — CLOSED
+
+**Gate 1 passed 2026-08-06** on Arnar's own screenshots — see conductor/tracks.md
+(Done). Gates were retired from context.md on 2026-08-18. Extraction has shipped
+well past this spike: prompt v2 live on 0.19.0+39, proxy on Cloud Run. Everything
+below is history — do not re-run it as a gate, and `out/results.md` is a stray
+harness re-run from 2026-08-18, not the scoring sheet.
 
 Throwaway validation toolkit. The app never imports anything from here.
 Full plan: conductor/tracks/T1-extraction-spike/plan.md
@@ -22,7 +28,7 @@ Arm B dumps come from the ocr_dump phone app — source + build steps in
 ## Scoring — this IS Gate 1
 `out/results.md` gets one row per screenshot with auto-checks filled in.
 You fill the last column: **would you cook from out/<name>.json without editing? y/n**
-Gate 1 (context.md): at least 9 of 10 "y", by Sun 2026-08-30 — or we stop, as agreed.
+Gate 1 was: at least 9 of 10 "y". Passed 2026-08-06, 24 days ahead of the date we set.
 
 ## Troubleshooting
 - HTTP 429: free-tier pacing — wait a minute, rerun; the harness does one image at a time.

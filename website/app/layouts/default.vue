@@ -6,9 +6,12 @@ const isDark = computed({
 })
 
 const { locale, locales, setLocale } = useI18n()
+const localePath = useLocalePath()
 // English carries the UK flag by Arnar's choice; each new language adds its pair here
 const localeFlags: Record<string, string> = {
   en: 'i-circle-flags:gb',
+  is: 'i-circle-flags:is',
+  sv: 'i-circle-flags:se',
 }
 const localeItems = computed(() =>
   locales.value.map((l) => ({
@@ -24,16 +27,16 @@ const localeItems = computed(() =>
     <!-- ── Box-lid header: wordmark stamp + divider tabs ────── -->
     <header class="lid">
       <div class="lid-row">
-        <NuxtLink to="/" class="brand">
+        <NuxtLink :to="localePath('/')" class="brand">
           <LogoMark :size="30" />
           <span class="brand-name">MyReciBook</span>
         </NuxtLink>
         <span class="est">{{ $t('layout.est') }}</span>
         <nav class="tabs">
-          <NuxtLink to="/#recipe" class="tab" style="transform: translateY(1px)">{{ $t('layout.tabRecipe') }}</NuxtLink>
-          <NuxtLink to="/#cards" class="tab tab-alt" style="transform: translateY(3px)">{{ $t('layout.tabCards') }}</NuxtLink>
-          <NuxtLink to="/#price" class="tab" style="transform: translateY(2px)">{{ $t('layout.tabPrice') }}</NuxtLink>
-          <NuxtLink to="/#yours" class="tab tab-alt" style="transform: translateY(4px)">{{ $t('layout.tabYours') }}</NuxtLink>
+          <NuxtLink :to="localePath({ path: '/', hash: '#recipe' })" class="tab" style="transform: translateY(1px)">{{ $t('layout.tabRecipe') }}</NuxtLink>
+          <NuxtLink :to="localePath({ path: '/', hash: '#cards' })" class="tab tab-alt" style="transform: translateY(3px)">{{ $t('layout.tabCards') }}</NuxtLink>
+          <NuxtLink :to="localePath({ path: '/', hash: '#price' })" class="tab" style="transform: translateY(2px)">{{ $t('layout.tabPrice') }}</NuxtLink>
+          <NuxtLink :to="localePath({ path: '/', hash: '#yours' })" class="tab tab-alt" style="transform: translateY(4px)">{{ $t('layout.tabYours') }}</NuxtLink>
         </nav>
         <div class="lid-actions">
           <UDropdownMenu :items="localeItems">
@@ -70,9 +73,9 @@ const localeItems = computed(() =>
         </span>
         <span class="foot-line">{{ $t('layout.footLine') }} <a href="https://merkurial-studio.com" class="foot-link">Merkurial-Studio.com</a> · <a href="https://avj.info" class="foot-link">avj.info</a></span>
         <nav class="foot-nav">
-          <NuxtLink to="/privacy">{{ $t('layout.privacy') }}</NuxtLink>
-          <NuxtLink to="/terms">{{ $t('layout.terms') }}</NuxtLink>
-          <NuxtLink to="/contact">{{ $t('layout.contact') }}</NuxtLink>
+          <NuxtLink :to="localePath('/privacy')">{{ $t('layout.privacy') }}</NuxtLink>
+          <NuxtLink :to="localePath('/terms')">{{ $t('layout.terms') }}</NuxtLink>
+          <NuxtLink :to="localePath('/contact')">{{ $t('layout.contact') }}</NuxtLink>
         </nav>
       </div>
     </footer>

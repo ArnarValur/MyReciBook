@@ -25,11 +25,13 @@
   cookbook_view ×2 still red — stale "no covers in list view" asserts, lib right.
 - starter_foods green ≠ USDA verification — it pins the unverified transcription.
 - Cadence: analyze between changes → touched files warm → full suite at bedtime.
-- website/ — card-box landing complete in Nuxt 4: index + privacy/terms/contact
-  (drafts, stamped) + 404, SEO formal, dark mode, 410px pass, $25 placeholder.
-  i18n foundation: en-only, frontpage + layout keyed, UK-flag switcher;
-  privacy/terms/contact/404 still English literals. Flags: website/copy-notes.md.
-  Staging (noindex): myrecibook-website-staging-213431165631.europe-west1.run.app.
+- website/ — Nuxt 4 card-box landing, SEO formal, dark mode. i18n: en + is + sv
+  drafted from en.json, layout links locale-safe via localePath. Icelandic under
+  Arnar's rewording (draft too formal); Swedish awaits Höddi's review.
+  Frontpage + layout keyed; privacy/terms/contact/404 still English literals —
+  /is/ and /sv/ fall back to English there. Flags: website/copy-notes.md.
+  Staging (noindex): myrecibook-website-staging-213431165631.europe-west1.run.app
+  — redeployed with both languages 2026-08-30.
 
 ## 🚀 Active tracks
 - mvp-build — server deployed, onboarding shipped, rescue polished, extraction

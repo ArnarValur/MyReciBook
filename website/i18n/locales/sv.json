@@ -1,0 +1,137 @@
+{
+  "layout": {
+    "est": "Grundad i din kamerarulle",
+    "tabRecipe": "Receptet",
+    "tabCards": "Korten",
+    "tabPrice": "Priset",
+    "tabYours": "Behåll det",
+    "lamp": "Tänd eller släck lampan",
+    "language": "Byt språk",
+    "footLine": "Stickat och bakat av",
+    "privacy": "Integritet",
+    "terms": "Villkor",
+    "contact": "Kontakt"
+  },
+  "index": {
+    "seo": {
+      "title": "MyReciBook — Rädda recepten som ligger begravda i din kamerarulle",
+      "description": "MyReciBook gör om receptskärmdumpar, länkar och handskrivna kort till en kokbok du äger. Vanliga filer på din telefon. Betala en gång. Laga mat för alltid. Android.",
+      "ogTitle": "MyReciBook — Rädda recepten som ligger begravda i din kamerarulle",
+      "ogDescription": "Skärmdumpar, länkar och mormors kort blir en kokbok du äger — vanliga filer, på din telefon. Ingen prenumeration. Inget konto. Aldrig."
+    },
+    "hero": {
+      "scatterCaption": "IMG_2041.jpg — mormors kort",
+      "cardNo": "RECEPT NR 001",
+      "cardFrom": "Från köket hos · dig",
+      "titlePre": "Rädda recepten som ligger begravda i din",
+      "titleMark": "kamerarulle.",
+      "lede": "MyReciBook läser skärmdumpar, länkar och handskrivna kort — och sorterar in dem i en kokbok du faktiskt äger. På din telefon, som ett kort i en låda. Ingen prenumeration. Inget konto. Aldrig.",
+      "ctaRescue": "Rädda ditt första recept",
+      "ctaQuiet": "Läs receptet på den här appen ↓",
+      "marginalia": "mormors handstil funkar fint — vi läser skrivstil",
+      "stampTop": "Betala en gång",
+      "stampBottom": "laga mat för alltid",
+      "checks": [
+        "Dina recept stannar på din telefon",
+        "Google Drive och Dropbox finns för backup",
+        "Att skriva in dem själv är alltid obegränsat"
+      ]
+    },
+    "recipe": {
+      "cardNo": "RECEPT NR 002",
+      "title": "En kokbok du äger",
+      "meta": "Förberedelse: 30 sek · Räcker till: dig, för alltid",
+      "ingredientsLabel": "Ingredienser",
+      "methodLabel": "Gör så här",
+      "ingredients": [
+        "<strong>1</strong> kamerarulle full med skärmdumpar",
+        "<strong>1</strong> Android-telefon",
+        "<strong>1 200</strong> AI-räddningar per år — påfyllning om de tar slut",
+        "<strong>0</strong> prenumerationer, <strong>0</strong> konton",
+        "en nypa tålamod medan den läser skrivstil"
+      ],
+      "steps": [
+        "Dela en skärmdump, klistra in en länk eller fota mormors kort med kameran.",
+        "AI:n gör om det till ett riktigt recept — ingredienser, steg och tider — och visar resultatet så att du kan granska innan det sparas.",
+        "Sortera in det i din bok. Det bor på din telefon; exportera en PDF eller ett dokument när du vill."
+      ],
+      "spineNote": "testad 1 200 gånger per år"
+    },
+    "cards": {
+      "heading": "Det som ligger i lådan",
+      "hint": "bläddra igenom ↓",
+      "features": {
+        "cookMode": {
+          "tab": "Kort 04",
+          "title": "Matlagningsläge",
+          "body": "Ett steg i taget med stor, kökstålig text. Tryckytor gjorda för mjöliga tummar, timers inbyggda."
+        },
+        "grocery": {
+          "tab": "Kort 05",
+          "title": "Inköpslista",
+          "body": "”9 varor · från 3 planerade recept” — sammanslagen, utan dubbletter, och den frågar innan 2 citroner slås ihop med 4."
+        },
+        "pantry": {
+          "tab": "Kort 06",
+          "title": "Skafferiet",
+          "body": "Koll på vad som finns på hyllan. Kategorier fälls ihop, det senaste flyter upp och inköpslistan stämmer av mot skafferiet."
+        },
+        "diary": {
+          "tab": "Kort 07",
+          "title": "Matdagbok",
+          "body": "Logga måltider direkt från dina recept och ditt skafferi — inget dubbelskrivande. Trender visar din vecka utan pekpinnar."
+        },
+        "barcode": {
+          "tab": "Kort 08",
+          "title": "Streckkodsläsare",
+          "body": "Rikta den mot förpackningen. Open Food Facts fyller i varan och näringen — de flesta länder täcks."
+        },
+        "nutrition": {
+          "tab": "Kort 09",
+          "title": "Näringskoll",
+          "body": "Energi, makro och mikro per dag, vecka och år — med täckning du faktiskt ser, inte bara summor."
+        }
+      }
+    },
+    "pocket": {
+      "title": "Lådan, i din ficka.",
+      "lede": "Recept utan omslag ärver ett färgomslag, valt utifrån titeln så att det aldrig ändras. Sök, filter och dina hyllor — en tumme, en skärm.",
+      "pointBarcode": "Streckkodsläsare med Open Food Facts bakom — de flesta länder täcks",
+      "pointTrends": "Näringstrender per dag, vecka och år — utan pekpinnar",
+      "pointTheme": "Stitch Slate på dagen, Midnight på natten"
+    },
+    "rescue": {
+      "heading": "En räddning, från början till slut",
+      "hint": "riktiga skärmdumpar, inga attrapper",
+      "step1Alt": "En receptskärmdump begravd i kamerarullen",
+      "step1Caption": "Skärmdumpen, som den hittades",
+      "step2Alt": "Det räddade receptet, visat för granskning innan det sparas",
+      "step2Caption": "Räddat — du granskar innan det sparas",
+      "step3Alt": "Den färdiga receptsidan, omräknad till metriskt",
+      "step3Caption": "Insorterat i din bok — i dina enheter",
+      "note": "cups blev gram på vägen — varsågod"
+    },
+    "price": {
+      "onetime": "En gång",
+      "cardNo": "RECEPT NR 003 · PRISET",
+      "amount": "$25",
+      "note": "en gång. Som en bra kniv.",
+      "checks": [
+        "Allt — kokbok, matlagningsläge, inköp, skafferi, dagbok",
+        "1 200 AI-räddningar per år — ingår i priset",
+        "Skriva in recept själv — alltid obegränsat",
+        "Tog de slut? Fyll på AI:n — fortfarande ingen prenumeration"
+      ],
+      "cta": "Skaffa MyReciBook",
+      "fine": "Ingen prenumeration. Inget konto. Aldrig."
+    },
+    "yours": {
+      "title": "Om MyReciBook försvann imorgon<br>skulle dina recept inte göra det, om inte...",
+      "lede": "Din kokbok bor nämligen på din telefon — inte på någon annans molnserver. Men du kan säkerhetskopiera till Drive eller Dropbox och exportera vilket recept som helst som PDF eller andra format.<br><b>Så om du tappar telefonen i en vulkan är dina data räddade. :)</b>",
+      "slipPdf": "PDF",
+      "slipDoc": "Dokument",
+      "slipSend": "Skicka en kopia",
+      "envelope": "Din · Utskrivbar · Portabel"
+    }
+  }
+}
