@@ -35,6 +35,7 @@ import 'domain/app_language.dart';
 import 'domain/extractor.dart';
 import 'ui/app_shell.dart';
 import 'ui/batch_model.dart';
+import 'ui/byok_model.dart';
 import 'ui/cookbook_prefs.dart';
 import 'ui/crash_reporting_model.dart';
 import 'ui/tags_model.dart';
@@ -170,6 +171,7 @@ Future<void> main() async {
   final cookbookPrefs = CookbookPrefs(settings: settings);
   final unitsModel = UnitsModel(settings: settings);
   final languageModel = LanguageModel(settings: settings);
+  final byokModel = ByokModel(settings: settings);
 
   final picker = ImagePicker();
   // App Check proves to the proxy that this really is our app on a real
@@ -179,6 +181,8 @@ Future<void> main() async {
   final extractor = GeminiExtractor(
     installId: installId,
     appCheckToken: appCheck?.token,
+    // BYOK: a user key flips the transport to direct Gemini per call.
+    byokKey: () => byokModel.key,
   );
   Future<List<File>> pickImages() async => [
     for (final x in await picker.pickMultiImage()) File(x.path),
@@ -243,6 +247,7 @@ Future<void> main() async {
           cookbookPrefs: cookbookPrefs,
           unitsModel: unitsModel,
           languageModel: languageModel,
+          byokModel: byokModel,
           crashLog: crashLog,
           crashReporting: crashReporting,
           onGrantLost: onGrantLost,
@@ -278,6 +283,7 @@ Widget buildApp({
   CookbookPrefs? cookbookPrefs,
   UnitsModel? unitsModel,
   LanguageModel? languageModel,
+  ByokModel? byokModel,
   CrashLog? crashLog,
   CrashReportingModel? crashReporting,
   VoidCallback? onGrantLost,
@@ -316,6 +322,12 @@ Widget buildApp({
       ChangeNotifierProvider<LanguageModel>.value(value: languageModel)
     else
       ChangeNotifierProvider<LanguageModel>(create: (_) => LanguageModel()),
+    // Same .value rule; the inert default has no key — proxy mode, the
+    // exact pre-BYOK behavior, so the test seam stays unchanged.
+    if (byokModel != null)
+      ChangeNotifierProvider<ByokModel>.value(value: byokModel)
+    else
+      ChangeNotifierProvider<ByokModel>(create: (_) => ByokModel()),
     // Plain Provider (not a notifier): the settings footer door reads it
     // on demand. Inert default keeps the test seam file-free.
     Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),

@@ -213,6 +213,11 @@ void main() {
     await openSettings(tester);
 
     // Inert StorageModel → the honest local-only caption, nothing more.
+    // The quota counter card (2026-08-30) pushed this row below the 360dp
+    // fold — scroll it into view, same story as the footer helper above.
+    await tester.scrollUntilVisible(find.text('Where your recipes live'), 120,
+        scrollable: find.byType(Scrollable).last);
+    await tester.pump();
     expect(find.text('Where your recipes live'), findsOneWidget);
     expect(find.text('This phone'), findsOneWidget);
     expect(find.textContaining('synced'), findsNothing);

@@ -132,3 +132,45 @@
   It says "not today", never "never".
 - When billing lands: seed graceUntil from Google's purchaseTimeMillis, or a
   reinstall restarts the free fortnight.
+- Top-up decided 2026-08-30 (Arnar): **+1200 rescues, $5 flat, never expires.**
+  One pack, round number, no .99 pricing. Details + guard rail in
+  docs/ai-cap-mechanics.md §5; scratchpad has the math.
+- [ ] **Quota counter UI (app side)** — the proxy already returns the full
+  `quota` object ({used, cap, grace_used, topup_balance, resets_at,
+  grace_until}) in every /extract response; nothing new server-side.
+  STARTED 2026-08-30: QuotaCounterCard atop Settings (bar + "N of 1,200
+  requests left", cog → BYOK dialog) — demo numbers, unwired. Remaining:
+  cache the latest quota from each response and feed the card, show it on
+  the import sheet + paywall,
+  "Uses 1 of your 1,200" line before AI paths, grace-window wording ("still in
+  your free two weeks") while grace_until is in the future, distinct
+  daily-limit message (never confuse the 50/day governor with the cap), two
+  nudges only (~80% and empty; empty leads with "Type it in — always free"
+  before the $5 top-up). Promote the 4d preview screen when this lands.
+  Design source: docs/ai-cap-mechanics.md §2.
+
+## Parked — post-launch
+- **BYOK (bring your own key)** — agreed 2026-08-30; BUILT same day on
+  Arnar's "proceed" (unparked from post-launch): key in device.json via
+  ByokModel (never rides backup), GeminiExtractor byokKey supplier flips
+  every AI call (rescue, link fallback, label read) to direct Gemini on the
+  user's key, save/replace/remove dialog behind the counter card's cog with
+  the plain-words free-tier training warning. OPEN: buyers-only gate waits
+  for the billing seam (today every install sees it) · key plaintext until
+  the pre-prod keystore hardening (tokens.json stance) · no on-device run
+  with a real user key yet · no BYOK test coverage.
+  Original rationale — the extractor's direct-Gemini transport already exists
+  (dev mode); BYOK points it at a user-entered key. The old F3 rule ("public
+  build must never ship a key") was about OUR key in the APK — a user's own
+  key is theirs, on their device, their bill. BYOK users cost us $0 and exit
+  the fair-use counter entirely. Three guard rails, all required:
+  1. Privacy warning in plain words on the settings screen: Google's FREE
+     Gemini tier trains on what you send, the paid tier doesn't — a BYOK
+     user's screenshots run under their key's terms, not ours.
+  2. Behind the unlock — a buyer's perk, never a free-tier backdoor. No cap
+     UI in BYOK mode; their Google console is their meter.
+  3. Key in Android encrypted storage, excluded from backups, sent nowhere
+     but Google.
+  Placement: "Advanced" in settings, never marketed, never in the listing.
+  Known cost: "my key doesn't work" support mail — low-key placement keeps
+  it rare.

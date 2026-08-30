@@ -1,53 +1,53 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
-*Live state and open questions ONLY. A shipped feature belongs in its track plan.*
 
 > **Updated:** 2026-08-30
 
 ## 📍 Now
-- Phase: build. 0.19.0+39 on main and on the phone. Branch i18n sits at 0.11.0+10.
-- APKs ONLY via app/deploy-s21.sh — a plain `flutter build apk` ships no proxy
+- Phase: build. 0.19.0+39 on main; branch i18n at 0.11.0+10. No bump this
+  session — counter/BYOK await device verify.
+- Phone currently carries a DEBUG install (Arnar's IDE session) — a release
+  APK won't install over it (signature mismatch); uninstall or IDE-run.
+- APKs ONLY via app/deploy-s21.sh — plain `flutter build apk` ships no proxy
   URL and placeholder connector keys. docs/runbook-dev-deploy.md §5.
-- Extraction prompt v2 live on +39: trimmed model schema, line_id splitting,
-  bucket confidence normalized at the extractor seam, review groups split
-  lines. Arnar's re-rescue of the Filled Cookies card pending — run variance
-  on prose sections is the thing to watch. Handoff remainder in mvp-build plan.
-- Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Gemini key in
-  Secret Manager only; app/dev.env holds server URL + Drive/Dropbox keys.
+- Quota counter: QuotaCounterCard atop Settings — bar, "N of 1,200 requests
+  left", demo numbers, unwired to the proxy's quota object yet.
+- BYOK live in code (Arnar's go): key via cog dialog on the card →
+  device.json (never rides backup), flips every AI call to direct Gemini on
+  the user's key, no cap UI in BYOK mode. Open: buyers-only gate waits for
+  billing seam (today everyone sees it) · plaintext until keystore
+  hardening · no real-key run · no tests.
+- Top-up decided: +1200 rescues, $5 flat, never expires (ai-cap §5).
+- Extraction v2 live on +39. Arnar's re-rescue of the Filled Cookies card
+  pending — run variance on prose sections is the watch item.
+- Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Gemini
+  key in Secret Manager only; app/dev.env holds URL + connector keys.
 - gcloud lives in ~/google-cloud-sdk/bin, not on PATH.
-- Offer in code: pay once; AI grace two weeks free, then 1200 rescues/year.
-  Limits 10/min, 50/day per buyer, 2000/day overall. Price tag NOT decided
-  ($25 on the site is placeholder). Crash reporting ON, recipe text scrubbed.
-- Tester link still on build 9. Play account live, nothing uploaded. Play app
-  entry not created — create as FREE + one-time IAP (trial needs free install).
-- Test comb of all 72 files: docs/test-comb-2026-08-29.md — repairs proposed
-  (icon-binding hole, arb tautology, 5 coverage holes), Arnar undecided.
-  cookbook_view ×2 still red — stale "no covers in list view" asserts, lib right.
-- starter_foods green ≠ USDA verification — it pins the unverified transcription.
-- Cadence: analyze between changes → touched files warm → full suite at bedtime.
-- website/ — Nuxt 4 card-box landing, SEO formal, dark mode. i18n: en + is + sv
-  drafted from en.json, layout links locale-safe via localePath. Icelandic under
-  Arnar's rewording (draft too formal); Swedish awaits Höddi's review.
-  Frontpage + layout keyed; privacy/terms/contact/404 still English literals —
-  /is/ and /sv/ fall back to English there. Flags: website/copy-notes.md.
-  Staging (noindex): myrecibook-website-staging-213431165631.europe-west1.run.app
-  — redeployed with both languages 2026-08-30.
+- Offer in code: pay once; AI grace two weeks free, then 1200/year. Limits
+  10/min, 50/day, 2000/day overall. Price tag NOT decided ($25 placeholder).
+- Play: account live, nothing uploaded; entry must be FREE + one-time IAP.
+- Test comb docs/test-comb-2026-08-29.md — repairs proposed, Arnar
+  undecided. cookbook_view ×2 still red (stale asserts, lib right).
+- Cadence: analyze between changes → touched files warm → full suite at
+  bedtime. KGP warning (firebase_app_check, mobile_scanner): bump when
+  migrated versions land, nothing now.
+- website/ — Nuxt 4 landing, en + is + sv drafts; Icelandic awaits Arnar's
+  rewording, Swedish awaits Höddi. privacy/terms/contact/404 still English.
+  Staging (noindex) redeployed 2026-08-30 with both languages.
 
 ## 🚀 Active tracks
-- mvp-build — server deployed, onboarding shipped, rescue polished, extraction
-  v2 live. Open: card re-rescue, handoff remainder, privacy policy, Play data
-  safety form, welcome slide screenshots, billing seam (unstarted).
-- diary — meal hours, cold start, photo cards shipped. Open: device verify ·
-  oats label re-read · starter_foods.dart UNVERIFIED vs USDA, his run.
-- tags — shelf + editor shipped. Open: strings are English literals.
+- mvp-build — counter card + BYOK in code. Open: quota feed, billing seam,
+  privacy policy, data safety form, welcome screenshots, card re-rescue.
+- diary — open: device verify · oats label re-read · starter_foods vs USDA.
+- tags — open: strings are English literals.
 - nutrition — open: grocery package-size math, serving-label conversion.
 - i18n — foundation on branch i18n; control HIDDEN until one language done.
 
 ## ⚠️ Blockers
-- Play: 12 testers × 14 days before production. Arnar recruiting; app entry +
-  merchant profile not yet created in Play Console.
+- Play: 12 testers × 14 days before production. Arnar recruiting; app entry
+  + merchant profile not created in Play Console.
 - Privacy policy + data safety form: website draft awaits Arnar's approval.
 
 ## 📌 Parked
-- share-a-copy invite text + PDF footer breadcrumb (Arnar's new session) · quick add · typed custom emoji · net-weight landing · skipped-files list · day-rollover hour · index-file pantry cache.
+- share-a-copy invite text + PDF footer breadcrumb (Arnar's session) · quick add · typed custom emoji · net-weight landing · skipped-files list · day-rollover hour · index-file pantry cache.
 - feedback channel · serving rescale · step ↔ ingredient chips · label-photo fallback · copy-to-date UI · row reorder · multi-barcode · orphan image cleanup · listicle import · accessibility pass · Dropbox approval · Play key backup · audit H2, M1-M6, L1-L4 · website OG per-page images.

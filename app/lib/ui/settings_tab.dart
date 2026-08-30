@@ -32,6 +32,7 @@ import 'theme_model.dart';
 import 'language_model.dart';
 import 'language_screen.dart';
 import 'units_model.dart';
+import 'widgets/quota_counter_card.dart';
 import 'widgets/skin.dart';
 
 class SettingsTab extends StatelessWidget {
@@ -263,6 +264,10 @@ class SettingsTab extends StatelessWidget {
               // Bottom clearance for the glass bar, grocery-tab convention.
               padding: EdgeInsets.fromLTRB(20, 14, 20, navBarClearance(context)),
               children: [
+                // Quota counter — visuals first (Arnar 2026-08-30): demo
+                // numbers until the proxy's quota object is cached app-side.
+                const QuotaCounterCard(used: 0, cap: 1200),
+                const SizedBox(height: 20),
                 SectionLabel(context.l10n.sectionTheme),
                 const SizedBox(height: 8),
                 Container(

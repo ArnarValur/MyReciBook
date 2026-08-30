@@ -73,7 +73,7 @@ Product promises stay quiet — the dashed info card, not a banner.
 **Tone examples (verbatim):**
 - Empty book: "Your book is empty (for now)" / "Somewhere in your camera roll, a pile of recipes is waiting to be rescued." → CTA "Rescue your first recipe"
 - Extraction failed: "That one kept its secrets" (reserved for genuine no-recipe reads; offline → "You're offline", rate-limit → "Give it a minute")
-- Cap reached: "You've rescued a lot this year" — kept-promise framing, resets 1 January
+- Cap reached: "You've rescued a lot this year" — kept-promise framing
 - Batch queue: "1 needs your eyes" · "Not a recipe? We skip it and say so — no junk lands in your book."
 - Import sheet: "Add to your book" · camera row "cookbook or grandma's card — handwriting welcome" · manual row "no AI, no cap — always unlimited"
 - Snackbars are receipts, not celebrations: "Notes saved", "Added to grocery — checked-off items skipped"

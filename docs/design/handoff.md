@@ -64,7 +64,7 @@ Bottom glass NavBar, floating (`extendBody: true`): 56dp pill, 4 tabs split 2+2 
 8. **Storage setup (3h)** — post-alpha connectors. This phone (default, selected) · Drive (`drive.file` app-folder) · Dropbox · on-disk JSON preview · "If MyReciBook vanished tomorrow, your recipes wouldn't."
 9. **Grocery list (4a)** — post-alpha, the retention layer (§6.3): sync receipt banner · merge prompt (suggest-and-confirm) · remembered aisles ("your aisle" pin) · quiet staples.
 10. **Extraction failed (4c)** — "That one kept its secrets" · three reassurances: gallery untouched, nothing deleted, cap unspent · Try again / Type it in by hand (manual entry post-alpha).
-11. **Cap reached (4d)** — post-alpha. Kept-promise framing · 600/600 meter · hand-entry always unlimited · **$2.99 top-up = unconfirmed product decision, behind `kTopUpEnabled` flag** (§6.2 Mechanism B).
+11. **Cap reached (4d)** — post-alpha. Kept-promise framing · 1200/1200 meter · hand-entry always unlimited · **top-up decided 2026-08-30: +1200 rescues, $5 flat, never expires** — still behind `kTopUpEnabled` until the consumable IAP exists (ai-cap-mechanics.md §5).
 
 ## Interactions (cross-screen)
 - Import entry points: FAB → sheet; Android share sheet → same pipeline (T3 next step).

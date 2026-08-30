@@ -145,7 +145,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                     crossAxisCount: 2,
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
-                    mainAxisExtent: 168,
+                    mainAxisExtent: 172,
                   ),
                   children: [for (final r in carriers) _RecipeCard(recipe: r)],
                 )
@@ -244,7 +244,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                                           crossAxisCount: 2,
                                           mainAxisSpacing: 12,
                                           crossAxisSpacing: 12,
-                                          mainAxisExtent: 168,
+                                          mainAxisExtent: 172,
                                         ),
                                     delegate: SliverChildBuilderDelegate(
                                       (context, i) =>
@@ -291,7 +291,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                                   crossAxisCount: 2,
                                   mainAxisSpacing: 12,
                                   crossAxisSpacing: 12,
-                                  mainAxisExtent: 168,
+                                  mainAxisExtent: 172,
                                 ),
                             delegate: SliverChildBuilderDelegate(
                               (context, i) => _RecipeCard(recipe: recipes[i]),

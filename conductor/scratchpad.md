@@ -78,6 +78,12 @@ Sequence, not schedule. Finish line: Arnar installs MyReciBook from Play + landi
   against ~$21.24 net per sale. Fleet cost follows real usage (~150/yr), not the cap.
 - Nothing prints in the listing until closed-test usage data confirms.
 - Once printed, 1200 can rise, never fall.
+- Top-up decided 2026-08-30 (Arnar): **+1200 rescues, $5 flat, never expires.**
+  Round number, no .99 games — "another year's worth for five dollars" (≈50 NOK).
+  Math: full pack costs ~$3.84 blended, $5 nets ~$4.25 after Play 15% — thin but
+  positive; top-ups aren't the profit line, the unlock is. Guard: bought packs
+  never expire (unchanged), but price/size of *future* packs may change if model
+  pricing moves — the generosity valve. Replaces the +100/$2.99 working example.
 
 Parked by Arnar for another session: tester recruitment / branching out to networks —
 he has ideas, ask him there.

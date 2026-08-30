@@ -114,8 +114,7 @@ always current with zero extra calls.
 ## 2 · How users see what's left
 
 - A quiet, permanent counter where the decision happens — the import sheet and
-  the paywall, not buried in settings: **"487 of 600 rescues left — resets 12
-  March."** The proxy returns the balance in every response; the app caches it;
+  the paywall, not buried in settings: **"487 of 600 rescues left. The proxy returns the balance in every response; the app caches it;
   zero extra network calls.
 - One line on the import sheet before an AI path: "Uses 1 of your 600."
 - Exactly two proactive nudges: at ~80% ("480 of 600 used — plenty left, just so
@@ -189,9 +188,17 @@ constraint holds.
 
 ## 5 · How users tap more AI when the year's allowance runs out
 
-**Shape: one-off consumable packs that never expire.** Working example:
-"+100 rescues — $2.99" (our cost ~$0.32, net after fee ~$2.54). Price is a
-later call; the shape is the decision.
+**Shape: one-off consumable packs that never expire.** Decided 2026-08-30
+(Arnar): **one pack — "+1200 rescues, $5 flat, never expires."** Another full
+year's worth, one round number, no .99 charm pricing (deliberate — it's the
+anti-dark-pattern brand; ≈50 NOK). Math: a fully consumed
+pack costs ~$3.84 blended ($6.72 all-worst-path), $5 nets ~$4.25 after Play's
+15% — thin but positive, and top-up buyers are self-selected power users so
+assume high consumption. Top-ups are not the profit line; the unlock is.
+Guard: bought packs never expire (promise, unchanged), but the price and size
+of *future* packs may change if model pricing moves against us — that valve is
+what makes the flat generous price safe to print. (Earlier working example
+"+100 — $2.99" superseded.)
 
 - Play mechanics: a consumable product. The proxy verifies it, **credits the
   ledger first, then consumes it server-side** — consumed purchases vanish from

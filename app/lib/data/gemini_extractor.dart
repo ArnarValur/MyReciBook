@@ -7,6 +7,10 @@
 //  - else GEMINI_API_KEY via --dart-define → direct Gemini, key on device.
 //    Dev/closed-track mode only; a public build must never ship this way
 //    (senior review F3).
+//  - [byokKey] returning a key overrides both per call → direct Gemini on
+//    the USER's own key (BYOK, mvp-build plan 2026-08-30). F3 forbade OUR
+//    key in a public APK; a user's key is theirs, on their device, their
+//    bill — no install id, no App Check, our counter never sees the call.
 
 import 'dart:async';
 import 'dart:convert';
@@ -40,6 +44,11 @@ class GeminiExtractor implements Extractor, LabelReader {
   /// unenforced. Returning null per call is equally survivable.
   final Future<String?> Function()? appCheckToken;
 
+  /// Live read of the user's own Gemini key (ByokModel); null/empty = the
+  /// normal proxy/dev transport. A supplier, not a value, so flipping BYOK
+  /// in Settings takes effect on the next call without rebuilding this.
+  final String? Function()? byokKey;
+
   final Duration timeout;
   final http.Client _client;
 
@@ -49,6 +58,7 @@ class GeminiExtractor implements Extractor, LabelReader {
       String? proxyUrl,
       this.installId = '',
       this.appCheckToken,
+      this.byokKey,
       this.timeout = const Duration(seconds: 120),
       http.Client? client})
       : apiKey = apiKey ?? _apiKey,
@@ -172,15 +182,17 @@ class GeminiExtractor implements Extractor, LabelReader {
 
   Future<Map<String, dynamic>> _generate(
       List<Map<String, dynamic>> parts) async {
-    final viaProxy = proxyUrl.isNotEmpty;
-    if (!viaProxy && apiKey.isEmpty) {
+    final byok = byokKey?.call()?.trim() ?? '';
+    final viaProxy = byok.isEmpty && proxyUrl.isNotEmpty;
+    final key = byok.isNotEmpty ? byok : apiKey;
+    if (!viaProxy && key.isEmpty) {
       throw ExtractionException('No API key — build with '
           '--dart-define=GEMINI_API_KEY=... or EXTRACTION_PROXY_URL=...');
     }
     final uri = viaProxy
         ? Uri.parse('$proxyUrl/v1beta/models/$model:generateContent')
         : Uri.parse(
-            'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey');
+            'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$key');
     // Fetched per call, but the Firebase SDK caches and pre-refreshes, so
     // this is a memory read in the common case. Only the proxy path needs it:
     // Gemini direct is a dev-only mode and has no App Check.

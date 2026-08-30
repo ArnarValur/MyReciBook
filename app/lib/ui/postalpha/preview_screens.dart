@@ -5,8 +5,9 @@
 //
 // Product guardrails carried from the handoff spec:
 // - Paywall states the fair-use cap in writing (constraint 2).
-// - Cap screen's $2.99 top-up is an UNCONFIRMED product decision — it stays
-//   behind [kTopUpEnabled] until decided (report §6.2 Mechanism B).
+// - Cap screen's top-up DECIDED 2026-08-30 (Arnar): +1200 rescues, $5 flat,
+//   never expires (docs/ai-cap-mechanics.md §5). Stays behind [kTopUpEnabled]
+//   until the consumable IAP exists.
 // - Grocery merge is suggest-and-confirm, never silent (§6.3).
 
 import 'package:flutter/material.dart';
@@ -545,7 +546,7 @@ class CapReachedPreview extends StatelessWidget {
               if (kTopUpEnabled) ...[
                 FilledButton(
                     onPressed: () => _notWired(context, 'The top-up pack'),
-                    child: const Text('Add 200 rescues — \$2.99')),
+                    child: const Text('Add 1,200 rescues — \$5')),
                 const SizedBox(height: 8),
               ],
               TextButton(

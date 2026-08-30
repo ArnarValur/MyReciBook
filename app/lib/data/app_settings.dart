@@ -31,7 +31,7 @@ class AppSettings {
 
   /// Keys that live in device.json instead of settings.json. Adding one here
   /// is the whole mechanism — [_write] and the getters route on this set.
-  static const _deviceKeys = {'tree_uri', 'onboarding_seen'};
+  static const _deviceKeys = {'tree_uri', 'onboarding_seen', 'byok_key'};
 
   /// [deviceFile] defaults to `device.json` beside [file]. Pass it explicitly
   /// only to point the two somewhere else.
@@ -86,6 +86,18 @@ class AppSettings {
     final v = _device['onboarding_seen'];
     return v is int && v > 0 ? v : 0;
   }
+
+  /// User-supplied Gemini API key (BYOK); null = use our proxy. Lives in
+  /// device.json so a secret never rides cloud backup or D2D transfer.
+  /// Plaintext at the alpha bar — joins tokens.json in the pre-prod
+  /// keystore hardening.
+  String? get byokKey {
+    final v = _device['byok_key'];
+    return v is String && v.isNotEmpty ? v : null;
+  }
+
+  Future<void> setByokKey(String? key) =>
+      _write('byok_key', key == null || key.isEmpty ? null : key);
 
   /// One-shot local→SAF migration already ran.
   bool get migrationDone => _data['migration_done'] as bool? ?? false;

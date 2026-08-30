@@ -1,6 +1,15 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-30 — the counter gets a face, BYOK goes from parked to code
+
+- Shipped: QuotaCounterCard atop Settings (demo numbers, no proxy feed) with
+  cog → own-Gemini-key dialog; BYOK end to end — device.json key, every AI
+  call flips to direct Gemini; grid cards 168→172 (3px overflow). No bump.
+- Broke: dialog controller disposed mid-close animation — fixed same hour.
+- Arnar: no request-gating for BYOK, the unlock is the gate · cog lives on
+  the counter card. UNFINISHED: quota feed to the card · his re-rescue on +39.
+
 ## 2026-08-30 — the website tries Icelandic and Swedish
 
 - Shipped: is.json + sv.json drafted from en.json, locales + flags wired,
