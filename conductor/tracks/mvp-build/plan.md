@@ -95,8 +95,12 @@
 - [ ] Handoff remainder: deterministic app-side review flags (digits but no
       qty, " each "/" or " in raw, shared line_id), regression fixtures from
       both runs, prefix-caching check.
-- [ ] Privacy policy URL + Play data safety form. Nothing written; blocks
-      submission. Five things leave the device and all must be declared.
+- [ ] Privacy policy URL + Play data safety form. A privacy page and a terms
+      page are drafted and live on the staging site (website/app/pages/
+      privacy.vue and terms.vue). What is still missing: Arnar's approval of
+      the wording, a public URL that is not the noindex staging one, and the
+      Play data safety form itself, where five things that leave the device
+      all have to be declared. Blocks submission.
 - [ ] Require the app-proof check on the server once a build carrying tokens is
       on the internal track. Until then the server trusts a header the client
       invents. Sideloaded builds cannot attest — Play Integrity only vouches

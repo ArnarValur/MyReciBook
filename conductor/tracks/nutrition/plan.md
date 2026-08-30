@@ -23,22 +23,28 @@ flag until wired.
 - [x] Metric mode leaves tsp/tbsp as written — spoons are universal
       (Arnar 2026-08-19); imperial still prints small ml as spoons
 
-## Open
-- [ ] Density table for staples (cup of flour → grams; volume stays volume until
-      then). Same parse should feed serving rescale and grocery merge.
-- [ ] Link imports (JSON-LD path) leave qty/unit/item null — ingredient parse
-      needed before the unit toggle and nutrition math cover them.
-- [ ] Per-serving calculator
-- [ ] Nutrition badge on the recipe
-- [ ] Product edit screen — Open Food Facts data is sometimes wrong and 46 older
-      products keep the old seven values until rescanned
+## Built and on main — confirmed against the code 2026-08-30
+- [x] Density table for staples — densityTable in domain/recipe_nutrition.dart,
+      read by ingredientGrams, so a cup of flour weighs grams
+- [x] Per-serving calculator — recipeNutrition() + servingsAmount()
+- [x] Nutrition badge on the recipe — NutritionBlock in recipe_detail_screen
+- [x] Product edit screen — ui/pantry/product_page.dart, one autosaving page
+- [x] Manual product entry — ui/pantry/manual_product_screen.dart
+- [x] Meal-plan totals — Meal.total and Day.total in domain/diary.dart
+- [x] Label-photo read — GeminiExtractor.extractLabel + domain/label_read.dart,
+      wired into manual product entry
 - [x] Package-size math in the grocery list — 2026-08-30. Pack size parsed off
       Product.quantity (units.dart), count rounded up, row reads
       "750 g Flour · 2 × 500 g". Silent below 2 packs and on bare numbers,
-      worded sizes, or cups against a weight pack (needs the density table).
-- [ ] Label-photo fallback through the extraction pipeline
-- [ ] Manual product entry
-- [ ] Meal-plan totals
+      worded sizes, or cups against a weight pack.
+
+## Open
+- [ ] Link imports (the JSON-LD path in data/link_extractor.dart) still save
+      ingredient lines with no quantity, unit or item. Nutrition math papers
+      over it by re-parsing the raw line at render; the saved file stays bare,
+      so the units toggle still cannot convert those lines.
+- [ ] Serving labels ignore the units toggle — see the note below.
+- [ ] 46 older products still hold the old seven nutrient values until rescanned.
 
 ## Declined — do not re-queue
 - Remembered ingredient → product links. Declined by Arnar 2026-08-18.

@@ -38,7 +38,9 @@
 ## 🚀 Active tracks
 - mvp-build — open: billing seam, privacy policy, data safety form, welcome
   screenshots, card on the import sheet + paywall, closed test on Play.
-- nutrition — open: manual product entry, meal totals, density table.
+- nutrition — open: link imports save ingredient lines with no quantity or
+  unit · serving labels ignore the units toggle · 46 old products hold the
+  old seven nutrient values. Everything else on the old list was already built.
 - i18n — foundation on branch; control HIDDEN until one language done.
 
 ## ⚠️ Blockers
@@ -48,4 +50,4 @@
 
 ## 📌 Parked
 - share-a-copy invite text + PDF footer breadcrumb (Arnar's session) · quick add · typed custom emoji · net-weight landing · skipped-files list · day-rollover hour · index-file pantry cache · postalpha preview still paints the old move-sheet mock · categoryCounts unused but still tested.
-- feedback channel · serving rescale · step ↔ ingredient chips · label-photo fallback · copy-to-date UI · row reorder · multi-barcode · orphan image cleanup · listicle import · accessibility pass · Dropbox approval · Play key backup · audit H2, M1-M6, L1-L4 · website OG per-page images.
+- feedback channel · serving rescale · step ↔ ingredient chips · copy-to-date UI · row reorder · multi-barcode · orphan image cleanup · listicle import · accessibility pass · Dropbox approval · Play key backup · audit H2, M1-M6, L1-L4 · website OG per-page images.
