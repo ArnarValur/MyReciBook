@@ -2,9 +2,20 @@
 *One line each. Detail lives in tracks/<name>/plan.md.*
 
 ## Active
-- **nutrition** — pantry, linking, units shipped; density table, per-serving calculator and nutrition badge landed via the diary track 2026-08-19. Grocery package-size math shipped 2026-08-30 at 0.20.0+42 — pack size parsed off Product.quantity through the shared unit table, count rounded up, a linked row reading "750 g Flour · 2 × 500 g"; silent below two packs and on anything the parser will not guess at. Open list rebuilt 2026-08-30 against the code — density table, per-serving calculator, nutrition badge, product edit page, manual product entry, meal totals and label reading were all already built and had been sitting on the open list. What is genuinely left: link imports still save ingredient lines with no quantity or unit, serving labels ignore the units toggle, and 46 older products hold the old seven nutrient values. → conductor/tracks/nutrition/plan.md
 - **i18n** — unparked 2026-08-22: the Play tester gate is the long pole, so polish instead of waiting. Foundation done on branch i18n at 0.11.0+10 — gen_l10n, endonym picker, follow-the-phone default, Settings tab migrated as proof, 50 green. English + Íslenska offered; nine more parked at 31 messages, one language at a time. Open: the string sweep — inventory in conductor/tracks/i18n/coverage.md (tag UI strings ride this sweep, inherited from the tags track 2026-08-30). → conductor/tracks/i18n/plan.md
 - **mvp-build** — engine complete through sync. Extraction server deployed and verified 2026-08-21, Gemini key out of the app, both import doors proven on a phone 2026-08-22, crash reports ship on by default. First run is welcome → setup → slides since 2026-08-27, and the SAF folder pointer no longer rides Android backup. Rescue flow polished 2026-08-30 at 0.19.0+37: status bar normalized app-wide, Retry confirms, cover upload on the review form, times split into Prep/Cook/extras/Total end to end including the row editor. Extraction prompt v2 2026-08-30 at 0.19.0+39: trimmed model-facing schema, line_id splitting with grouped review rows, bucket confidence, prose-section rule. Quota counter card atop Settings + BYOK (user's own Gemini key, direct transport) built 2026-08-30 — BYOK ungated until billing. Counter wired to the proxy's real count 2026-08-30 at 0.20.0+42 and verified on the device: parsed from every extract and from refusals, cached on the device, honest "—" before first contact, grace wording while the free fortnight runs. Same session the product picker moved onto the shared collapsible shelf (category_chips.dart deleted) and the grocery aisle-correction gesture was deleted at Arnar's call. Open: card on the import sheet + paywall, privacy policy + data safety, closed test on Play, welcome slide screenshots. Billing seam open, unstarted. → conductor/tracks/mvp-build/plan.md
+
+## Dormant
+- **nutrition** — dormant 2026-08-30 (Arnar). Audited against lib/ and proved
+  with a test run: density table, per-serving calculator, recipe badge, product
+  edit page, manual product entry, label photo and grocery package-size math are
+  all built and passing — the plan file had listed seven of them open for three
+  sessions and was wrong. Nothing in the track is waiting on nutrition work. Its
+  one remaining item, meal-plan totals, needs a meal plan to exist first
+  (ui/plan_tab.dart is a post-alpha placeholder); the diary already totals per
+  meal and per day. Two loose threads left in pulse's parked list: serving labels
+  ignore the units toggle, and the grocery pack math cannot reach the density
+  table. → conductor/tracks/nutrition/plan.md
 
 ## Not open yet
 - **launch** — store listing, ASO, launch content.

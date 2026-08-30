@@ -1,5 +1,8 @@
 # nutrition
 
+**Status: DORMANT** — Arnar 2026-08-30. Not active, not blocked, not hanging.
+The track is built out; the one open item needs a meal plan that does not exist.
+
 **Goal:** per-serving nutrition on every recipe, fed by the user's own barcode scans
 and label photos, in any country. The meal plan becomes the food diary.
 
@@ -38,13 +41,36 @@ flag until wired.
       "750 g Flour · 2 × 500 g". Silent below 2 packs and on bare numbers,
       worded sizes, or cups against a weight pack.
 
-## Open
-- [ ] Link imports (the JSON-LD path in data/link_extractor.dart) still save
-      ingredient lines with no quantity, unit or item. Nutrition math papers
-      over it by re-parsing the raw line at render; the saved file stays bare,
-      so the units toggle still cannot convert those lines.
-- [ ] Serving labels ignore the units toggle — see the note below.
-- [ ] 46 older products still hold the old seven nutrient values until rescanned.
+## Verified in the code 2026-08-30 — the list below was stale for three sessions
+- [x] Density table for staples — `densityTable` + `_densityFor` feed
+      `ingredientGrams`, domain/recipe_nutrition.dart. 30 staples incl. Norwegian.
+- [x] Link imports no longer stall on null qty/unit/item — `effectiveQty` parses
+      the raw line when the file carries no parse.
+- [x] Per-serving calculator — `RecipeNutrition.perServing`, null when the recipe
+      never says how many it serves.
+- [x] Nutrition badge on the recipe — recipe_detail_screen.dart, shown only when
+      there is something honest to say, with its "N of M" basis.
+- [x] Product edit screen — ui/pantry/product_page.dart, one autosaving page.
+- [x] Package-size math in the grocery list — 2026-08-30. Pack size parsed off
+      Product.quantity (units.dart), count rounded up, row reads
+      "750 g Flour · 2 × 500 g". Silent below 2 packs and on bare numbers,
+      worded sizes, or cups against a weight pack.
+- [x] Label-photo fallback through the extraction pipeline — domain/label_read.
+- [x] Manual product entry — ui/pantry/manual_product_screen.dart, the quarter
+      "+" beside Scan.
+Proof: recipe_nutrition, label_read, product_page, pantry_model and
+recipe_diary_chain tests run together 2026-08-30 — 79 pass, 1 fail, and that
+one fail is stale (it taps a product in the picker, which now opens folded
+after the 2026-08-30 shelf rework — lib is right, assert is old).
+
+## Open — the whole remaining track
+- [ ] Meal-plan totals. BLOCKED, and not by nutrition: there is no meal plan.
+      ui/plan_tab.dart is a 52-line "lands post-alpha" empty state, no plan
+      engine exists. The diary already totals per meal and per day
+      (domain/diary.dart) — the math is built, the planner is not.
+- [ ] Serving labels ignore the units toggle — the note at the bottom of this file.
+- [ ] The grocery pack math cannot reach the density table, so cups against a
+      weight pack stay silent. Wiring `_densityFor` into units.dart closes it.
 
 ## Declined — do not re-queue
 - Remembered ingredient → product links. Declined by Arnar 2026-08-18.
