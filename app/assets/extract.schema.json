@@ -1,0 +1,66 @@
+{
+  "type": "object",
+  "required": ["title", "ingredients", "steps"],
+  "properties": {
+    "title": { "type": "string" },
+    "lang": { "type": ["string", "null"], "description": "BCP-47 of the source text, e.g. 'is', 'en'" },
+    "app_hint": { "type": ["string", "null"], "description": "origin visible on the page — allrecipes.com, instagram — else null" },
+    "servings": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount": { "type": ["number", "null"] },
+        "raw": { "type": ["string", "null"] }
+      }
+    },
+    "times": {
+      "type": ["object", "null"],
+      "properties": {
+        "prep_min": { "type": ["number", "null"] },
+        "cook_min": { "type": ["number", "null"] },
+        "total_min": { "type": ["number", "null"] },
+        "extra": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "required": ["label"],
+            "properties": {
+              "label": { "type": "string" },
+              "min": { "type": ["number", "null"] }
+            }
+          }
+        },
+        "raw": { "type": ["string", "null"] }
+      }
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["raw", "line_id", "confidence"],
+        "properties": {
+          "raw": { "type": "string", "description": "the source line, verbatim" },
+          "line_id": { "type": "string", "description": "shared by every ingredient parsed from the same line" },
+          "qty": { "type": ["number", "null"] },
+          "unit": { "type": ["string", "null"] },
+          "item": { "type": ["string", "null"], "description": "normalised, correctly-spelled grocery name — fix misspellings from raw" },
+          "note": { "type": ["string", "null"] },
+          "group": { "type": ["string", "null"] },
+          "confidence": { "enum": ["certain", "probable", "guess"] }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["raw", "confidence"],
+        "properties": {
+          "raw": { "type": "string" },
+          "confidence": { "enum": ["certain", "probable", "guess"] }
+        }
+      }
+    },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "needs_review": { "type": "array", "items": { "type": "string" }, "description": "JSON paths the review screen should highlight" }
+  }
+}

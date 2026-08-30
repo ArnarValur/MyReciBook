@@ -13,6 +13,17 @@ import 'package:myrecibook/domain/extractor.dart';
 
 const _combineNote = 'Combine them into a single recipe';
 
+/// What normalizeContent makes of a bare `{"title": ...}` model reply.
+Map<String, Object?> _bareRecipe(String title) => {
+      'title': title,
+      'ingredients': <Object?>[],
+      'steps': <Object?>[],
+      'extraction': {
+        'overall_confidence': 1.0,
+        'needs_review': <Object?>[],
+      },
+    };
+
 http.Response _candidateResponse(String text) => http.Response(
       jsonEncode({
         'candidates': [
@@ -52,8 +63,7 @@ void main() {
     final img = await image('a.jpg', [1, 2, 3]);
     final ex = extractor(MockClient(
         (_) async => _candidateResponse('{"title": "Pancakes", "steps": []}')));
-    expect(await ex.extractContent([img]),
-        {'title': 'Pancakes', 'steps': <Object?>[]});
+    expect(await ex.extractContent([img]), _bareRecipe('Pancakes'));
   });
 
   test('UTF-8 body without charset header keeps ½ intact (no latin1 fallback)',
@@ -74,14 +84,14 @@ void main() {
           200,
           headers: {'content-type': 'application/json'},
         )));
-    expect(await ex.extractContent([img]), {'title': '½ teaspoon vanilla'});
+    expect(await ex.extractContent([img]), _bareRecipe('½ teaspoon vanilla'));
   });
 
   test('200 with ```json fenced text → fences stripped', () async {
     final img = await image('a.jpg', [1, 2, 3]);
     final ex = extractor(MockClient((_) async =>
         _candidateResponse('```json\n{"title": "Fenced"}\n```')));
-    expect(await ex.extractContent([img]), {'title': 'Fenced'});
+    expect(await ex.extractContent([img]), _bareRecipe('Fenced'));
   });
 
   for (final (status, retryable) in [(429, true), (503, true), (400, false)]) {
@@ -210,7 +220,7 @@ void main() {
           seen = request;
           return _candidateResponse('{"title": "x"}');
         }));
-    expect(await ex.extractContent([img]), {'title': 'x'});
+    expect(await ex.extractContent([img]), _bareRecipe('x'));
     expect(seen.url.toString(),
         'https://proxy.example/v1beta/models/gemini-3.5-flash-lite:generateContent');
     expect(seen.headers['X-Install-Id'], 'install-1234');
@@ -227,5 +237,78 @@ void main() {
         client: MockClient((_) async => _candidateResponse('{}')));
     await expectLater(
         ex.extractContent([img]), throwsA(isA<ExtractionException>()));
+  });
+
+  group('normalizeContent (model shape → v1 content shape)', () {
+    test('bucket confidence maps to floats, worst becomes overall', () {
+      final content = GeminiExtractor.normalizeContent({
+        'title': 'Filled Cookies',
+        'ingredients': [
+          {
+            'raw': '1 teaspoon each of soda Cream of tarter & baking powder',
+            'line_id': 'l7',
+            'item': 'soda',
+            'confidence': 'certain',
+          },
+          {
+            'raw': '1 teaspoon each of soda Cream of tarter & baking powder',
+            'line_id': 'l7',
+            'item': 'baking powder',
+            'confidence': 'probable',
+          },
+        ],
+        'steps': [
+          {'raw': 'roll out & cut', 'confidence': 'guess'},
+        ],
+        'needs_review': ['steps[0].raw'],
+      });
+
+      final ings = content['ingredients'] as List;
+      expect((ings[0] as Map)['confidence'], 1.0);
+      expect((ings[0] as Map)['line_id'], 'l7');
+      expect((ings[1] as Map)['confidence'], 0.6);
+      expect(((content['steps'] as List)[0] as Map)['confidence'], 0.3);
+      final extraction = content['extraction'] as Map;
+      expect(extraction['overall_confidence'], 0.3);
+      expect(extraction['needs_review'], ['steps[0].raw']);
+      expect(content.containsKey('needs_review'), isFalse);
+    });
+
+    test('all certain → overall 1.0, clears the batch auto-save bar', () {
+      final content = GeminiExtractor.normalizeContent({
+        'title': 'x',
+        'ingredients': [
+          {'raw': '3 cups sugar', 'line_id': 'l1', 'confidence': 'certain'},
+        ],
+        'steps': [
+          {'raw': 'Mix', 'confidence': 'certain'},
+        ],
+        'needs_review': <Object?>[],
+      });
+      expect((content['extraction'] as Map)['overall_confidence'], 1.0);
+    });
+
+    test('app_hint lands in source.app_hint on the screenshot path', () {
+      final content = GeminiExtractor.normalizeContent({
+        'title': 'x',
+        'app_hint': 'allrecipes.com',
+        'ingredients': <Object?>[],
+        'steps': <Object?>[],
+      });
+      expect(content['source'], {'app_hint': 'allrecipes.com'});
+      expect(content.containsKey('app_hint'), isFalse);
+    });
+
+    test('numeric confidence from an old-style reply passes through', () {
+      final content = GeminiExtractor.normalizeContent({
+        'title': 'x',
+        'ingredients': [
+          {'raw': '1 cup milk', 'confidence': 0.7},
+        ],
+        'steps': <Object?>[],
+      });
+      expect(((content['ingredients'] as List)[0] as Map)['confidence'], 0.7);
+      expect((content['extraction'] as Map)['overall_confidence'], 0.7);
+    });
   });
 }

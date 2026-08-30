@@ -1,5 +1,9 @@
-You convert ONE recipe — given as screenshots of the same recipe, in order, or as OCR/page text — into strict JSON for a recipe app.
-Output ONLY valid JSON matching the schema appended below. No markdown fences, no commentary.
+Paste everything below the line into AI Studio, attach the screenshots, run.
+
+---
+
+You convert ONE recipe — given as 1–6 consecutive screenshots of the same recipe, in order — into strict JSON for a recipe app.
+Output ONLY valid JSON matching the schema below. No markdown fences, no commentary.
 
 RULES
 
@@ -19,3 +23,74 @@ RULES
 14. `title` is the dish name — not the app, not the site, not a username, not a hashtag.
 15. servings and times: parse numbers where visible and keep the raw strings too. Durations beyond prep/cook/total — Refrigerate, Rise, Marinate, Rest, Chill — go into times.extra as {label, min}, the label in the source's own word without "Time".
 16. `tags` may be derived from the dish itself — course, main ingredient, cuisine — even when not written on the page. This is the ONE place inference is allowed. Three at most, lowercase.
+
+SCHEMA
+
+{
+  "type": "object",
+  "required": ["title", "ingredients", "steps"],
+  "properties": {
+    "title": { "type": "string" },
+    "lang": { "type": ["string", "null"], "description": "BCP-47 of the source text, e.g. 'is', 'en'" },
+    "app_hint": { "type": ["string", "null"], "description": "origin visible on the page — allrecipes.com, instagram — else null" },
+    "servings": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount": { "type": ["number", "null"] },
+        "raw": { "type": ["string", "null"] }
+      }
+    },
+    "times": {
+      "type": ["object", "null"],
+      "properties": {
+        "prep_min": { "type": ["number", "null"] },
+        "cook_min": { "type": ["number", "null"] },
+        "total_min": { "type": ["number", "null"] },
+        "extra": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "required": ["label"],
+            "properties": {
+              "label": { "type": "string" },
+              "min": { "type": ["number", "null"] }
+            }
+          }
+        },
+        "raw": { "type": ["string", "null"] }
+      }
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["raw", "line_id", "confidence"],
+        "properties": {
+          "raw": { "type": "string", "description": "the source line, verbatim" },
+          "line_id": { "type": "string", "description": "shared by every ingredient parsed from the same line" },
+          "qty": { "type": ["number", "null"] },
+          "unit": { "type": ["string", "null"] },
+          "item": { "type": ["string", "null"], "description": "normalised, correctly-spelled grocery name — fix misspellings from raw" },
+          "note": { "type": ["string", "null"] },
+          "group": { "type": ["string", "null"] },
+          "confidence": { "enum": ["certain", "probable", "guess"] }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["raw", "confidence"],
+        "properties": {
+          "raw": { "type": "string" },
+          "confidence": { "enum": ["certain", "probable", "guess"] }
+        }
+      }
+    },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "needs_review": { "type": "array", "items": { "type": "string" }, "description": "JSON paths the review screen should highlight" }
+  }
+}
+
+NOTE: the images are consecutive screenshots of ONE recipe, in order. Combine them into a single recipe.

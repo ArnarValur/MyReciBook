@@ -68,7 +68,7 @@ class GeminiExtractor implements Extractor, LabelReader {
       prompt += '\n\nNOTE: the images are consecutive screenshots of ONE recipe, '
           'in order. Combine them into a single recipe.';
     }
-    return _generate([
+    return normalizeContent(await _generate([
       {'text': prompt},
       for (final img in images)
         {
@@ -79,7 +79,7 @@ class GeminiExtractor implements Extractor, LabelReader {
             'data': base64Encode(await img.readAsBytes()),
           }
         },
-    ]);
+    ]));
   }
 
   /// Link-import fallback (share-links spike): a page with no JSON-LD recipe
@@ -90,9 +90,9 @@ class GeminiExtractor implements Extractor, LabelReader {
         '\n\nNOTE: instead of screenshots, the input below is the readable '
         'text of ONE web page containing the recipe. Ignore navigation, ads '
         'and comments.\n\nPAGE TEXT:\n$pageText';
-    return _generate([
+    return normalizeContent(await _generate([
       {'text': prompt}
-    ]);
+    ]));
   }
 
   /// Read a grocery product's packaging instead of a recipe. Same transport,
@@ -120,9 +120,54 @@ class GeminiExtractor implements Extractor, LabelReader {
   }
 
   Future<String> _prompt() async {
+    // extract.schema.json is the model-facing trim of recipe.schema.json:
+    // no id/timestamps/model fields (the app fills those and the model was
+    // caught inventing them), bucket confidence, line_id, top-level
+    // needs_review. See docs/handoff-extraction-trim.md.
     final base = await rootBundle.loadString('assets/structure_prompt.md');
-    final schema = await rootBundle.loadString('assets/recipe.schema.json');
+    final schema = await rootBundle.loadString('assets/extract.schema.json');
     return '$base\n\nTARGET JSON SCHEMA:\n$schema';
+  }
+
+  /// Folds the model-facing output shape back into the v1 content shape the
+  /// rest of the app consumes: bucket confidence ("certain"/"probable"/
+  /// "guess") becomes the stored float, top-level needs_review moves under
+  /// extraction, and overall_confidence is derived as the worst line — so the
+  /// batch auto-save bar (0.8) holds exactly the recipes with a non-certain
+  /// line. line_id rides through untouched.
+  static Map<String, dynamic> normalizeContent(Map<String, dynamic> content) {
+    const buckets = {'certain': 1.0, 'probable': 0.6, 'guess': 0.3};
+    double worst = 1.0;
+    List<Map<String, dynamic>> mapLines(List<dynamic>? lines) => [
+          for (final l in lines ?? const [])
+            if (l is Map<String, dynamic>)
+              {
+                ...l,
+                if (l['confidence'] is String)
+                  'confidence': buckets[l['confidence']] ?? 0.3,
+              }
+        ];
+    final ingredients = mapLines(content['ingredients'] as List?);
+    final steps = mapLines(content['steps'] as List?);
+    for (final l in ingredients.followedBy(steps)) {
+      final c = (l['confidence'] as num?)?.toDouble();
+      if (c != null && c < worst) worst = c;
+    }
+    return {
+      ...content,
+      'ingredients': ingredients,
+      'steps': steps,
+      if (content['app_hint'] != null && content['source'] is! Map)
+        'source': {'app_hint': content['app_hint']},
+      'extraction': {
+        'overall_confidence': worst,
+        'needs_review': [
+          for (final p in (content['needs_review'] as List? ?? const [])) '$p'
+        ],
+      },
+    }
+      ..remove('needs_review')
+      ..remove('app_hint');
   }
 
   Future<Map<String, dynamic>> _generate(

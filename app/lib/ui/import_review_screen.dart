@@ -12,6 +12,7 @@ import 'package:uuid/uuid.dart';
 import '../data/saf_store.dart';
 import '../features.dart';
 import '../domain/extractor.dart';
+import '../domain/grocery.dart' show formatQty;
 import '../domain/recipe_tag.dart';
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
@@ -871,7 +872,11 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     final rows = <Widget>[];
     String? prevGroup;
     final ings = _ings;
-    for (var i = 0; i < _ingredientCtrls.length && i < ings.length; i++) {
+    final count = _ingredientCtrls.length < ings.length
+        ? _ingredientCtrls.length
+        : ings.length;
+    var i = 0;
+    while (i < count) {
       final group = ings[i]['group'] as String?;
       if (group != null && group != prevGroup) {
         rows.add(
@@ -885,84 +890,227 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         );
       }
       prevGroup = group;
-      final flagged = _flagIngredient(i);
-      final last = i == _ingredientCtrls.length - 1;
 
-      final field = TextField(
-        controller: _ingredientCtrls[i],
-        style: theme.textTheme.bodyMedium,
-        maxLines: null,
-        onChanged: (_) {
-          if (_flagIngredient(i)) setState(() => _confirmed.add('i$i'));
-        },
-        decoration: const InputDecoration(
-          isCollapsed: true,
-          border: InputBorder.none,
-        ),
-      );
-
-      if (flagged) {
-        // Suggest-and-confirm: warning tint + an explicit confirm chip.
-        rows.add(
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 3),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-            decoration: BoxDecoration(
-              color: RbColors.warning.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Expanded(child: field),
-                const SizedBox(width: 8),
-                InkWell(
-                  key: Key('confirm-ingredient-$i'),
-                  borderRadius: BorderRadius.circular(999),
-                  onTap: () => setState(() => _confirmed.add('i$i')),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: RbColors.warning.withValues(alpha: 0.7),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Text(
-                      'confirm',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontSize: 11.5,
-                        letterSpacing: 0.2,
-                        color: Color.alphaBlend(
-                          RbColors.warning.withValues(alpha: 0.55),
-                          scheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      } else {
-        rows.add(
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 9),
-            decoration: last
-                ? null
-                : BoxDecoration(
-                    border: Border(bottom: BorderSide(color: rb.separator)),
-                  ),
-            child: field,
-          ),
-        );
+      // Consecutive entries sharing a line_id are ONE written line split into
+      // several ingredients ("1 teaspoon each of soda, cream of tartar &
+      // baking powder") — the line renders once, parsed children beneath it.
+      final lineId = ings[i]['line_id'] as String?;
+      var end = i + 1;
+      while (lineId != null &&
+          end < count &&
+          ings[end]['line_id'] == lineId &&
+          (ings[end]['group'] as String?) == group) {
+        end++;
       }
+
+      rows.add(
+        end - i > 1
+            ? _splitLineRow(i, end, ings, theme, scheme, rb, last: end == count)
+            : _singleIngredientRow(i, theme, scheme, rb, last: i == count - 1),
+      );
+      i = end;
     }
     return rows;
+  }
+
+  Widget _singleIngredientRow(
+    int i,
+    ThemeData theme,
+    ColorScheme scheme,
+    RbTokens rb, {
+    required bool last,
+  }) {
+    final flagged = _flagIngredient(i);
+    final field = TextField(
+      controller: _ingredientCtrls[i],
+      style: theme.textTheme.bodyMedium,
+      maxLines: null,
+      onChanged: (_) {
+        if (_flagIngredient(i)) setState(() => _confirmed.add('i$i'));
+      },
+      decoration: const InputDecoration(
+        isCollapsed: true,
+        border: InputBorder.none,
+      ),
+    );
+
+    if (!flagged) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: last
+            ? null
+            : BoxDecoration(
+                border: Border(bottom: BorderSide(color: rb.separator)),
+              ),
+        child: field,
+      );
+    }
+    // Suggest-and-confirm: warning tint + an explicit confirm chip.
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: RbColors.warning.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: field),
+          const SizedBox(width: 8),
+          _confirmChip(
+            key: Key('confirm-ingredient-$i'),
+            theme: theme,
+            scheme: scheme,
+            onTap: () => setState(() => _confirmed.add('i$i')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// One written source line that parsed into several ingredients: the line
+  /// is editable once (siblings' raw stays mirrored so the file keeps them
+  /// identical), the parsed children are read-only beneath it, and a single
+  /// confirm clears every entry of the line.
+  Widget _splitLineRow(
+    int start,
+    int end,
+    List<Map<String, dynamic>> ings,
+    ThemeData theme,
+    ColorScheme scheme,
+    RbTokens rb, {
+    required bool last,
+  }) {
+    bool anyFlagged() {
+      for (var j = start; j < end; j++) {
+        if (_flagIngredient(j)) return true;
+      }
+      return false;
+    }
+
+    final flagged = anyFlagged();
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _ingredientCtrls[start],
+                style: theme.textTheme.bodyMedium,
+                maxLines: null,
+                onChanged: (v) {
+                  for (var j = start + 1; j < end; j++) {
+                    _ingredientCtrls[j].text = v;
+                  }
+                  if (anyFlagged()) {
+                    setState(() {
+                      for (var j = start; j < end; j++) {
+                        _confirmed.add('i$j');
+                      }
+                    });
+                  }
+                },
+                decoration: const InputDecoration(
+                  isCollapsed: true,
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+            if (flagged) ...[
+              const SizedBox(width: 8),
+              _confirmChip(
+                key: Key('confirm-ingredient-$start'),
+                theme: theme,
+                scheme: scheme,
+                onTap: () => setState(() {
+                  for (var j = start; j < end; j++) {
+                    _confirmed.add('i$j');
+                  }
+                }),
+              ),
+            ],
+          ],
+        ),
+        for (var j = start; j < end; j++)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 4),
+            child: Text(
+              '•  ${_parsedLabel(ings[j])}',
+              key: Key('split-child-$j'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+      ],
+    );
+
+    if (!flagged) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: last
+            ? null
+            : BoxDecoration(
+                border: Border(bottom: BorderSide(color: rb.separator)),
+              ),
+        child: content,
+      );
+    }
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: RbColors.warning.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: content,
+    );
+  }
+
+  /// The child bullet under a split line: parsed qty + unit + item, falling
+  /// back to raw when the parse came up empty.
+  String _parsedLabel(Map<String, dynamic> m) {
+    final qty = m['qty'];
+    return [
+      if (qty is num) formatQty(qty),
+      if (m['unit'] is String) m['unit'] as String,
+      (m['item'] as String?) ?? ((m['raw'] as String?) ?? ''),
+    ].join(' ');
+  }
+
+  Widget _confirmChip({
+    required Key key,
+    required ThemeData theme,
+    required ColorScheme scheme,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      key: key,
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: RbColors.warning.withValues(alpha: 0.7),
+            width: 1.5,
+          ),
+        ),
+        child: Text(
+          'confirm',
+          style: theme.textTheme.labelSmall?.copyWith(
+            fontSize: 11.5,
+            letterSpacing: 0.2,
+            color: Color.alphaBlend(
+              RbColors.warning.withValues(alpha: 0.55),
+              scheme.onSurface,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   List<Widget> _stepRows(ThemeData theme, ColorScheme scheme, RbTokens rb) {

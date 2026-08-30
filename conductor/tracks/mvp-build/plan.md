@@ -73,7 +73,28 @@
   conversion/prefill (editor_fields_test), extra + compactLine round-trip
   (recipe_roundtrip_test).
 
+## Extraction prompt v2 — shipped 2026-08-30 (0.19.0+38/+39)
+- Model now gets trimmed assets/extract.schema.json, not the file schema — no
+  more invented uuids/timestamps/model names (both AI Studio runs fabricated
+  them). App fills those fields itself after the call.
+- One written line → several ingredients: line_id through prompt, file format
+  (Ingredient.lineId, absent-unless-set so old files round-trip byte-identical)
+  and review screen — the line renders once, parsed children beneath, one
+  confirm clears the whole line.
+- Confidence is buckets (certain/probable/guess); GeminiExtractor.normalizeContent
+  folds them to 1.0/0.6/0.3 and derives overall from the worst line, so the
+  batch 0.8 auto-save bar holds any non-certain recipe. Labels path untouched.
+- item is normalised spelling now (raw "cream of tarter" → item "cream of
+  tartar", rule 4); prose sections extract both ways (rule 6) after the phone
+  run ate the Filling paragraph as ingredient raws and left 1 step.
+- Evidence, cost numbers and the remaining plan: docs/handoff-extraction-trim.md.
+
 ## Open
+- [ ] Re-rescue the Filled Cookies card on +39 — prose rule and split-line
+      grouping unverified by Arnar's eyes; run variance is real.
+- [ ] Handoff remainder: deterministic app-side review flags (digits but no
+      qty, " each "/" or " in raw, shared line_id), regression fixtures from
+      both runs, prefix-caching check.
 - [ ] Privacy policy URL + Play data safety form. Nothing written; blocks
       submission. Five things leave the device and all must be declared.
 - [ ] Require the app-proof check on the server once a build carrying tokens is

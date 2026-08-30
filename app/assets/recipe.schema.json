@@ -59,6 +59,7 @@
           "item": { "type": ["string", "null"], "description": "what goes on a grocery list" },
           "note": { "type": ["string", "null"], "description": "'finely chopped', '2–3', 'optional'…" },
           "group": { "type": ["string", "null"], "description": "section header like 'For the sauce'" },
+          "line_id": { "type": ["string", "null"], "description": "shared by every ingredient parsed from the same physical source line" },
           "confidence": { "type": ["number", "null"], "description": "0–1; <0.8 highlights in review screen" }
         }
       }

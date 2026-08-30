@@ -326,6 +326,12 @@ class Ingredient {
   final String? group;
   final double? confidence;
 
+  /// Shared by every ingredient parsed from the same physical source line
+  /// ("1 teaspoon each of soda, cream of tartar & baking powder" → three
+  /// entries, one line_id). Review screen groups by it. Absent in JSON unless
+  /// set, so pre-line_id files round-trip byte-identical.
+  final String? lineId;
+
   /// Link to a pantry product ([Product.id]: barcode, or name slug for manual
   /// products) — the user's own match ("250ml Milk" → their Mellommelk),
   /// picked by hand and remembered in the recipe file; nutrition math follows
@@ -342,6 +348,7 @@ class Ingredient {
     this.note,
     this.group,
     this.confidence,
+    this.lineId,
     this.productRef,
   });
 
@@ -353,6 +360,7 @@ class Ingredient {
     note: json['note'] as String?,
     group: json['group'] as String?,
     confidence: (json['confidence'] as num?)?.toDouble(),
+    lineId: json['line_id'] as String?,
     productRef: json['product_ref'] as String?,
   );
 
@@ -364,6 +372,7 @@ class Ingredient {
     'note': note,
     'group': group,
     'confidence': confidence,
+    if (lineId != null) 'line_id': lineId,
     if (productRef != null) 'product_ref': productRef,
   };
 
@@ -381,6 +390,7 @@ class Ingredient {
     note: note,
     group: group,
     confidence: confidence,
+    lineId: lineId,
     productRef: clearProductRef ? null : (productRef ?? this.productRef),
   );
 }

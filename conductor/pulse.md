@@ -5,9 +5,13 @@
 > **Updated:** 2026-08-30
 
 ## 📍 Now
-- Phase: build. 0.19.0+37 on main and on the phone. Branch i18n sits at 0.11.0+10.
+- Phase: build. 0.19.0+39 on main and on the phone. Branch i18n sits at 0.11.0+10.
 - APKs ONLY via app/deploy-s21.sh — a plain `flutter build apk` ships no proxy
   URL and placeholder connector keys. docs/runbook-dev-deploy.md §5.
+- Extraction prompt v2 live on +39: trimmed model schema, line_id splitting,
+  bucket confidence normalized at the extractor seam, review groups split
+  lines. Arnar's re-rescue of the Filled Cookies card pending — run variance
+  on prose sections is the thing to watch. Handoff remainder in mvp-build plan.
 - Extraction server live: myrecibook-proxy, Cloud Run europe-west1. Gemini key in
   Secret Manager only; app/dev.env holds server URL + Drive/Dropbox keys.
 - gcloud lives in ~/google-cloud-sdk/bin, not on PATH.
@@ -21,20 +25,16 @@
   cookbook_view ×2 still red — stale "no covers in list view" asserts, lib right.
 - starter_foods green ≠ USDA verification — it pins the unverified transcription.
 - Cadence: analyze between changes → touched files warm → full suite at bedtime.
-- website/ — card-box landing complete + polished in Nuxt 4: index +
-  privacy/terms/contact (drafts, stamped) + 404, SEO formal, dark mode,
-  410px pass, theme-matched rescue strip. Price shown $25 (placeholder).
-  i18n foundation in: @nuxtjs/i18n en-only, frontpage + layout fully keyed
-  (i18n/locales/en.json), flag-only switcher (UK flag) beside the lamp,
-  sitemap per-locale. privacy/terms/contact/404 still English literals.
-  Copy flags: website/copy-notes.md. Staging on MyReciBook-Dev:
-  https://myrecibook-website-staging-213431165631.europe-west1.run.app
-  (noindex-guarded; real domain unmapped on purpose). No track yet.
+- website/ — card-box landing complete in Nuxt 4: index + privacy/terms/contact
+  (drafts, stamped) + 404, SEO formal, dark mode, 410px pass, $25 placeholder.
+  i18n foundation: en-only, frontpage + layout keyed, UK-flag switcher;
+  privacy/terms/contact/404 still English literals. Flags: website/copy-notes.md.
+  Staging (noindex): myrecibook-website-staging-213431165631.europe-west1.run.app.
 
 ## 🚀 Active tracks
-- mvp-build — server deployed, onboarding shipped, rescue flow polished 0.19.0.
-  Open: privacy policy (website draft doubles as source), Play data safety
-  form, welcome slide screenshots, billing seam (unstarted).
+- mvp-build — server deployed, onboarding shipped, rescue polished, extraction
+  v2 live. Open: card re-rescue, handoff remainder, privacy policy, Play data
+  safety form, welcome slide screenshots, billing seam (unstarted).
 - diary — meal hours, cold start, photo cards shipped. Open: device verify ·
   oats label re-read · starter_foods.dart UNVERIFIED vs USDA, his run.
 - tags — shelf + editor shipped. Open: strings are English literals.
