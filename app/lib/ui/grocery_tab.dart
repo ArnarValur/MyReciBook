@@ -1,16 +1,18 @@
 // Grocery screen (design 4a), live over GroceryModel: merge is
 // suggest-and-confirm (never silent), plan changes surface as a dismissible
-// receipt banner, aisle corrections are remembered, staples auto-dim.
+// receipt banner, staples auto-dim.
 //
-// Undesigned on 4a — built minimal, copy flagged for design: the move gesture
-// (long-press → aisle sheet), manual add field, the share/clear menu, and the
-// empty state (reuses the shell's honest zero-state look).
+// Undesigned on 4a — built minimal, copy flagged for design: the manual add
+// field, the share/clear menu, and the empty state (reuses the shell's honest
+// zero-state look).
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:provider/provider.dart';
 
 import '../domain/grocery.dart';
+import '../domain/product.dart';
+import '../domain/units.dart';
 import '../features.dart';
 import 'grocery_model.dart';
 import 'library_model.dart';
@@ -87,9 +89,8 @@ class _GroceryTabState extends State<GroceryTab> {
     final ok = await showDestructiveConfirm(
       context,
       title: 'Clear the whole list?',
-      body: 'Your aisle corrections and merge choices are remembered — '
-          'they apply again next time. Every item on the list right now '
-          'is removed.',
+      body: 'Your merge choices are remembered — they apply again next '
+          'time. Every item on the list right now is removed.',
       verb: 'Clear list',
     );
     if (!ok || !mounted) return;
@@ -100,49 +101,6 @@ class _GroceryTabState extends State<GroceryTab> {
     _undoBar('List cleared', snapshot);
   }
 
-  // Simplest recategorize gesture (the per-store aisle switcher is left
-  // undesigned by turn 4): long-press a row, pick or type the aisle.
-  Future<void> _moveSheet(GroceryItem item) async {
-    final model = context.read<GroceryModel>();
-    final target = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 4,
-            bottom: 16 + MediaQuery.of(ctx).viewInsets.bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SectionLabel('Move to'),
-            for (final aisle in model.aisleChoices)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(aisle,
-                    style: TextStyle(
-                        color: aisle == item.category
-                            ? ctx.scheme.primary
-                            : null)),
-                onTap: () => Navigator.pop(ctx, aisle),
-              ),
-            TextField(
-              key: const Key('new-aisle-field'),
-              textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(hintText: 'New aisle'),
-              onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (target == null || target.isEmpty || target == item.category) return;
-    await model.moveTo(item.id, target);
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -151,10 +109,11 @@ class _GroceryTabState extends State<GroceryTab> {
     final titles = {
       for (final r in context.watch<LibraryModel>().recipes) r.id: r.title
     };
-    // Owned pantry ids for the row hint — hint only, never row behavior.
-    final owned = <String>{
+    // The shelf by id: "in your pantry" needs only the key, the pack hint
+    // needs the product's printed size. Hints only, never row behavior.
+    final shelf = <String, Product>{
       if (kPantryEnabled)
-        for (final p in context.watch<PantryModel>().products) p.id,
+        for (final p in context.watch<PantryModel>().products) p.id: p,
     };
     final items = model.items;
     final suggestion = model.suggestions.firstOrNull;
@@ -271,7 +230,9 @@ class _GroceryTabState extends State<GroceryTab> {
                 for (var i = 0; i < sections[category]!.length; i++)
                   _itemRow(sections[category]![i], model,
                       last: i == sections[category]!.length - 1,
-                      inPantry: owned.contains(sections[category]![i].productRef),
+                      product: shelf[sections[category]![i].productRef],
+                      inPantry:
+                          shelf.containsKey(sections[category]![i].productRef),
                       theme: theme,
                       scheme: scheme),
               ]),
@@ -390,21 +351,35 @@ class _GroceryTabState extends State<GroceryTab> {
         ]),
       );
 
+  /// Package-size math (nutrition plan): a 500 g bag under a 750 g need is
+  /// two bags. Null whenever the machinery can't answer — no link, a size
+  /// Open Food Facts printed in prose, spoons against a bag — and null at one
+  /// pack, which is what a shopper already assumes; only a count that changes
+  /// the trolley earns the pixels.
+  String? _packHint(GroceryItem item, Product? product) {
+    final size = parsePackSize(product?.quantity);
+    if (size == null) return null;
+    final packs = item.packsToBuy(size);
+    if (packs == null || packs < 2) return null;
+    // The size verbatim as the pack prints it ("2 × 1,5 L") — except a
+    // multipack, where "2 × 6 x 33 cl" reads as nonsense.
+    return size.units > 1
+        ? '$packs packs'
+        : '$packs × ${product!.quantity!.trim()}';
+  }
+
   Widget _itemRow(GroceryItem item, GroceryModel model,
       {required bool last,
       required bool inPantry,
       required ThemeData theme,
-      required ColorScheme scheme}) {
+      required ColorScheme scheme,
+      Product? product}) {
     // N8 tier 1: staples show the bare name — shopping, not cooking.
     final qty = item.displayQtyLabel;
-    final moved = model.categoryOverrides.containsKey(item.key);
-    final caption = item.staple
+    final packs = qty.isEmpty ? null : _packHint(item, product);
+    final caption = item.staple || item.sourceCount < 2
         ? null
-        : moved
-            ? 'moved here by you'
-            : item.sourceCount > 1
-                ? '${item.sourceCount} recipes'
-                : null;
+        : '${item.sourceCount} recipes';
 
     final line = Row(children: [
       Container(
@@ -429,6 +404,11 @@ class _GroceryTabState extends State<GroceryTab> {
                   text: '$qty ',
                   style: const TextStyle(fontWeight: FontWeight.w700)),
             TextSpan(text: item.name),
+            if (packs != null)
+              TextSpan(
+                  text: ' · $packs',
+                  style: TextStyle(
+                      fontSize: 11.5, color: scheme.onSurfaceVariant)),
           ]),
           style: theme.textTheme.bodyMedium?.copyWith(
             decoration: item.checked ? TextDecoration.lineThrough : null,
@@ -485,7 +465,6 @@ class _GroceryTabState extends State<GroceryTab> {
       },
       child: InkWell(
         onTap: () => model.toggleItem(item.id),
-        onLongPress: () => _moveSheet(item),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: last

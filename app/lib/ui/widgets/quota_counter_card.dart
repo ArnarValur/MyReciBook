@@ -1,8 +1,13 @@
 // Quota counter — the quiet "what's left" card (docs/ai-cap-mechanics.md §2).
-// Visuals first (Arnar 2026-08-30): fed demo numbers from Settings until the
-// quota object the proxy already returns on every /extract is cached app-side
-// (mvp-build plan, "Quota counter UI"). Same card will ride the import sheet
-// and paywall when the wiring lands. Look borrowed from the 4d cap preview.
+// Fed by QuotaModel from the quota object the proxy hangs on every answer;
+// Settings mounts it, and the import sheet and paywall get it next. Look
+// borrowed from the 4d cap preview.
+//
+// Three states besides the plain count, all §2's wording rules: no numbers at
+// all until the proxy has answered once, "nothing counts yet" inside the free
+// fortnight, and no cap whatsoever on the user's own key. The meter only
+// draws when there is real spending to draw — §2 forbids showing a cap
+// nobody has started spending.
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,17 +19,19 @@ import '../theme.dart';
 class QuotaCounterCard extends StatelessWidget {
   const QuotaCounterCard({
     super.key,
-    required this.used,
-    required this.cap,
+    this.used,
+    this.cap,
     this.resetsOn,
     this.inGrace = false,
   });
 
-  /// Rescues consumed this cap year.
-  final int used;
+  /// Rescues consumed this cap year. Null with [cap] means this install has
+  /// never had an answer from the proxy — the card says so rather than show
+  /// a zero it cannot stand behind.
+  final int? used;
 
-  /// The yearly fair-use cap (1200 in the offer).
-  final int cap;
+  /// The yearly fair-use cap (1200 in the offer). Null: see [used].
+  final int? cap;
 
   /// Human date the counter resets on, e.g. '1 January'. Null hides the
   /// reset clause (no date decided / not wired yet).
@@ -111,10 +118,19 @@ class QuotaCounterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
-    final left = cap - used;
+    final used = this.used;
+    final cap = this.cap;
     // Nullable watch: previews/tests without the provider stay proxy-mode.
     final byok = context.watch<ByokModel?>();
     final byokActive = byok?.active ?? false;
+    final counted = used != null && cap != null;
+    // Only meter what is actually being spent: their own key has no cap, an
+    // install the proxy has never answered has no number, and the free
+    // fortnight is spending nothing off the allowance (§2).
+    final showMeter = counted && !byokActive && !inGrace;
+    // Never a negative "left": a cap that moved under existing spending must
+    // read as empty, not as "-5 requests left".
+    final left = counted && cap > used ? cap - used : 0;
     return TokenCard(
       radius: 16,
       padding: const EdgeInsets.all(16),
@@ -139,7 +155,11 @@ class QuotaCounterCard extends StatelessWidget {
                 ],
               ),
               Text(
-                byokActive ? 'your key' : '${_fmt(used)} / ${_fmt(cap)}',
+                byokActive
+                    ? 'your key'
+                    : counted
+                        ? '${_fmt(used)} / ${_fmt(cap)}'
+                        : '—',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontSize: 13,
                   fontFamily: 'monospace',
@@ -149,7 +169,7 @@ class QuotaCounterCard extends StatelessWidget {
           ),
           // No cap UI in BYOK mode (mvp-build plan): their Google console
           // is their meter, so the bar and the countdown disappear.
-          if (!byokActive) ...[
+          if (showMeter) ...[
             const SizedBox(height: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
@@ -170,14 +190,19 @@ class QuotaCounterCard extends StatelessWidget {
                       ? 'Running on your own Gemini key — the counter '
                           'doesn’t apply.'
                       : inGrace
-                          ? 'Still in your free two weeks — nothing counts yet.'
-                          : '${_fmt(left)} of ${_fmt(cap)} requests left'
-                              '${resetsOn == null ? '' : ' — resets $resetsOn'}.',
+                          ? 'Still in your free two weeks — your allowance is '
+                              'untouched.'
+                          : !counted
+                              ? 'Your allowance shows up here after the first '
+                                  'AI import.'
+                              : '${_fmt(left)} of ${_fmt(cap)} '
+                                  'requests left'
+                                  '${resetsOn == null ? '' : ' — resets $resetsOn'}.',
                   style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
                 ),
               ),
-              // BYOK door (mvp-build plan, parked): visuals only — the key
-              // is neither stored nor sent anywhere yet.
+              // BYOK door (mvp-build plan): the key it saves lands in
+              // device.json and flips the extractor's transport per call.
               InkWell(
                 borderRadius: BorderRadius.circular(999),
                 onTap: () => _showKeyDialog(context, byok),

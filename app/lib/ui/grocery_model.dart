@@ -12,21 +12,16 @@ class GroceryModel extends ChangeNotifier {
   GroceryModel(GroceryStore? store)
       : _store = store,
         _items = store?.items ?? const [],
-        _overrides = Map.of(store?.categoryOverrides ?? const {}),
         _aliases = Map.of(store?.mergeAliases ?? const {}),
         _keepApart = Set.of(store?.keepApartPairs ?? const {});
 
   final GroceryStore? _store;
   List<GroceryItem> _items;
-  final Map<String, String> _overrides;
   final Map<String, String> _aliases;
   final Set<String> _keepApart;
   String? _receipt;
 
   List<GroceryItem> get items => List.unmodifiable(_items);
-
-  /// "moved here by you" caption = key present here.
-  Map<String, String> get categoryOverrides => Map.unmodifiable(_overrides);
 
   /// Sync receipt banner text; null = no banner.
   String? get receipt => _receipt;
@@ -52,23 +47,11 @@ class GroceryModel extends ChangeNotifier {
 
   bool isOnList(String recipeId) => recipeOnList(_items, recipeId);
 
-  /// Aisle choices for the move sheet: stock + every aisle in use or
-  /// remembered from a past correction.
-  List<String> get aisleChoices {
-    final all = <String>{
-      ...GroceryCategories.stock,
-      for (final i in _items) i.category,
-      ..._overrides.values,
-    };
-    return all.toList()..sort(GroceryCategories.compare);
-  }
-
   Future<GroceryAddResult> addRecipe(Recipe recipe, {double scale = 1}) async {
     final res = addRecipeToList(
       items: _items,
       recipe: recipe,
       scale: scale,
-      categoryOverrides: _overrides,
       mergeAliases: _aliases,
     );
     if (!res.alreadyOnList) await _commit(res.items);
@@ -87,7 +70,6 @@ class GroceryModel extends ChangeNotifier {
       items: _items,
       recipe: recipe,
       scale: scale,
-      categoryOverrides: _overrides,
       mergeAliases: _aliases,
     );
     if (res.changedCount > 0) {
@@ -125,9 +107,8 @@ class GroceryModel extends ChangeNotifier {
           if (i.id != id) i
       ]);
 
-  /// Empty the list. Aisle corrections and merge aliases deliberately SURVIVE
-  /// (they live in their own files) — the memory is the product, the list is
-  /// the errand.
+  /// Empty the list. Merge aliases deliberately SURVIVE (they live in their
+  /// own file) — the memory is the product, the list is the errand.
   Future<void> clearAll() => _commit(const []);
 
   /// Undo door for the two destructive ops above.
@@ -142,20 +123,8 @@ class GroceryModel extends ChangeNotifier {
       name: parsed.name,
       qty: parsed.qty,
       unit: parsed.unit,
-      categoryOverrides: _overrides,
       mergeAliases: _aliases,
     ));
-  }
-
-  /// Recategorize: moves the row AND remembers the correction (override file
-  /// survives list clear).
-  Future<void> moveTo(String id, String category) async {
-    final at = _items.indexWhere((i) => i.id == id);
-    if (at < 0) return;
-    final key = _items[at].key;
-    _overrides[key] = category;
-    await _guard(() => _store?.setCategoryOverride(key, category));
-    await _commit(setItemCategory(_items, id, category));
   }
 
   /// Confirmed merges are remembered and re-applied on future adds.

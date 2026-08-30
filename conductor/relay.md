@@ -1,6 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-30 — the counter tells the truth, the aisle gesture dies
+
+- Shipped 0.20.0+42: quota counter fed by the proxy's real count (cached in
+  device.json, honest "—" before first contact); package-size math — a linked
+  grocery row reads "750 g Flour · 2 × 500 g"; product picker moved onto the
+  shared collapsible shelf, category_chips.dart deleted.
+- Arnar: aisle corrections deleted — a hidden long-press nobody would find;
+  context.md's bet line drops "remembers category corrections". Dependency
+  bump (34 outdated) parked to its own session before the Play release.
+- UNFINISHED: package-size hint, new picker and the aisle delete are all
+  unseen on the device — next session verifies them.
+
 ## 2026-08-30 — housekeeping night: deploy, one graduation, stale items culled
 
 - Shipped: no code. Counter+BYOK build onto the S21 as debug-over-debug with

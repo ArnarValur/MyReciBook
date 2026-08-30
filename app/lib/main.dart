@@ -48,6 +48,7 @@ import 'ui/diary/diary_model.dart';
 import 'ui/pantry/pantry_model.dart';
 import 'ui/storage_model.dart';
 import 'ui/photo_sources.dart';
+import 'ui/quota_model.dart';
 import 'ui/theme.dart';
 import 'ui/theme_model.dart';
 import 'l10n/generated/app_localizations.dart';
@@ -172,6 +173,9 @@ Future<void> main() async {
   final unitsModel = UnitsModel(settings: settings);
   final languageModel = LanguageModel(settings: settings);
   final byokModel = ByokModel(settings: settings);
+  // Seeded from device.json, so the counter card has a true number before
+  // this session's first extraction (docs/ai-cap-mechanics.md §2).
+  final quotaModel = QuotaModel(settings: settings);
 
   final picker = ImagePicker();
   // App Check proves to the proxy that this really is our app on a real
@@ -183,6 +187,9 @@ Future<void> main() async {
     appCheckToken: appCheck?.token,
     // BYOK: a user key flips the transport to direct Gemini per call.
     byokKey: () => byokModel.key,
+    // Every proxy answer carries the fair-use numbers — this is the only
+    // place they enter the app.
+    onQuota: quotaModel.record,
   );
   Future<List<File>> pickImages() async => [
     for (final x in await picker.pickMultiImage()) File(x.path),
@@ -248,6 +255,7 @@ Future<void> main() async {
           unitsModel: unitsModel,
           languageModel: languageModel,
           byokModel: byokModel,
+          quotaModel: quotaModel,
           crashLog: crashLog,
           crashReporting: crashReporting,
           onGrantLost: onGrantLost,
@@ -284,6 +292,7 @@ Widget buildApp({
   UnitsModel? unitsModel,
   LanguageModel? languageModel,
   ByokModel? byokModel,
+  QuotaModel? quotaModel,
   CrashLog? crashLog,
   CrashReportingModel? crashReporting,
   VoidCallback? onGrantLost,
@@ -328,6 +337,13 @@ Widget buildApp({
       ChangeNotifierProvider<ByokModel>.value(value: byokModel)
     else
       ChangeNotifierProvider<ByokModel>(create: (_) => ByokModel()),
+    // Same .value rule; the inert default has no cached numbers and no
+    // extractor feeding it, so the card renders its unknown state — which is
+    // exactly right for tests.
+    if (quotaModel != null)
+      ChangeNotifierProvider<QuotaModel>.value(value: quotaModel)
+    else
+      ChangeNotifierProvider<QuotaModel>(create: (_) => QuotaModel()),
     // Plain Provider (not a notifier): the settings footer door reads it
     // on demand. Inert default keeps the test seam file-free.
     Provider<CrashLog>.value(value: crashLog ?? CrashLog.inert()),

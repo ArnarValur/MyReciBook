@@ -385,7 +385,7 @@ for things entering · `cubic-bezier(0.3, 0, 0.8, 0.15)` for things leaving.
 |---|---|
 | `GlassNavBar` | `widgets/glass_nav_bar.dart` |
 | `LogoMark` | `widgets/logo_mark.dart` |
-| Category chips | `widgets/category_chips.dart` |
+| `CollapsibleShelf` | `widgets/collapsible_shelf.dart` — the folded category headers; Pantry, Add-food and the product picker all browse on it |
 | Editor fields | `widgets/editor_fields.dart` |
 | Product picker sheet | `widgets/product_picker_sheet.dart` |
 | Product row | `widgets/product_row.dart` |

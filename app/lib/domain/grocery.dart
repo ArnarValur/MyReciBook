@@ -9,6 +9,7 @@
 // arrive from recipes — technical rule 7 heritage; display never mangles them).
 
 import 'recipe.dart';
+import 'units.dart';
 
 /// Merge key: lowercase, trim, collapse whitespace, strip trailing
 /// punctuation. Unicode-safe — diacritics and vulgar fractions pass through.
@@ -90,10 +91,6 @@ String defaultCategoryFor(String key) {
   }
   return GroceryCategories.fallback;
 }
-
-/// User overrides (remembered corrections) ALWAYS beat the built-in map.
-String categoryFor(String key, Map<String, String> overrides) =>
-    overrides[key] ?? defaultCategoryFor(key);
 
 // ---------------------------------------------------------------------------
 // Quantities
@@ -213,6 +210,30 @@ class GroceryItem {
   /// engine holds.
   String get displayQtyLabel => staple ? '' : qtyLabel;
 
+  /// How many of [pack] cover what this row needs — 750 g of flour against a
+  /// 500 g bag is 2 (nutrition plan: package-size math). Rounded up: half a
+  /// bag is not a thing you can put in a trolley.
+  ///
+  /// Every part that converts to the pack's kind is summed, so a row holding
+  /// "400 g + 1 kg" counts as 1.4 kg; parts of another kind (2 tbsp against a
+  /// bag of flour) are ignored, and a row with nothing convertible — no
+  /// quantity, a unit like "pinch", volume against weight — returns null.
+  /// The list then shows exactly what it showed before.
+  int? packsToBuy(PackSize pack) {
+    final one = baseAmount(pack.amount, pack.unit);
+    if (one == null || one.amount <= 0) return null;
+    var need = 0.0;
+    for (final part in mergedParts) {
+      final inBase = baseAmount(part.qty!, part.unit);
+      if (inBase == null || inBase.base != one.base) continue;
+      need += inBase.amount;
+    }
+    if (need <= 0) return null;
+    // A hair off before rounding up: 3 × 300 g against a 900 g bag is one
+    // bag, and binary fractions must not sell a second one.
+    return (need / one.amount - 1e-9).ceil();
+  }
+
   /// `productRef:` set or keep only — nothing unlinks a grocery row today,
   /// so no clear flag (the tri-state rule waits for a caller that needs it).
   GroceryItem copyWith({
@@ -327,12 +348,11 @@ int plannedRecipeCount(List<GroceryItem> items) =>
 
 /// One-tap whole-recipe add (3e footer). Same recipe twice = no-op; lines
 /// matching a checked item are excluded; staples land dimmed and quantity-less;
-/// remembered merges (aliases) and category corrections apply automatically.
+/// remembered merges (aliases) apply automatically.
 GroceryAddResult addRecipeToList({
   required List<GroceryItem> items,
   required Recipe recipe,
   double scale = 1,
-  Map<String, String> categoryOverrides = const {},
   Map<String, String> mergeAliases = const {},
 }) {
   if (recipeOnList(items, recipe.id)) {
@@ -376,7 +396,7 @@ GroceryAddResult addRecipeToList({
       next.add(GroceryItem(
         id: key,
         name: aliased ? key : parsed.name,
-        category: categoryFor(key, categoryOverrides),
+        category: defaultCategoryFor(key),
         staple: isStaple,
         productRef: ing.productRef,
         recipeParts: {
@@ -414,7 +434,6 @@ GroceryUpdateResult updateRecipeOnList({
   required List<GroceryItem> items,
   required Recipe recipe,
   double scale = 1,
-  Map<String, String> categoryOverrides = const {},
   Map<String, String> mergeAliases = const {},
 }) {
   if (!recipeOnList(items, recipe.id)) {
@@ -448,7 +467,6 @@ GroceryUpdateResult updateRecipeOnList({
     items: stripped,
     recipe: recipe,
     scale: scale,
-    categoryOverrides: categoryOverrides,
     mergeAliases: mergeAliases,
   );
   final restored = <GroceryItem>[
@@ -483,7 +501,6 @@ List<GroceryItem> addManualItem({
   num? qty,
   String? unit,
   String? category,
-  Map<String, String> categoryOverrides = const {},
   Map<String, String> mergeAliases = const {},
 }) {
   var key = normalizeName(name);
@@ -511,7 +528,7 @@ List<GroceryItem> addManualItem({
     GroceryItem(
       id: key,
       name: aliased ? key : name.trim(),
-      category: category ?? categoryFor(key, categoryOverrides),
+      category: category ?? defaultCategoryFor(key),
       manual: true,
       manualParts: [if (qty != null) part],
     ),
@@ -660,19 +677,10 @@ List<GroceryItem> toggleChecked(List<GroceryItem> items, String id) => [
         i.id == id ? i.copyWith(checked: !i.checked) : i
     ];
 
-/// "Clear checked": bought rows leave the list; overrides are untouched
-/// (they live in a separate file — see GroceryStore).
+/// "Clear checked": bought rows leave the list; the merge memory is
+/// untouched (it lives in a separate file — see GroceryStore).
 List<GroceryItem> clearChecked(List<GroceryItem> items) =>
     [for (final i in items) if (!i.checked) i];
-
-/// Recategorize result state ("moved here by you"): caller must also persist
-/// the override (item.key → category) so the correction is remembered.
-List<GroceryItem> setItemCategory(
-        List<GroceryItem> items, String id, String category) =>
-    [
-      for (final i in items)
-        i.id == id ? i.copyWith(category: category) : i
-    ];
 
 /// Staple tap-to-activate: becomes a normal (quantity-less) row.
 List<GroceryItem> activateStaple(List<GroceryItem> items, String id) => [

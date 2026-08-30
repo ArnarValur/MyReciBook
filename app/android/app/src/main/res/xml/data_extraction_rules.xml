@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- API 31+. Three app-support files must never ride cloud backup or D2D
      transfer:
-       device.json — the picked SAF folder URI and the onboarding version.
-         A folder grant cannot follow the user to another phone, so restoring
-         its pointer only produced a false "your folder moved" on first launch.
+       device.json — the picked SAF folder URI, the onboarding version, the
+         user's own Gemini key and the cached fair-use counter. A folder grant
+         cannot follow the user to another phone, so restoring its pointer
+         only produced a false "your folder moved" on first launch; the key
+         is a secret and the counter belongs to this install's id.
        tokens.json — OAuth refresh tokens, plaintext until the pre-prod
          keystore hardening.
        crash_log.json — local crash history, meaningless on another device.

@@ -31,6 +31,7 @@ import 'theme.dart';
 import 'theme_model.dart';
 import 'language_model.dart';
 import 'language_screen.dart';
+import 'quota_model.dart';
 import 'units_model.dart';
 import 'widgets/quota_counter_card.dart';
 import 'widgets/skin.dart';
@@ -147,6 +148,9 @@ class SettingsTab extends StatelessWidget {
     final unitsModel = context.watch<UnitsModel>();
     final languageModel = context.watch<LanguageModel>();
     final storage = context.watch<StorageModel>();
+    // Nullable watch, same stance as the card's own BYOK read: a shell built
+    // without the provider shows the unknown counter instead of crashing.
+    final quota = context.watch<QuotaModel?>()?.quota;
 
     Widget row({
       required IconData icon,
@@ -264,9 +268,16 @@ class SettingsTab extends StatelessWidget {
               // Bottom clearance for the glass bar, grocery-tab convention.
               padding: EdgeInsets.fromLTRB(20, 14, 20, navBarClearance(context)),
               children: [
-                // Quota counter — visuals first (Arnar 2026-08-30): demo
-                // numbers until the proxy's quota object is cached app-side.
-                const QuotaCounterCard(used: 0, cap: 1200),
+                // Quota counter — real numbers, from the quota object the
+                // proxy hangs on every answer and QuotaModel caches in
+                // device.json. Null until the proxy has answered once: the
+                // card then shows its unknown state, not a fake zero (§2).
+                QuotaCounterCard(
+                  used: quota?.used,
+                  cap: quota?.cap,
+                  resetsOn: quota?.resetsOn,
+                  inGrace: quota?.inGrace ?? false,
+                ),
                 const SizedBox(height: 20),
                 SectionLabel(context.l10n.sectionTheme),
                 const SizedBox(height: 8),

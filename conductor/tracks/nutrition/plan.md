@@ -32,7 +32,10 @@ flag until wired.
 - [ ] Nutrition badge on the recipe
 - [ ] Product edit screen — Open Food Facts data is sometimes wrong and 46 older
       products keep the old seven values until rescanned
-- [ ] Package-size math in the grocery list (waits on the unit table)
+- [x] Package-size math in the grocery list — 2026-08-30. Pack size parsed off
+      Product.quantity (units.dart), count rounded up, row reads
+      "750 g Flour · 2 × 500 g". Silent below 2 packs and on bare numbers,
+      worded sizes, or cups against a weight pack (needs the density table).
 - [ ] Label-photo fallback through the extraction pipeline
 - [ ] Manual product entry
 - [ ] Meal-plan totals

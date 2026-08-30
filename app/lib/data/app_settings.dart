@@ -31,7 +31,12 @@ class AppSettings {
 
   /// Keys that live in device.json instead of settings.json. Adding one here
   /// is the whole mechanism — [_write] and the getters route on this set.
-  static const _deviceKeys = {'tree_uri', 'onboarding_seen', 'byok_key'};
+  static const _deviceKeys = {
+    'tree_uri',
+    'onboarding_seen',
+    'byok_key',
+    'quota'
+  };
 
   /// [deviceFile] defaults to `device.json` beside [file]. Pass it explicitly
   /// only to point the two somewhere else.
@@ -98,6 +103,18 @@ class AppSettings {
 
   Future<void> setByokKey(String? key) =>
       _write('byok_key', key == null || key.isEmpty ? null : key);
+
+  /// Last fair-use numbers the proxy sent, in its own wire shape (see
+  /// domain/quota.dart) — cached so the counter card shows something true at
+  /// cold start. Lives in device.json: the count belongs to THIS install's
+  /// install id, and a restored backup must not hand a fresh phone spending
+  /// it never did. Anything but a map reads as "never seen", never a crash.
+  Map<String, dynamic>? get quota {
+    final v = _device['quota'];
+    return v is Map<String, dynamic> ? v : null;
+  }
+
+  Future<void> setQuota(Map<String, Object?>? quota) => _write('quota', quota);
 
   /// One-shot local→SAF migration already ran.
   bool get migrationDone => _data['migration_done'] as bool? ?? false;

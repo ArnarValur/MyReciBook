@@ -1,9 +1,14 @@
 // THE product picker — one sheet for every "which product?" moment: linking
-// an ingredient line (recipe detail, recipe editor) and any future chooser.
-// One implementation so search, synonyms, category chips and the product
-// card behave identically everywhere (Arnar, 2026-08-20: stop building
-// near-identical drawers). Add-food keeps its own richer sheet (Recent,
-// recipes, Quick add) but shares CategoryChipRow and ProductRow with this.
+// an ingredient line (recipe detail, recipe editor, the diary's link sheet)
+// and any future chooser. One implementation so search and the product card
+// behave identically everywhere (Arnar, 2026-08-20: stop building
+// near-identical drawers).
+//
+// It browses on the shared CollapsibleShelf now (Arnar, 2026-08-30: this was
+// the last surface still drawing the old horizontal chip row — two ways to
+// browse the same pantry). Same shelf as the Pantry tab and the Add-food
+// sheet, same ProductRow behind the headers, and a folded section's rows are
+// never built (the shelf's contract — three starter packs are ~60 rows each).
 
 import 'package:flutter/material.dart';
 
@@ -11,7 +16,7 @@ import '../../domain/product.dart';
 import '../../domain/product_categories.dart';
 import '../pantry/pantry_model.dart';
 import '../theme.dart';
-import 'category_chips.dart';
+import 'collapsible_shelf.dart';
 import 'product_row.dart';
 import 'skin.dart';
 
@@ -51,36 +56,62 @@ class _ProductPickerSheet extends StatefulWidget {
 
 class _ProductPickerSheetState extends State<_ProductPickerSheet> {
   String _query = '';
-  String? _category;
+
+  /// Sections the user has unfolded. Plain screen state, never persisted —
+  /// the Add-food sheet's rule, for its reason: a modal that reopens
+  /// half-unfolded is a modal that got slow to open again, and the shelf one
+  /// ingredient sits on says nothing about where the next one lives. The
+  /// Pantry tab persists its fold because that screen IS the shelf; this is a
+  /// chooser you close.
+  final Set<String> _open = {};
+
+  bool get _searching => _query.trim().isNotEmpty;
 
   /// Add-food's matching rule, verbatim: name, brand or synonym substring —
   /// "Paprika" finds Bell Pepper here too.
   List<Product> _matches(List<Product> products) {
     final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return products;
     return [
       for (final p in products)
-        if (q.isEmpty ||
-            p.name.toLowerCase().contains(q) ||
+        if (p.name.toLowerCase().contains(q) ||
             (p.brand ?? '').toLowerCase().contains(q) ||
             p.synonyms.any((s) => s.toLowerCase().contains(q)))
-          if (_category == null ||
-              (_category == otherCategory
-                  ? p.tags.isEmpty
-                  : p.tags.contains(_category)))
-            p
+          p
     ];
   }
+
+  /// The shelf: product_categories' own grouping and order, so this sheet and
+  /// the Pantry tab file the same food under the same heading.
+  List<ShelfSection> _sections(List<Product> products) => [
+        for (final (name, items) in groupByCategory(products))
+          ShelfSection(
+            id: name,
+            label: categoryLabel(name),
+            count: items.length,
+            // A bundled pack, not the user's own scans — the leaf says why a
+            // 60-item section is worth leaving folded.
+            starterPack: items.every((p) => p.source == 'starter'),
+            builder: (_) =>
+                Column(children: [for (final p in items) _row(p)]),
+          ),
+      ];
+
+  Widget _row(Product product) => ProductRow(
+        product: product,
+        imageFile: widget.pantry.imageFileOf(product),
+        onTap: () => Navigator.of(context).pop(ProductPick(product)),
+      );
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
     final products = widget.pantry.products;
-    final counts = categoryCounts(products);
-    final showChips =
-        counts.keys.any((c) => c != otherCategory) && products.isNotEmpty;
-    final active = counts.containsKey(_category) ? _category : null;
-    final matches = _matches(products);
+    // Typing flattens the shelf into plain rows (the Pantry tab's rule):
+    // categories are a way of browsing, and once you know the name you want
+    // they are in the way — a hit must never hide behind a folded header.
+    final matches = _searching ? _matches(products) : const <Product>[];
     final media = MediaQuery.of(context);
     final insets = media.viewInsets.bottom;
     // The gesture-bar rule shared by every sheet: the last row clears it.
@@ -110,14 +141,6 @@ class _ProductPickerSheetState extends State<_ProductPickerSheet> {
                     borderSide: BorderSide.none),
               ),
             ),
-            if (showChips) ...[
-              const SizedBox(height: 12),
-              CategoryChipRow(
-                counts: counts,
-                active: active,
-                onSelect: (c) => setState(() => _category = c),
-              ),
-            ],
             const SizedBox(height: 12),
             if (widget.allowUnlink) ...[
               InkWell(
@@ -146,23 +169,25 @@ class _ProductPickerSheetState extends State<_ProductPickerSheet> {
                       ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
                 ),
               )
-            else if (matches.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                child: Text(
-                  'Nothing on the shelf matches that.',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: scheme.onSurfaceVariant),
-                ),
-              )
-            else
-              for (final product in matches)
-                ProductRow(
-                  product: product,
-                  imageFile: widget.pantry.imageFileOf(product),
-                  onTap: () =>
-                      Navigator.of(context).pop(ProductPick(product)),
-                ),
+            else if (_searching) ...[
+              if (matches.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  child: Text(
+                    'Nothing on the shelf matches that.',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
+                )
+              else
+                for (final product in matches) _row(product),
+            ] else
+              CollapsibleShelf(
+                sections: _sections(products),
+                expanded: _open,
+                onToggle: (id) => setState(() =>
+                    _open.contains(id) ? _open.remove(id) : _open.add(id)),
+              ),
           ],
         ),
       ),

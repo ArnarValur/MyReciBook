@@ -1,7 +1,7 @@
 // App-private grocery persistence (design 4a). Two files in app-support,
 // injectable paths per the AppSettings pattern: the list state, and the
-// remembered corrections (aisle overrides + merge memory). Corrections live
-// in their own file so clearing the list never forgets them.
+// merge memory. The memory lives in its own file so clearing the list never
+// forgets it.
 //
 // Writes are temp-file + rename (atomic enough); corrupt/missing files start
 // clean, never crash (architecture §7 stance).
@@ -14,12 +14,11 @@ import 'atomic_file.dart';
 
 class GroceryStore {
   GroceryStore._(this._listFile, this._overridesFile, this._items,
-      this._categories, this._mergeAliases, this._keepApart);
+      this._mergeAliases, this._keepApart);
 
   final File _listFile;
   final File _overridesFile;
   List<GroceryItem> _items;
-  final Map<String, String> _categories;
   final Map<String, String> _mergeAliases;
   final Set<String> _keepApart;
 
@@ -40,17 +39,12 @@ class GroceryStore {
     } catch (_) {
       items = []; // corrupt list: start clean
     }
-    var categories = <String, String>{};
     var aliases = <String, String>{};
     var keepApart = <String>{};
     try {
       if (await overridesFile.exists()) {
         final data = jsonDecode(await overridesFile.readAsString())
             as Map<String, dynamic>;
-        categories = {
-          for (final e in ((data['categories'] as Map?) ?? {}).entries)
-            e.key as String: e.value as String
-        };
         aliases = {
           for (final e in ((data['merge_aliases'] as Map?) ?? {}).entries)
             e.key as String: e.value as String
@@ -60,18 +54,13 @@ class GroceryStore {
         };
       }
     } catch (_) {
-      categories = {};
       aliases = {};
-      keepApart = {}; // corrupt overrides: defaults
+      keepApart = {}; // corrupt memory file: defaults
     }
-    return GroceryStore._(
-        listFile, overridesFile, items, categories, aliases, keepApart);
+    return GroceryStore._(listFile, overridesFile, items, aliases, keepApart);
   }
 
   List<GroceryItem> get items => List.unmodifiable(_items);
-
-  /// normalized key → aisle; precedence over the built-in map, always.
-  Map<String, String> get categoryOverrides => Map.unmodifiable(_categories);
 
   /// alias key → canonical key; confirmed merges, re-applied on future adds.
   Map<String, String> get mergeAliases => Map.unmodifiable(_mergeAliases);
@@ -87,18 +76,8 @@ class GroceryStore {
     });
   }
 
-  /// Wipes the list; overrides file untouched — corrections survive.
+  /// Wipes the list; the memory file is untouched — merges survive.
   Future<void> clearList() => saveItems(const []);
-
-  Future<void> setCategoryOverride(String key, String category) {
-    _categories[key] = category;
-    return _writeOverrides();
-  }
-
-  Future<void> removeCategoryOverride(String key) {
-    _categories.remove(key);
-    return _writeOverrides();
-  }
 
   Future<void> confirmMerge(
       {required String canonicalKey, required String aliasKey}) {
@@ -113,7 +92,6 @@ class GroceryStore {
 
   Future<void> _writeOverrides() => _writeJson(_overridesFile, {
         'version': 1,
-        'categories': _categories,
         'merge_aliases': _mergeAliases,
         'keep_apart': [..._keepApart],
       });

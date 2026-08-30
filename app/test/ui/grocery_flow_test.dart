@@ -1,7 +1,7 @@
 // Grocery 4a end-to-end: detail add → sections, cross-recipe merge, the
-// "Same thing?" prompt, recategorize + check-off persistence across restart
-// (new store over the same temp files), manual add, clear checked, empty
-// state, receipt banner. Same harness discipline as app_flow_test.dart;
+// "Same thing?" prompt, check-off persistence across restart (new store over
+// the same temp files), manual add, clear checked, empty state, receipt
+// banner. Same harness discipline as app_flow_test.dart;
 // snackbar asserts use the SHORT settle (rule 8).
 
 import 'dart:io';
@@ -239,47 +239,6 @@ void main() {
     expect(find.byIcon(Icons.playlist_add_rounded), findsOneWidget);
   });
 
-  testWidgets('recategorize: long-press → new aisle, pinned, remembered across restart',
-      (tester) async {
-    await seed(tester, 'pasta', 'Pasta',
-        [ing('2 tbsp sesame oil', qty: 2, unit: 'tbsp', item: 'sesame oil')]);
-    await tester.pumpWidget(app());
-    await settle(tester);
-
-    await addFromDetail(tester, 'Pasta');
-    await goGrocery(tester);
-    expect(find.text('PANTRY · 1'), findsOneWidget);
-
-    await tester.longPress(find.textContaining('sesame oil', findRichText: true));
-    await settle(tester, rounds: 4);
-    expect(find.text('MOVE TO'), findsOneWidget);
-    await tester.enterText(
-        find.byKey(const Key('new-aisle-field')), 'Asian pantry');
-    await tester.testTextInput.receiveAction(TextInputAction.done);
-    await settle(tester, rounds: 6);
-
-    expect(find.text('ASIAN PANTRY · 1'), findsOneWidget);
-    expect(find.text('your aisle'), findsOneWidget);
-    expect(find.text('moved here by you'), findsOneWidget);
-    expect(find.text('PANTRY · 1'), findsNothing);
-
-    // Restart: new store over the same files — correction and item survive.
-    // UI updates before persistence; the write chain (override file + list
-    // file, temp+rename each) needs a full settle before reloading from disk.
-    await settle(tester);
-    await tester.pumpWidget(const SizedBox());
-    await tester.pump();
-    final store2 = (await tester.runAsync(() => GroceryStore.load(
-        listFile: listFile, overridesFile: overridesFile)))!;
-    await tester.pumpWidget(app(groceryStore: store2));
-    await settle(tester);
-    await goGrocery(tester);
-
-    expect(find.text('ASIAN PANTRY · 1'), findsOneWidget);
-    expect(find.text('your aisle'), findsOneWidget);
-    expect(find.text('moved here by you'), findsOneWidget);
-  });
-
   testWidgets('check-off persists across restart', (tester) async {
     await seed(tester, 'pasta', 'Pasta', [ing('2 lemons', qty: 2, item: 'lemons')]);
     await tester.pumpWidget(app());
@@ -365,7 +324,7 @@ void main() {
 
   testWidgets(
       'Clear all: 6f confirm empties the list, Cancel keeps it, '
-      'aisle memory survives', (tester) async {
+      'merge memory survives', (tester) async {
     await seed(tester, 'pasta', 'Pasta', pastaIngs());
     await tester.pumpWidget(app());
     await settle(tester);

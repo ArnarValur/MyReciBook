@@ -4,8 +4,7 @@
 ## The bet — do not re-litigate without new evidence
 - Screenshot-first import + user-owned files + pay-once.
 - Pitch: "Collect the recipes buried in your camera roll."
-- A grocery list that merges duplicates, syncs with the meal plan,
-  and remembers category corrections.
+- A grocery list that merges duplicates and syncs with the meal plan.
 - Android-first is the moat — "no Android" is a top complaint against Crouton,
   Mela and Pestle, and none can follow quickly.
 

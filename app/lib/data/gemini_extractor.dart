@@ -20,6 +20,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 
 import '../domain/extractor.dart';
+import '../domain/quota.dart';
 
 class GeminiExtractor implements Extractor, LabelReader {
   // Flash-Lite for cost (Arnar 2026-08-19): same multimodal input, a
@@ -49,6 +50,13 @@ class GeminiExtractor implements Extractor, LabelReader {
   /// in Settings takes effect on the next call without rebuilding this.
   final String? Function()? byokKey;
 
+  /// Where the proxy's `quota` object goes (QuotaModel.record). Every proxy
+  /// answer carries the current fair-use numbers — success and 429 denial
+  /// alike — so the counter card stays current with zero extra calls
+  /// (docs/ai-cap-mechanics.md §2). Absent in tests; never fires on the
+  /// direct-Gemini transports, which have no counter to report.
+  final void Function(QuotaSnapshot)? onQuota;
+
   final Duration timeout;
   final http.Client _client;
 
@@ -59,6 +67,7 @@ class GeminiExtractor implements Extractor, LabelReader {
       this.installId = '',
       this.appCheckToken,
       this.byokKey,
+      this.onQuota,
       this.timeout = const Duration(seconds: 120),
       http.Client? client})
       : apiKey = apiKey ?? _apiKey,
@@ -180,6 +189,20 @@ class GeminiExtractor implements Extractor, LabelReader {
       ..remove('app_hint');
   }
 
+  /// Hands [onQuota] the `quota` object the proxy hung on this response.
+  /// Swallows everything: a stale counter is a cosmetic loss, and no
+  /// extraction may fail over one.
+  void _reportQuota(List<int> body) {
+    final sink = onQuota;
+    if (sink == null) return;
+    try {
+      final decoded = jsonDecode(utf8.decode(body, allowMalformed: true));
+      final quota = QuotaSnapshot.fromJson(
+          decoded is Map<String, dynamic> ? decoded['quota'] : null);
+      if (quota != null) sink(quota);
+    } catch (_) {}
+  }
+
   Future<Map<String, dynamic>> _generate(
       List<Map<String, dynamic>> parts) async {
     final byok = byokKey?.call()?.trim() ?? '';
@@ -228,6 +251,10 @@ class GeminiExtractor implements Extractor, LabelReader {
       // failure, so the review screen's failed→retry (D5) always triggers.
       throw ExtractionException('offline: $e');
     }
+    // Counter before verdict: a 429 denial carries the same quota object a
+    // success does (§2), and the card has to show the numbers that just
+    // refused the call — a user must never meet the cap as a bare error.
+    if (viaProxy) _reportQuota(resp.bodyBytes);
     if (resp.statusCode != 200) {
       throw ExtractionException(resp.body, httpStatus: resp.statusCode);
     }

@@ -1,5 +1,5 @@
-// GroceryStore: two-file persistence — list state + remembered corrections.
-// Corrupt files start clean; clearing the list keeps the corrections.
+// GroceryStore: two-file persistence — list state + remembered merges.
+// Corrupt files start clean; clearing the list keeps the merge memory.
 
 import 'dart:convert';
 import 'dart:io';
@@ -28,12 +28,11 @@ void main() {
   test('missing files → empty defaults', () async {
     final s = await load();
     expect(s.items, isEmpty);
-    expect(s.categoryOverrides, isEmpty);
     expect(s.mergeAliases, isEmpty);
     expect(s.keepApartPairs, isEmpty);
   });
 
-  test('round-trip: items, overrides, merge memory survive reload', () async {
+  test('round-trip: items and merge memory survive reload', () async {
     final s = await load();
     await s.saveItems([
       const GroceryItem(
@@ -49,7 +48,6 @@ void main() {
       const GroceryItem(
           id: '½ lemon', name: '½ lemon', category: 'Produce', manual: true),
     ]);
-    await s.setCategoryOverride('sesame oil', 'Asian Pantry');
     await s.confirmMerge(canonicalKey: 'lemons', aliasKey: 'lemon');
     await s.recordKeepApart('spring onion', 'onion');
 
@@ -59,7 +57,6 @@ void main() {
     expect(r.items.first.checked, isTrue);
     expect(r.items.first.qtyLabel, '½ cup');
     expect(r.items.last.name, '½ lemon');
-    expect(r.categoryOverrides, {'sesame oil': 'Asian Pantry'});
     expect(r.mergeAliases, {'lemon': 'lemons'});
     expect(r.keepApartPairs, {mergePairKey('onion', 'spring onion')});
   });
@@ -67,29 +64,50 @@ void main() {
   test('corrupt files → start clean, never throw', () async {
     await listFile().create(recursive: true);
     await listFile().writeAsString('{broken');
-    await overridesFile().writeAsString(jsonEncode({'categories': 'nope'}));
+    await overridesFile().writeAsString(jsonEncode({'merge_aliases': 'nope'}));
 
     final s = await load();
     expect(s.items, isEmpty);
-    expect(s.categoryOverrides, isEmpty);
+    expect(s.mergeAliases, isEmpty);
 
     // still writable after recovery
-    await s.setCategoryOverride('rice', 'Asian Pantry');
-    expect((await load()).categoryOverrides, {'rice': 'Asian Pantry'});
+    await s.confirmMerge(canonicalKey: 'lemons', aliasKey: 'lemon');
+    expect((await load()).mergeAliases, {'lemon': 'lemons'});
   });
 
-  test('clearList wipes items but corrections survive', () async {
+  // Devices that used the old aisle-correction feature still carry a
+  // 'categories' key on disk: it is ignored on read and dropped on the next
+  // write, and the merge memory beside it is untouched.
+  test('a leftover aisle-override key is ignored, merge memory survives',
+      () async {
+    await overridesFile().create(recursive: true);
+    await overridesFile().writeAsString(jsonEncode({
+      'version': 1,
+      'categories': {'sesame oil': 'Asian Pantry'},
+      'merge_aliases': {'lemon': 'lemons'},
+      'keep_apart': <String>[],
+    }));
+
+    final s = await load();
+    expect(s.mergeAliases, {'lemon': 'lemons'});
+
+    await s.confirmMerge(canonicalKey: 'onions', aliasKey: 'onion');
+    final data = jsonDecode(await overridesFile().readAsString())
+        as Map<String, dynamic>;
+    expect(data.containsKey('categories'), isFalse);
+    expect(data['merge_aliases'], {'lemon': 'lemons', 'onion': 'onions'});
+  });
+
+  test('clearList wipes items but the merge memory survives', () async {
     final s = await load();
     await s.saveItems([
       const GroceryItem(id: 'lemons', name: 'lemons', category: 'Produce'),
     ]);
-    await s.setCategoryOverride('sesame oil', 'Asian Pantry');
     await s.confirmMerge(canonicalKey: 'lemons', aliasKey: 'lemon');
     await s.clearList();
 
     final r = await load();
     expect(r.items, isEmpty);
-    expect(r.categoryOverrides, {'sesame oil': 'Asian Pantry'});
     expect(r.mergeAliases, {'lemon': 'lemons'});
   });
 
@@ -211,12 +229,5 @@ void main() {
 
     final s = await load();
     expect(s.items.single.productRef, '7038010071751');
-  });
-
-  test('removeCategoryOverride persists', () async {
-    final s = await load();
-    await s.setCategoryOverride('rice', 'Asian Pantry');
-    await s.removeCategoryOverride('rice');
-    expect((await load()).categoryOverrides, isEmpty);
   });
 }

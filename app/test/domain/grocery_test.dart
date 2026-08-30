@@ -444,23 +444,11 @@ void main() {
       expect(defaultCategoryFor('tomato'), GroceryCategories.produce);
     });
 
-    test('user override always wins', () {
-      expect(categoryFor('sesame oil', {'sesame oil': 'Asian Pantry'}),
-          'Asian Pantry');
-      expect(categoryFor('lemons', {'lemons': 'Pantry'}), 'Pantry');
-      final r = addRecipeToList(
-          items: const [],
-          recipe: recipe('r1',
-              [ing('sesame oil', item: 'sesame oil', qty: 2, unit: 'tbsp')]),
-          categoryOverrides: {'sesame oil': 'Asian Pantry'});
-      expect(r.items.single.category, 'Asian Pantry');
-      expect(GroceryCategories.isStock('Asian Pantry'), isFalse); // pin chip
-    });
-
     test('section order: Produce, user aisles, Pantry', () {
       final cats = ['Pantry', 'Asian Pantry', 'Produce']
         ..sort(GroceryCategories.compare);
       expect(cats, ['Produce', 'Asian Pantry', 'Pantry']);
+      expect(GroceryCategories.isStock('Asian Pantry'), isFalse); // pin chip
     });
   });
 
@@ -474,12 +462,6 @@ void main() {
     items = toggleChecked(items, 'spinach');
     final after = clearChecked(items);
     expect(after.single.key, 'lemons');
-  });
-
-  test('setItemCategory produces the moved-by-you result state', () {
-    var items = addManualItem(items: const [], name: 'Sesame oil');
-    items = setItemCategory(items, items.single.id, 'Asian Pantry');
-    expect(items.single.category, 'Asian Pantry');
   });
 
   // Edit re-sync (D6 amended): an update refreshes rows in place — it must

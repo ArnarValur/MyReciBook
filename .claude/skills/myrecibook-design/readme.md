@@ -36,7 +36,7 @@ Nothing here was invented; consult these if you have access:
 - **`ui/` mounted codebase** = `app/lib/ui/` of the repo: `theme.dart`
   (RbColors/RbTokens — token source of truth), `widgets/skin.dart` (shared
   primitives), `widgets/logo_mark.dart` (the drawn mark), `widgets/`
-  (glass_nav_bar, category_chips, editor_fields, product_picker_sheet,
+  (glass_nav_bar, collapsible_shelf, editor_fields, product_picker_sheet,
   product_row), and every screen (recipe list/detail, cook mode, import
   sheet/review, batch queue, grocery, pantry, diary, plan, unlock, storage,
   settings, manual entry).
@@ -202,7 +202,7 @@ define — nothing extra:
   mirroring the app's single glyph system)*
 
 Screen-level patterns documented but deliberately not componentized:
-ProductPickerSheet (composes SectionLabel + search + CategoryChipRow +
+ProductPickerSheet (composes SectionLabel + search + CollapsibleShelf +
 ProductRow in a drag sheet) and OriginalsViewer (full-screen black pinch-zoom
 pager over source screenshots, "Original · N" title).
 

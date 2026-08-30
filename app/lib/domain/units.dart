@@ -86,6 +86,41 @@ String _fmt(double v) {
 double _roundTo(double v, num step) => (v / step).round() * step.toDouble();
 
 // ---------------------------------------------------------------------------
+// The ratios themselves. One table per kind, read by the rewriting below AND
+// by the numeric helpers at the foot of the file — a second table would drift
+// from this one the first time a factor is corrected. Thresholds and rounding
+// steps stay where they are used: those are display policy, not ratios.
+//
+// A couple of keys (cl, mg) have no pattern in the rewriting regexes — a pack
+// printed in centilitres is reachable only through the numeric path.
+
+/// Millilitres in one of each volume unit. Spoons are here because a spoon IS
+/// a measurable amount; the "spoons stay spoons" rule at the top of the file
+/// is about what an ingredient line SHOWS, not about arithmetic.
+const _mlPer = <String, double>{
+  'ml': 1,
+  'cl': 10,
+  'dl': 100,
+  'l': 1000,
+  'tsp': 5,
+  'tbsp': 15,
+  'floz': 30,
+  'cup': 240,
+  'pint': 475,
+  'quart': 950,
+  'gallon': 3800,
+};
+
+/// Grams in one of each weight unit.
+const _gPer = <String, double>{
+  'mg': 0.001,
+  'g': 1,
+  'kg': 1000,
+  'oz': 28.35,
+  'lb': 454, // kitchen-sane, not 453.592
+};
+
+// ---------------------------------------------------------------------------
 // US → metric.
 
 final _fahrenheit = RegExp(
@@ -116,13 +151,13 @@ String _toMetric(String text) => text
     .replaceAllMapped(_usUnit, (m) {
       final q = _qty(m[1]!);
       return switch (_normUs(m[2]!)) {
-        'floz' => _ml(q * 30),
-        'cup' => _ml(q * 240),
-        'pint' => _ml(q * 475),
-        'quart' => _ml(q * 950),
-        'gallon' => _ml(q * 3800),
-        'oz' => _g(q * 28.35),
-        'lb' => _g(_roundTo(q * 454, 10)),
+        'floz' => _ml(q * _mlPer['floz']!),
+        'cup' => _ml(q * _mlPer['cup']!),
+        'pint' => _ml(q * _mlPer['pint']!),
+        'quart' => _ml(q * _mlPer['quart']!),
+        'gallon' => _ml(q * _mlPer['gallon']!),
+        'oz' => _g(q * _gPer['oz']!),
+        'lb' => _g(_roundTo(q * _gPer['lb']!, 10)),
         _ => m[0]!, // unreachable — every pattern branch is mapped
       };
     });
@@ -170,10 +205,10 @@ String _toImperial(String text) => text
       final q = _qty(m[1]!);
       return switch (_normMetric(m[2]!)) {
         'g' => _oz(q),
-        'kg' => _oz(q * 1000),
+        'kg' => _oz(q * _gPer['kg']!),
         'ml' => _usVolume(q),
-        'dl' => _usVolume(q * 100),
-        'l' => _usVolume(q * 1000),
+        'dl' => _usVolume(q * _mlPer['dl']!),
+        'l' => _usVolume(q * _mlPer['l']!),
         // Half-inch snap: a 20 cm pan IS the 8-inch pan, not "7¾ in".
         'cm' => '${_frac(q / 2.54, 2)} in',
         'mm' => '${_frac(q / 25.4, 4)} in',
@@ -193,15 +228,15 @@ String _normMetric(String u) {
 }
 
 String _oz(double g) {
-  final oz = g / 28.35;
+  final oz = g / _gPer['oz']!;
   if (oz >= 16) return '${_frac(oz / 16, 4)} lb';
   return oz < 1 ? '${_fmt(oz)} oz' : '${_frac(oz, 4)} oz';
 }
 
 String _usVolume(double ml) {
-  if (ml < 15) return '${_frac(ml / 5, 4)} tsp';
-  if (ml < 60) return '${_frac(ml / 15, 2)} tbsp';
-  final cups = ml / 240;
+  if (ml < 15) return '${_frac(ml / _mlPer['tsp']!, 4)} tsp';
+  if (ml < 60) return '${_frac(ml / _mlPer['tbsp']!, 2)} tbsp';
+  final cups = ml / _mlPer['cup']!;
   final label = cups > 1.125 ? 'cups' : 'cup';
   return '${_frac(cups, 4)} $label';
 }
@@ -227,4 +262,103 @@ String _frac(double v, int denominator) {
   }
   final whole = best.floor();
   return whole == 0 ? bestGlyph : '$whole$bestGlyph';
+}
+
+// ---------------------------------------------------------------------------
+// Numbers instead of text — what the grocery list's package-size math needs
+// (nutrition plan: "package-size math in the grocery list"). Same tables as
+// the rewriting above, so a pack and a recipe line agree on what a litre is.
+
+/// Every spelling we accept → the key the ratio tables use. Strict on
+/// purpose: "package", "clove" and "pinch" are units to a cook, they simply
+/// have no size, and inventing one is worse than staying quiet.
+const _unitNames = <String, String>{
+  'mg': 'mg', 'milligram': 'mg', 'milligrams': 'mg',
+  'g': 'g', 'gram': 'g', 'grams': 'g', 'gramme': 'g', 'grammes': 'g',
+  'kg': 'kg', 'kilo': 'kg', 'kilos': 'kg', 'kilogram': 'kg',
+  'kilograms': 'kg', 'kilogramme': 'kg', 'kilogrammes': 'kg',
+  'oz': 'oz', 'ounce': 'oz', 'ounces': 'oz',
+  'lb': 'lb', 'lbs': 'lb', 'pound': 'lb', 'pounds': 'lb',
+  'ml': 'ml', 'milliliter': 'ml', 'milliliters': 'ml',
+  'millilitre': 'ml', 'millilitres': 'ml',
+  'cl': 'cl', 'centiliter': 'cl', 'centiliters': 'cl',
+  'centilitre': 'cl', 'centilitres': 'cl',
+  'dl': 'dl', 'deciliter': 'dl', 'deciliters': 'dl',
+  'decilitre': 'dl', 'decilitres': 'dl',
+  'l': 'l', 'liter': 'l', 'liters': 'l', 'litre': 'l', 'litres': 'l',
+  'fl oz': 'floz', 'floz': 'floz', 'fluid ounce': 'floz',
+  'fluid ounces': 'floz',
+  'cup': 'cup', 'cups': 'cup',
+  'pt': 'pint', 'pint': 'pint', 'pints': 'pint',
+  'qt': 'quart', 'quart': 'quart', 'quarts': 'quart',
+  'gal': 'gallon', 'gallon': 'gallon', 'gallons': 'gallon',
+  'tsp': 'tsp', 'teaspoon': 'tsp', 'teaspoons': 'tsp',
+  'tbsp': 'tbsp', 'tbs': 'tbsp', 'tablespoon': 'tbsp',
+  'tablespoons': 'tbsp',
+};
+
+/// Spelling → table key; null for anything we do not convert. Case, dots and
+/// doubled spaces are noise ("Fl. Oz." is fl oz).
+String? canonicalUnit(String? raw) {
+  final s = (raw ?? '')
+      .toLowerCase()
+      .replaceAll('.', '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+  return s.isEmpty ? null : _unitNames[s];
+}
+
+/// [qty] of [unit] as one number in its kind's base — grams for a weight,
+/// millilitres for a volume — plus which base that was, because a gram must
+/// never be divided by a millilitre. Null when the unit is not one we
+/// convert; the caller then does nothing rather than guessing.
+({double amount, String base})? baseAmount(num qty, String? unit) {
+  final key = canonicalUnit(unit);
+  if (key == null) return null;
+  final ml = _mlPer[key];
+  if (ml != null) return (amount: qty.toDouble() * ml, base: 'ml');
+  final g = _gPer[key];
+  if (g != null) return (amount: qty.toDouble() * g, base: 'g');
+  return null;
+}
+
+/// A pack size read off a product's printed quantity — the SIZE field, which
+/// arrives from Open Food Facts as free text ("500 g", "1,5 L", "6 x 33 cl").
+class PackSize {
+  /// What ONE pack holds, in [unit]: a 6 × 33 cl pack holds 198 cl.
+  final double amount;
+
+  /// Table key ([canonicalUnit]'s output), never the printed spelling.
+  final String unit;
+
+  /// Items inside the pack — 1 normally, 6 for "6 x 33 cl". Display only:
+  /// [amount] already covers the whole pack.
+  final int units;
+
+  const PackSize({required this.amount, required this.unit, this.units = 1});
+}
+
+// "6 x 33 cl" | "500 g" | "1,5 L" | "250ml" — an optional multipack count, a
+// number, a unit, and nothing else. A size with words in it ("500 g net",
+// "1 kg (2 x 500 g)") is a size we cannot read: reading it wrong would put
+// the wrong number of bags in someone's trolley.
+final _packSizePattern = RegExp(
+    r'^(?:(\d+)\s*[x×]\s*)?(\d+(?:[.,]\d+)?)\s*([a-z][a-z. ]*)$',
+    caseSensitive: false);
+
+/// The printed size as a number we can divide by, or null — quietly — for
+/// anything else. A bare "500" carries no unit and stays unread.
+PackSize? parsePackSize(String? printed) {
+  final text = (printed ?? '')
+      .replaceAll('℮', '') // EU estimated-quantity mark: packaging, not data
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+  final m = _packSizePattern.firstMatch(text);
+  if (m == null) return null;
+  final unit = canonicalUnit(m[3]);
+  final each = double.tryParse(m[2]!.replaceAll(',', '.'));
+  final count = m[1] == null ? 1 : int.tryParse(m[1]!);
+  if (unit == null || each == null || each <= 0) return null;
+  if (count == null || count <= 0) return null;
+  return PackSize(amount: each * count, unit: unit, units: count);
 }
