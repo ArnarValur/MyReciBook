@@ -1,5 +1,7 @@
 # diary
 
+**Status:** Done — graduated 2026-08-30. Known gaps below are v1-acceptable.
+
 **Goal:** MyFitnessPal's meal diary on MyReciBook's own foundations — log what you
 ate into a day, from the pantry, from a recipe, or typed in, and see the day total
 against a goal. This is the piece that makes pantry, scanner and recipes one app.
@@ -195,11 +197,10 @@ Built by four parallel agents from docs/MyReciBook Flutter diary-pantry-mockups.
 - Add sheet already carried photos (ProductRow) and covers (_RecipeRow);
   _RecentRow keeps its history glyph on purpose.
 
-## Open — pruned 2026-08-30 (redeploy, meal names, photos: shipped; oats
-## re-read dropped as not operational)
-- [ ] Device verify — Arnar's eyes on meal hours, warm pantry boot, quarter
-      "+" product creation (build of 2026-08-30 carries it all)
-- [ ] Seeded starter packs: spot-check values against USDA
+## Open — none. Graduated 2026-08-30.
+- [x] Device verify — Arnar's eyes on meal hours, warm pantry boot, quarter
+      "+" product creation (confirmed 2026-08-30)
+- [x] Seeded starter packs spot-checked against USDA (confirmed 2026-08-30)
 
 ## Known gaps — fine for v1, revisit only if they annoy
 - Picker collapse chip ("Show all N") untested with >3 recipes

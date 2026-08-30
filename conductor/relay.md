@@ -1,6 +1,15 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-30 — state caught up with reality, diary graduates
+
+- Shipped: no code. Pulse and tracks corrected against Arnar's word — the
+  package-size hint, the new picker and the aisle delete are all verified on
+  the device; diary's device verify and USDA seeded-pack spot-check confirmed.
+- diary graduated to Done — agreed last session, never written down; the
+  checkpoint had recorded what got built instead of what was decided.
+- UNFINISHED: none.
+
 ## 2026-08-30 — the counter tells the truth, the aisle gesture dies
 
 - Shipped 0.20.0+42: quota counter fed by the proxy's real count (cached in
