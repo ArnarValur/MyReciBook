@@ -1,50 +1,56 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
 
-> **Updated:** 2026-08-30 (late)
+> **Updated:** 2026-08-31
 
 ## 📍 Now
-- Phase: build. 0.20.0+42 on main, all of it device-verified: quota counter,
-  package-size math, product picker, aisle-correction delete.
+- Phase: build. 0.20.0+42 on main, device-verified: quota counter, package-size
+  math, product picker, aisle-correction delete.
 - Deploy: debug build with dev.env, `adb install -r`; release APKs blocked by
-  the debug signature. IDE run needs the "S21, dev key" config — "no key"
-  builds a keyless app and every rescue fails.
-- Nutrition audited against the code 2026-08-30 and found COMPLETE: density
-  table, per-serving calculator, recipe badge, product edit page, manual
-  product entry, label photo, package-size math — real, tests pass.
-- Quota counter: proxy count parsed on extract and on 429, cached in
-  device.json, atop Settings. "—" before first contact; grace rescues have
-  their own counter, so 0/1,200 during the fortnight is correct.
-- BYOK live in code: cog dialog → device.json key, AI calls go direct to
-  Gemini. Open: buyers-only gate waits for billing · plaintext until keystore
-  hardening · no real-key run · no tests.
-- Offer in code: pay once; AI grace two weeks, then 1200/year; 10/min, 50/day.
-  Price NOT decided ($25 placeholder). Top-up: +1200 rescues, $5, never
-  expires (ai-cap §5).
+  the debug signature. IDE run needs the "S21, dev key" config.
+- .aab is unblocked and unbuilt: upload key at ~/keystores/myrecibook-upload.jks
+  wired through android/key.properties. Command is
+  `cd app && flutter build appbundle --release --dart-define-from-file=dev.env`.
+- Website contact form LIVE: POST /contact on myrecibook-proxy (rev 00005),
+  Brevo transactional mail, from noreply@myrecibook.com to myrecibook@gmail.com,
+  visitor in Reply-To. Verified end to end 2026-08-31 — mail landed.
+- Contact defences, all server-side and re-checked there: honeypot field,
+  3-second fill timer, field ceilings, header-injection refusal, 5/hour per IP,
+  origin allowlist. Bots get 200 "sent" and nothing is mailed. 41 proxy tests.
+- Brevo: free tier 300 mails/day, myrecibook.com DKIM+DMARC authenticated at
+  Namecheap. Key in Secret Manager as brevo-api-key (v2 = the REST xkeysib key;
+  v1 is the SMTP key and should be rotated — it passed through a chat log).
+- Website staging redeployed 2026-08-31: language picker HIDDEN behind
+  showLanguagePicker=false (locale files, routes, /is and /sv all intact),
+  terms rewritten, contact page rebuilt with the form.
+- Terms now: 1,200 AI recipe rescues included, no expiry, no reset, $5 top-up,
+  or your own Gemini key. "Yearly fair-use cap" wording gone everywhere.
+- BYOK live in code. Open: buyers-only gate waits for billing · plaintext until
+  keystore hardening · no real-key run · no tests.
 - Extraction server: myrecibook-proxy, Cloud Run europe-west1; Gemini key in
-  Secret Manager only, dev.env holds URL + connector keys; gcloud in
-  ~/google-cloud-sdk/bin, not on PATH.
-- Play: account live, nothing uploaded; entry must be FREE + one-time IAP.
-- Dependency bump parked to a pre-release session: 34 outdated (google_fonts
-  6→8, qr 3→4, code_assets 1→2).
-- Stale tests, lib right in all three: cookbook_view ×2 (docs/test-comb-2026-
-  08-29.md) and recipe_diary_chain "linking one ingredient" — taps a product
-  in the picker, which opens folded since the shelf rework.
-- website/ — Nuxt 4 landing, en live + is/sv drafts (is awaits Arnar, sv awaits
-  Höddi); privacy/terms/contact/404 English; staging noindex.
+  Secret Manager only; gcloud in ~/google-cloud-sdk/bin, not on PATH.
+- Play: account live, app entry created, nothing configured or uploaded; entry
+  must be FREE + one-time IAP.
 
 ## 🚀 Active tracks
-- mvp-build — open: billing seam, privacy policy, data safety form, welcome
-  screenshots, card on the import sheet + paywall, closed test on Play.
-- i18n — foundation on branch; control HIDDEN until one language done.
+- mvp-build — open: billing seam, data safety form, welcome screenshots, card on
+  the import sheet + paywall, closed test on Play, first .aab.
+- i18n — app foundation on branch, untouched; the website's picker is hidden,
+  not deleted. Control stays HIDDEN until one language is done.
 
 ## ⚠️ Blockers
-- Play: 12 testers × 14 days before production. Arnar recruiting; app entry +
-  merchant profile not created in Play Console.
-- Privacy policy + data safety form: website draft awaits Arnar's approval.
+- Play: 12 testers × 14 days before production. Arnar recruiting.
+- "Get MyReciBook" buttons (both) have no Play link yet — waiting on the store
+  listing.
+- Prod GCP project not created; myrecibook.com not mapped. Arnar's, today.
 
 ## 📌 Parked
-- nutrition dormant (Arnar 2026-08-30) — built out; its last item, meal-plan totals, needs a meal plan, and plan_tab.dart is a post-alpha placeholder.
-- serving labels ignore the units toggle (pantry/diary never call convertUnits) · grocery pack math cannot reach the density table, so cups vs a weight pack stay silent.
-- share-a-copy invite text + PDF footer breadcrumb (Arnar's session) · quick add · typed custom emoji · net-weight landing · skipped-files list · day-rollover hour · index-file pantry cache · postalpha preview still paints the old move-sheet mock · categoryCounts unused but still tested.
-- feedback channel · serving rescale · step ↔ ingredient chips · copy-to-date UI · row reorder · multi-barcode · orphan image cleanup · listicle import · accessibility pass · Dropbox approval · Play key backup · audit H2, M1-M6, L1-L4 · website OG per-page images.
+- nutrition dormant (Arnar 2026-08-30) — meal-plan totals need a meal plan; plan_tab.dart is a post-alpha placeholder.
+- App copy out of step with the site: unlock_tab.dart:130 still says "600 AI recipe rescues — fair-use cap, in writing" (site says 1,200, and Arnar cut "in writing" as cringe).
+- Store-listing screenshots use recipe photos found online — a complaint can pull the listing. Terms carry a takedown clause; the fix is own or licensed photos.
+- Crash scrubber strips keys, tokens, file names and paths — NOT recipe prose. Site copy corrected 2026-08-31; the scrubber itself unchanged.
+- Stale tests, lib right: cookbook_view ×2 (docs/test-comb-2026-08-29.md) · recipe_diary_chain "linking one ingredient" · shell_test ×2 ("Where your recipes live", "This phone") — found failing 2026-08-31.
+- Dependency bump parked to a pre-release session: 34 outdated.
+- serving labels ignore the units toggle · grocery pack math cannot reach the density table.
+- share-a-copy invite text + PDF footer breadcrumb · quick add · typed custom emoji · net-weight landing · skipped-files list · day-rollover hour · index-file pantry cache · postalpha preview paints the old move-sheet mock · categoryCounts unused but still tested.
+- feedback channel · serving rescale · step ↔ ingredient chips · copy-to-date UI · row reorder · multi-barcode · orphan image cleanup · listicle import · accessibility pass · Dropbox approval · Play key backup · audit H2, M1-M6, L1-L4 · website OG per-page images · is/sv translations await Arnar and Höddi.

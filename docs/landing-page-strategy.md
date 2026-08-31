@@ -133,7 +133,7 @@ the ONE-TIME badge.
 - Price: **$25 — confirmed by Arnar 2026-08-19.** Safe for public copy; carry it
   into the next conductor checkpoint so the app, listing and page all say the same number.
 - The in-app paywall card, mirrored: every recipe, forever, in your storage ·
-  600 AI rescues a year — fair-use cap, in writing · a grocery list that actually
+  600 AI recipe rescues — fair-use cap, in writing · a grocery list that actually
   merges · all future features included. ("600" is also a working number — confirm
   alongside the price.)
 - Directly beside the cap, always: "Typing recipes in yourself is unlimited. The

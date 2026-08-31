@@ -3,6 +3,23 @@
 **Goal:** the shippable v1 engine — extract → save → list → open, then sync and paywall.
 
 ## Done
+- [x] Website contact form, end to end 2026-08-31. POST /contact lives in the
+      extraction proxy (one Cloud Run service, one Secret Manager) and never
+      touches the ledger, App Check or Gemini — a message must not spend a
+      rescue. Brevo transactional mail: from noreply@myrecibook.com (domain
+      DKIM+DMARC authenticated at Namecheap), to myrecibook@gmail.com, visitor
+      in Reply-To. Defences all re-checked server-side because a bot posting
+      straight to the URL never runs the page's JavaScript: hidden honeypot
+      field, 3-second fill timer, field ceilings, header-injection refusal,
+      5/hour per IP, exact-origin allowlist. Traps answer 200 "sent" and mail
+      nothing. 11 new tests, 41 green. Key in Secret Manager as brevo-api-key.
+- [x] Terms and privacy corrected 2026-08-31: 1,200 AI recipe rescues included,
+      no expiry and no yearly reset, $5 top-up, or the buyer's own Gemini key.
+      Takedown clause replaces an admission about borrowed photos. The
+      "recipe text scrubbed" claim removed — the scrubber strips keys, tokens,
+      file names and paths, not prose.
+- [x] Website language picker hidden 2026-08-31 behind showLanguagePicker in
+      the layout. Locale files, routes and /is + /sv all intact for review.
 - [x] Extraction server DEPLOYED 2026-08-21 to Cloud Run europe-west1 (Firestore
       is the European multi-region, so a Nordic region would have been a
       cross-region hop). Verified end to end: real Gemini call, ledger

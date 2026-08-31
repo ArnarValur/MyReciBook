@@ -51,6 +51,16 @@ export default defineNuxtConfig({
     },
   },
 
+  // Where the contact form posts. The extraction proxy carries the route —
+  // one Cloud Run service, one Secret Manager. Overridable at build time with
+  // NUXT_PUBLIC_CONTACT_ENDPOINT.
+  runtimeConfig: {
+    public: {
+      contactEndpoint:
+        'https://myrecibook-proxy-dolshlji5a-ew.a.run.app/contact',
+    },
+  },
+
   // OG images off until we design one (index-card style, later)
   ogImage: { enabled: false },
 })

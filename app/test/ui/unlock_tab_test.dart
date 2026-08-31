@@ -9,10 +9,13 @@ import 'package:myrecibook/ui/theme.dart';
 import 'package:myrecibook/ui/unlock_tab.dart';
 
 void main() {
-  Future<void> pump(WidgetTester tester, {bool dark = false}) => tester
-      .pumpWidget(MaterialApp(
+  Future<void> pump(WidgetTester tester, {bool dark = false}) =>
+      tester.pumpWidget(
+        MaterialApp(
           theme: dark ? rbDarkTheme() : rbLightTheme(),
-          home: const UnlockTab()));
+          home: const UnlockTab(),
+        ),
+      );
 
   testWidgets('pitch carries the 3g promises, in both themes', (tester) async {
     for (final dark in [false, true]) {
@@ -22,10 +25,14 @@ void main() {
       expect(find.text(kUnlockPrice), findsOneWidget);
       expect(find.text('ONE-TIME'), findsOneWidget);
       // Constraint 2: the fair-use cap in writing, next to the price.
-      expect(find.text('600 AI rescues a year — fair-use cap, in writing'),
-          findsOneWidget);
-      expect(find.text('Every recipe, forever, in your storage'),
-          findsOneWidget);
+      expect(
+        find.text('600 AI recipe rescues — fair-use cap, in writing'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Every recipe, forever, in your storage'),
+        findsOneWidget,
+      );
     }
   });
 
@@ -34,16 +41,20 @@ void main() {
   testWidgets('why-not-a-subscription copy is always visible', (tester) async {
     await pump(tester);
     expect(find.text('Why not a subscription?'), findsOneWidget);
-    expect(find.textContaining('recipe box shouldn\'t have a landlord'),
-        findsOneWidget);
+    expect(
+      find.textContaining('recipe box shouldn\'t have a landlord'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('CTA waits for billing 3g honestly; no dead spread rows',
-      (tester) async {
+  testWidgets('CTA waits for billing 3g honestly; no dead spread rows', (
+    tester,
+  ) async {
     await pump(tester);
 
     final cta = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Unlock MyReciBook — $kUnlockPrice'));
+      find.widgetWithText(FilledButton, 'Unlock MyReciBook — $kUnlockPrice'),
+    );
     expect(cta.onPressed, isNull);
     expect(find.textContaining('nothing to buy just yet'), findsOneWidget);
 

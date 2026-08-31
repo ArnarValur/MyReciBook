@@ -15,7 +15,7 @@
   = rescue cap, not money). Exact price tag still Arnar's to name.
 - **Grocery list card** ("merged, deduplicated, asks before combining") — in
   the bet, not shipped as described.
-- **"1,200 AI rescues a year"** — TRUE (kDefaultYearlyCap). "Top-ups if you
+- **"1,200 AI recipe rescues"** — TRUE (kDefaultYearlyCap). "Top-ups if you
   run out" = billing seam, unstarted — the one soft claim on that card.
 - **"we read cursive"** — handwriting import untested as a claim; charming
   but risky in writing.

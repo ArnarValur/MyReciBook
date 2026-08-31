@@ -127,7 +127,7 @@ class PaywallPitch extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               check('Every recipe, forever, in your storage'),
-              check('600 AI rescues a year — fair-use cap, in writing'),
+              check('600 AI recipe rescues — fair-use cap, in writing'),
               check('A grocery list that actually merges'),
               check('All future features included'),
             ],

@@ -64,7 +64,7 @@ defineProps<{ src?: string }>()
       </div>
     </div>
 
-    <div class="marginalia" aria-hidden="true">covers pick their own color →</div>
+    <!--<div class="marginalia" aria-hidden="true">covers pick their own color →</div>-->
   </div>
 </template>
 

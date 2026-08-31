@@ -141,7 +141,7 @@ void main() {
       expect(find.text('ONE-TIME'), findsOneWidget);
       // Constraint 2: the fair-use cap is stated where the money is.
       expect(
-        find.text('600 AI rescues a year — fair-use cap, in writing'),
+        find.text('600 AI recipe rescues — fair-use cap, in writing'),
         findsOneWidget,
       );
       final cta = tester.widget<FilledButton>(

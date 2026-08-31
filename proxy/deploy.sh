@@ -15,6 +15,15 @@ PROJECT_ID="${PROJECT_ID:-gen-lang-client-0166122901}"
 REGION="${REGION:-europe-west1}"  # matches the eur3 Firestore multi-region
 SERVICE="${SERVICE:-myrecibook-proxy}"
 SECRET="${SECRET:-gemini-api-key}"
+BREVO_SECRET="${BREVO_SECRET:-brevo-api-key}"
+
+# Contact form (website). Sender must be an AUTHENTICATED Brevo sender.
+CONTACT_FROM_EMAIL="${CONTACT_FROM_EMAIL:-noreply@myrecibook.com}"
+CONTACT_FROM_NAME="${CONTACT_FROM_NAME:-MyReciBook}"
+CONTACT_TO_EMAIL="${CONTACT_TO_EMAIL:-myrecibook@gmail.com}"
+# Exact origins allowed to POST /contact — the live site, staging, and the
+# local dev server so the form can be exercised before a website deploy.
+CONTACT_ALLOWED_ORIGINS="${CONTACT_ALLOWED_ORIGINS:-https://myrecibook.com,https://www.myrecibook.com,https://myrecibook-website-staging-213431165631.europe-west1.run.app,https://myrecibook-website-staging-dolshlji5a-ew.a.run.app,http://localhost:3000,http://localhost:3001}"
 
 # Fair-use and abuse settings — the numbers from docs/ai-cap-mechanics.md §3.
 YEARLY_CAP="${YEARLY_CAP:-1200}"
@@ -54,8 +63,8 @@ gcloud run deploy "$SERVICE" \
   --concurrency 40 \
   --timeout 180s \
   --memory 512Mi \
-  --set-secrets "GEMINI_API_KEY=${SECRET}:latest" \
-  --set-env-vars "GOOGLE_CLOUD_PROJECT=${PROJECT_ID},YEARLY_CAP=${YEARLY_CAP},PER_MINUTE_LIMIT=${PER_MINUTE_LIMIT},PER_DAY_LIMIT=${PER_DAY_LIMIT},GRACE_DAYS=${GRACE_DAYS},GLOBAL_DAILY_LIMIT=${GLOBAL_DAILY_LIMIT},APP_CHECK_ENFORCE=${APP_CHECK_ENFORCE}${FIREBASE_PROJECT_NUMBER:+,FIREBASE_PROJECT_NUMBER=$FIREBASE_PROJECT_NUMBER}"
+  --set-secrets "GEMINI_API_KEY=${SECRET}:latest,BREVO_API_KEY=${BREVO_SECRET}:latest" \
+  --set-env-vars "^;^GOOGLE_CLOUD_PROJECT=${PROJECT_ID};YEARLY_CAP=${YEARLY_CAP};PER_MINUTE_LIMIT=${PER_MINUTE_LIMIT};PER_DAY_LIMIT=${PER_DAY_LIMIT};GRACE_DAYS=${GRACE_DAYS};GLOBAL_DAILY_LIMIT=${GLOBAL_DAILY_LIMIT};APP_CHECK_ENFORCE=${APP_CHECK_ENFORCE}${FIREBASE_PROJECT_NUMBER:+;FIREBASE_PROJECT_NUMBER=$FIREBASE_PROJECT_NUMBER};CONTACT_FROM_EMAIL=${CONTACT_FROM_EMAIL};CONTACT_FROM_NAME=${CONTACT_FROM_NAME};CONTACT_TO_EMAIL=${CONTACT_TO_EMAIL};CONTACT_ALLOWED_ORIGINS=${CONTACT_ALLOWED_ORIGINS}"
 
 URL="$(gcloud run services describe "$SERVICE" \
   --project "$PROJECT_ID" --region "$REGION" --format 'value(status.url)')"

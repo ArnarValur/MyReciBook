@@ -222,7 +222,7 @@ This is the second-biggest selling point after the screenshots. Give it real spa
   it goes on a public page.
 - **Hard paywall.** No subscription. No account.
 - **A fair-use AI cap must be stated in writing from day one**, on the page and in the store
-  listing. Current working number: **600 AI rescues a year** (≈100/month is the strawman;
+  listing. Current working number: **600 AI recipe rescues** (≈100/month is the strawman;
   real usage has not been measured yet). It can be *raised* later; it can never be lowered.
   Never write "unlimited" about the AI — that promise cannot be clawed back.
 - **Typing recipes in yourself is always unlimited** — that's the honest counterweight, and

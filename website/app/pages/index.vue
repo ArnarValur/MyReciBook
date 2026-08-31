@@ -644,18 +644,20 @@ const methodSteps = list('index.recipe.steps')
   justify-content: center;
   padding-bottom: 18px;
 }
+/* Quiet, not brand blue — the envelope is a backdrop for the three slips
+   in front of it, and blue here pulled the eye off them. */
 .envelope-mark {
   position: absolute;
   left: 50%;
   top: 40%;
   transform: translate(-50%, -50%);
-  color: var(--box-accent);
+  color: var(--box-ink-faint);
 }
 .envelope-front span {
   font-size: 11px;
   letter-spacing: 0.9px;
   text-transform: uppercase;
-  color: var(--box-accent);
+  color: var(--box-ink-faint);
 }
 
 /* ── Small screens: the box folds ────────────────────────── */

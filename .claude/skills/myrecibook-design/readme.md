@@ -68,7 +68,7 @@ Product promises stay quiet — the dashed info card, not a banner.
 - "Because your recipe box shouldn't have a landlord. You buy MyReciBook like you'd buy a good knife: once."
 - "If MyReciBook vanished tomorrow, your recipes wouldn't."
 - "Typing or pasting recipes in yourself is always unlimited — the cap only meters the AI."
-- "600 AI rescues a year — fair-use cap, in writing."
+- "600 AI recipe rescues — fair-use cap, in writing."
 
 **Tone examples (verbatim):**
 - Empty book: "Your book is empty (for now)" / "Somewhere in your camera roll, a pile of recipes is waiting to be rescued." → CTA "Rescue your first recipe"

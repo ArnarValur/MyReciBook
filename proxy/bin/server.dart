@@ -20,6 +20,15 @@
 //                         App Check tokens (the iss/aud claim carries it)
 //   ALLOWED_MODELS        comma-separated, default gemini-3.5-flash-lite
 //   PORT                  injected by Cloud Run, default 8080
+//
+// The website contact form (optional — absent, /contact simply 404s):
+//   BREVO_API_KEY         from Secret Manager. Without it the route is off.
+//   CONTACT_FROM_EMAIL    an AUTHENTICATED Brevo sender, default
+//                         noreply@myrecibook.com
+//   CONTACT_FROM_NAME     display name on the mail, default MyReciBook
+//   CONTACT_TO_EMAIL      where messages land, default myrecibook@gmail.com
+//   CONTACT_ALLOWED_ORIGINS  comma-separated exact origins allowed to POST.
+//                         Empty means any origin, which is local dev only.
 
 import 'dart:io';
 
@@ -28,6 +37,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
 import 'package:myrecibook_proxy/app_check.dart';
+import 'package:myrecibook_proxy/contact.dart';
 import 'package:myrecibook_proxy/firestore_ledger.dart';
 import 'package:myrecibook_proxy/proxy.dart';
 import 'package:myrecibook_proxy/usage_counter.dart';
@@ -139,6 +149,25 @@ Future<void> main() async {
     exit(1);
   }
 
+  // ---- the contact form ------------------------------------------------
+  // Optional by design: a missing Brevo key turns the route off rather than
+  // killing a deploy whose real job is extraction.
+  ContactHandler? contact;
+  final brevoKey = _env('BREVO_API_KEY');
+  if (brevoKey != null) {
+    contact = ContactHandler(ContactConfig(
+      brevoApiKey: brevoKey,
+      fromEmail: _env('CONTACT_FROM_EMAIL') ?? 'noreply@myrecibook.com',
+      fromName: _env('CONTACT_FROM_NAME') ?? 'MyReciBook',
+      toEmail: _env('CONTACT_TO_EMAIL') ?? 'myrecibook@gmail.com',
+      allowedOrigins: (_env('CONTACT_ALLOWED_ORIGINS') ?? '')
+          .split(',')
+          .map((o) => o.trim())
+          .where((o) => o.isNotEmpty)
+          .toSet(),
+    ));
+  }
+
   final handler = const Pipeline()
       // Method + path + status only — request bodies are recipe content and
       // never touch a log (context.md constraint 3).
@@ -151,6 +180,7 @@ Future<void> main() async {
         ),
         ledger: ledger,
         appCheck: appCheck,
+        contact: contact,
       ));
 
   final server = await shelf_io.serve(handler, InternetAddress.anyIPv4, port);
@@ -160,5 +190,6 @@ Future<void> main() async {
       '  free window:   $graceDays days (ceiling $kGraceCeiling)\n'
       '  rate limit:    $perMinute/min, $perDay/day per bucket\n'
       '  daily breaker: $globalDaily calls\n'
-      '  app check:     ${appCheckEnforce ? 'ENFORCED' : 'off (not enforced)'}');
+      '  app check:     ${appCheckEnforce ? 'ENFORCED' : 'off (not enforced)'}\n'
+      '  contact form:  ${contact == null ? 'off (no BREVO_API_KEY)' : 'on'}');
 }

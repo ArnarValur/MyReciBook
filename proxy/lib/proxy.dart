@@ -25,6 +25,7 @@ import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 
 import 'app_check.dart';
+import 'contact.dart';
 import 'usage_counter.dart';
 
 class ProxyConfig {
@@ -70,11 +71,19 @@ Handler buildHandler(
   http.Client? client,
   UsageLedger? ledger,
   AppCheckVerifier? appCheck,
+  ContactHandler? contact,
 }) {
   final upstream = client ?? http.Client();
   final usage = ledger ?? InMemoryUsageLedger();
 
   return (Request request) async {
+    // The website's contact form. Answered before every check below it: it
+    // carries no install id, spends no rescue, and must never reach the
+    // ledger or Gemini. Absent (no Brevo key configured) it simply 404s with
+    // the rest of the unknown paths.
+    final contactReply = contact?.maybeHandle(request);
+    if (contactReply != null) return contactReply;
+
     // '/health', NOT '/healthz': Cloud Run's frontend reserves /healthz and
     // answers it with its own 404 HTML before the container ever sees it
     // (found the hard way on the first deploy, 2026-08-21). Both are accepted

@@ -13,6 +13,10 @@ const localeFlags: Record<string, string> = {
   is: 'i-circle-flags:is',
   sv: 'i-circle-flags:se',
 }
+// Only English ships for now — Íslenska and Svenska are drafted but stay off
+// the live site until Arnar has reviewed them. Flip this to `true` (or drop it)
+// to bring the flag picker back; the locale files and wiring are untouched.
+const showLanguagePicker = false
 const localeItems = computed(() =>
   locales.value.map((l) => ({
     label: l.name,
@@ -39,7 +43,7 @@ const localeItems = computed(() =>
           <NuxtLink :to="localePath({ path: '/', hash: '#yours' })" class="tab tab-alt" style="transform: translateY(4px)">{{ $t('layout.tabYours') }}</NuxtLink>
         </nav>
         <div class="lid-actions">
-          <UDropdownMenu :items="localeItems">
+          <UDropdownMenu v-if="showLanguagePicker" :items="localeItems">
             <UButton
               :icon="localeFlags[locale]"
               color="neutral"
@@ -71,7 +75,7 @@ const localeItems = computed(() =>
           <LogoMark :size="22" />
           <span>MyReciBook</span>
         </span>
-        <span class="foot-line">{{ $t('layout.footLine') }} <a href="https://merkurial-studio.com" class="foot-link">Merkurial-Studio.com</a> · <a href="https://avj.info" class="foot-link">avj.info</a></span>
+        <span class="foot-line">{{ $t('layout.footLine') }} <a href="https://avj.info" class="foot-link">avj.info</a> at <a href="https://merkurial-studio.com" class="foot-link">Merkurial-Studio.com</a></span>
         <nav class="foot-nav">
           <NuxtLink :to="localePath('/privacy')">{{ $t('layout.privacy') }}</NuxtLink>
           <NuxtLink :to="localePath('/terms')">{{ $t('layout.terms') }}</NuxtLink>
