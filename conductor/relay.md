@@ -11,7 +11,9 @@
   sweep. All reverted. Rule written to memory: report, never rewrite.
 - Arnar: $25 IS the price · cursive IS tested (English + Norwegian) · Brevo
   SMTP key deleted at source · website first, Play after the app is finished.
-- UNFINISHED: prod GCP project + myrecibook.com mapping (Arnar's, next) ·
+- Prod GCP project created same evening: MyReciBook, `myrecibook-prod`,
+  number 283856393795 — written to docs/gcp-project-facts.md, nothing deployed.
+- UNFINISHED: website onto myrecibook-prod and myrecibook.com mapped ·
   the offer/engine contradiction on the yearly reset · the 429 message bug.
 
 
