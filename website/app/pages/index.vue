@@ -80,7 +80,7 @@ const methodSteps = list('index.recipe.steps')
         <div class="marginalia hero-marginalia" aria-hidden="true">
           {{ $t('index.hero.marginalia') }}
         </div>
-        <div class="stamp" aria-hidden="true">{{ $t('index.hero.stampTop') }}<br>{{ $t('index.hero.stampBottom') }}</div>
+        <div class="stamp" aria-hidden="true">{{ $t('index.hero.stamp') }}</div>
       </div>
 
       <div class="hero-checks">
@@ -338,11 +338,12 @@ const methodSteps = list('index.recipe.steps')
   border: 2.5px solid rgba(36, 56, 156, 0.4);
   border-radius: 6px;
   padding: 6px 12px;
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 1px;
   color: rgba(36, 56, 156, 0.55);
-  text-transform: uppercase;
 }
 .hero-checks {
   text-align: center;
@@ -681,7 +682,7 @@ const methodSteps = list('index.recipe.steps')
   .price-card { padding: 40px 28px 38px; }
 
   /* Hero heading stacks clear of the stamp — no more ink collision */
-  .stamp { right: 18px; top: 28px; font-size: 10px; padding: 5px 9px; letter-spacing: 1.5px; }
+  .stamp { right: 18px; top: 28px; font-size: 19px; padding: 4px 9px; letter-spacing: 0.5px; }
   .card-heading {
     flex-direction: column;
     align-items: flex-start;

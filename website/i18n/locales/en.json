@@ -29,8 +29,7 @@
       "ctaRescue": "Rescue your first recipe",
       "ctaQuiet": "Read the recipe for this app ↓",
       "marginalia": "grandma's handwriting welcome — we read cursive",
-      "stampTop": "Pay once",
-      "stampBottom": "cook forever",
+      "stamp": "There we are",
       "checks": [
         "Your recipes stay on your phone",
         "Google Drive & Dropbox are available for backup",
@@ -102,7 +101,7 @@
     },
     "rescue": {
       "heading": "One rescue, start to finish",
-      "hint": "real screenshots, not mockups",
+      "hint": "...with a little bit of butter.",
       "step1Alt": "A recipe screenshot buried in the camera roll",
       "step1Caption": "The screenshot, as found",
       "step2Alt": "The rescued recipe, shown for review before saving",

@@ -3,6 +3,33 @@
 **Goal:** the shippable v1 engine — extract → save → list → open, then sync and paywall.
 
 ## Done
+- [x] Prod infra 2026-09-01 (docs/prod-gcp-setup.md slices 1+2, minus App
+      Check and Drive OAuth): website live on myrecibook.com + www via
+      website/deploy-prod.sh (Cloud Run myrecibook-prod, cert, Namecheap DNS,
+      old parking records deleted); prod proxy deployed and smoke-tested
+      (health + model guard) with gemini-api-key (prepaid credits, tier 3)
+      and brevo-api-key in prod Secret Manager; Firestore (default) eur3;
+      Firebase linked, env Production; google-services-prod.json parked next
+      to dev; app/prod.env (Drive client still DEV until consent verifies)
+      and app/build-release.sh (swap → build .aab → restore) ready for the
+      paid era. Contact form stays on the dev proxy (step 6 decision).
+      Fresh-project trap logged: the compute default SA has no roles — it
+      needs roles/cloudbuild.builds.builder before the first deploy.
+- [x] Play app content forms, all of them, 2026-09-01: privacy URL
+      https://www.myrecibook.com/privacy, sign-in "no accounts", data safety
+      (collected-only: photos + user content ephemeral, crash logs +
+      diagnostics, device ids required for the counter; Gemini/Crashlytics
+      as processors, nothing "shared"), content rating (utility; Brazil
+      14+ for IAP), target audience 18+, financial none, health = nutrition
+      tracking. Store settings: Food & Drink, myrecibook@gmail.com,
+      www.myrecibook.com.
+- [x] Store listing drafted 2026-09-01 from the live website copy:
+      docs/play-store-listing.md (short 46 chars + full description) and
+      docs/MyReciBook-logo/assets/play/feature-graphic-1024x500.png (drawn
+      LogoMark + wordmark on cream). Arnar filled the listing and submitted
+      closed testing "Alpha" (Norway + Sweden, email-list testers) + en-GB
+      listing for Play review the same night. Screenshots still owed — from
+      a Play install, the dev build wears the debug banner.
 - [x] Copy audit 2026-08-31 against the settled offer. Fixed: unlock tab
       "600 AI recipe rescues — fair-use cap, in writing" → "1,200 AI recipe
       rescues included" (+ its two tests); app_en.arb crash caption dropped

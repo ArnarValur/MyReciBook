@@ -1,6 +1,19 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-01 — prod goes live in one night, every Play form falls
+
+- Shipped: myrecibook.com + www live on prod Cloud Run (deploy-prod.sh, DNS,
+  cert); prod proxy + Firestore eur3 + both keys in Secret Manager; prod.env
+  + build-release.sh (google-services swap); listing texts + feature graphic
+  drafted; Marco stamps on privacy/terms live.
+- Broke: deploy ×2 — fresh-project bucket lag, then the compute SA lacked the
+  builder role (new-GCP-project default; Arnar granted it).
+- Arnar: Gemini prepay on tier 3 · target 18+ only · data safety
+  collected-only · submitted closed "Alpha" (NO+SE) + en-GB listing to review.
+- UNFINISHED: Play review churning · S21 Play-install + listing screenshots ·
+  App Check SHA · Drive OAuth consent screen (weeks gate) — start it next.
+
 ## 2026-08-31 — "The First" goes to Play: internal testing is live
 
 - Shipped: first .aab ever built and published — Play internal testing,

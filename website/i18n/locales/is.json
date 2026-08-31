@@ -29,8 +29,7 @@
       "ctaRescue": "Bjargaðu fyrstu uppskriftinni",
       "ctaQuiet": "Lestu uppskriftina að þessu appi ↓",
       "marginalia": "rithönd ömmu er velkomin — við lesum tengiskrift",
-      "stampTop": "Borgaðu einu sinni",
-      "stampBottom": "eldaðu að eilífu",
+      "stamp": "There we are",
       "checks": [
         "Uppskriftirnar þínar eru áfram í símanum þínum",
         "Google Drive og Dropbox í boði fyrir öryggisafrit",

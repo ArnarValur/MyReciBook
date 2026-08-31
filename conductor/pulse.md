@@ -1,44 +1,42 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
 
-> **Updated:** 2026-08-31 (evening 2)
+> **Updated:** 2026-09-01 (night)
 
 ## 📍 Now
-- Phase: first testers. "The First" 0.20.0+42 LIVE on Play internal testing
-  since 2026-08-31 21:01 — first .aab ever (74 MB bundle, 15 MB install),
-  upload-key signed, dev.env; temporary app name until listing review.
-- Internal track = no forms, 100 testers max. The 12×14d clock runs only in
-  CLOSED testing. Plan: internal now (Arnar + Höddi), closed when recruited.
-- Play next: Testers tab (two Gmails, invite link to Höddi) → app setup forms.
-- S21: Play build signature differs — uninstall dev app first; folder grant +
-  settings reset, recipes in the user folder survive.
-- Prod plan: docs/prod-gcp-setup.md. Slice 1 = website onto myrecibook-prod +
-  map myrecibook.com (gives the privacy URL Play needs). Slice 2 = prod
-  proxy/Firestore/Firebase, only before anyone pays; testers stay on dev.
-- Dev Firestore wiped 2026-08-31 (quota+control, 6 docs, all already 1200),
-  verified empty. gcloud on PATH via ~/.zshrc now.
-- .aab command: `cd app && flutter build appbundle --release
+- Phase: first testers + Play review. "The First" 0.20.0+42 live on internal.
+  Submitted 2026-09-01 and now in Play review: closed testing "Alpha"
+  (Norway+Sweden, email-list testers), en-GB store listing, and ALL app
+  content forms (privacy URL, sign-in, ads, content rating — Brazil 14+,
+  target 18+, data safety collected-only, financial none, health nutrition).
+- PROD IS LIVE 2026-09-01: myrecibook.com + www on Cloud Run
+  (myrecibook-website, cert issued, Namecheap DNS set). Prod proxy
+  https://myrecibook-proxy-pp5bdjjhoq-ew.a.run.app smoke-tested; Firestore
+  (default) eur3; gemini-api-key + brevo-api-key in prod Secret Manager;
+  Firebase linked, env Production. Contact form still posts to the DEV
+  proxy on purpose (plan step 6 decision).
+- Prod key is on prepaid Gemini credits (tier 3, Arnar manages balance).
+- Release path ready, NOT for testers: app/prod.env (Drive client still
+  DEV — swap after consent verification) + app/build-release.sh (swaps
+  google-services-prod.json in, builds .aab off prod.env, restores dev).
+  Tester builds stay on dev.env + dev Firebase.
+- Play listing drafts: docs/play-store-listing.md (texts, from website copy)
+  + docs/MyReciBook-logo/assets/play/feature-graphic-1024x500.png.
+- Marco Pierre White easter eggs in site copy are deliberate — never "fix".
+- .aab: `cd app && flutter build appbundle --release
   --dart-define-from-file=dev.env`. Debug: `adb install -r` + dev.env.
-- Extraction proxy: Cloud Run europe-west1, dev project; contact form live on
-  it (Brevo). Website staging rev 00010: picker hidden, terms 1,200 no reset,
-  privacy names Gemini. Price $25. BYOK live, ungated until billing.
 
 ## 🚀 Active tracks
-- mvp-build — open: Play app setup forms, store listing, website→prod for the
-  privacy URL, testers invited, billing seam, card on import sheet + paywall,
-  welcome screenshots, closed test when ~12 recruited.
-- i18n — app foundation on branch, untouched; website picker hidden, not
-  deleted. Control stays HIDDEN until one language is done.
+- mvp-build — open: Play review outcome, S21 uninstall-dev → Play install →
+  listing screenshots, App Check (Play signing SHA-256), Drive OAuth consent
+  on prod, billing seam, card on import sheet + paywall, welcome screenshots.
+- i18n — app foundation on branch, untouched; website picker hidden.
 
 ## ⚠️ Blockers
-- Closed testing needs a public privacy URL → website to prod is next
-  session's work (plan slice 1).
-- Drive OAuth on prod: consent verification can take WEEKS — start early
-  (plan item 16). 12 testers × 14 days before production; Arnar recruiting.
-- "Get MyReciBook" buttons linkless — waiting on the store listing.
-- OFFER CONTRADICTS ENGINE: terms say nothing resets, firestore_ledger.dart:206
-  refills 1,200 on the purchase anniversary and the card renders "resets
-  <date>". Undecided. The 429 triple-meaning message bug rides with it.
+- Drive OAuth consent screen on prod NOT started — verification takes WEEKS.
+- Listing screenshots need a release install (debug banner on dev build).
+- OFFER CONTRADICTS ENGINE: terms say nothing resets,
+  firestore_ledger.dart:206 refills yearly; 429 triple-meaning bug rides.
 
 ## 📌 Parked
 - nutrition dormant · borrowed listing photos (takedown clause) · crash

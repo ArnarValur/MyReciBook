@@ -13,6 +13,7 @@ build/
 spike/screenshots/
 spike/out/
 app/dev.env
+app/prod.env
 
 # OAuth client downloads (console litter; IDs live in .env)
 client_secret_*.json

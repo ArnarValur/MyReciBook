@@ -28,10 +28,15 @@ The project number is also the prefix of the Drive OAuth client already in
 | Project name | MyReciBook |
 | Project ID | `myrecibook-prod` |
 | Project number | `283856393795` |
+| Parent org | merkurial-studio.com |
+| Firebase | linked 2026-08-31, environment type **Production** |
+| Billing | linked 2026-08-31, account `01C8DA-8CC208-A7AA68` |
+| Cloud Run | `myrecibook-website`, europe-west1, live 2026-08-31 |
 
-Nothing is deployed here yet. This is where the website goes live on
-myrecibook.com, and where the production proxy and Firebase project belong
-once the app is finished. `gen-lang-client-0166122901` stays the dev/test
+Website deployed 2026-08-31 via `website/deploy-prod.sh` —
+https://myrecibook-website-283856393795.europe-west1.run.app. Domain mapping
+to myrecibook.com pending. The production proxy and Firestore land here
+before anyone pays. `gen-lang-client-0166122901` stays the dev/test
 project — do not point release builds at it.
 
 ## Where these values are consumed
@@ -42,10 +47,9 @@ project — do not point release builds at it.
 | Project number | `FIREBASE_PROJECT_NUMBER` env var — App Check token `iss`/`aud` verification (`proxy/lib/app_check.dart`) |
 | Android package | `com.merkurialstudio.myrecibook` — Firebase app registration, Play Console |
 
-## Production project
+## Production still missing
 
-Does not exist yet. **Everything deployed as of 2026-08-21 is dev/test.**
-When prod is created it needs its own: Gemini auth key, Secret Manager secret,
+**Everything except the website is still dev/test.** Prod still needs its own: Gemini auth key, Secret Manager secret,
 Firestore database, Cloud Run service and URL, budgets, and App Check
 registration with the Play App Signing fingerprint. The only thing shared is
 the source. §4 item 9 of `docs/ai-cap-mechanics.md` calls for two

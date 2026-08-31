@@ -13,7 +13,7 @@ useSeoMeta({
   <section class="section">
     <div class="doc-card paper ruled">
       <CardTape style="left: 50%; top: -13px; width: 120px; height: 28px; transform: translateX(-50%) rotate(-1deg)" />
-      <span class="doc-draft">Draft — not fully baked through</span>
+      <span class="doc-draft">And it's as simple as that</span>
       <h1>Privacy</h1>
       <p class="doc-meta">The short version: your recipes live on your phone, not with us.</p>
 

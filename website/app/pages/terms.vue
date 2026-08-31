@@ -11,7 +11,7 @@ useSeoMeta({
   <section class="section">
     <div class="doc-card paper ruled">
       <CardTape style="left: 50%; top: -13px; width: 120px; height: 28px; transform: translateX(-50%) rotate(1deg)" />
-      <span class="doc-draft">Draft — not yet emulsified</span>
+      <span class="doc-draft">So there we have it</span>
       <h1>Terms</h1>
 
       <h2>The deal</h2>
