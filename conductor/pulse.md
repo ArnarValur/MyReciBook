@@ -18,13 +18,16 @@
   3-second fill timer, field ceilings, header-injection refusal, 5/hour per IP,
   origin allowlist. Bots get 200 "sent" and nothing is mailed. 41 proxy tests.
 - Brevo: free tier 300 mails/day, myrecibook.com DKIM+DMARC authenticated at
-  Namecheap. Key in Secret Manager as brevo-api-key (v2 = the REST xkeysib key;
-  v1 is the SMTP key and should be rotated — it passed through a chat log).
-- Website staging redeployed 2026-08-31: language picker HIDDEN behind
+  Namecheap. REST key in Secret Manager as brevo-api-key v2 — the one the proxy
+  reads. v1 held an SMTP key Arnar deleted at Brevo 2026-08-31; it is dead.
+- Website staging at rev 00010: language picker HIDDEN behind
   showLanguagePicker=false (locale files, routes, /is and /sv all intact),
-  terms rewritten, contact page rebuilt with the form.
+  terms rewritten, contact page rebuilt with the form, privacy names Google
+  Gemini as the model that structures recipe text.
+- Price IS decided: $25 (Arnar 2026-08-31). Cursive import IS tested, English
+  and Norwegian — both claims may stand on the site.
 - Terms now: 1,200 AI recipe rescues included, no expiry, no reset, $5 top-up,
-  or your own Gemini key. "Yearly fair-use cap" wording gone everywhere.
+  or your own Gemini key. App's unlock tab matches.
 - BYOK live in code. Open: buyers-only gate waits for billing · plaintext until
   keystore hardening · no real-key run · no tests.
 - Extraction server: myrecibook-proxy, Cloud Run europe-west1; Gemini key in
@@ -42,13 +45,18 @@
 - Play: 12 testers × 14 days before production. Arnar recruiting.
 - "Get MyReciBook" buttons (both) have no Play link yet — waiting on the store
   listing.
-- Prod GCP project not created; myrecibook.com not mapped. Arnar's, today.
+- Prod GCP project not created; myrecibook.com not mapped. Arnar's, next.
+- OFFER CONTRADICTS ENGINE: terms say nothing resets, but
+  proxy/lib/firestore_ledger.dart:206 refills 1,200 every purchase anniversary
+  and ships resets_at, which the counter card renders as "resets <date>".
+  Arnar's call, undecided. docs/ai-cap-mechanics.md still documents 600/year.
 
 ## 📌 Parked
 - nutrition dormant (Arnar 2026-08-30) — meal-plan totals need a meal plan; plan_tab.dart is a post-alpha placeholder.
-- App copy out of step with the site: unlock_tab.dart:130 still says "600 AI recipe rescues — fair-use cap, in writing" (site says 1,200, and Arnar cut "in writing" as cringe).
 - Store-listing screenshots use recipe photos found online — a complaint can pull the listing. Terms carry a takedown clause; the fix is own or licensed photos.
-- Crash scrubber strips keys, tokens, file names and paths — NOT recipe prose. Site copy corrected 2026-08-31; the scrubber itself unchanged.
+- Crash scrubber strips keys, tokens, file names and paths — NOT recipe prose. Site copy and app_en.arb corrected 2026-08-31; the scrubber itself unchanged.
+- 429 means three different things (per-minute, per-day, cap spent) and import_review_screen.dart:148 says "try again shortly" to all three — a buyer at the cap is told to wait forever. Proxy already sends the right message and the app drops it.
+- postalpha 4d "Fair-use cap reached" preview still says 600/600, "this year", "resets 1 January"; no BYOK door. Debug-only, but it is the design source for the real screen.
 - Stale tests, lib right: cookbook_view ×2 (docs/test-comb-2026-08-29.md) · recipe_diary_chain "linking one ingredient" · shell_test ×2 ("Where your recipes live", "This phone") — found failing 2026-08-31.
 - Dependency bump parked to a pre-release session: 34 outdated.
 - serving labels ignore the units toggle · grocery pack math cannot reach the density table.

@@ -27,7 +27,7 @@ useSeoMeta({
 
       <h2>What leaves your phone, and why</h2>
       <ul>
-        <li><strong>AI rescues.</strong> When you import a screenshot, link or photo, its content is sent to our extraction service, structured into a recipe, and returned. It is processed to answer that one request and is not stored as recipe content on our side.</li>
+        <li><strong>AI rescues.</strong> When you import a screenshot, link or photo, its content is sent to our extraction service, which passes it to Google's Gemini model to be structured into a recipe, and hands the result back. It is used to answer that one request. We do not keep it.</li>
         <li><strong>The rescue counter.</strong> To count AI rescues against your included 1,200 we key the tally to a one-way hash of your Play purchase token. We cannot read your identity out of it.</li>
         <li><strong>Barcodes.</strong> Scanning a package queries the Open Food Facts database for that barcode.</li>
         <li><strong>Crash reports.</strong> On by default so we can fix what breaks. Before anything is sent we strip out API keys, tokens, file names and folder paths — an error message can still carry a fragment of the text that broke, which is what makes it fixable. You can turn it off in Settings.</li>

@@ -139,9 +139,9 @@ void main() {
       // The purchase CTA states its own missing engine instead of no-opping.
       expect(find.text('No subscription. No account. Ever.'), findsOneWidget);
       expect(find.text('ONE-TIME'), findsOneWidget);
-      // Constraint 2: the fair-use cap is stated where the money is.
+      // Constraint 2: the rescue count is stated where the money is.
       expect(
-        find.text('600 AI recipe rescues — fair-use cap, in writing'),
+        find.text('1,200 AI recipe rescues included'),
         findsOneWidget,
       );
       final cta = tester.widget<FilledButton>(

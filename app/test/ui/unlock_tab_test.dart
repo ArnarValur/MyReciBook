@@ -24,9 +24,9 @@ void main() {
       expect(find.text('No subscription. No account. Ever.'), findsOneWidget);
       expect(find.text(kUnlockPrice), findsOneWidget);
       expect(find.text('ONE-TIME'), findsOneWidget);
-      // Constraint 2: the fair-use cap in writing, next to the price.
+      // Constraint 2: the rescue count stated next to the price.
       expect(
-        find.text('600 AI recipe rescues — fair-use cap, in writing'),
+        find.text('1,200 AI recipe rescues included'),
         findsOneWidget,
       );
       expect(

@@ -10,7 +10,7 @@
 // dead end. Spread-the-word rows wait behind [kSpreadWordEnabled] for a
 // live destination.
 //
-// $25 and 600/yr stay working numbers until Arnar prices for real.
+// $25 is the price (Arnar, 2026-08-31). 1,200 rescues come with it.
 
 import 'package:flutter/material.dart';
 
@@ -127,7 +127,7 @@ class PaywallPitch extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               check('Every recipe, forever, in your storage'),
-              check('600 AI recipe rescues — fair-use cap, in writing'),
+              check('1,200 AI recipe rescues included'),
               check('A grocery list that actually merges'),
               check('All future features included'),
             ],

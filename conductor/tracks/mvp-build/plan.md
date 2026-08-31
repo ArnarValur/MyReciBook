@@ -3,6 +3,14 @@
 **Goal:** the shippable v1 engine — extract → save → list → open, then sync and paywall.
 
 ## Done
+- [x] Copy audit 2026-08-31 against the settled offer. Fixed: unlock tab
+      "600 AI recipe rescues — fair-use cap, in writing" → "1,200 AI recipe
+      rescues included" (+ its two tests); app_en.arb crash caption dropped
+      "Never your recipes", which the scrubber never delivered; privacy page
+      names Google Gemini as the model that structures recipe text — the same
+      answer the Play data-safety form needs. Confirmed by Arnar and NOT to be
+      softened: $25 is the price, cursive import is tested in English and
+      Norwegian.
 - [x] Website contact form, end to end 2026-08-31. POST /contact lives in the
       extraction proxy (one Cloud Run service, one Secret Manager) and never
       touches the ledger, App Check or Gemini — a message must not spend a
@@ -107,6 +115,19 @@
 - Evidence, cost numbers and the remaining plan: docs/handoff-extraction-trim.md.
 
 ## Open
+- [ ] The offer contradicts the engine. Terms (live) say the 1,200 never
+      expire and nothing resets; proxy/lib/firestore_ledger.dart:206 does a
+      lazy anniversary reset and ships resets_at, which quota_counter_card.dart
+      renders as "resets <date>". docs/ai-cap-mechanics.md still documents
+      600/year. Arnar decides which is true, then one of the two changes.
+- [ ] 429 says three different things and the app hears one. The proxy answers
+      429 for rate_limited, daily_limit and cap_exceeded and sends a written
+      message for each; import_review_screen.dart:148 replies "Rate-limited —
+      try again shortly" to all three, so a buyer who has spent all 1,200 is
+      told to wait forever. Rides the decision above.
+- [ ] postalpha 4d "Fair-use cap reached" preview is stale: 600/600, "this
+      year", "resets 1 January", no BYOK door. Debug-only, but it is the design
+      source for the real screen the item above needs.
 - [ ] Re-rescue the Filled Cookies card on +39 — prose rule and split-line
       grouping unverified by Arnar's eyes; run variance is real.
 - [ ] Handoff remainder: deterministic app-side review flags (digits but no

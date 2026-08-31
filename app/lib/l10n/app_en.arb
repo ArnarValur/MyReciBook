@@ -34,8 +34,8 @@
 
   "sectionCrashReports": "Crash reports",
   "crashReportsSend": "Send crash reports",
-  "crashReportsCaption": "Anonymous error reports, so a crash gets fixed and not forgotten. Never your recipes.",
-  "@crashReportsCaption": { "description": "Explains what leaves the device. 'Never your recipes' is the promise — keep that reassurance in translation." },
+  "crashReportsCaption": "Anonymous error reports, so a crash gets fixed and not forgotten. Keys, file names and folder paths are stripped first.",
+  "@crashReportsCaption": { "description": "Explains what leaves the device. Say only what the scrubber does — it strips keys, tokens, file names and paths, NOT recipe prose, so never promise 'never your recipes'." },
   "crashReportsUnavailable": "Not available in this build. Errors are still recorded on this device.",
   "@crashReportsUnavailable": { "description": "Shown when the build has no crash-reporting sink compiled in." },
 

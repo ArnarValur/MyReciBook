@@ -1,6 +1,20 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-31 — the copy sweep, and one lesson about whose words these are
+
+- Shipped: website staging rev 00010 — privacy now names Google Gemini as the
+  model that structures recipe text. App: unlock tab reads "1,200 AI recipe
+  rescues included" (was 600 + "fair-use cap, in writing"), crash caption
+  stopped promising "Never your recipes", stale $25/600 comment corrected.
+- Broke: I rewrote four of Arnar's own sentences during a "spot stale info"
+  sweep. All reverted. Rule written to memory: report, never rewrite.
+- Arnar: $25 IS the price · cursive IS tested (English + Norwegian) · Brevo
+  SMTP key deleted at source · website first, Play after the app is finished.
+- UNFINISHED: prod GCP project + myrecibook.com mapping (Arnar's, next) ·
+  the offer/engine contradiction on the yearly reset · the 429 message bug.
+
+
 ## 2026-08-31 — the website grows a contact form, terms tell the truth
 
 - Shipped: POST /contact on myrecibook-proxy (Brevo, noreply@myrecibook.com →
