@@ -21,6 +21,19 @@ The project number is also the prefix of the Drive OAuth client already in
 `app/android/app/src/main/AndroidManifest.xml`
 (`com.googleusercontent.apps.213431165631-…`) — same project, as expected.
 
+## MyReciBook (prod) — created 2026-08-31
+
+| Field | Value |
+|---|---|
+| Project name | MyReciBook |
+| Project ID | `myrecibook-prod` |
+| Project number | `283856393795` |
+
+Nothing is deployed here yet. This is where the website goes live on
+myrecibook.com, and where the production proxy and Firebase project belong
+once the app is finished. `gen-lang-client-0166122901` stays the dev/test
+project — do not point release builds at it.
+
 ## Where these values are consumed
 
 | Value | Used by |

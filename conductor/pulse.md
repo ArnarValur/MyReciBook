@@ -45,7 +45,9 @@
 - Play: 12 testers × 14 days before production. Arnar recruiting.
 - "Get MyReciBook" buttons (both) have no Play link yet — waiting on the store
   listing.
-- Prod GCP project not created; myrecibook.com not mapped. Arnar's, next.
+- Prod GCP project created 2026-08-31: MyReciBook, id `myrecibook-prod`,
+  number 283856393795 (docs/gcp-project-facts.md). Nothing deployed to it yet;
+  myrecibook.com not mapped.
 - OFFER CONTRADICTS ENGINE: terms say nothing resets, but
   proxy/lib/firestore_ledger.dart:206 refills 1,200 every purchase anniversary
   and ships resets_at, which the counter card renders as "resets <date>".
