@@ -1,6 +1,17 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-08-31 — "The First" goes to Play: internal testing is live
+
+- Shipped: first .aab ever built and published — Play internal testing,
+  release "The First - 0.20.0+42", live 21:01. docs/prod-gcp-setup.md written
+  (slice 1 website→prod, slice 2 prod proxy/Firebase). Dev Firestore wiped
+  clean (6 docs, all already cap=1200). gcloud onto PATH in ~/.zshrc.
+- Arnar: start with internal track for him + Höddi, closed later · hygiene
+  wipe approved · next session: Play app setup + website→prod + URL mapping.
+- UNFINISHED: Testers tab (two Gmails + invite link) · S21 uninstall-dev-
+  then-install-from-Play · privacy URL → the whole plan slice 1.
+
 ## 2026-08-31 — the copy sweep, and one lesson about whose words these are
 
 - Shipped: website staging rev 00010 — privacy now names Google Gemini as the

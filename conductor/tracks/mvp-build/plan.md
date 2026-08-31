@@ -115,6 +115,14 @@
 - Evidence, cost numbers and the remaining plan: docs/handoff-extraction-trim.md.
 
 ## Open
+- [x] First .aab on Play — internal testing release "The First - 0.20.0+42"
+      live 2026-08-31 21:01. Internal track needs no forms; the 12×14d clock
+      runs only in closed testing. Dev Firestore ledger wiped same evening
+      for a clean tester start. Prod plan: docs/prod-gcp-setup.md.
+- [ ] Testers tab: email list with Arnar's + Höddi's Gmails, invite link to
+      Höddi. Arnar owns the clicks.
+- [ ] S21: uninstall the dev build (signature differs), install from the Play
+      invite link — first clean-device run of the Play-signed build.
 - [ ] The offer contradicts the engine. Terms (live) say the 1,200 never
       expire and nothing resets; proxy/lib/firestore_ledger.dart:206 does a
       lazy anniversary reset and ships resets_at, which quota_counter_card.dart
@@ -143,9 +151,10 @@
       on the internal track. Until then the server trusts a header the client
       invents. Sideloaded builds cannot attest — Play Integrity only vouches
       for installs that came from Play.
-- [ ] Play's own signing fingerprint into the app-proof registration, right
-      after the first upload — Play re-signs, so neither the upload nor the
-      debug fingerprint covers it.
+- [ ] Play's own signing fingerprint into the app-proof registration —
+      UNBLOCKED 2026-08-31: the first upload exists, so Play Console now
+      shows the app-signing SHA-256. Play re-signs, so neither the upload
+      nor the debug fingerprint covers it.
 - [ ] Measure real usage. The ledger records it from the first live call;
       nothing meaningful collected yet.
 - [ ] Closed test on Play — Google grants a new personal developer account
