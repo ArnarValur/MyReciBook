@@ -12,8 +12,9 @@
   develop branch, hotfix branches from the tag.
 - Offer engine matches the terms: the 1,200 grant NEVER refills (Decision 1),
   `resets_at` gone from wire + app; top-up = 600 for $5 on the unlock card
-  and in en/nb/da/fi/fo terms. Deployed proxies (dev + prod) still run the
-  OLD refill code — next deploy.sh run ships the fix.
+  and in en/nb/da/fi/fo terms. Dev proxy redeployed 2026-09-01, no-refill
+  live for testers. Prod proxy idle (nothing calls it) and still on OLD
+  refill code — MUST redeploy before the first paying user.
 - Market Decisions 2+3: i18n PAUSED (English copy still moving); listing
   short description = "…Pay once, no subscription." — words, never a number.
 - Website: non-English pages carry the translation sticker (English governs);
