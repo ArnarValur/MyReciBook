@@ -24,9 +24,11 @@ void main() {
       expect(find.text('No subscription. No account. Ever.'), findsOneWidget);
       expect(find.text(kUnlockPrice), findsOneWidget);
       expect(find.text('ONE-TIME'), findsOneWidget);
-      // Constraint 2: the rescue count stated next to the price.
+      // Constraint 2: the rescue count stated next to the price — and the
+      // top-up quantity on the same card (Decision 1, 2026-09-01).
       expect(
-        find.text('1,200 AI recipe rescues included'),
+        find.text('1,200 AI recipe rescues included — '
+            'top up 600 for \$5 if they ever run out'),
         findsOneWidget,
       );
       expect(

@@ -10,7 +10,8 @@
     "footLine": "Strikket og bakt av",
     "privacy": "Personvern",
     "terms": "Vilkår",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "translationNotice": "This page is a translation and may lag behind the English original. If anything differs — especially in Terms or Privacy — the English version governs."
   },
   "index": {
     "seo": {
@@ -173,7 +174,7 @@
     "dealTitle": "Avtalen",
     "dealBody": "Du kjøper MyReciBook én gang på Google Play, og den er din: kokeboken, handlelisten, skafferiet, strekkodeskanneren, næringssporingen, dataeksporten og skysikkerhetskopien — intet abonnement, ingen konto, og fremtidige oppdateringer er gratis.",
     "rescuesTitle": "AI-oppskriftsredninger",
-    "rescuesBody": "En AI-redning forvandler en skjermdump, en lenke eller et bilde til en strukturert oppskrift. Kjøpet ditt inkluderer 1 200 slike. De utløper aldri og ingenting nullstilles — når du går tom kan du fylle på nye 1 200 for $5, eller legge inn din egen Google Gemini API-nøkkel og kjøre AI-en direkte til kostpris. Å skrive inn oppskrifter selv er alltid ubegrenset og telles aldri. Kvoten er der for at ett engangskjøp skal kunne betale for sin egen AI-regning; «ubegrenset» AI er ikke noe man ærlig kan love, men jeg vil strekke meg langt for å gi brukere lavest og mest mulig effektiv kostnad med best mulige resultater.",
+    "rescuesBody": "En AI-redning forvandler en skjermdump, en lenke eller et bilde til en strukturert oppskrift. Kjøpet ditt inkluderer 1 200 slike. De utløper aldri og ingenting nullstilles — når du går tom kan du fylle på nye 600 for $5, eller legge inn din egen Google Gemini API-nøkkel og kjøre AI-en direkte til kostpris. Å skrive inn oppskrifter selv er alltid ubegrenset og telles aldri. Kvoten er der for at ett engangskjøp skal kunne betale for sin egen AI-regning; «ubegrenset» AI er ikke noe man ærlig kan love, men jeg vil strekke meg langt for å gi brukere lavest og mest mulig effektiv kostnad med best mulige resultater.",
     "contentTitle": "Innholdet ditt",
     "contentBody": "Oppskrifter du importerer eller skriver inn er dine til å samle på, hamstre og ta vare på. Ingenting låses inne, holdes som gissel eller gjemmes bak hemmelige kostnader eller skyløsninger — dataene er fullt og helt dine. Respekter rettighetene til oppskriftsforfattere når du deler eksporterte oppskrifter; MyReciBook er en arkivboks, ikke et forlag.",
     "takedownTitle": "Forespørsler om fjerning",

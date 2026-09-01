@@ -69,6 +69,13 @@ const localeItems = computed(() =>
       <div class="lid-edge" />
     </header>
 
+    <!-- Translation sticker (Arnar, 2026-09-01): every non-English locale may
+         lag behind the English source; English governs — especially the money
+         wording in Terms. Invisible today (picker hidden), armed for its return. -->
+    <div v-if="locale !== 'en'" class="translation-note" role="note">
+      {{ $t('layout.translationNotice') }}
+    </div>
+
     <slot />
 
     <!-- ── Footer: bottom of the box ────────────────────────── -->
@@ -145,6 +152,24 @@ const localeItems = computed(() =>
 .tab-alt { background: var(--box-tab-alt); }
 .tab:hover { background: var(--box-tab-hover); color: var(--box-accent); }
 .lid-edge { height: 1.5px; background: var(--box-line); }
+
+/* ── Translation sticker — a taped-on note, same kraft family ── */
+.translation-note {
+  max-width: 1040px;
+  margin: 18px auto 0;
+  padding: 10px 18px;
+  background: var(--box-tab-alt);
+  border: 1px dashed var(--box-line);
+  border-radius: 10px;
+  transform: rotate(-0.4deg);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--box-ink-soft);
+  text-align: center;
+}
+@media (max-width: 720px) {
+  .translation-note { margin: 14px 16px 0; }
+}
 .lid-actions { align-self: center; display: flex; align-items: center; gap: 2px; }
 .lamp { color: var(--box-ink-soft); }
 

@@ -55,9 +55,11 @@ void main() {
     final body = jsonDecode(await resp.readAsString()) as Map<String, dynamic>;
     expect(body['candidates'], isEmpty, reason: 'upstream content untouched');
     final quota = body['quota'] as Map<String, dynamic>;
-    expect(quota['cap'], kDefaultYearlyCap);
+    expect(quota['cap'], kDefaultIncludedCap);
     expect(quota, contains('used'));
-    expect(quota, contains('resets_at'));
+    // Nothing resets (Decision 1) — the wire contract must not carry a date
+    // that lets any UI promise a refill.
+    expect(quota, isNot(contains('resets_at')));
   });
 
   test('health answers without touching upstream', () async {
@@ -159,7 +161,7 @@ void main() {
       expect(upstreamCalls, hasLength(2), reason: 'no spend past the cap');
     });
 
-    test('is per bucket, and resets lazily on the anniversary', () async {
+    test('is per bucket, and NEVER refills — not even years later', () async {
       var now = DateTime.utc(2026, 8, 21);
       final h = handler(
           ledger: InMemoryUsageLedger(cap: 1, now: () => now, graceDays: 0));
@@ -171,9 +173,10 @@ void main() {
                   headers: {'x-install-id': 'other-install-0002'})))
               .statusCode,
           200);
-      // Past the anniversary the included allowance is back.
-      now = DateTime.utc(2027, 8, 22);
-      expect((await h(_post(_path))).statusCode, 200);
+      // Decision 1: the grant is once, forever. An anniversary — or five —
+      // changes nothing; an empty grant stays empty until a top-up.
+      now = DateTime.utc(2031, 8, 22);
+      expect((await h(_post(_path))).statusCode, 429);
     });
 
     // The guarantee from §1: "a failed extraction is 0 rescues".

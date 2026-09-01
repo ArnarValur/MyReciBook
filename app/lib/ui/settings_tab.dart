@@ -275,7 +275,6 @@ class SettingsTab extends StatelessWidget {
                 QuotaCounterCard(
                   used: quota?.used,
                   cap: quota?.cap,
-                  resetsOn: quota?.resetsOn,
                   inGrace: quota?.inGrace ?? false,
                 ),
                 const SizedBox(height: 20),

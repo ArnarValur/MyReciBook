@@ -64,9 +64,9 @@ with a key on the device — dev only, never a shipped build.
 |---|---|---|
 | `GEMINI_API_KEY` | — (required) | server-held key; Secret Manager on Cloud Run |
 | `GOOGLE_CLOUD_PROJECT` | — | injected by Cloud Run; its presence selects the Firestore ledger |
-| `YEARLY_CAP` | `1200` | per-bucket fair-use cap |
+| `INCLUDED_CAP` | `1200` | per-bucket included grant — never refills (Decision 1); `YEARLY_CAP` read as fallback |
 | `PER_MINUTE_LIMIT` | `10` | per-bucket rate limit (§3 layer 2) |
-| `PER_DAY_LIMIT` | `50` | per-bucket daily ceiling — nobody drains a year in an afternoon |
+| `PER_DAY_LIMIT` | `50` | per-bucket daily ceiling — nobody drains the grant in an afternoon |
 | `GRACE_DAYS` | `14` | the free fortnight |
 | `GLOBAL_DAILY_LIMIT` | `2000` | circuit breaker across all buckets (§3 layer 3) |
 | `APP_CHECK_ENFORCE` | `false` | require a verified App Check token |
@@ -81,9 +81,12 @@ after billing it becomes `sha256(purchaseToken)`, which is a one-line change
 because the ledger only ever sees an opaque string.
 
 ```
-status  cap  used  graceUsed  topupBalance  resetsAt  graceUntil
+status  cap  used  graceUsed  topupBalance  graceUntil
 windowStart  windowCount  day  dayCount  test
 ```
+
+(`resetsAt` existed before Decision 1 — the grant never refills now; a stale
+field on old documents is ignored and no longer written.)
 
 `control/global` holds `{day, count}` for the breaker. Counters, timestamps and
 a status — no recipe content, ever.

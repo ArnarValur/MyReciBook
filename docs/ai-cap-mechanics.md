@@ -8,6 +8,11 @@ cap UX + sentiment), all source-linked at the bottom; all arithmetic verified by
 script. This doc is the design for the parked "durable cap store" and half of the
 open billing seam.
 
+> **Amended 2026-09-01 (Decision 1, market plan):** the included grant NEVER
+> refills — no anniversary reset, nothing resets, ever. Top-up is **600 for
+> $5**. Every "yearly"/"resets"/"anniversary" line below is design history,
+> kept for the record; the sections carry inline notes where it matters.
+
 ---
 
 ## 0 · The economics first — verified numbers that make everything else calm
@@ -55,7 +60,7 @@ The flow:
    signed pass (JWT) so we don't re-verify every call.
 3. Every AI call carries the pass. Proxy checks the counter, calls Gemini,
    increments (`FieldValue.increment` inside the cap-check transaction), and
-   returns `{used, cap, resets_at}` in every response.
+   returns `{used, cap, …}` in every response (no reset date — Decision 1).
 4. A daily job polls Google's **Voided Purchases API**: refunded unlock → token
    dead (403); refunded top-up → negative balance. This closes the
    buy-register-refund-keep-using hole.
@@ -86,9 +91,8 @@ One Firestore document per buyer at `quota/{sha256(purchaseToken)}`:
 
 ```
 status:       active        # flips to "voided" on a Play refund → 403
-cap:          600
-used:         143           # spent from this year's allowance
-resetsAt:     <purchase anniversary>   # lazy reset — no cron
+cap:          1200          # the included grant — never refills (Decision 1)
+used:         143           # spent from the included grant
 graceUntil:   <purchaseTimeMillis + 14 days>  # from Google's record,
                                               # so reinstalls can't stretch it
 graceUsed:    27            # grace spending, quiet ceiling 300, then falls
@@ -102,13 +106,12 @@ allowance → top-up balance → gentle stop — and reserves the slot **before*
 Gemini is called, so parallel queue items can't overshoot a nearly-empty cap.
 If Gemini fails, a second transaction refunds whichever bucket was charged
 (that's how "failures never count" is kept). Spending order is deliberate:
-the expiring included allowance burns first, never-expiring paid top-ups last —
-a user never loses paid credit while free allowance sat unused. The anniversary
-reset is lazy: each request checks `now > resetsAt`, zeroes `used` and advances
-the date — no scheduled job; the voided-purchases cron stays the only cron.
+the included grant burns first, paid top-ups last — a user never loses paid
+credit while included allowance sat unused. There is NO reset of any kind
+(Decision 1): the voided-purchases cron stays the only cron.
 Cost: one read + one write per rescue (plus one write on a failure refund) —
 inside Firestore's free tier at every reachable scale. Every response returns
-`{used, cap, graceUntil, topupBalance, resetsAt}` so the app's counter UI is
+`{used, cap, graceUntil, topupBalance}` so the app's counter UI is
 always current with zero extra calls.
 
 ## 2 · How users see what's left
@@ -186,15 +189,17 @@ evaluated and **cannot do per-user metering** — per-user limits are RPM-only,
 one value for all users, no way to tie to a purchase. Our thin proxy stays; the
 constraint holds.
 
-## 5 · How users tap more AI when the year's allowance runs out
+## 5 · How users tap more AI when the included grant runs out
 
-**Shape: one-off consumable packs that never expire.** Decided 2026-08-30
-(Arnar): **one pack — "+1200 rescues, $5 flat, never expires."** Another full
-year's worth, one round number, no .99 charm pricing (deliberate — it's the
-anti-dark-pattern brand; ≈50 NOK). Math: a fully consumed
-pack costs ~$3.84 blended ($6.72 all-worst-path), $5 nets ~$4.25 after Play's
-15% — thin but positive, and top-up buyers are self-selected power users so
-assume high consumption. Top-ups are not the profit line; the unlock is.
+**Shape: one-off consumable packs that never expire.** Revised 2026-09-01
+(Decision 1, market plan): **one pack — "+600 rescues, $5 flat, never
+expires."** One round number, no .99 charm pricing (deliberate — it's the
+anti-dark-pattern brand; ≈50 NOK). Math: a fully consumed 600-pack costs
+~$1.92 blended ($3.36 all-worst-path), $5 nets ~$4.25 after Play's 15% —
+profitable in every mix (the 2026-08-30 "+1200 for $5" sizing lost money on
+all-webpage-fallback buyers and was resized, not repriced). Top-up buyers are
+self-selected power users so assume high consumption. Top-ups are not the
+profit line; the unlock is.
 Guard: bought packs never expire (promise, unchanged), but the price and size
 of *future* packs may change if model pricing moves against us — that valve is
 what makes the flat generous price safe to print. (Earlier working example
@@ -210,9 +215,10 @@ what makes the flat generous price safe to print. (Earlier working example
   once, then $1.99/*month* for AI import; that's its angriest review theme):
   1. Disclosed before purchase, on the same card as the cap.
   2. Nothing recurs. Ever. Packs are non-renewing by construction.
-  3. The included 600 resets on the **purchase anniversary** and does *not*
-     roll over — said plainly, because pretending otherwise is where Adobe's
-     forum rage comes from.
+  3. ~~The included 600 resets on the purchase anniversary~~ **Superseded by
+     Decision 1 (2026-09-01): the included 1,200 never refills — said just as
+     plainly, because pretending otherwise is where Adobe's forum rage comes
+     from.**
   4. **Purchased top-ups never expire** — the loved pattern (1min.AI), and it
      sidesteps the EU voucher/gift-card expiry question entirely.
   5. Everything non-AI stays unlimited forever (the AppSumo "split the value"
@@ -221,10 +227,11 @@ what makes the flat generous price safe to print. (Earlier working example
      they can see the reason for; they revolt at hidden ones (JoggAI's "Not a
      True Lifetime Deal" review) and at base offers that degrade later (Merlin).
 
-**Reset semantics — recommendation: anniversary of purchase.** Calendar year
-needs proration explanations; monthly drip is twelve expiry events wearing a
-subscription costume. Anniversary matches the pay-once mental model: your year
-starts when your ownership did. "The cap can rise, never fall" stays verbatim.
+**Reset semantics — SETTLED by Decision 1 (2026-09-01): there are none.** The
+grant is once, forever; an anniversary refill is unbounded lifetime cost — the
+COOKmate spiral (arithmetic in the market plan's Decisions §). The 2026-08-19
+anniversary recommendation is kept above only as the record of the road not
+taken. "The cap can rise, never fall" stays verbatim.
 
 **Onboarding grace — "your first two weeks don't count" (Arnar's idea,
 2026-08-19).** For 14 days after a purchase registers, the proxy logs rescues

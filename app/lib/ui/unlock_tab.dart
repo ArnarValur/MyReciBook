@@ -127,7 +127,10 @@ class PaywallPitch extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               check('Every recipe, forever, in your storage'),
-              check('1,200 AI recipe rescues included'),
+              // The top-up quantity on the same card as the cap (Decision 1,
+              // 2026-09-01 + framing rule 1: disclosed before purchase).
+              check('1,200 AI recipe rescues included — '
+                  'top up 600 for \$5 if they ever run out'),
               check('A grocery list that actually merges'),
               check('All future features included'),
             ],

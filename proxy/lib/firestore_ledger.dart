@@ -30,7 +30,7 @@ class FirestoreUsageLedger implements UsageLedger {
   FirestoreUsageLedger({
     required fs.FirestoreApi api,
     required String projectId,
-    this.cap = kDefaultYearlyCap,
+    this.cap = kDefaultIncludedCap,
     this.perMinuteLimit = 10,
     this.globalDailyLimit = 2000,
     this.graceDays = kGraceDays,
@@ -66,7 +66,7 @@ class FirestoreUsageLedger implements UsageLedger {
   /// file anywhere; the runbook grants the account `roles/datastore.user`.
   static Future<FirestoreUsageLedger> connect({
     required String projectId,
-    int cap = kDefaultYearlyCap,
+    int cap = kDefaultIncludedCap,
     int perMinuteLimit = 10,
     int globalDailyLimit = 2000,
     int graceDays = kGraceDays,
@@ -147,10 +147,6 @@ class FirestoreUsageLedger implements UsageLedger {
       var used = isNew ? 0 : _int(quota, 'used');
       var graceUsed = isNew ? 0 : _int(quota, 'graceUsed');
       var topup = isNew ? 0 : _int(quota, 'topupBalance');
-      var resetsAt = isNew
-          ? DateTime.utc(now.year + 1, now.month, now.day)
-          : (_time(quota, 'resetsAt') ??
-              DateTime.utc(now.year + 1, now.month, now.day));
       final graceUntil = isNew
           ? now.add(Duration(days: graceDays))
           : (_time(quota, 'graceUntil') ?? now);
@@ -177,7 +173,6 @@ class FirestoreUsageLedger implements UsageLedger {
           cap: bucketCap,
           topupBalance: topup,
           graceUsed: graceUsed,
-          resetsAt: resetsAt,
           graceUntil: graceUntil,
         );
       }
@@ -198,19 +193,12 @@ class FirestoreUsageLedger implements UsageLedger {
           cap: bucketCap,
           topupBalance: topup,
           graceUsed: graceUsed,
-          resetsAt: resetsAt,
           graceUntil: graceUntil,
         );
       }
 
-      // ---- lazy anniversary reset (§1: no cron) ------------------------
-      if (now.isAfter(resetsAt)) {
-        used = 0;
-        while (!resetsAt.isAfter(now)) {
-          resetsAt =
-              DateTime.utc(resetsAt.year + 1, resetsAt.month, resetsAt.day);
-        }
-      }
+      // No anniversary reset — the grant never refills (Decision 1). A stale
+      // `resetsAt` field on old documents is simply never read again.
 
       // ---- the spending ladder -----------------------------------------
       QuotaBucket? charged;
@@ -232,7 +220,6 @@ class FirestoreUsageLedger implements UsageLedger {
           cap: bucketCap,
           topupBalance: topup,
           graceUsed: graceUsed,
-          resetsAt: resetsAt,
           graceUntil: graceUntil,
         );
       }
@@ -250,7 +237,6 @@ class FirestoreUsageLedger implements UsageLedger {
               'used': _i(used),
               'graceUsed': _i(graceUsed),
               'topupBalance': _i(topup),
-              'resetsAt': _t(resetsAt),
               'graceUntil': _t(graceUntil),
               'windowStart': _t(windowStart),
               'windowCount': _i(windowCount),
@@ -275,7 +261,6 @@ class FirestoreUsageLedger implements UsageLedger {
         cap: bucketCap,
         topupBalance: topup,
         graceUsed: graceUsed,
-        resetsAt: resetsAt,
         graceUntil: graceUntil,
       );
     } finally {

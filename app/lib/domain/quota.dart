@@ -13,15 +13,15 @@ class QuotaSnapshot {
     required this.cap,
     this.graceUsed = 0,
     this.topupBalance = 0,
-    this.resetsAt,
     this.graceUntil,
   });
 
-  /// Rescues charged to the yearly allowance. Free-fortnight spending is NOT
+  /// Rescues charged to the included grant. Free-fortnight spending is NOT
   /// in here — it lands in [graceUsed] (§1).
   final int used;
 
-  /// The yearly cap the proxy is currently applying (1200 in the offer).
+  /// The included grant the proxy is currently applying (1200 in the offer).
+  /// It never refills — nothing resets, ever (Decision 1, 2026-09-01).
   final int cap;
 
   /// Rescues the free fortnight paid for. Recorded, never charged to [used].
@@ -30,9 +30,6 @@ class QuotaSnapshot {
   /// Never-expiring paid top-ups still in hand (§5). Kept because the proxy
   /// sends it; no UI shows it until top-ups are actually sellable.
   final int topupBalance;
-
-  /// When the yearly allowance rolls over. UTC.
-  final DateTime? resetsAt;
 
   /// When the free fortnight closes. UTC.
   final DateTime? graceUntil;
@@ -51,7 +48,8 @@ class QuotaSnapshot {
       cap: cap.toInt(),
       graceUsed: _int(json['grace_used']),
       topupBalance: _int(json['topup_balance']),
-      resetsAt: _time(json['resets_at']),
+      // A cached pre-Decision-1 copy may still carry `resets_at`; it is
+      // ignored — nothing resets.
       graceUntil: _time(json['grace_until']),
     );
   }
@@ -63,12 +61,11 @@ class QuotaSnapshot {
         'cap': cap,
         'grace_used': graceUsed,
         'topup_balance': topupBalance,
-        if (resetsAt != null) 'resets_at': resetsAt!.toIso8601String(),
         if (graceUntil != null) 'grace_until': graceUntil!.toIso8601String(),
       };
 
   /// The free fortnight as §2 means it: the window is still open AND the
-  /// yearly allowance is untouched, so the card can honestly say "nothing
+  /// included grant is untouched, so the card can honestly say "nothing
   /// counts yet". Past the grace ceiling the ladder starts charging [used],
   /// and that same sentence would be a lie.
   bool inGraceAt(DateTime now) =>
@@ -76,31 +73,8 @@ class QuotaSnapshot {
 
   bool get inGrace => inGraceAt(DateTime.now());
 
-  /// The card's human reset date, e.g. '1 January'. Local, because the reset
-  /// instant lands on the user's calendar day, not on UTC's. Null when the
-  /// proxy sent no date — the card drops the clause rather than invent one.
-  String? get resetsOn {
-    final d = resetsAt?.toLocal();
-    return d == null ? null : '${d.day} ${_monthNames[d.month - 1]}';
-  }
-
   static int _int(Object? v) => v is num ? v.toInt() : 0;
 
   static DateTime? _time(Object? v) =>
       v is String ? DateTime.tryParse(v)?.toUtc() : null;
 }
-
-const _monthNames = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December'
-];

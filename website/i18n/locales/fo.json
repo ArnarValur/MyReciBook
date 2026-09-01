@@ -10,7 +10,8 @@
     "footLine": "Knitted and Baked by",
     "privacy": "Privacy",
     "terms": "Terms",
-    "contact": "Contact"
+    "contact": "Contact",
+    "translationNotice": "This page is a translation and may lag behind the English original. If anything differs — especially in Terms or Privacy — the English version governs."
   },
   "index": {
     "seo": {
@@ -173,7 +174,7 @@
     "dealTitle": "The deal",
     "dealBody": "You buy MyReciBook once on Google Play and it is yours: the cookbook, grocery list, pantry, barcode scanner, nutrition tracker, data export and cloud backup — no subscription and no account and future updates are free.",
     "rescuesTitle": "AI recipe rescues",
-    "rescuesBody": "An AI recipe rescue turns a screenshot, a link or a photo into a structured recipe. Your purchase includes 1,200 of them. They do not expire and nothing resets — when they run out you can top up another 1,200 for $5, or plug in your own Google Gemini API key and run the AI directly at your own cost. Typing recipes in yourself is always unlimited and never counted. The count exists so one purchase can pay for its own AI bill; an \"unlimited\" AI is not something anyone can promise honestly, but I will strive to offer the lowest and efficient cost to Users with best results.",
+    "rescuesBody": "An AI recipe rescue turns a screenshot, a link or a photo into a structured recipe. Your purchase includes 1,200 of them. They do not expire and nothing resets — when they run out you can top up another 600 for $5, or plug in your own Google Gemini API key and run the AI directly at your own cost. Typing recipes in yourself is always unlimited and never counted. The count exists so one purchase can pay for its own AI bill; an \"unlimited\" AI is not something anyone can promise honestly, but I will strive to offer the lowest and efficient cost to Users with best results.",
     "contentTitle": "Your content",
     "contentBody": "Recipes you import or write are yours to collect, hoard and back up. None of them is gatekept, landlorded or locked behind secret costs or clouds — the data is yours, fully and truly. Respect the rights of recipe authors when you share exports; MyReciBook is a filing box, not a publisher.",
     "takedownTitle": "Takedown requests",

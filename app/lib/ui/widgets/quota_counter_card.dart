@@ -21,21 +21,17 @@ class QuotaCounterCard extends StatelessWidget {
     super.key,
     this.used,
     this.cap,
-    this.resetsOn,
     this.inGrace = false,
   });
 
-  /// Rescues consumed this cap year. Null with [cap] means this install has
-  /// never had an answer from the proxy — the card says so rather than show
-  /// a zero it cannot stand behind.
+  /// Rescues consumed from the included grant. Null with [cap] means this
+  /// install has never had an answer from the proxy — the card says so rather
+  /// than show a zero it cannot stand behind.
   final int? used;
 
-  /// The yearly fair-use cap (1200 in the offer). Null: see [used].
+  /// The included grant (1200 in the offer). It never refills — the card must
+  /// never hint at a reset date (Decision 1). Null: see [used].
   final int? cap;
-
-  /// Human date the counter resets on, e.g. '1 January'. Null hides the
-  /// reset clause (no date decided / not wired yet).
-  final String? resetsOn;
 
   /// Free-fortnight window: nothing counts yet (§2 grace wording).
   final bool inGrace;
@@ -196,8 +192,7 @@ class QuotaCounterCard extends StatelessWidget {
                               ? 'Your allowance shows up here after the first '
                                   'AI import.'
                               : '${_fmt(left)} of ${_fmt(cap)} '
-                                  'requests left'
-                                  '${resetsOn == null ? '' : ' — resets $resetsOn'}.',
+                                  'requests left.',
                   style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
                 ),
               ),

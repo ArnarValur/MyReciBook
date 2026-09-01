@@ -227,6 +227,21 @@
   sees are unchanged so far. Promote the 4d preview screen when this lands.
   Design source: docs/ai-cap-mechanics.md §2.
 
+## 2026-09-01 — Decision 1 executed (grant never refills)
+
+- Engine: lazy anniversary refill deleted from InMemoryUsageLedger and
+  FirestoreUsageLedger; `resets_at` gone from ReservationOutcome/toJson, the
+  Firestore document writes, QuotaSnapshot and the counter card; stale
+  `resetsAt` on old Firestore docs is ignored, never written again.
+- Names: kDefaultYearlyCap → kDefaultIncludedCap; env INCLUDED_CAP (YEARLY_CAP
+  still read as fallback); deploy.sh + README updated.
+- Copy: unlock card "1,200 included — top up 600 for $5 if they ever run out"
+  (test updated); en/nb/da/fi/fo terms say 600; 4d preview de-staled.
+- Tests: proxy 23 green incl. new "NEVER refills — not even years later";
+  app settings/batch/unlock 27 green; analyze clean both sides.
+- NOT deployed: dev + prod proxies still run the refill — next deploy.sh run
+  ships it. No version bump (nothing device-verified, no APK built).
+
 ## Parked — post-launch
 - **BYOK (bring your own key)** — agreed 2026-08-30; BUILT same day on
   Arnar's "proceed" (unparked from post-launch): key in device.json via

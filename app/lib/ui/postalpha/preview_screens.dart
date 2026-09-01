@@ -5,9 +5,9 @@
 //
 // Product guardrails carried from the handoff spec:
 // - Paywall states the fair-use cap in writing (constraint 2).
-// - Cap screen's top-up DECIDED 2026-08-30 (Arnar): +1200 rescues, $5 flat,
-//   never expires (docs/ai-cap-mechanics.md §5). Stays behind [kTopUpEnabled]
-//   until the consumable IAP exists.
+// - Cap screen's top-up REVISED 2026-09-01 (Decision 1, market plan): +600
+//   rescues, $5 flat, never expires; the included grant never refills. Stays
+//   behind [kTopUpEnabled] until the consumable IAP exists.
 // - Grocery merge is suggest-and-confirm, never silent (§6.3).
 
 import 'package:flutter/material.dart';
@@ -498,13 +498,13 @@ class CapReachedPreview extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              Text("You've rescued a lot this year",
+              Text("You've used your included rescues",
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineMedium
                       ?.copyWith(fontSize: 26, height: 1.2)),
               const SizedBox(height: 8),
               Text(
-                  "That's the fair-use cap we promised at purchase. It resets on 1 January.",
+                  "That's the 1,200 that came with your purchase. Nothing resets — add more below, or run on your own key.",
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                       color: scheme.onSurfaceVariant, height: 1.5)),
@@ -518,10 +518,10 @@ class CapReachedPreview extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('2026 AI rescues',
+                        Text('AI rescues',
                             style: theme.textTheme.titleSmall
                                 ?.copyWith(fontSize: 13)),
-                        Text('600 / 600',
+                        Text('1,200 / 1,200',
                             style: theme.textTheme.titleSmall?.copyWith(
                                 fontSize: 13, fontFamily: 'monospace')),
                       ],
@@ -546,7 +546,7 @@ class CapReachedPreview extends StatelessWidget {
               if (kTopUpEnabled) ...[
                 FilledButton(
                     onPressed: () => _notWired(context, 'The top-up pack'),
-                    child: const Text('Add 1,200 rescues — \$5')),
+                    child: const Text('Add 600 rescues — \$5')),
                 const SizedBox(height: 8),
               ],
               TextButton(

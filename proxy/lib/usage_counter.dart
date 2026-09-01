@@ -10,18 +10,18 @@
 /// and a failed extraction never spends the user's allowance.
 library;
 
-/// Working cap: 1200 rescues a year ("100 a month"), moved from 600 on
-/// 2026-08-21. Nothing prints in the listing until closed-test usage confirms
-/// it; once printed it can rise, never fall.
-const int kDefaultYearlyCap = 1200;
+/// The included grant: 1200 rescues with the purchase — once, forever, no
+/// anniversary reset (Decision 1, market plan, 2026-09-01). Lifetime cost is
+/// bounded at the moment of sale. Once printed it can rise, never fall.
+const int kDefaultIncludedCap = 1200;
 
 /// Grace spending before the counter starts biting — a quiet ceiling, never a
 /// hard stop (§1). Applies inside [ReservationOutcome.graceUntil].
 const int kGraceCeiling = 300;
 
 /// Length of the grace window, in days. **Fourteen — this is the offer**
-/// (Arnar, confirmed 2026-08-21): first two weeks free, then 1200 over the
-/// year. Not an implementation detail to be tuned away.
+/// (Arnar, confirmed 2026-08-21): first two weeks free, then the included
+/// 1200. Not an implementation detail to be tuned away.
 ///
 /// Grace spending is still fully RECORDED — it lands in `graceUsed`, its own
 /// counter, so total usage is always `graceUsed + used`. Free does not mean
@@ -36,20 +36,19 @@ const int kGraceDays = 14;
 /// catch: "we also need to make sure that users don't do 1000 requests a day
 /// for the first 14 days").
 ///
-/// The minute limit stops scripted hammering; the yearly cap stops the total.
-/// Neither stops a user — or a lifted APK — draining a whole allowance in an
-/// afternoon. At 1200/year the honest average is ~3/day, and even emptying a
-/// camera roll is tens, not hundreds. Fifty is generous for a real cook and
-/// ruinous for a scraper: it puts a floor of 6 days on the 300 grace rescues
-/// and 24 days on a full year's 1200.
+/// The minute limit stops scripted hammering; the included cap stops the
+/// total. Neither stops a user — or a lifted APK — draining a whole allowance
+/// in an afternoon. Even emptying a camera roll is tens, not hundreds. Fifty
+/// is generous for a real cook and ruinous for a scraper: it puts a floor of
+/// 6 days on the 300 grace rescues and 24 days on the full 1200.
 ///
-/// Deliberately NOT a hard stop on the year: it is a spend-rate governor, so
+/// Deliberately NOT a hard stop on the grant: it is a spend-rate governor, so
 /// the answer is "not today", never "never".
 const int kPerDayLimit = 50;
 
-/// Which bucket paid for a rescue. Order is deliberate: the expiring included
-/// allowance burns before never-expiring paid top-ups, so a user never loses
-/// paid credit while free allowance sat unused.
+/// Which bucket paid for a rescue. Order is deliberate: the included grant
+/// burns before paid top-ups, so paid credit is the last thing spent. Neither
+/// expires — nothing here resets (Decision 1).
 enum QuotaBucket { grace, included, topup }
 
 /// What a reserve attempt did, and everything the app's counter UI needs.
@@ -60,10 +59,9 @@ class ReservationOutcome {
     this.bucket,
     this.denyReason,
     this.used = 0,
-    this.cap = kDefaultYearlyCap,
+    this.cap = kDefaultIncludedCap,
     this.topupBalance = 0,
     this.graceUsed = 0,
-    this.resetsAt,
     this.graceUntil,
   });
 
@@ -79,7 +77,6 @@ class ReservationOutcome {
   final int cap;
   final int topupBalance;
   final int graceUsed;
-  final DateTime? resetsAt;
   final DateTime? graceUntil;
 
   /// The `quota` object every response carries, so the app's counter is
@@ -92,7 +89,8 @@ class ReservationOutcome {
         // biting yet — and so total usage is never lost.
         'grace_used': graceUsed,
         'topup_balance': topupBalance,
-        if (resetsAt != null) 'resets_at': resetsAt!.toUtc().toIso8601String(),
+        // No resets_at: nothing resets, ever (Decision 1) — the wire contract
+        // must not even hint at a refill date.
         if (graceUntil != null)
           'grace_until': graceUntil!.toUtc().toIso8601String(),
       };
@@ -123,7 +121,7 @@ abstract class UsageLedger {
 class InMemoryUsageLedger implements UsageLedger {
   InMemoryUsageLedger({
     DateTime Function()? now,
-    this.cap = kDefaultYearlyCap,
+    this.cap = kDefaultIncludedCap,
     this.perMinuteLimit = 10,
     this.globalDailyLimit = 2000,
     this.graceDays = kGraceDays,
@@ -179,7 +177,6 @@ class InMemoryUsageLedger implements UsageLedger {
         cap: b.cap,
         topupBalance: b.topupBalance,
         graceUsed: b.graceUsed,
-        resetsAt: b.resetsAt,
         graceUntil: b.graceUntil,
       );
     }
@@ -199,15 +196,10 @@ class InMemoryUsageLedger implements UsageLedger {
         cap: b.cap,
         topupBalance: b.topupBalance,
         graceUsed: b.graceUsed,
-        resetsAt: b.resetsAt,
         graceUntil: b.graceUntil,
       );
     }
-    // Lazy anniversary reset — no cron (§1).
-    if (now.isAfter(b.resetsAt)) {
-      b.used = 0;
-      b.resetsAt = _nextAnniversary(b.resetsAt, now);
-    }
+    // No anniversary reset — the grant never refills (Decision 1).
     final bucket = _pick(b, now);
     if (bucket == null) {
       return ReservationOutcome(
@@ -217,7 +209,6 @@ class InMemoryUsageLedger implements UsageLedger {
         cap: b.cap,
         topupBalance: b.topupBalance,
         graceUsed: b.graceUsed,
-        resetsAt: b.resetsAt,
         graceUntil: b.graceUntil,
       );
     }
@@ -239,7 +230,6 @@ class InMemoryUsageLedger implements UsageLedger {
       cap: b.cap,
       topupBalance: b.topupBalance,
       graceUsed: b.graceUsed,
-      resetsAt: b.resetsAt,
       graceUntil: b.graceUntil,
     );
   }
@@ -271,30 +261,17 @@ QuotaBucket? _pick(_Bucket b, DateTime now) {
   return null;
 }
 
-/// Advances a passed anniversary to the next one after [now] — a bucket idle
-/// for two years lands on the right date, not two resets behind.
-DateTime _nextAnniversary(DateTime resetsAt, DateTime now) {
-  var next = resetsAt;
-  while (!next.isAfter(now)) {
-    next = DateTime.utc(next.year + 1, next.month, next.day);
-  }
-  return next;
-}
-
 class _Bucket {
   _Bucket(DateTime firstSeen, this.cap, int graceDays)
-      : resetsAt =
-            DateTime.utc(firstSeen.year + 1, firstSeen.month, firstSeen.day),
-        // graceDays 0 → graceUntil == firstSeen, and `now.isBefore(graceUntil)`
-        // is false from the very first request: no grace, by construction.
-        graceUntil = firstSeen.add(Duration(days: graceDays));
+      // graceDays 0 → graceUntil == firstSeen, and `now.isBefore(graceUntil)`
+      // is false from the very first request: no grace, by construction.
+      : graceUntil = firstSeen.add(Duration(days: graceDays));
 
   String status = 'active';
   final int cap;
   int used = 0;
   int graceUsed = 0;
   int topupBalance = 0;
-  DateTime resetsAt;
   final DateTime graceUntil;
   final List<DateTime> recent = [];
   int day = -1;

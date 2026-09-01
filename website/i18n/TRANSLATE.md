@@ -27,8 +27,10 @@ value with its translation, working through the file top to bottom.
    Translate the text inside the tags, never remove or add tags.
 5. Do not translate: MyReciBook, Merkurial-Studio, Google Play, Google Drive,
    Dropbox, Gemini, Open Food Facts, support@myrecibook.com, `IMG_2041.jpg`.
-6. Numbers and prices stay as written: 1,200 rescues, $5, $25 (adapt the
-   thousands separator to the language's convention, keep the currency in $).
+6. Numbers and prices stay as written: 1,200 rescues included, 600 per top-up,
+   $5, $25 (adapt the thousands separator to the language's convention, keep
+   the currency in $). Never write anything implying the included rescues
+   reset or refill — they don't (Decision 1, 2026-09-01).
 7. Tone: informal "you" (du/þú/sinä/tú). Short sentences. No corporate
    phrasing, no legalese — the Terms page is deliberately written in plain
    speech; keep it plain in translation.
@@ -39,6 +41,9 @@ value with its translation, working through the file top to bottom.
 9. Keep translations roughly the same length as the English where the text sits
    in UI chrome (`layout.*`, buttons like `contact.send`, tab labels) — they
    must fit on one line.
+10. `layout.translationNotice` is the sticker shown on every non-English page:
+    it says the page may lag behind the English original and that English
+    governs. Translate it faithfully — it must keep exactly that meaning.
 
 ## Verify when done
 

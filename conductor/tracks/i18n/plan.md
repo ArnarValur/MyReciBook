@@ -11,6 +11,12 @@ of people who could BE those testers.
 **Unparked 2026-08-22.** Pulse had it filed under "i18n until paid v1".
 Arnar moved it to a track.
 
+**PAUSED 2026-09-01 (Arnar, market Decision 2).** English copy is the source
+of truth and still moving — translating now buys retranslation. Non-English
+website pages carry the "English governs" sticker meanwhile. Unfreeze order
+lives in conductor/tracks/market/plan.md Decisions §2: app string sweep →
+nb + sv + translated Play listing → da + fi → fo as the PR wedge.
+
 ## Languages — Arnar's list, 2026-08-22
 English (source) · Íslenska · Norsk bokmål · Svenska · Suomi · Dansk ·
 Deutsch · Français · Español · Italiano · Polski.

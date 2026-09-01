@@ -1,6 +1,17 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-01 — the refill dies in code, the site learns English governs
+
+- Shipped: Decision 1 executed — lazy refill deleted from both ledgers,
+  resets_at off the wire and out of the app, unlock + 5 locale terms say
+  600-for-$5, INCLUDED_CAP rename; proxy 23 + app 27 green. Translation
+  sticker on non-en pages + en fallback. Housekeeping commit rode ahead.
+- Arnar: English is the source of truth, sticker says English governs ·
+  i18n PAUSED (Decision 2) · short description gains "Pay once, no
+  subscription" (Decision 3). No version bump — the device hasn't seen it.
+- UNFINISHED: redeploy proxy dev+prod — the live wire still refills.
+
 ## 2026-09-01 — the release gets a tag, the website packs for four more countries
 
 - Shipped: branch website-i18n — privacy/terms/contact/404 keyed into en.json

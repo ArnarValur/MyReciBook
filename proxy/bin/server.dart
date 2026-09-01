@@ -7,11 +7,12 @@
 //                         the fallback. Absent → in-memory ledger, which is
 //                         correct ONLY in a single local process, and which
 //                         this server REFUSES to use on Cloud Run.
-//   YEARLY_CAP            per-bucket fair-use cap, default 1200
+//   INCLUDED_CAP          per-bucket included grant, default 1200 — never
+//                         refills (Decision 1); YEARLY_CAP read as fallback
 //   PER_MINUTE_LIMIT      per-bucket rate limit, default 10
 //   PER_DAY_LIMIT         per-bucket daily ceiling, default 50 — the
 //                         spend-rate governor, so nobody drains the free
-//                         fortnight or a whole year in an afternoon
+//                         fortnight or the whole grant in an afternoon
 //   GRACE_DAYS            free window, default 14 (the offer)
 //   GLOBAL_DAILY_LIMIT    circuit breaker across all buckets, default 2000
 //   APP_CHECK_ENFORCE     'true' to require a verified App Check token.
@@ -86,7 +87,9 @@ Future<void> main() async {
       .map((m) => m.trim())
       .where((m) => m.isNotEmpty)
       .toSet();
-  final cap = _envInt('YEARLY_CAP', kDefaultYearlyCap);
+  // INCLUDED_CAP is the name; YEARLY_CAP still read so an old deploy config
+  // cannot silently change the cap (the grant never refills — Decision 1).
+  final cap = _envInt('INCLUDED_CAP', _envInt('YEARLY_CAP', kDefaultIncludedCap));
   final perMinute = _envInt('PER_MINUTE_LIMIT', 10);
   final perDay = _envInt('PER_DAY_LIMIT', kPerDayLimit);
   final graceDays = _envInt('GRACE_DAYS', kGraceDays);
