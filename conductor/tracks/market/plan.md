@@ -78,11 +78,32 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
 
 ## Decisions
 
-*None yet. This is where they land, numbered, as we settle them.*
+1. **The grant never refills — lifetime cost is bounded at the moment of sale.**
+   *Settled 2026-09-01, Arnar + Cowork, answering Q1.* 1,200 AI rescues come
+   with the purchase, once, forever — no anniversary reset. Top-up: **$5 buys
+   600 more rescues**. BYOK stays as the power-user exit and the insurance
+   against future model pricing. The arithmetic (docs/ai-cap-mechanics.md,
+   prices verified 2026-08-19): a blended rescue costs ~$0.0032, so the worst
+   any buyer can ever cost us is ~$3.84 lifetime against ~$21.24 net from the
+   sale — bounded, ~18% in the maxed-out case, far less realistically. A
+   yearly refill is unbounded (~$3.84/yr; underwater past year ~6 on heavy
+   users) — the COOKmate spiral. $5-for-1,200 was considered and rejected:
+   $4.25 net against up to $6.72 in an all-webpage-fallback mix loses money on
+   exactly the heaviest buyers; $5-for-600 stays profitable in every mix
+   (blended $1.92, worst case $3.36). Re-verify Gemini's price sheet the day
+   the top-up SKU is created in Play.
+   **Consequences for Code:** ① remove the lazy anniversary refill —
+   proxy firestore_ledger.dart:206 + usage_counter.dart:206 and their tests;
+   this closes the OFFER-CONTRADICTS-ENGINE blocker in pulse. ② Website terms
+   and app unlock copy state the top-up as 600 for $5 (terms already say "no
+   reset" since 2026-08-31; the quantity is the new part). ③ Anything else
+   still implying a reset (`resets_at` in the proxy response contract, quota
+   card wording) follows the same rule: nothing resets.
 
 ## Open — the discussion queue
 
-- [ ] **Q1 — bounded recurring cost. Highest stakes.** COOKmate did not fail at
+- [x] **Q1 — bounded recurring cost. Highest stakes.** → **Decision 1.**
+      COOKmate did not fail at
       one-time pricing; it failed because one-time money had to fund 200+
       hand-maintained scrapers plus cloud sync forever, and the developer said
       so publicly in 2018. Our proxy is already thin and stateless (constraint
