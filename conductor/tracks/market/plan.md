@@ -100,6 +100,30 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
    still implying a reset (`resets_at` in the proxy response contract, quota
    card wording) follows the same rule: nothing resets.
 
+2. **Nordic order agreed; execution paused until English stabilises.**
+   *Settled 2026-09-01, answering Q3.* English is the single source of truth
+   and its copy is still moving (Decision 1 alone rewrote unlock and terms
+   text), so translating now just buys retranslation — Arnar told Code
+   directly: **i18n waits**. When it unfreezes, the order stands: app string
+   sweep first (coverage.md — no language ships half-translated); then nb + sv
+   together with a translated Play listing (the closed test is NO+SE, and
+   testers double as translation reviewers); then da + fi; fo last as a
+   deliberate PR move once the custom Flutter delegate exists ("the only
+   recipe app in Faroese" is a story, not a launch item). is stays
+   human-owned. The market read (five of seven rivals ship zero Nordic
+   languages) is the reason this is worth doing — not a reason to do it out
+   of order.
+
+3. **The price model enters the short description — in words, never a
+   number.** *Settled 2026-09-01, answering Q4.* Short description becomes:
+   *"Rescue the recipes buried in your camera roll. Pay once, no
+   subscription."* (73/80). Monetisation anger dominates rivals' written
+   reviews and users typed the words themselves ("one time purchase", "pay
+   once"); a printed number would rot and show the wrong currency — Play
+   localises the real price at the button, so no number appears anywhere in
+   the listing. Full description untouched: "Pay once. Like a good knife."
+   stays exactly as written. docs/play-store-listing.md updated.
+
 ## Open — the discussion queue
 
 - [x] **Q1 — bounded recurring cost. Highest stakes.** → **Decision 1.**
@@ -121,12 +145,15 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
       file, cheapest-first (docs → free installs → purchases last). Prior
       art: docs/library-import-research.md (Paprika buildable, ReciMe locked).
       Findings become Decision 2.
-- [ ] **Q3 — Nordic localisation at launch or after.** The i18n track already
+- [x] **Q3 — Nordic localisation.** → **Decision 2** (order agreed, i18n
+      paused until English copy stabilises). The i18n track already
       has Norsk bokmål, Svenska, Dansk and Suomi parked at 31 messages behind
       Íslenska. The market read says the Nordic gap is total and uncontested.
       Does that change the language order, or is it just confirmation that the
       existing order is right?
-- [ ] **Q4 — the listing's first line.** Competitors' own users wrote our copy.
+- [x] **Q4 — the listing's first line.** → **Decision 3** (price model in the
+      short description, in words, never a number). Competitors' own users
+      wrote our copy.
       Current draft texts live in `docs/play-store-listing.md`. Does the price
       go in the first line, and in what words?
 - [ ] **Q5 — what we steal, and in what order.** Synthesis §8 lists eight

@@ -7,7 +7,9 @@ Arnar edits before pasting; his words win.
 MyReciBook
 
 ## Short description (80 max)
-Rescue the recipes buried in your camera roll. (46)
+Rescue the recipes buried in your camera roll. Pay once, no subscription. (73)
+<!-- Agreed 2026-09-01 (market Decision 3): price model in words, never a
+     number — Play localises the real price at the button. -->
 
 ## Full description (4000 max)
 
