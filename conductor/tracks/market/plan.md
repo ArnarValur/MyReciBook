@@ -161,7 +161,13 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
       quantities, SideChef's per-step photos and hands-free voice, Mob's Adapt
       Recipe and aisle-sorted list, Cookpad's ingredient-first search,
       COOKmate's published backup schema). None are sized. Most are post-alpha.
-- [ ] **Q6 — refresh cadence.** This research is a snapshot dated 2026-09-01.
+- [ ] **Q6 — refresh cadence.** *Discussed 2026-09-01, left open at Arnar's
+      call — the sweep was expensive and nothing forces the answer yet. The
+      leaning, noted so it isn't re-argued from zero: event-triggered, not
+      calendar — full re-sweep when the launch track opens (+ a slim
+      Crouton/Mela/Pestle pay-once pass riding it), spot-check any single app
+      before quoting a live price (already the rule), and watch ReciMe as the
+      only fast-moving rival.* This research is a snapshot dated 2026-09-01.
       ReciMe is moving fast and is the only genuine rival. When do we re-run
       it, and against which apps — the same seven, or a revised list? Note the
       seven came from a Play search, and context.md names a different set

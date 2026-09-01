@@ -1,6 +1,15 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-01 — the market gets grilled: three decisions in one sitting (Cowork)
+
+- Shipped: market Decisions 1–3 (no refill ever + $5=600 top-up; i18n paused,
+  Nordic unfreeze order; short description gains "Pay once, no subscription");
+  export-recon.md checklist for Arnar's manual recon; ouroboros/vision.md
+  banked — the closed food loop, NOT open, deep-dive session to come.
+- Arnar: no timeline words, build order only · Q6 left open (leaning noted in
+  plan) · Q5 steal order unratified — rides the ouroboros deep-dive.
+
 ## 2026-09-01 — the refill dies in code, the site learns English governs
 
 - Shipped: Decision 1 executed — lazy refill deleted from both ledgers,
