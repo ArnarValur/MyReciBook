@@ -115,7 +115,12 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
 - [ ] **Q2 — migration in.** Nobody in the category ingests a rival's export.
       Users with 500–1500 recipes are trapped by file formats, not loyalty;
       several COOKmate reviewers report retyping by hand. Which formats do we
-      read, and is this an alpha item or a post-launch wedge?
+      read? (Timeline framing dropped 2026-09-01 — Arnar: no "alpha/post-launch"
+      talk, only build order.) **In progress:** Arnar is running the manual
+      export recon — workflow + checklist in `export-recon.md` beside this
+      file, cheapest-first (docs → free installs → purchases last). Prior
+      art: docs/library-import-research.md (Paprika buildable, ReciMe locked).
+      Findings become Decision 2.
 - [ ] **Q3 — Nordic localisation at launch or after.** The i18n track already
       has Norsk bokmål, Svenska, Dansk and Suomi parked at 31 messages behind
       Íslenska. The market read says the Nordic gap is total and uncontested.
