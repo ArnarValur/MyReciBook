@@ -1,5 +1,8 @@
 # Ouroboros — the food loop
 
+*Track OPENED 2026-09-01 (Arnar). The note below is from the banking day;
+decisions D1–D7 and the build steps live in plan.md. This file stays the idea.*
+
 *Vision doc, banked 2026-09-01 from a Cowork brainstorm (Arnar + Cowork).
 NOT a track yet — listed under "Not open yet" in tracks.md. This document
 exists so the dedicated deep-dive session boots with the whole idea intact.

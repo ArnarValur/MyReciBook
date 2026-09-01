@@ -28,6 +28,8 @@
   --dart-define-from-file=dev.env`. Debug: `adb install -r` + dev.env.
 
 ## 🚀 Active tracks
+- ouroboros — opened 2026-09-01. PoC slice one in worktree
+  ../MyReciBook-ouroboros (branch `ouroboros`); merges only after device verify.
 - mvp-build — open: Play review outcome, S21 uninstall-dev → Play install →
   listing screenshots, App Check SHA, Drive OAuth consent on prod, billing
   seam, card on import sheet + paywall, welcome screenshots, CLI Play
