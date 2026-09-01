@@ -5,8 +5,9 @@
 
 ## 📍 Now
 - Phase: first testers + Play review. "The First" 0.20.0+42 on internal —
-  2 official testers, Arnar + Höddi both installed via Play. Closed "Alpha"
-  (NO+SE) + en-GB listing submitted, in Play review.
+  2 official testers, Arnar + Höddi both installed via Play and proved
+  rescue + URL import live. Closed "Alpha" (NO+SE) + en-GB listing
+  submitted, in Play review.
 - Internal-track testers do NOT count toward the 12×14d closed gate.
 - Git: tag `the-first-0.20.0+42` = what Play holds; main moves freely, no
   develop branch, hotfix branches from the tag.
