@@ -14,6 +14,8 @@ Arnar moved it to a track.
 ## Languages — Arnar's list, 2026-08-22
 English (source) · Íslenska · Norsk bokmål · Svenska · Suomi · Dansk ·
 Deutsch · Français · Español · Italiano · Polski.
+Added 2026-09-01: Føroyskt — website only for now; the app needs a custom
+Flutter delegate for fo (no built-in support; system widgets fall back to da).
 
 One at a time, Icelandic first (Arnar, 2026-08-22): if the strings survive
 four cases and three genders they survive everything. Only COMPLETE languages
@@ -60,7 +62,20 @@ Polish read-through at the same time.
   (2026-08-22). That makes the parked "user feedback channel" load-bearing for
   this track — a wrong string with nowhere to report it stays wrong.
 
-## Built (branch i18n, 0.11.0+10, not folded to main)
+## Website leg (branch website-i18n, 2026-09-01)
+- [x] privacy/terms/contact/404 keyed into en.json — 148 messages total,
+      wording verbatim (his words, Marco stamps untouched); i18n-t for the
+      messages carrying links; site builds clean on the branch
+- [x] nb/da/fi/fo locale skeletons (full English copies), wired into
+      nuxt.config + flag picker (picker still hidden behind the flag)
+- [x] website/i18n/TRANSLATE.md — brief for Arnar's antigravity-cli (Gemini):
+      values only, keep placeholders/HTML, en/is/sv are human-owned
+- [x] website/scripts/check-locales.mjs — key/placeholder/tag parity vs en.json
+- [ ] Arnar points antigravity-cli at the branch; Gemini translates nb/da/fi/fo
+- [ ] Human passes: Arnar rewrites is, Höddi reads sv (both still out)
+- [ ] Fold to main + redeploy once translations land and read well
+
+## Built — app foundation (branch i18n, 0.11.0+10, folded to main; branch deleted 2026-09-01)
 - [x] flutter_localizations + intl, l10n.yaml, generate: true. Generated code
       is gitignored — `flutter pub get` rebuilds it, verified from a clean dir
 - [x] domain/app_language.dart — enum, parser, settings string, endonym
