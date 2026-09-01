@@ -19,8 +19,8 @@
 - Arnar: English is the source of truth, sticker says English governs ·
   i18n PAUSED (Decision 2) · short description gains "Pay once, no
   subscription" (Decision 3). No version bump — the device hasn't seen it.
-- UNFINISHED: prod proxy redeploy — parked until the paid era (dev done,
-  testers live on the no-refill ledger; both proved rescue + URL on Play).
+- UNFINISHED: none — dev + prod proxies both redeployed same night, smoke
+  green; testers live on the no-refill ledger, rescue + URL proved on Play.
 
 ## 2026-09-01 — the release gets a tag, the website packs for four more countries
 
