@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // Address is a placeholder until the myrecibook.com mailbox is verified.
+const { t } = useI18n()
 useSeoMeta({
-  title: 'Contact — MyReciBook',
-  description:
-    'Found a bug, got a suggestion, or want to tell us what belongs in the box next? Write — a person reads it.',
+  title: t('contact.seo.title'),
+  description: t('contact.seo.description'),
 })
 
 // No backend yet. Until the Firebase function (with captcha) is in place the
@@ -63,30 +63,27 @@ async function send() {
     <div class="doc-card paper ruled contact-card">
       <CardTape style="left: 26px; top: -14px; width: 104px; height: 28px; transform: rotate(-4deg)" />
       <CardTape style="right: 26px; top: -14px; width: 104px; height: 28px; transform: rotate(3deg)" />
-      <h1>Contact</h1>
-      <p class="doc-meta">From the kitchen of · Merkurial-Studio</p>
-      <p>
-        Found a bug, got a suggestion, or want to tell us what belongs in the
-        box next? <br>Write me — The human will reads it.
-      </p>
+      <h1>{{ $t('contact.title') }}</h1>
+      <p class="doc-meta">{{ $t('contact.meta') }}</p>
+      <p v-html="$t('contact.lede')" />
 
       <p v-if="state === 'sent'" class="sent-note">
-        Sent — thank you. You will hear back from a person, not a robot.
+        {{ $t('contact.sent') }}
       </p>
 
       <form v-else class="note-form" novalidate @submit.prevent="send">
         <label class="field">
-          <span class="field-label">Name</span>
+          <span class="field-label">{{ $t('contact.fieldName') }}</span>
           <input v-model="form.name" type="text" autocomplete="name" class="field-input">
         </label>
 
         <label class="field">
-          <span class="field-label">Email</span>
+          <span class="field-label">{{ $t('contact.fieldEmail') }}</span>
           <input v-model="form.email" type="email" autocomplete="email" class="field-input">
         </label>
 
         <label class="field">
-          <span class="field-label">Message</span>
+          <span class="field-label">{{ $t('contact.fieldMessage') }}</span>
           <textarea v-model="form.message" rows="5" class="field-input field-area" />
         </label>
 
@@ -96,21 +93,24 @@ async function send() {
         </div>
 
         <p v-if="touched && !ready" class="field-note">
-          Fill in your name, a working email and a few words, then send.
+          {{ $t('contact.invalid') }}
         </p>
         <p v-else-if="state === 'failed'" class="field-note">
-          That did not go through. Try again, or write to the address below.
+          {{ $t('contact.failed') }}
         </p>
 
         <button type="submit" class="cta contact-cta" :disabled="state === 'sending'">
           <UIcon name="i-material-symbols:send-rounded" class="cta-icon" />
-          {{ state === 'sending' ? 'Sending…' : 'Send' }}
+          {{ state === 'sending' ? $t('contact.sending') : $t('contact.send') }}
         </button>
       </form>
 
       <p v-if="state !== 'sent'" class="doc-meta contact-fallback">
-        Or write straight to
-        <a href="mailto:support@myrecibook.com">support@myrecibook.com</a>
+        <i18n-t keypath="contact.fallback">
+          <template #email>
+            <a href="mailto:support@myrecibook.com">support@myrecibook.com</a>
+          </template>
+        </i18n-t>
       </p>
     </div>
   </section>

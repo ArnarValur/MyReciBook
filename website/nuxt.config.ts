@@ -20,6 +20,10 @@ export default defineNuxtConfig({
       { code: 'en', language: 'en', name: 'English', file: 'en.json' },
       { code: 'is', language: 'is', name: 'Íslenska', file: 'is.json' },
       { code: 'sv', language: 'sv', name: 'Svenska', file: 'sv.json' },
+      { code: 'nb', language: 'nb', name: 'Norsk', file: 'nb.json' },
+      { code: 'da', language: 'da', name: 'Dansk', file: 'da.json' },
+      { code: 'fi', language: 'fi', name: 'Suomi', file: 'fi.json' },
+      { code: 'fo', language: 'fo', name: 'Føroyskt', file: 'fo.json' },
     ],
   },
 

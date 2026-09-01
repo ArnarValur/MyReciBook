@@ -12,6 +12,10 @@ const localeFlags: Record<string, string> = {
   en: 'i-circle-flags:gb',
   is: 'i-circle-flags:is',
   sv: 'i-circle-flags:se',
+  nb: 'i-circle-flags:no',
+  da: 'i-circle-flags:dk',
+  fi: 'i-circle-flags:fi',
+  fo: 'i-circle-flags:fo',
 }
 // Only English ships for now — Íslenska and Svenska are drafted but stay off
 // the live site until Arnar has reviewed them. Flip this to `true` (or drop it)

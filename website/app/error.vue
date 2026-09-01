@@ -2,7 +2,8 @@
 // The box has no card at this address.
 import type { NuxtError } from '#app'
 defineProps<{ error: NuxtError }>()
-useSeoMeta({ title: 'Not in the box — MyReciBook' })
+const { t } = useI18n()
+useSeoMeta({ title: t('error.seo.title') })
 </script>
 
 <template>
@@ -10,14 +11,11 @@ useSeoMeta({ title: 'Not in the box — MyReciBook' })
     <section class="section">
       <div class="doc-card paper ruled err-card">
         <CardTape style="left: 50%; top: -13px; width: 120px; height: 28px; transform: translateX(-50%) rotate(-1.5deg)" />
-        <span class="card-no">RECIPE Nº {{ error.statusCode }}</span>
-        <h1>Not in the box.</h1>
-        <p>
-          This card must have been lent to a neighbor and never returned.
-          The rest of the box is where you left it.
-        </p>
+        <span class="card-no">{{ $t('error.cardNo', { code: error.statusCode }) }}</span>
+        <h1>{{ $t('error.title') }}</h1>
+        <p>{{ $t('error.body') }}</p>
         <NuxtLink to="/" class="cta err-cta">
-          <UIcon name="i-material-symbols:menu-book-rounded" class="cta-icon" />Back to the box
+          <UIcon name="i-material-symbols:menu-book-rounded" class="cta-icon" />{{ $t('error.cta') }}
         </NuxtLink>
       </div>
     </section>
