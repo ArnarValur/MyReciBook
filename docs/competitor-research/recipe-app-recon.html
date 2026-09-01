@@ -1,0 +1,790 @@
+<title>Recipe App Recon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground:      #F4F6F4;
+    --surface:     #FFFFFF;
+    --surface-2:   #EAEEEB;
+    --ink:         #151E1B;
+    --ink-2:       #3B4844;
+    --muted:       #6B7975;
+    --line:        #D3DBD7;
+    --line-soft:   #E3E9E5;
+    --accent:      #0E6455;
+    --accent-soft: #D9EAE4;
+    --gap:         #A2650C;
+    --gap-soft:    #F5E7CE;
+    --alarm:       #A33526;
+    --alarm-soft:  #F3DBD6;
+    --shadow:      0 1px 2px rgba(21,30,27,.05), 0 8px 24px -12px rgba(21,30,27,.14);
+
+    --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0E1412;
+      --surface:     #151D1A;
+      --surface-2:   #1D2724;
+      --ink:         #E8EFEB;
+      --ink-2:       #BCC8C3;
+      --muted:       #8A9994;
+      --line:        #2B3733;
+      --line-soft:   #212B28;
+      --accent:      #57C4AC;
+      --accent-soft: #16332C;
+      --gap:         #DFA640;
+      --gap-soft:    #33280F;
+      --alarm:       #E58472;
+      --alarm-soft:  #38201B;
+      --shadow:      0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0E1412;
+    --surface:     #151D1A;
+    --surface-2:   #1D2724;
+    --ink:         #E8EFEB;
+    --ink-2:       #BCC8C3;
+    --muted:       #8A9994;
+    --line:        #2B3733;
+    --line-soft:   #212B28;
+    --accent:      #57C4AC;
+    --accent-soft: #16332C;
+    --gap:         #DFA640;
+    --gap-soft:    #33280F;
+    --alarm:       #E58472;
+    --alarm-soft:  #38201B;
+    --shadow:      0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.6;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 28px 96px;
+  }
+
+  .measure { max-width: 66ch; }
+
+  /* ---------- masthead ---------- */
+
+  header.mast {
+    padding: 76px 0 40px;
+    border-bottom: 2px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+
+  .eyebrow {
+    font-family: var(--data);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    font-weight: 800;
+    line-height: .95;
+    letter-spacing: -.028em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .thesis {
+    font-size: clamp(1.12rem, 2.2vw, 1.34rem);
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .thesis strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- findings ---------- */
+
+  section.finding {
+    display: grid;
+    grid-template-columns: 74px 1fr;
+    gap: 0 28px;
+    padding: 56px 0 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .fnum {
+    font-family: var(--data);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    color: var(--accent);
+    padding-top: 12px;
+    border-top: 2px solid var(--accent);
+    align-self: start;
+  }
+
+  .fbody { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(1.55rem, 3.4vw, 2.1rem);
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  p { margin: 0; }
+  .fbody > p, .fbody > .measure { max-width: 66ch; }
+
+  em { font-style: italic; }
+  strong { font-weight: 600; }
+
+  /* ---------- data tables ---------- */
+
+  .scroller {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: var(--data);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+  }
+
+  thead th {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  td.app { font-weight: 600; color: var(--ink); white-space: nowrap; }
+
+  .ours td { background: var(--accent-soft); }
+  .ours td.app { color: var(--accent); }
+
+  /* ---------- yes/no marks ---------- */
+
+  .mark {
+    display: inline-block;
+    width: 22px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .no  { color: var(--alarm); }
+  .yes { color: var(--accent); }
+  .part { color: var(--gap); }
+
+  /* ---------- rating bars ---------- */
+
+  .bars {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .barrow {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .barrow:last-child { border-bottom: none; }
+
+  .barname {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -.01em;
+  }
+
+  .bartrack { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+  .barline { display: flex; align-items: center; gap: 10px; }
+
+  .bar {
+    height: 13px;
+    border-radius: 2px;
+    min-width: 3px;
+    flex-shrink: 0;
+  }
+  .bar.shown { background: var(--line); }
+  .bar.real  { background: var(--alarm); }
+
+  .barval {
+    font-family: var(--data);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .barval b { color: var(--ink); font-weight: 600; }
+
+  .barkey {
+    display: flex;
+    gap: 20px;
+    font-family: var(--data);
+    font-size: 10.5px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 2px;
+  }
+  .key-swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 7px;
+    vertical-align: baseline;
+  }
+
+  /* ---------- quotes ---------- */
+
+  .quotes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+    gap: 14px;
+  }
+
+  blockquote {
+    margin: 0;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gap);
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  blockquote p {
+    font-size: 16px;
+    line-height: 1.45;
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  blockquote cite {
+    font-family: var(--data);
+    font-size: 10.5px;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    font-style: normal;
+    color: var(--muted);
+  }
+
+  /* ---------- status cards ---------- */
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(252px, 1fr));
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .card h3 {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    margin: 0;
+  }
+
+  .card p { font-size: 15px; line-height: 1.48; color: var(--ink-2); }
+
+  .pill {
+    align-self: flex-start;
+    font-family: var(--data);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 2px;
+  }
+  .pill.bad     { background: var(--alarm-soft); color: var(--alarm); }
+  .pill.warn    { background: var(--gap-soft);   color: var(--gap); }
+  .pill.watch   { background: var(--accent-soft); color: var(--accent); }
+
+  /* ---------- rules list ---------- */
+
+  ol.rules {
+    list-style: none;
+    counter-reset: r;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(288px, 1fr));
+    gap: 2px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  ol.rules li {
+    counter-increment: r;
+    background: var(--surface);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 15px;
+    line-height: 1.47;
+    color: var(--ink-2);
+  }
+
+  ol.rules li::before {
+    content: counter(r, decimal-leading-zero);
+    font-family: var(--data);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    color: var(--gap);
+  }
+
+  ol.rules b {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--ink);
+    letter-spacing: -.005em;
+  }
+
+  /* ---------- callout ---------- */
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--alarm);
+    border-radius: 3px;
+    padding: 24px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: var(--shadow);
+  }
+
+  .callout .label {
+    font-family: var(--data);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--alarm);
+  }
+
+  .callout p { max-width: 68ch; font-size: 16px; line-height: 1.55; color: var(--ink-2); }
+  .callout p strong { color: var(--ink); }
+
+  /* ---------- closing ---------- */
+
+  .closing {
+    padding: 64px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .closing h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -.025em; }
+
+  .closing .big {
+    font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+    line-height: 1.5;
+    max-width: 62ch;
+    color: var(--ink-2);
+  }
+  .closing .big strong { color: var(--ink); font-weight: 600; }
+
+  .next {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(232px, 1fr));
+    gap: 14px;
+    margin-top: 8px;
+  }
+
+  .next div {
+    border-top: 2px solid var(--accent);
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .next h4 {
+    font-family: var(--display);
+    font-size: 15.5px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -.008em;
+  }
+  .next p { font-size: 14.5px; line-height: 1.45; color: var(--muted); }
+
+  footer {
+    margin-top: 72px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    font-family: var(--data);
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: var(--muted);
+    letter-spacing: .02em;
+  }
+
+  .note {
+    font-family: var(--data);
+    font-size: 11.5px;
+    line-height: 1.65;
+    color: var(--muted);
+    letter-spacing: .01em;
+    max-width: 70ch;
+  }
+
+  @media (max-width: 720px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 18px 72px; }
+    section.finding { grid-template-columns: 1fr; gap: 16px; padding-top: 44px; }
+    .fnum { border-top: none; padding-top: 0; }
+    .barrow { grid-template-columns: 1fr; gap: 8px; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .bar { animation: grow .7s cubic-bezier(.2,.8,.3,1) both; }
+    @keyframes grow { from { transform: scaleX(0); transform-origin: left; } }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div class="eyebrow">
+      <span>Competitive recon</span>
+      <span>7 apps · 14 agent dossiers</span>
+      <span>Google Play "recipes" · Norway</span>
+      <span>1 September 2026</span>
+    </div>
+    <h1>The field is not what the badges say</h1>
+    <p class="thesis">Seven apps, millions of downloads, glossy screenshots, 4.7-star badges. Fourteen research agents went underneath the listings. What they found is a category that is <strong>large, wealthy, badly run, and structurally unable to give people what they keep asking for.</strong></p>
+  </header>
+
+  <section class="finding">
+    <div class="fnum">Finding 01</div>
+    <div class="fbody">
+      <h2>The star ratings are lying, and we can prove it</h2>
+      <p>The stores display a recency-weighted average dominated by silent tappers — people who hit five stars in a prompt without typing a word. Pull the <em>written</em> reviews instead and the picture inverts.</p>
+
+      <div class="bars">
+        <div class="barkey">
+          <span><i class="key-swatch" style="background:var(--line)"></i>Badge shown on the store</span>
+          <span><i class="key-swatch" style="background:var(--alarm)"></i>Average of written reviews</span>
+        </div>
+
+        <div class="barrow">
+          <div class="barname">Mob</div>
+          <div class="bartrack">
+            <div class="barline"><span class="bar shown" style="width:92%"></span><span class="barval"><b>4.6</b> · 1,408 star-only</span></div>
+            <div class="barline"><span class="bar real" style="width:45%"></span><span class="barval"><b>2.26</b> · 404 written · 52% one-star</span></div>
+          </div>
+        </div>
+
+        <div class="barrow">
+          <div class="barname">ReciMe</div>
+          <div class="bartrack">
+            <div class="barline"><span class="bar shown" style="width:94%"></span><span class="barval"><b>4.7</b> · 97.2K ratings</span></div>
+            <div class="barline"><span class="bar real" style="width:69%"></span><span class="barval"><b>3.44</b> · 4,754 written · 28.6% one-star</span></div>
+          </div>
+        </div>
+
+        <div class="barrow">
+          <div class="barname">Cookpad</div>
+          <div class="bartrack">
+            <div class="barline"><span class="bar shown" style="width:91%"></span><span class="barval"><b>4.57</b> lifetime, GB</span></div>
+            <div class="barline"><span class="bar real" style="width:81%"></span><span class="barval"><b>4.03</b> · newest 60 · 11% one-star</span></div>
+          </div>
+        </div>
+
+        <div class="barrow">
+          <div class="barname">Tasty</div>
+          <div class="bartrack">
+            <div class="barline"><span class="bar shown" style="width:94%"></span><span class="barval"><b>4.7</b> · 174K ratings</span></div>
+            <div class="barline"><span class="bar real" style="width:92%"></span><span class="barval"><b>4.58</b> · newest 320 · 1★ tripled</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="measure">ReciMe prompts for a rating during onboarding: <strong>9.5% of their five-star reviews were written before the person had used the app</strong> — "just downloaded", "so far so good". And SideChef's headline 4.0 isn't a rating at all. Play localises ratings per storefront, and Norway's histogram resolves to roughly <strong>five people</strong>. Its US rating is 4.5.</p>
+
+      <p class="measure">We are not competing against 4.7-star products. We are competing against 4.7-star <em>badges</em> worn by 3.4-star products.</p>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="fnum">Finding 02</div>
+    <div class="fbody">
+      <h2>Not one of the seven sells a one-time price</h2>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>App</th><th>What a year costs</th><th>In Norway</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="app">Mob</td><td>£39.99 / €49.99 / $59.99</td><td>499 kr, every year</td></tr>
+            <tr><td class="app">Foodvisor</td><td>$83.99 US · €59.99 FR</td><td>~NOK 650–800, unpublished</td></tr>
+            <tr><td class="app">SideChef</td><td>$49.99</td><td>No NOK price — quotes USD</td></tr>
+            <tr><td class="app">ReciMe</td><td>$39.99 (testing $29.99 / $59.99)</td><td>Billed NOK, price unpublished</td></tr>
+            <tr><td class="app">Tasty</td><td>Free + ads · Tasty+ $34.99</td><td>English only, everywhere</td></tr>
+            <tr><td class="app">Cookpad</td><td>¥308/mo JP · ~$5/mo global</td><td>Premium not sold in Norway</td></tr>
+            <tr><td class="app">COOKmate</td><td>€20 web / $22.99 iOS</td><td>No NOK price published</td></tr>
+            <tr class="ours"><td class="app">MyReciBook</td><td>~$25 — once</td><td>≈ 260 kr, forever</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="measure">A Norwegian Mob subscriber pays nearly twice our lifetime price <em>every year</em>, for a closed English catalogue built on UK supermarket assumptions. Three of the seven refuse to publish a price at all — Foodvisor runs ten concurrent App Store SKUs spanning 3.5×, and its help centre says outright that it cannot give a fixed price.</p>
+
+      <p class="measure"><strong>We don't have to educate this market.</strong> It is already asking, out loud, with vote counts:</p>
+
+      <div class="quotes">
+        <blockquote>
+          <p>"If it were $20.00 for a one time purchase I would definitely be in."</p>
+          <cite>COOKmate · Google Play</cite>
+        </blockquote>
+        <blockquote>
+          <p>"no possibility to purchase the app once and for all"</p>
+          <cite>SideChef · 68 helpful votes</cite>
+        </blockquote>
+        <blockquote>
+          <p>"Treat it like a cookbook and have a download fee"</p>
+          <cite>Mob · Google Play</cite>
+        </blockquote>
+        <blockquote>
+          <p>"or buy some great cook books"</p>
+          <cite>Mob · most-upvoted review on the listing</cite>
+        </blockquote>
+      </div>
+
+      <p class="measure">Roughly half of ReciMe's negative reviews are about monetisation rather than the product. No incumbent can answer this without breaking its own revenue model — and ReciMe spent 2026 moving in the opposite direction.</p>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="fnum">Finding 03</div>
+    <div class="fbody">
+      <h2>Three of our five pillars are simply unoccupied</h2>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>App</th><th>Own recipes</th><th>Import</th><th>Pantry</th><th>Food diary</th><th>Nutrition</th><th>Export</th><th>Offline</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="app">Foodvisor</td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td></tr>
+            <tr><td class="app">COOKmate</td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark part">~</span></td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td></tr>
+            <tr><td class="app">Tasty</td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark part">~</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td></tr>
+            <tr><td class="app">Cookpad</td><td><span class="mark part">~</span></td><td><span class="mark part">~</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td></tr>
+            <tr><td class="app">ReciMe</td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark part">~</span></td><td><span class="mark no">✕</span></td><td><span class="mark part">~</span></td></tr>
+            <tr><td class="app">SideChef</td><td><span class="mark part">~</span></td><td><span class="mark no">✕</span></td><td><span class="mark yes">✔</span></td><td><span class="mark no">✕</span></td><td><span class="mark yes">✔</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td></tr>
+            <tr><td class="app">Mob</td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td><td><span class="mark part">~</span></td><td><span class="mark no">✕</span></td><td><span class="mark no">✕</span></td></tr>
+            <tr class="ours"><td class="app">MyReciBook</td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td><td><span class="mark yes">✔</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="measure">Read the <strong>food diary</strong> column again. One app has a daily food log, and it is a calorie counter, not a recipe app. Read the <strong>pantry</strong> column. One app has a pantry, and it hasn't shipped a release since March 2025.</p>
+
+      <p class="measure">Nobody in this category has combined a personal cookbook with a pantry and a diary. That isn't a gap we found by squinting — it is an entire column of empty boxes.</p>
+
+      <p class="measure">The reason is worth understanding, because it's structural rather than accidental. Media brands can't let you own recipes, because the catalogue is their only asset. UGC platforms can't, because metering your cookbook <em>is</em> the revenue. Calorie counters don't want recipes, they want logged grams. <strong>Nobody is positioned to do all of it — except an app whose customer is the cook.</strong></p>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="fnum">Finding 04</div>
+    <div class="fbody">
+      <h2>Data ownership is the category's open wound</h2>
+      <p class="measure">The loudest churn moment in every single dossier is a version of <em>"I lost my recipes."</em> COOKmate users on a device change. Tasty users to an unfixed Facebook-login break running since April. SideChef users when Budget Bytes shut down and the notice said their recipes "will not be transferred." Mob users after changing phone.</p>
+
+      <p class="measure">Tasty has no export, no print, no copy — and deleting your account irreversibly wipes your saves. Cookpad's licence lets them sublicense your recipes for free, waives your moral rights, and survives your account's termination, while the Terms tell you that backing up your content is <em>your</em> responsibility. There is no export feature.</p>
+
+      <p class="measure">Exactly one competitor can say "your recipes are files you can take with you" — COOKmate, with a daily local backup and a published schema. It is also the app that has survived sixteen years at 4.6 stars. That is not a coincidence.</p>
+
+      <div class="callout">
+        <div class="label">The unguarded door</div>
+        <p><strong>Migration in.</strong> Users with 500–1500 recipes are trapped by file formats, not loyalty — several COOKmate reviewers report retyping recipes by hand. Nobody in this category has built a good importer for a rival's export. Ingesting COOKmate, Paprika and Recipe Keeper libraries with images and formatting intact takes the category's most valuable users at the exact moment they are angriest.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="fnum">Finding 05</div>
+    <div class="fbody">
+      <h2>The incumbents are wobbling — with receipts</h2>
+
+      <div class="cards">
+        <div class="card">
+          <span class="pill bad">Starved</span>
+          <h3>Tasty</h3>
+          <p>BuzzFeed sold ~51% to Byron Allen in May 2026. July: <strong>35% of staff cut, Tasty included.</strong> Android sits on v2.16 — two releases this year against eight last year — with listing copy unchanged since 2018.</p>
+        </div>
+        <div class="card">
+          <span class="pill bad">Frozen</span>
+          <h3>SideChef</h3>
+          <p>No release on either platform since <strong>14 March 2025</strong> — while tightening its paywall server-side and still wearing a Play Editors' Choice badge. Engineering follows the B2B payers, and the payers aren't the users.</p>
+        </div>
+        <div class="card">
+          <span class="pill bad">Shrinking</span>
+          <h3>Cookpad</h3>
+          <p>Down to <strong>78 employees globally.</strong> Revenue falling five straight quarters, operating profit −98% year on year. Premium is unbuyable across the Nordics, Germany and the Netherlands.</p>
+        </div>
+        <div class="card">
+          <span class="pill warn">Leveraged</span>
+          <h3>Mob</h3>
+          <p>Commercially the healthiest — 280,000 subscribers, $12.5M ARR, #1 top-grossing UK. But <strong>negative equity of −£1.30m</strong>, cash down to £0.59m, headcount 39→31, funded by revenue-based debt rather than equity.</p>
+        </div>
+        <div class="card">
+          <span class="pill warn">Acquired</span>
+          <h3>Foodvisor</h3>
+          <p>Bought in January 2026 by Xynergy — owner of the diet brand Comme J'aime — for a reported €50–60M. French press is already raising editorial-independence questions.</p>
+        </div>
+        <div class="card">
+          <span class="pill watch">The real rival</span>
+          <h3>ReciMe</h3>
+          <p>Genuinely growing and genuinely dangerous. But its Android build is v4.1.2 against iOS v6.1.5, its listing tells Android users the app syncs to "iOS and iPad", and both lifetime giveaways were iOS-only. <strong>Android is second-class at our closest competitor — and Android is the category we're entering.</strong></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="fnum">Finding 06</div>
+    <div class="fbody">
+      <h2>Norway and the Nordics are unserved. Completely.</h2>
+      <p class="measure">Cookpad ships 25 languages, <strong>none of them Nordic</strong>, and won't sell Premium in any Nordic country. COOKmate ships Danish and Finnish but no Norwegian. Tasty is English-only in every storefront on earth, and its Nordic ratings are its lowest worldwide. SideChef speaks English and German, and quotes USD prices in the Norwegian listing while advertising Walmart checkout with no US-only caveat. Mob charges 499 kr a year for UK aisles and UK ingredients.</p>
+      <p class="measure">Every one of these companies treats Norway as a billing currency rather than a market. <strong>We live here.</strong> Norwegian and Icelandic localisation, metric-native units and Nordic ingredient names are cheap for us and uncontested by everyone.</p>
+    </div>
+  </section>
+
+  <section class="finding">
+    <div class="fnum">Finding 07</div>
+    <div class="fbody">
+      <h2>Rules we're taking from other people's mistakes</h2>
+
+      <ol class="rules">
+        <li><b>Never ship a trial.</b> Trial mechanics are the largest single complaint category across Mob, ReciMe, Foodvisor and SideChef. A one-time price makes them unnecessary.</li>
+        <li><b>Make restore-purchase flawless.</b> Under one-time pricing this is existential, not a nicety.</li>
+        <li><b>Never take back what people already have.</b> COOKmate killed its $5.99 one-time in 2022 and still carries 790 one-star reviews for it — more than its 2★ and 3★ buckets combined.</li>
+        <li><b>Publish the price.</b> Three of seven refuse to. "$25, once, forever" belongs in the first line of the listing.</li>
+        <li><b>Never lose a user's data.</b> In any migration, ever. The number one churn trigger in every dossier without exception.</li>
+        <li><b>Metric is a unit system, not a toggle.</b> SideChef converts to "237mL of rice" and it costs more stars than not converting at all.</li>
+        <li><b>Honour a stated preference everywhere.</b> SideChef's most-repeated complaint, unfixed from 2018 to 2026, is that its allergy filters are ignored. Mob's break on unnormalised ingredients — a reviewer called it "dangerous". This is a safety issue and a free win.</li>
+        <li><b>Never score a food as "bad".</b> Foodvisor's red-and-frowny-face scoring draws accusations of feeding diet culture. An app that never moralises about food has a clean position, free.</li>
+        <li><b>Don't meter import, and keep the source link.</b> Cookpad monetised imports above five a week and drew a public revolt from food creators.</li>
+        <li><b>Never market a feature that only works in one country.</b></li>
+      </ol>
+
+      <div class="callout">
+        <div class="label">The one real threat to our model</div>
+        <p><strong>COOKmate did not fail at one-time pricing.</strong> It failed because one-time pricing had to fund a permanently recurring cost — 200+ hand-maintained site scrapers plus cloud sync. The developer said so publicly in 2018. Our $25 survives only if our recurring costs stay bounded: parse schema.org generically rather than maintaining a parser per site, keep storage device-local, take on no sync obligation we can't fund forever. <strong>This is the constraint that decides whether the business works</strong> — and it deserves its own session.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="closing">
+    <h2>What this changes about the plan</h2>
+    <p class="big">Nothing about the destination. A great deal about the confidence level.</p>
+    <p class="big">The incumbents are large, tired, and locked into business models that <strong>forbid</strong> them from doing the three things their own users keep asking for: own your recipes, pay once, and track what you actually eat. We are not late to a crowded market. We are early to an obvious one that nobody with a subscription P&amp;L is allowed to enter.</p>
+
+    <div class="next">
+      <div>
+        <h4>Bounded recurring cost</h4>
+        <p>Can import work without a maintained-parser treadmill? This decides whether $25-once is a business or a slow bleed.</p>
+      </div>
+      <div>
+        <h4>Migration in</h4>
+        <p>Which rival export formats do we ingest at launch, and how do we reach those users while they're angry?</p>
+      </div>
+      <div>
+        <h4>Nordic localisation</h4>
+        <p>Norwegian and Icelandic at launch, or v1.1?</p>
+      </div>
+      <div>
+        <h4>The Play listing</h4>
+        <p>Competitors' users are writing our copy for us. The first line should be the price.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Sourced from fourteen agent dossiers in <span style="color:var(--ink-2)">docs/competitor-research/</span> — two independent researchers per app, one on product and pricing, one on reviews and unmet needs.<br>
+    Every price carries an observation date; several of these apps run concurrent A/B price cohorts, so treat any single figure as a snapshot. Unconfirmed claims are marked in the source files. Accusations are labelled as accusations, not findings. Reddit and YouTube were unavailable to the research agents and nothing here is sourced from either.<br>
+    Researched 1 September 2026.
+  </footer>
+
+</div>

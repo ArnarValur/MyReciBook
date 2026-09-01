@@ -31,6 +31,8 @@
   listing screenshots, App Check (Play signing SHA-256), Drive OAuth consent
   on prod, billing seam, card on import sheet + paywall, welcome screenshots.
 - i18n — app foundation on branch, untouched; website picker hidden.
+- market — opened 2026-09-01, Cowork-side discussion. Q1 bounded recurring
+  cost is the live one and it touches the offer/engine blocker below.
 
 ## ⚠️ Blockers
 - Drive OAuth consent screen on prod NOT started — verification takes WEEKS.

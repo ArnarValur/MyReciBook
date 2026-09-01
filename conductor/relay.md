@@ -1,6 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-01 — the field gets read, and it is not what the badges say
+
+- Shipped: fourteen competitor dossiers (~90k words, two agents per app) in
+  docs/competitor-research/ + _SYNTHESIS.md + recipe-app-recon.html; market
+  track opened for the discussion. No code, no version bump.
+- Found: none of the seven sells one-time and their users ask for it unprompted;
+  displayed stars are silent-tapper averages (Mob shows 4.6, its 404 written
+  reviews average 2.26); nobody pairs a cookbook with a pantry AND a diary.
+- Arnar: track scope = market (research + positioning), launch stays shut.
+- UNFINISHED: Q1 bounded recurring cost is the one that decides the model —
+  ties to the OFFER-CONTRADICTS-ENGINE blocker. Q2–Q6 queued in the plan.
+
 ## 2026-09-01 — prod goes live in one night, every Play form falls
 
 - Shipped: myrecibook.com + www live on prod Cloud Run (deploy-prod.sh, DNS,
