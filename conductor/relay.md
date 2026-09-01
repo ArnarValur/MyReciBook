@@ -1,6 +1,19 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-01 — the snake gets a track: ouroboros opens, a PoC worktree is cut
+
+- Shipped: ouroboros track opened (plan.md D1–D7, tracks + pulse); worktree
+  ../MyReciBook-ouroboros on branch `ouroboros` with PoC 1a receipt prompt +
+  1b refuse-to-trust parser committed there — unwired, untested. No version bump.
+- Arnar: open the track · Inventory says "an estimate, not a count" · OFF fills
+  Collection + Inventory when confident, cards otherwise · scan a barcode from
+  the ingredient row. D4–D7 (two-event drain, one inventory file, planner not a
+  prerequisite, on-device matching) are leanings, unratified.
+- Found: OffClient does barcode lookup only — receipt→OFF name search is new code.
+- UNFINISHED: PoC slice one continues in the worktree from 1b's test → 1c;
+  conductor files are edited on main only.
+
 ## 2026-09-01 — the market gets grilled: three decisions in one sitting (Cowork)
 
 - Shipped: market Decisions 1–3 (no refill ever + $5=600 top-up; i18n paused,

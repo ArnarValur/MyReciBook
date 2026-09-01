@@ -4,6 +4,12 @@
 worktree `../MyReciBook-ouroboros`, branch `ouroboros`. Nothing merges to main
 until Arnar's eyes verify it on the device.
 
+**Where it stands (2026-09-01):** worktree created from main at the track
+opening. On branch `ouroboros`: 1a assets/receipt_prompt.md and 1b
+domain/receipt_read.dart written — unwired, untested, no pubspec asset entry
+yet. Continue from 1b's test, then 1c. Conductor files are edited on MAIN
+only; the worktree session leaves conductor/ alone so the branch merges clean.
+
 **Goal:** the closed food loop — the idea is tracks/ouroboros/vision.md, this
 file is what was decided and what gets built. Slice one proves the delight
 moment: scan a receipt, the grocery list ticks itself, Inventory rises, the
