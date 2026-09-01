@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="tokens/fonts.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { margin: 0; background: var(--scaffold, #faf8f0); font-family: Inter, sans-serif; }
+    a { color: #24389c; } a:hover { color: #3f51b5; }
+  </style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mrb-b" viewBox="0 0 108 108">
+      <path d="M54 60 C47 53 36 51 26 53 L26 72 C36 70 47 72 54 78 C61 72 72 70 82 72 L82 53 C72 51 61 53 54 60 Z" fill="currentColor"></path>
+      <path d="M54 62 L54 76" stroke="var(--knock)" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
+      <path d="M45 26 c-5 7 5 9 0 16" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"></path>
+      <path d="M63 26 c-5 7 5 9 0 16" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"></path>
+    </symbol>
+  </defs>
+</svg>
+<section style="padding: 48px; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; align-items: baseline; gap: 12px">
+    <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -0.02em; color: var(--on-surface, #1a1c1e)">MyReciBook logo — final</div>
+    <div style="font-size: 12px; color: var(--on-surface-variant, #454652)">"Open &amp; cooking" · export files in assets/logo/</div>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: stretch">
+
+    <div id="1b" style="width: 350px; background: var(--surface-container-lowest, #fff); border: 1px solid var(--hairline, #c5c5d4); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="font-size: 12px; font-weight: 600; border: 1px solid var(--hairline, #c5c5d4); border-radius: 999px; padding: 2px 9px; color: var(--on-surface-variant, #454652)">1b</span>
+        <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 15px; color: var(--on-surface, #1a1c1e)">Open &amp; cooking</span>
+        <span style="font-size: 11px; font-weight: 600; color: var(--on-primary, #fff); background: var(--primary, #24389c); border-radius: 999px; padding: 2px 9px">chosen</span>
+      </div>
+      <div style="font-size: 12px; line-height: 18px; color: var(--on-surface-variant, #454652)">Open cookbook with steam rising from the gutter — the book is the hot dish.</div>
+      <div style="display: flex; gap: 14px; align-items: center">
+        <div style="width: 116px; height: 116px; border-radius: 27%; background: #3f51b5; color: #ffffff; --knock: #3f51b5; display: grid; place-items: center; box-shadow: 0 4px 10px rgba(36,56,156,0.12)"><svg viewBox="0 0 108 108" style="width: 100%; height: 100%"><use href="#mrb-b"></use></svg></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: center">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background: #3f51b5; color: #ffffff; --knock: #3f51b5"><svg viewBox="0 0 108 108" style="width: 100%; height: 100%"><use href="#mrb-b"></use></svg></div>
+          <div style="width: 36px; height: 36px; border-radius: 27%; background: #3f51b5; color: #ffffff; --knock: #3f51b5"><svg viewBox="0 0 108 108" style="width: 100%; height: 100%"><use href="#mrb-b"></use></svg></div>
+          <div style="width: 22px; height: 22px; border-radius: 27%; background: #3f51b5; color: #ffffff; --knock: #3f51b5"><svg viewBox="0 0 108 108" style="width: 100%; height: 100%"><use href="#mrb-b"></use></svg></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; align-items: center">
+          <div style="width: 40px; height: 40px; border-radius: 27%; background: #e2e2e5; color: #454652; --knock: #e2e2e5"><svg viewBox="0 0 108 108" style="width: 100%; height: 100%"><use href="#mrb-b"></use></svg></div>
+          <div style="width: 40px; height: 40px; border-radius: 27%; background: #262a36; color: #cacfff; --knock: #262a36"><svg viewBox="0 0 108 108" style="width: 100%; height: 100%"><use href="#mrb-b"></use></svg></div>
+          <div style="font-size: 10px; color: var(--outline, #757684)">themed</div>
+        </div>
+      </div>
+      <div style="border-top: 1px solid var(--hairline-soft, #e2e2e5); padding-top: 12px; display: flex; align-items: center; gap: 9px">
+        <div style="width: 26px; height: 26px; border-radius: 8px; background: #3f51b5; color: #ffffff; --knock: #3f51b5; flex: none"><svg viewBox="0 0 108 108" style="width: 100%; height: 100%"><use href="#mrb-b"></use></svg></div>
+        <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.02em; color: var(--primary, #24389c)">MyReciBook</div>
+      </div>
+    </div>
+
+    <div style="width: 350px; background: var(--surface-container-lowest, #fff); border: 1px solid var(--hairline, #c5c5d4); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+      <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 15px; color: var(--on-surface, #1a1c1e)">Export files</div>
+      <div style="font-size: 12px; line-height: 20px; color: var(--on-surface-variant, #454652)">
+        <div style="font-weight: 600; color: var(--on-surface, #1a1c1e); margin-top: 4px">Vector (master)</div>
+        <div>logo-mark.svg — indigo on transparent</div>
+        <div>logo-mark-white.svg — white on transparent (dark surfaces, themed icon)</div>
+        <div>app-icon.svg — 1024 square, indigo tile</div>
+        <div style="font-weight: 600; color: var(--on-surface, #1a1c1e); margin-top: 8px">PNG (Android)</div>
+        <div>app-icon-512.png — Play Store listing</div>
+        <div>app-icon-192 / 96 / 48.png — launcher densities</div>
+        <div>adaptive-foreground-432.png — adaptive-icon foreground layer (bg = #3f51b5)</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+</body>
+</html>

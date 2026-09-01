@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#24389c">
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+<rect x="34" y="28" width="52" height="64" rx="8" fill="#ffffff"/>
+<rect x="42" y="44" width="36" height="5" rx="2.5" fill="#24389c"/>
+<rect x="42" y="56" width="36" height="5" rx="2.5" fill="#8c9eff"/>
+<rect x="42" y="68" width="24" height="5" rx="2.5" fill="#8c9eff"/>
+</svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:wght@400;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/elevation.css">
+<script src="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+a{color:#24389c}a:hover{color:#3f51b5}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.wf{width:360px;min-height:720px;display:flex;flex-direction:column;gap:10px;padding:14px;box-sizing:border-box;position:relative;color:#2c2c2c;font:13px/1.35 Inter,system-ui,sans-serif}
+.wb{border:1.5px solid #3a3a3a;border-radius:8px;background:#fff;box-sizing:border-box}
+.wd{border:1.5px dashed #a3a3a3;border-radius:8px;box-sizing:border-box}
+.wh{background:repeating-linear-gradient(45deg,#ececec 0 7px,#f9f9f9 7px 14px)}
+.wpill{border:1.5px solid #3a3a3a;border-radius:999px;box-sizing:border-box}
+.wrow{display:flex;align-items:center;gap:8px}
+.wmut{color:#8a8a8a}
+.wn{display:inline-grid;place-items:center;min-width:17px;height:17px;border-radius:50%;background:#ea580c;color:#fff;font:700 10.5px Inter;flex:none}
+.wnl{width:360px;margin:0;padding:0 2px;list-style:none;display:flex;flex-direction:column;gap:5px;font:400 12px/1.45 'Shantell Sans',cursive;color:#b45309}
+.wnl li{display:flex;gap:7px;align-items:flex-start}
+.wnl li span.wtx{flex:1}
+.wsec{font:600 10.5px Inter;letter-spacing:.9px;color:#8a8a8a}
+.brief{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;padding:20px 24px;margin:0 0 26px;max-width:820px;font:13px/1.55 Inter,system-ui,sans-serif;color:#333}
+.brief h2{font:700 15px 'Shantell Sans',cursive;margin:0 0 8px;color:#1a1a1a}
+.brief ul{margin:6px 0 0;padding-left:18px}
+.brief li{margin:3px 0}
+.brief b{font-weight:600}
+</style></helmet>
+<section class="dv-turn" id="t3">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">Trends — the diary over time</span></div>
+<div class="brief">
+<h2>Every number the labels ever gave us, over time</h2>
+New surface, no build reference. Entry: an <b>insights icon button</b> on the Diary date row (right of the ›), pushing a sub-screen — same depth as the product page, no bottom nav. One screen, five periods (W · M · 3M · 6M · Y): <a href="#3a">3a</a> shows the week, <a href="#3b">3b</a> the year — where the zoomed-out view stops being a chart and becomes a ledger of records. Everything is computable from the diary files on the phone; nothing leaves it.
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="3a"><div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Trends — week · energy, macro split, micros ledger</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:6px 20px 14px;display:flex;flex-direction:column;gap:9px;flex:1;overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:22px">arrow_back</span><span style="font-family:var(--font-display);font-weight:700;font-size:18px">Trends</span></div>
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:12px;font-weight:600">
+<div style="flex:1;padding:6px 2px;text-align:center;background:var(--surface-container-lowest);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)">W</div>
+<div style="flex:1;padding:6px 2px;text-align:center;color:var(--on-surface-variant);font-weight:500">M</div>
+<div style="flex:1;padding:6px 2px;text-align:center;color:var(--on-surface-variant);font-weight:500">3M</div>
+<div style="flex:1;padding:6px 2px;text-align:center;color:var(--on-surface-variant);font-weight:500">6M</div>
+<div style="flex:1;padding:6px 2px;text-align:center;color:var(--on-surface-variant);font-weight:500">Y</div>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:12px 14px">
+<div style="display:flex;align-items:baseline;gap:5px"><span style="font-family:var(--font-display);font-weight:700;font-size:26px">1,887</span><span style="font-size:11.5px;color:var(--on-surface-variant)">kcal avg / day · 24–30 Aug</span></div>
+<div style="position:relative;height:104px;margin-top:12px">
+<div style="position:absolute;left:0;right:0;bottom:78%;border-top:1.5px dashed color-mix(in srgb,var(--on-surface-variant) 55%,transparent)"></div>
+<span style="position:absolute;right:0;bottom:79%;font-size:9.5px;color:var(--on-surface-variant);background:var(--surface-container-lowest);padding-left:4px">avg</span>
+<div style="position:absolute;inset:0;display:flex;align-items:flex-end;gap:7px">
+<div style="flex:1;height:76%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:87%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:72%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:100%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:82%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:67%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:21%;background:color-mix(in srgb,var(--primary) 40%,transparent);border-radius:4px 4px 0 0"></div>
+</div>
+</div>
+<div style="display:flex;gap:7px;margin-top:4px;font-size:9.5px;color:var(--on-surface-variant);text-align:center"><span style="flex:1">M</span><span style="flex:1">T</span><span style="flex:1">W</span><span style="flex:1">T</span><span style="flex:1">F</span><span style="flex:1">S</span><span style="flex:1;color:var(--primary);font-weight:600">today</span></div>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:11px 14px">
+<div style="font-weight:600;font-size:10.5px;letter-spacing:.8px;color:var(--on-surface-variant)">WHERE THE ENERGY CAME FROM</div>
+<div style="display:flex;height:8px;border-radius:var(--radius-full);overflow:hidden;margin-top:8px"><span style="width:32%;background:var(--tertiary)"></span><span style="width:51%;background:var(--primary)"></span><span style="width:17%;background:var(--secondary)"></span></div>
+<div style="display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--on-surface-variant)"><span><b style="color:var(--tertiary)">●</b> Fat 32% · 67 g/day</span><span><b style="color:var(--primary)">●</b> Carbs 51% · 240 g</span><span><b style="color:var(--secondary)">●</b> Protein 17% · 80 g</span></div>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:11px 14px 7px;font-size:13px">
+<div style="font-weight:600;font-size:10.5px;letter-spacing:.8px;color:var(--on-surface-variant)">MICROS · AVG PER DAY</div>
+<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Saturated fat</span><span style="font-weight:600">24 g</span><span style="display:flex;gap:2.5px;width:44px;justify-content:flex-end"><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span></span><span style="font-size:10.5px;color:var(--on-surface-variant);width:24px;text-align:right">7/7</span></div>
+<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Sugars</span><span style="font-weight:600">58 g</span><span style="display:flex;gap:2.5px;width:44px;justify-content:flex-end"><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span></span><span style="font-size:10.5px;color:var(--on-surface-variant);width:24px;text-align:right">7/7</span></div>
+<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Fibre</span><span style="font-weight:600">19 g</span><span style="display:flex;gap:2.5px;width:44px;justify-content:flex-end"><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;border:1px solid var(--outline);box-sizing:border-box"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;border:1px solid var(--outline);box-sizing:border-box"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span></span><span style="font-size:10.5px;color:var(--on-surface-variant);width:24px;text-align:right">5/7</span></div>
+<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Salt</span><span style="font-weight:600">4.1 g</span><span style="display:flex;gap:2.5px;width:44px;justify-content:flex-end"><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;border:1px solid var(--outline);box-sizing:border-box"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span></span><span style="font-size:10.5px;color:var(--on-surface-variant);width:24px;text-align:right">6/7</span></div>
+<div style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="flex:1">Sodium</span><span style="font-weight:600">1.6 g</span><span style="display:flex;gap:2.5px;width:44px;justify-content:flex-end"><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;border:1px solid var(--outline);box-sizing:border-box"></span><span style="width:4px;height:4px;border-radius:50%;border:1px solid var(--outline);box-sizing:border-box"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;border:1px solid var(--outline);box-sizing:border-box"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span><span style="width:4px;height:4px;border-radius:50%;background:var(--primary)"></span></span><span style="font-size:10.5px;color:var(--on-surface-variant);width:24px;text-align:right">4/7</span></div>
+</div>
+<div style="font-size:11px;line-height:1.45;color:var(--on-surface-variant)">Averages only count days that measured. Blank stays blank — never zero.</div>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+<ul class="wnl">
+<li><span class="wn">1</span><span class="wtx">No goal set → the chart anchors on the <b>average</b> (dashed line), not a goal line; today's bar renders faded because the day isn't over. Set a goal later and the line becomes the goal.</span></li>
+<li><span class="wn">2</span><span class="wtx">The micros ledger tracks every field the pantry labels carry — and the 7 dots per row show <b>coverage</b>: which days actually measured that nutrient. The diary's honesty rule ("blank means not measured, not zero") carried into statistics.</span></li>
+<li><span class="wn">3</span><span class="wtx">Macro split uses the three brand hues once each — tertiary is allowed out of its CTA cage here because this is data, not chrome.</span></li>
+</ul>
+</div>
+
+<div class="dv-opt" id="3b"><div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Trends — year · the ledger of records</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:6px 20px 14px;display:flex;flex-direction:column;gap:9px;flex:1;overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:22px">arrow_back</span><span style="font-family:var(--font-display);font-weight:700;font-size:18px">Trends</span></div>
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:12px;font-weight:600">
+<div style="flex:1;padding:6px 2px;text-align:center;color:var(--on-surface-variant);font-weight:500">W</div>
+<div style="flex:1;padding:6px 2px;text-align:center;color:var(--on-surface-variant);font-weight:500">M</div>
+<div style="flex:1;padding:6px 2px;text-align:center;color:var(--on-surface-variant);font-weight:500">3M</div>
+<div style="flex:1;padding:6px 2px;text-align:center;color:var(--on-surface-variant);font-weight:500">6M</div>
+<div style="flex:1;padding:6px 2px;text-align:center;background:var(--surface-container-lowest);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)">Y</div>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:12px 14px">
+<div style="display:flex;align-items:baseline;gap:5px"><span style="font-family:var(--font-display);font-weight:700;font-size:26px">1,904</span><span style="font-size:11.5px;color:var(--on-surface-variant)">kcal avg / logged day · 2026</span></div>
+<div style="display:flex;align-items:flex-end;gap:6px;height:92px;margin-top:12px">
+<div style="flex:1;height:55%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:61%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:58%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:70%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:66%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:73%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:68%;background:var(--primary);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;height:41%;background:color-mix(in srgb,var(--primary) 40%,transparent);border-radius:4px 4px 0 0"></div>
+<div style="flex:1;border-bottom:2px dashed color-mix(in srgb,var(--outline) 60%,transparent)"></div>
+<div style="flex:1;border-bottom:2px dashed color-mix(in srgb,var(--outline) 60%,transparent)"></div>
+<div style="flex:1;border-bottom:2px dashed color-mix(in srgb,var(--outline) 60%,transparent)"></div>
+<div style="flex:1;border-bottom:2px dashed color-mix(in srgb,var(--outline) 60%,transparent)"></div>
+</div>
+<div style="display:flex;gap:6px;margin-top:4px;font-size:9px;color:var(--on-surface-variant);text-align:center"><span style="flex:1">J</span><span style="flex:1">F</span><span style="flex:1">M</span><span style="flex:1">A</span><span style="flex:1">M</span><span style="flex:1">J</span><span style="flex:1">J</span><span style="flex:1;color:var(--primary);font-weight:600">A</span><span style="flex:1">S</span><span style="flex:1">O</span><span style="flex:1">N</span><span style="flex:1">D</span></div>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:6px 14px;font-size:13.5px">
+<div style="padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent);display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:20px;color:var(--primary)">calendar_month</span><span style="flex:1">Days logged</span><span style="font-weight:700">178<span style="font-weight:400;color:var(--on-surface-variant);font-size:11.5px"> of 239</span></span></div>
+<div style="padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent);display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:20px;color:var(--primary)">bolt</span><span style="flex:1">Longest streak</span><span style="font-weight:700">34<span style="font-weight:400;color:var(--on-surface-variant);font-size:11.5px"> days</span></span></div>
+<div style="padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent);display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:20px;color:var(--primary)">local_fire_department</span><span style="flex:1">Highest day</span><span style="font-weight:700">3,120<span style="font-weight:400;color:var(--on-surface-variant);font-size:11.5px"> kcal · 17 May</span></span></div>
+<div style="padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent);display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:20px;color:var(--primary)">kitchen</span><span style="flex:1;min-width:0"><span style="display:block">Most logged food</span><span style="display:block;font-size:11.5px;color:var(--on-surface-variant)">Banana</span></span><span style="font-weight:700">×41</span></div>
+<div style="padding:10px 0;display:flex;align-items:center;gap:12px"><span class="material-symbols-rounded" style="font-size:20px;color:var(--primary)">menu_book</span><span style="flex:1;min-width:0"><span style="display:block">Top recipe</span><span style="display:block;font-size:11.5px;color:var(--on-surface-variant)">Havregryn classic</span></span><span style="font-weight:700">×23</span></div>
+</div>
+<div style="font-size:11px;line-height:1.45;color:var(--on-surface-variant)">Counted from the diary files on this phone. Nothing leaves it.</div>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+<ul class="wnl">
+<li><span class="wn">1</span><span class="wtx">Zoomed out, the chart matters less than the ledger — the records row set is the surprise: streaks, highest day, most-logged food and recipe, all computable locally from the diary files.</span></li>
+<li><span class="wn">2</span><span class="wtx">Numbers state, never scold: "days logged" is a count next to the days available, not a compliance score. August renders faded (partial), future months as dashed baseline stubs.</span></li>
+</ul>
+</div>
+
+</div>
+</section>
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">The add sheet — folded, tabbed, searched</span></div>
+<div class="brief">
+<h2>"Add to breakfast", redrawn for 226 products</h2>
+Input: three build screenshots (19:40–41). The sheet flat-renders the whole pantry below RECENT — the spice wall — which is why opening it is slow. Verdicts:
+<ul>
+<li><b>Add sheet</b> → redrawn: the <a href="#1b">1b</a> folded shelf inside the sheet (<a href="#2a">2a</a>), plus a <b>Pantry | Recipes</b> tab pair so logging a whole recipe is a first-class path (<a href="#2b">2b</a>, browsing by Recipe Tag). Search spans both tabs. The chip filter bar goes, same rationale as <a href="#1b">1b</a>.</li>
+<li><b>"Add food" label</b> → kept. The row lives inside a meal section — it adds food <i>to</i> breakfast; "Add meal" would read as adding a fifth meal section. The meal-by-recipe case is the Recipes tab's job. Happy to flip it if you still disagree.</li>
+</ul>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a"><div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Add sheet — Pantry tab · opens folded, renders nothing it doesn't show</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:8px 20px 0;display:flex;flex-direction:column;gap:9px">
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:13px;font-weight:600">
+<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface-container-lowest);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)"><span class="material-symbols-rounded" style="font-size:17px">event_note</span>Diary</div>
+<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--on-surface-variant);font-weight:500"><span class="material-symbols-rounded" style="font-size:17px">kitchen</span>Pantry</div>
+</div>
+<div style="text-align:center"><div style="font-family:var(--font-display);font-weight:700;font-size:19px">Today</div><div style="font-size:11.5px;color:var(--on-surface-variant)">27 Aug 2026</div></div>
+</div>
+<div style="position:absolute;inset:0;background:rgba(10,12,24,.35)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:118px;background:var(--surface-container-lowest);border-radius:24px 24px 0 0;box-shadow:var(--elev-3);padding:8px 20px 0;display:flex;flex-direction:column;gap:9px;overflow:hidden">
+<div style="width:36px;height:4px;flex:none;border-radius:2px;background:var(--outline-variant);margin:0 auto"></div>
+<div style="font-family:var(--font-display);font-weight:700;font-size:20px">Add to breakfast</div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.SearchBar" placeholder="Search pantry and recipes" hint-size="100%,44px"></x-import>
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:12.5px;font-weight:600">
+<div style="flex:1;padding:7px 4px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--scaffold);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)"><span class="material-symbols-rounded" style="font-size:16px">kitchen</span>Pantry</div>
+<div style="flex:1;padding:7px 4px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--on-surface-variant);font-weight:500"><span class="material-symbols-rounded" style="font-size:16px">menu_book</span>Recipes</div>
+</div>
+<div style="font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant)">RECENT</div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md)"><span class="material-symbols-rounded" style="font-size:20px;color:var(--primary)">history</span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">Banana</div><div style="font-size:11px;color:var(--on-surface-variant)">1 medium</div></div><div style="flex:none"><span style="font-weight:700;font-size:13.5px">105</span><span style="font-size:11px;color:var(--on-surface-variant)"> kcal</span></div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md)"><span class="material-symbols-rounded" style="font-size:20px;color:var(--primary)">history</span><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13.5px">Havregryn classic</div><div style="font-size:11px;color:var(--on-surface-variant)">serving</div></div><div style="flex:none"><span style="font-weight:700;font-size:13.5px">397</span><span style="font-size:11px;color:var(--on-surface-variant)"> kcal</span></div></div>
+<div style="font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant);margin-top:2px">YOUR PANTRY</div>
+<div style="border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);padding:0 13px">
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🥛</span><span style="font-weight:600;font-size:13.5px">Dairy</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">5</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🧀</span><span style="font-weight:600;font-size:13.5px">Cheese</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">8</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🥚</span><span style="font-weight:600;font-size:13.5px">Eggs</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">4</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🥩</span><span style="font-weight:600;font-size:13.5px">Meat</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">12</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🥦</span><span style="font-weight:600;font-size:13.5px">Veggies</span><span style="font-size:12px;color:var(--on-surface-variant)">58</span><span class="material-symbols-rounded" style="font-size:13px;color:var(--on-surface-variant);flex:1">eco</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🍎</span><span style="font-weight:600;font-size:13.5px">Fruit</span><span style="font-size:12px;color:var(--on-surface-variant)">61</span><span class="material-symbols-rounded" style="font-size:13px;color:var(--on-surface-variant);flex:1">eco</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🌶️</span><span style="font-weight:600;font-size:13.5px">Spices</span><span style="font-size:12px;color:var(--on-surface-variant)">57</span><span class="material-symbols-rounded" style="font-size:13px;color:var(--on-surface-variant);flex:1">eco</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px"><span class="material-symbols-rounded" style="font-size:16px;color:var(--on-surface-variant)">help</span><span style="font-weight:600;font-size:13.5px;color:var(--on-surface-variant)">Unknown</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">21</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+</div>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+<ul class="wnl">
+<li><span class="wn">1</span><span class="wtx">The perf fix is the <a class="dv-oid" href="#1b">1b</a> shelf again: the sheet opens with every category folded, and nothing under a folded header is rendered. Recent keeps the two-tap common case on top.</span></li>
+<li><span class="wn">2</span><span class="wtx">Tapping a product logs it to the meal; the diary line's portion is editable after. The build's Scan / Create food / Quick add row is dropped — that's pantry management, and it lives in Pantry; this sheet only adds to the meal.</span></li>
+<li><span class="wn">3</span><span class="wtx">Chip filter bar dropped (same rationale as <a class="dv-oid" href="#1b">1b</a>); the search field covers both tabs — typing flattens the shelf into results.</span></li>
+</ul>
+</div>
+
+<div class="dv-opt" id="2b"><div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Add sheet — Recipes tab · meal-by-recipe as a first-class path</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:8px 20px 0;display:flex;flex-direction:column;gap:9px">
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:13px;font-weight:600">
+<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface-container-lowest);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)"><span class="material-symbols-rounded" style="font-size:17px">event_note</span>Diary</div>
+<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--on-surface-variant);font-weight:500"><span class="material-symbols-rounded" style="font-size:17px">kitchen</span>Pantry</div>
+</div>
+<div style="text-align:center"><div style="font-family:var(--font-display);font-weight:700;font-size:19px">Today</div><div style="font-size:11.5px;color:var(--on-surface-variant)">27 Aug 2026</div></div>
+</div>
+<div style="position:absolute;inset:0;background:rgba(10,12,24,.35)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:118px;background:var(--surface-container-lowest);border-radius:24px 24px 0 0;box-shadow:var(--elev-3);padding:8px 20px 0;display:flex;flex-direction:column;gap:9px;overflow:hidden">
+<div style="width:36px;height:4px;flex:none;border-radius:2px;background:var(--outline-variant);margin:0 auto"></div>
+<div style="font-family:var(--font-display);font-weight:700;font-size:20px">Add to breakfast</div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.SearchBar" placeholder="Search pantry and recipes" hint-size="100%,44px"></x-import>
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:12.5px;font-weight:600">
+<div style="flex:1;padding:7px 4px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--on-surface-variant);font-weight:500"><span class="material-symbols-rounded" style="font-size:16px">kitchen</span>Pantry</div>
+<div style="flex:1;padding:7px 4px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--scaffold);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)"><span class="material-symbols-rounded" style="font-size:16px">menu_book</span>Recipes</div>
+</div>
+<div style="font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant)">YOUR RECIPES · BY TAG</div>
+<div style="border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);padding:0 13px">
+<div style="display:flex;align-items:center;gap:9px;height:34px"><span style="font-size:14px">🍰</span><span style="font-weight:600;font-size:13.5px;color:var(--primary)">Desserts</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">3</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--primary)">expand_less</span></div>
+<div style="padding:0 0 5px;display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;align-items:center;gap:10px;padding:3px 2px 3px 23px"><div style="width:30px;height:30px;flex:none;border-radius:var(--radius-sm);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:16px;color:var(--primary)">menu_book</span></div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Bounty</div><div style="font-size:11px;color:var(--on-surface-variant)">no linked ingredients yet</div></div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:3px 2px 3px 23px"><div style="width:30px;height:30px;flex:none;border-radius:var(--radius-sm);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:16px;color:var(--primary)">menu_book</span></div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Homemade Bounty Bars</div><div style="font-size:11px;color:var(--on-surface-variant)">no linked ingredients yet</div></div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:3px 2px 3px 23px"><div style="width:30px;height:30px;flex:none;border-radius:var(--radius-sm);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:16px;color:var(--primary)">menu_book</span></div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">White chocolate and rhubarb muffins</div><div style="font-size:11px;color:var(--on-surface-variant)">1 muffin</div></div><span style="flex:none;padding:3px 9px;border-radius:var(--radius-full);background:var(--surface-container-high);font-weight:600;font-size:11px">214 kcal</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🥞</span><span style="font-weight:600;font-size:13.5px">Breakfast</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">2</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🍝</span><span style="font-weight:600;font-size:13.5px">Italian</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">2</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🌮</span><span style="font-weight:600;font-size:13.5px">Mexican</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">1</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🍫</span><span style="font-weight:600;font-size:13.5px">No-bake</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">2</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🌱</span><span style="font-weight:600;font-size:13.5px">Vegan</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">1</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🍓</span><span style="font-weight:600;font-size:13.5px">Strawberry things</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">1</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span class="material-symbols-rounded" style="font-size:16px;color:var(--on-surface-variant)">help</span><span style="font-weight:600;font-size:13.5px;color:var(--on-surface-variant)">Untagged</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">2</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+</div>
+<div style="font-size:11.5px;line-height:1.45;color:var(--on-surface-variant)">A recipe logs as one diary line — its numbers come from its linked ingredients.</div>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+<ul class="wnl">
+<li><span class="wn">1</span><span class="wtx">The tab pair splits the two intents: hand-picking ingredients (Pantry) vs logging a whole recipe as the meal (Recipes) — the flow the product is built around, no longer buried under RECENT.</span></li>
+<li><span class="wn">2</span><span class="wtx">Recipes browse by <b>Recipe Tags</b> — the cookbook's own taxonomy, in the same folded shelf as the pantry's Food Categories. Every tag is on screen, so "Show all 10" goes; tags can overlap; Untagged pinned last.</span></li>
+<li><span class="wn">3</span><span class="wtx">Rows show the recipe's cover photo where one exists; the book icon is only the no-cover fallback (the mock draws the fallback).</span></li>
+<li><span class="wn">4</span><span class="wtx">Linkage state stays on the row, build copy verbatim: no linked ingredients → no numbers yet, tapping starts linking instead of logging a zero. A linked recipe shows its per-serving kcal (muffins).</span></li>
+</ul>
+</div>
+
+</div>
+</section>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Food lands in the shell — Diary + Pantry reconciled</span></div>
+<div class="brief">
+<h2>The Food surface, coded on the spot — now designed</h2>
+Input: five build screenshots (27 Aug). The build also renamed the <b>Plan</b> tab to <b>Food</b> — ratified; the nav below follows the build. Verdicts:
+<ul>
+<li><b>Diary tab</b> → ratified as built, drawn hi-fi at <a href="#1a">1a</a></li>
+<li><b>Pantry tab</b> → <b>redrawn</b> at <a href="#1b">1b</a>: "Add starter foods" leaves its own row and becomes an icon button on the title row; the chip filter + flat dump becomes a collapsible category shelf with search</li>
+<li><b>Product overview + "Edit food"</b> → two 50/50 edit pages, <b>unified</b> into one at <a href="#1c">1c</a></li>
+<li><b>Collect your pantry</b> (scanner) → ratified as built, drawn at <a href="#1d">1d</a></li>
+</ul>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Food — Diary tab · ratified as built</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:8px 20px 0;display:flex;flex-direction:column;gap:9px;flex:1;overflow:hidden">
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:13px;font-weight:600">
+<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface-container-lowest);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)"><span class="material-symbols-rounded" style="font-size:17px">event_note</span>Diary</div>
+<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--on-surface-variant);font-weight:500"><span class="material-symbols-rounded" style="font-size:17px">kitchen</span>Pantry</div>
+</div>
+<div style="display:flex;align-items:center;padding:0 4px">
+<span class="material-symbols-rounded" style="font-size:20px;color:var(--on-surface-variant)">chevron_left</span>
+<div style="flex:1;text-align:center"><div style="font-family:var(--font-display);font-weight:700;font-size:19px">Today</div><div style="font-size:11.5px;color:var(--on-surface-variant)">27 Aug 2026</div></div>
+<span class="material-symbols-rounded" style="font-size:20px;color:var(--on-surface-variant)">chevron_right</span>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:13px 14px">
+<div style="display:flex;align-items:baseline;gap:5px"><span style="font-family:var(--font-display);font-weight:700;font-size:31px">502</span><span style="font-size:12px;color:var(--on-surface-variant)">kcal</span></div>
+<div style="font-size:12px;color:var(--on-surface-variant);margin-top:2px">No daily goal set yet — Settings, under Diary.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:11px">
+<div><div style="font-size:11px;color:var(--on-surface-variant)">Fat</div><div style="font-weight:600;font-size:13.5px;margin:1px 0 5px">10 g</div><div style="height:4px;border-radius:var(--radius-full);background:var(--surface-container-high)"></div></div>
+<div><div style="font-size:11px;color:var(--on-surface-variant)">Carbs</div><div style="font-weight:600;font-size:13.5px;margin:1px 0 5px">80 g</div><div style="height:4px;border-radius:var(--radius-full);background:var(--surface-container-high)"></div></div>
+<div><div style="font-size:11px;color:var(--on-surface-variant)">Protein</div><div style="font-weight:600;font-size:13.5px;margin:1px 0 5px">19 g</div><div style="height:4px;border-radius:var(--radius-full);background:var(--surface-container-high)"></div></div>
+</div>
+</div>
+<div style="display:flex;align-items:baseline;font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant)"><span style="flex:1">BREAKFAST</span><span style="font-size:12px;letter-spacing:0;color:var(--on-surface)">502 kcal</span></div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:9px 12px;display:flex;align-items:center;gap:11px">
+<div style="width:38px;height:38px;flex:none;border-radius:var(--radius-md);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:19px;color:var(--primary)">menu_book</span></div>
+<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">Havregryn classic</div><div style="font-size:11.5px;color:var(--on-surface-variant)">serving</div></div>
+<div style="flex:none"><span style="font-weight:700;font-size:14.5px">397</span><span style="font-size:11px;color:var(--on-surface-variant)"> kcal</span></div>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:9px 12px;display:flex;align-items:center;gap:11px">
+<div style="width:38px;height:38px;flex:none;border-radius:var(--radius-md);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:19px;color:var(--primary)">kitchen</span></div>
+<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">Banana</div><div style="font-size:11.5px;color:var(--on-surface-variant)">1 medium</div></div>
+<div style="flex:none"><span style="font-weight:700;font-size:14.5px">105</span><span style="font-size:11px;color:var(--on-surface-variant)"> kcal</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:7px;color:var(--primary);font-weight:600;font-size:13px;padding:0 2px"><span class="material-symbols-rounded" style="font-size:18px">add</span>Add food</div>
+<div style="display:flex;align-items:baseline;font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant);margin-top:3px"><span style="flex:1">LUNCH</span><span>—</span></div>
+<div style="display:flex;align-items:center;gap:7px;color:var(--primary);font-weight:600;font-size:13px;padding:0 2px"><span class="material-symbols-rounded" style="font-size:18px">add</span>Add food</div>
+<div style="display:flex;align-items:baseline;font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant);margin-top:3px"><span style="flex:1">DINNER</span><span>—</span></div>
+<div style="display:flex;align-items:center;gap:7px;color:var(--primary);font-weight:600;font-size:13px;padding:0 2px"><span class="material-symbols-rounded" style="font-size:18px">add</span>Add food</div>
+<div style="display:flex;align-items:baseline;font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant);margin-top:3px"><span style="flex:1">SNACKS</span><span>—</span></div>
+<div style="font-size:11.5px;line-height:1.45;color:var(--on-surface-variant)">Every entry keeps the numbers it was logged with. Correcting a product later never rewrites a day you already lived.</div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:16px">
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.NavBar" items="{{ navItemsFood }}" active="food" fab-icon="add" hint-size="100%,64px"></x-import>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+<ul class="wnl">
+<li><span class="wn">1</span><span class="wtx">Entry avatars say where a line came from: book = logged from a recipe, fridge = from the pantry. Tapping opens the source.</span></li>
+<li><span class="wn">2</span><span class="wtx">No goal set → the macro bars stay quiet tracks and the card points to Settings once. The footer rule is the build's copy, verbatim — it's the product promise, keep it.</span></li>
+</ul>
+</div>
+
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Food — Pantry tab · redrawn: title-row actions + collapsible shelf + search</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:8px 20px 0;display:flex;flex-direction:column;gap:8px;flex:1;overflow:hidden">
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:13px;font-weight:600">
+<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--on-surface-variant);font-weight:500"><span class="material-symbols-rounded" style="font-size:17px">event_note</span>Diary</div>
+<div style="flex:1;padding:8px 4px;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface-container-lowest);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)"><span class="material-symbols-rounded" style="font-size:17px">kitchen</span>Pantry</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px">
+<div style="flex:1"><div style="font-family:var(--font-display);font-weight:700;font-size:22px">Pantry</div><div style="font-size:12.5px;color:var(--on-surface-variant)">226 products</div></div>
+<span style="width:36px;height:36px;flex:none;border-radius:50%;background:var(--surface-container-high);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:19px;color:var(--primary)">eco</span></span>
+<span style="display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 12px;border-radius:var(--radius-full);background:var(--surface-container-high);font-weight:600;font-size:12.5px;color:var(--primary)"><span class="material-symbols-rounded" style="font-size:16px">sync</span>70</span>
+</div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.Button" full-width="{{ true }}" icon="barcode_scanner" hint-size="100%,46px">Scan a product</x-import>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.SearchBar" placeholder="Search 226 products…" hint-size="100%,44px"></x-import>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:0 13px">
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🥛</span><span style="font-weight:600;font-size:13.5px">Dairy</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">5</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🧀</span><span style="font-weight:600;font-size:13.5px">Cheese</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">8</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px"><span style="font-size:14px">🥚</span><span style="font-weight:600;font-size:13.5px;color:var(--primary)">Eggs</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">4</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--primary)">expand_less</span></div>
+<div style="padding:0 0 5px;display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;align-items:center;gap:10px;padding:3px 2px 3px 23px;border-radius:var(--radius-sm)"><div style="width:30px;height:30px;flex:none;border-radius:var(--radius-sm);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:16px;color:var(--primary)">kitchen</span></div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Frokostegg 12 stk</div><div style="font-size:11px;color:var(--on-surface-variant)">Prior · 752 g</div></div><span style="flex:none;padding:3px 9px;border-radius:var(--radius-full);background:var(--surface-container-high);font-weight:600;font-size:11px">155 kcal</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:3px 2px 3px 23px;border-radius:var(--radius-sm)"><div style="width:30px;height:30px;flex:none;border-radius:var(--radius-sm);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:16px;color:var(--primary)">kitchen</span></div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Egg str M 6 stk</div><div style="font-size:11px;color:var(--on-surface-variant)">First Price · 378 g</div></div><span style="flex:none;padding:3px 9px;border-radius:var(--radius-full);background:var(--surface-container-high);font-weight:600;font-size:11px">143 kcal</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:3px 2px 3px 23px;border-radius:var(--radius-sm)"><div style="width:30px;height:30px;flex:none;border-radius:var(--radius-sm);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:16px;color:var(--primary)">kitchen</span></div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Økologiske egg 6 stk</div><div style="font-size:11px;color:var(--on-surface-variant)">Toten Egg · 378 g</div></div><span style="flex:none;padding:3px 9px;border-radius:var(--radius-full);background:var(--surface-container-high);font-weight:600;font-size:11px">149 kcal</span></div>
+<div style="display:flex;align-items:center;gap:10px;padding:3px 2px 3px 23px;border-radius:var(--radius-sm)"><div style="width:30px;height:30px;flex:none;border-radius:var(--radius-sm);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:16px;color:var(--primary)">kitchen</span></div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Flytende eggehvite</div><div style="font-size:11px;color:var(--on-surface-variant)">TINE · 500 g</div></div><span style="flex:none;padding:3px 9px;border-radius:var(--radius-full);background:var(--surface-container-high);font-weight:600;font-size:11px">48 kcal</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🥩</span><span style="font-weight:600;font-size:13.5px">Meat</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">12</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🥦</span><span style="font-weight:600;font-size:13.5px">Veggies</span><span style="font-size:12px;color:var(--on-surface-variant)">58</span><span class="material-symbols-rounded" style="font-size:13px;color:var(--on-surface-variant);flex:1">eco</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🍎</span><span style="font-weight:600;font-size:13.5px">Fruit</span><span style="font-size:12px;color:var(--on-surface-variant)">61</span><span class="material-symbols-rounded" style="font-size:13px;color:var(--on-surface-variant);flex:1">eco</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span style="font-size:14px">🌶️</span><span style="font-weight:600;font-size:13.5px">Spices</span><span style="font-size:12px;color:var(--on-surface-variant)">57</span><span class="material-symbols-rounded" style="font-size:13px;color:var(--on-surface-variant);flex:1">eco</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+<div style="display:flex;align-items:center;gap:9px;height:34px;border-top:1px solid color-mix(in srgb,var(--outline-variant) 35%,transparent)"><span class="material-symbols-rounded" style="font-size:16px;color:var(--on-surface-variant)">help</span><span style="font-weight:600;font-size:13.5px;color:var(--on-surface-variant)">Unknown</span><span style="font-size:12px;color:var(--on-surface-variant);flex:1">21</span><span class="material-symbols-rounded" style="font-size:19px;color:var(--on-surface-variant)">expand_more</span></div>
+</div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:16px">
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.NavBar" items="{{ navItemsFood }}" active="food" fab-icon="add" hint-size="100%,64px"></x-import>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+<ul class="wnl">
+<li><span class="wn">1</span><span class="wtx">"Add starter foods" leaves its own row: it's now the leaf icon button on the title row, next to the rescue counter. One-time action, permanent chrome cost gone.</span></li>
+<li><span class="wn">2</span><span class="wtx">The chip filter bar + flat category dump is replaced by one collapsible shelf: every category visible at a glance without horizontal scroll, Unknown pinned last. Starter packs (leaf mark) arrive <b>collapsed</b>; open/closed is the user's and remembered — so 3×~60 starter items never bury the shelf.</span></li>
+<li><span class="wn">3</span><span class="wtx">Search (name + brand) replaces chip-hunting once the pantry hits hundreds. Typing flattens the shelf into plain results.</span></li>
+</ul>
+</div>
+
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Product page — overview + "Edit food" unified · the file is the form</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:6px 20px 14px;display:flex;flex-direction:column;gap:8px;flex:1;overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px"><span class="material-symbols-rounded" style="font-size:22px">arrow_back</span><span style="flex:1"></span><span style="font-size:11.5px;color:var(--on-surface-variant)">saved</span><span class="material-symbols-rounded" style="font-size:17px;color:var(--primary)">check_circle</span></div>
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;height:42px;border:1.5px solid color-mix(in srgb,var(--outline-variant) 70%,transparent);border-radius:var(--radius-full);color:var(--primary);font-weight:600;font-size:13px"><span class="material-symbols-rounded" style="font-size:18px">add_a_photo</span>Add your photo</div>
+<div>
+<div style="font-size:10.5px;letter-spacing:.8px;font-weight:600;color:var(--on-surface-variant)">NAME</div>
+<div style="display:flex;align-items:baseline;gap:8px;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent);padding:2px 0 4px"><span style="flex:1;font-family:var(--font-display);font-weight:700;font-size:23px">Kokos Melk</span><span class="material-symbols-rounded" style="font-size:15px;color:var(--on-surface-variant)">edit</span></div>
+</div>
+<div style="display:flex;gap:14px">
+<div style="flex:1.6"><div style="font-size:10.5px;letter-spacing:.8px;font-weight:600;color:var(--on-surface-variant)">BRAND OR SHOP</div><div style="border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent);padding:3px 0 4px;font-size:13.5px">REMA 1000</div></div>
+<div style="flex:1"><div style="font-size:10.5px;letter-spacing:.8px;font-weight:600;color:var(--on-surface-variant)">SIZE</div><div style="border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent);padding:3px 0 4px;font-size:13.5px">400 ml</div></div>
+</div>
+<div style="display:flex;gap:8px;align-items:center">
+<span style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-full);background:var(--primary);color:var(--on-primary);font-weight:600;font-size:12.5px">🥛 Dairy</span>
+<span style="display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:var(--radius-full);border:1.5px solid color-mix(in srgb,var(--outline-variant) 70%,transparent);color:var(--on-surface-variant);font-weight:600;font-size:12.5px"><span class="material-symbols-rounded" style="font-size:15px">add</span>Add tag</span>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:10px 13px;display:flex;align-items:center;gap:10px;font-size:13px">
+<span style="font-weight:600;font-size:10.5px;letter-spacing:.8px;color:var(--on-surface-variant);flex:1">A PORTION</span>
+<span style="font-size:11px;color:var(--on-surface-variant)">called</span><span style="font-weight:600;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent);padding-bottom:1px">100 g</span>
+<span style="font-size:11px;color:var(--on-surface-variant)">weighs</span><span style="font-weight:600;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent);padding-bottom:1px">100</span><span style="font-size:11px;color:var(--on-surface-variant)">g</span>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:10px 13px 6px;font-size:13px">
+<div style="font-weight:600;font-size:10.5px;letter-spacing:.8px;color:var(--on-surface-variant)">PER 100 G</div>
+<div style="font-size:11px;color:var(--on-surface-variant);margin:2px 0 3px">Straight off the label. Blank means "not measured", not zero.</div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Energy</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent)">184</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">kcal</span></div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Fat</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1.5px solid var(--primary);background:color-mix(in srgb,var(--primary) 7%,transparent)">18</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">g</span></div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1;color:var(--on-surface-variant)">— of which saturated</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent)">16</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">g</span></div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Carbohydrates</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent)">3.5</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">g</span></div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1;color:var(--on-surface-variant)">— of which sugars</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent)">1.8</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">g</span></div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Protein</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent)">1.4</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">g</span></div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0"><span style="flex:1">Salt</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent)">77.5</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">mg</span></div>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);box-shadow:var(--elev-1);padding:10px 13px 6px;font-size:13px">
+<div style="font-weight:600;font-size:10.5px;letter-spacing:.8px;color:var(--on-surface-variant)">VITAMINS AND MINERALS</div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0;border-bottom:1px solid color-mix(in srgb,var(--outline-variant) 30%,transparent)"><span style="flex:1">Fibre</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent)">1</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">g</span></div>
+<div style="display:flex;align-items:baseline;gap:8px;padding:5.5px 0"><span style="flex:1">Sodium</span><span style="font-weight:600;min-width:46px;text-align:right;border-bottom:1px solid color-mix(in srgb,var(--outline) 45%,transparent)">31</span><span style="font-size:11px;color:var(--on-surface-variant);width:26px">mg</span></div>
+</div>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.Button" variant="outlined" full-width="{{ true }}" icon="sync" hint-size="100%,44px">Update from Open Food Facts</x-import>
+<div style="font-size:11px;line-height:1.45;color:var(--on-surface-variant)">From Open Food Facts · barcode 7032069728727. What you type here wins, and stays yours. Saved as its own file in your pantry folder.</div>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+<ul class="wnl">
+<li><span class="wn">1</span><span class="wtx">Overview and "Edit food" were 50/50 duplicates — unified: every value edits in place (Fat shown focused). No "Edit this product" door, no Save button; back saves, the header ticks "saved". It's the user's file — nothing to confirm.</span></li>
+<li><span class="wn">2</span><span class="wtx">"Add tag" opens the old edit screen's full tag cloud as a sheet; selected tags live here as chips.</span></li>
+<li><span class="wn">3</span><span class="wtx">"Update from Open Food Facts" stays an explicit button — the crowd never silently overwrites what you typed; the old screen's promise moves into the footer.</span></li>
+</ul>
+</div>
+
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Collect your pantry — shelf scanner · ratified as built</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<div>
+<div style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:#0c0c0e;color:#fff;font-family:var(--font-body);font-size:14px;border:1px solid rgba(0,0,0,.4);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:8px 20px 12px"><span class="material-symbols-rounded" style="font-size:22px">arrow_back</span><span style="font-family:var(--font-display);font-weight:700;font-size:17px">Collect your pantry</span></div>
+<div style="flex:1;position:relative;background:linear-gradient(160deg,#26262b,#101013 65%)">
+<div style="position:absolute;left:12px;top:12px;font-size:10.5px;color:rgba(255,255,255,.35)">live camera</div>
+<div style="position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:210px;height:148px;border:2px solid rgba(255,255,255,.75);border-radius:18px"></div>
+<div style="position:absolute;left:50%;top:64%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:var(--radius-full);background:rgba(0,0,0,.55);backdrop-filter:blur(10px);font-size:12px;font-weight:600;white-space:nowrap"><span class="material-symbols-rounded" style="font-size:16px;color:#8affc1">check_circle</span>Kokos Melk saved · 3 this shelf</div>
+<div style="position:absolute;left:24px;right:24px;bottom:110px;text-align:center;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.85)">Point at a barcode — each product saves as you go. Back when the shelf is done.</div>
+<div style="position:absolute;left:0;right:0;bottom:36px;display:flex;align-items:center;justify-content:center;gap:14px">
+<span style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.16);backdrop-filter:blur(12px);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:21px">flash_off</span></span>
+<span style="display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-radius:var(--radius-full);background:rgba(255,255,255,.16);backdrop-filter:blur(12px);font-weight:600;font-size:13px"><span class="material-symbols-rounded" style="font-size:19px">image</span>From a photo</span>
+</div>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">both themes — the camera is the theme</div>
+</div>
+</div>
+<ul class="wnl">
+<li><span class="wn">1</span><span class="wtx">Ratified as built: scan-as-you-go with no confirm step, back ends the shelf. One addition drawn in — a quiet save receipt chip, so the "saves as you go" promise is visible while you keep scanning.</span></li>
+</ul>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      themes: ['light', 'dark'],
+      navItemsFood: [
+        { key: 'cookbook', icon: 'menu_book', label: 'Cookbook' },
+        { key: 'grocery', icon: 'checklist', label: 'Grocery' },
+        { key: 'food', icon: 'restaurant', label: 'Food' },
+        { key: 'settings', icon: 'settings', label: 'Settings' },
+      ],
+      navItems: [
+        { key: 'cookbook', icon: 'menu_book', label: 'Cookbook' },
+        { key: 'grocery', icon: 'checklist', label: 'Grocery' },
+        { key: 'plan', icon: 'calendar_month', label: 'Plan' },
+        { key: 'settings', icon: 'settings', label: 'Settings' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -19,3 +19,6 @@ app/prod.env
 client_secret_*.json
 docs/namecheap-order-210380156.pdf
 docs/MyReciBook Flutter mockups/myrecibook-design-system/*
+# python scratch
+__pycache__/
+*.pyc

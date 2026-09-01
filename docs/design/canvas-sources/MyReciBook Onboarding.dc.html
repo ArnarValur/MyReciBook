@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/colors.css">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/typography.css">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/tokens/elevation.css">
+<script src="_ds/dittodatto-design-system-1b21a094-c998-4aa1-ae4b-107c0dfe5a0c/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+a{color:#24389c}a:hover{color:#3f51b5}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+</style></helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="mrb-b" viewBox="0 0 108 108">
+<path d="M54 60 C47 53 36 51 26 53 L26 72 C36 70 47 72 54 78 C61 72 72 70 82 72 L82 53 C72 51 61 53 54 60 Z" fill="currentColor"></path>
+<path d="M54 62 L54 76" stroke="var(--knock)" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
+<path d="M45 26 c-5 7 5 9 0 16" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"></path>
+<path d="M63 26 c-5 7 5 9 0 16" stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none"></path>
+</symbol>
+</defs></svg>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Onboarding — welcome → first-time setup → feature slides (once per install, skippable)</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Welcome — the pitch, then one door forward</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" data-screen-label="Welcome ({{ th }})" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:8px 28px 24px;display:flex;flex-direction:column;flex:1">
+<div style="flex:1"></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+<div style="width:92px;height:92px;border-radius:27%;background:#3f51b5;color:#ffffff;--knock:#3f51b5;box-shadow:var(--elev-2)"><svg viewBox="0 0 108 108" style="width:100%;height:100%"><use href="#mrb-b"></use></svg></div>
+<div style="display:flex;align-items:center;gap:7px;font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:-0.02em;color:var(--primary)">MyReciBook</div>
+<div style="font-family:var(--font-display);font-weight:800;font-size:31px;line-height:1.15;letter-spacing:-0.015em">Pay once.<br>Cook forever.</div>
+<div style="font-size:14px;line-height:1.6;color:var(--on-surface-variant);max-width:270px">No subscription. No account. Ever. Your recipes are plain files on this phone — if MyReciBook vanished tomorrow, they wouldn't. Unless you dropped your phone into a volcano and did not use your cloud storage, then it's a oopsie.</div>
+</div>
+<div style="flex:1.2"></div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.Button" full-width="{{ true }}" trailing-icon="arrow_forward" hint-size="100%,48px">Set up my recipe box</x-import>
+<div style="text-align:center;font-size:12px;color:var(--on-surface-variant);margin-top:10px">about a minute · everything can change later</div>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>First-time setup — one page, three choices, no skip</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" data-screen-label="First-time setup ({{ th }})" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;flex:1">
+<div>
+<div style="font-family:var(--font-display);font-weight:700;font-size:23px;line-height:1.25;letter-spacing:-0.01em">Make it yours</div>
+<div style="font-size:13.5px;color:var(--on-surface-variant);margin-top:5px">Three choices. Everything else has good defaults.</div>
+</div>
+<div style="font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant);margin-top:2px">WHERE YOUR RECIPES LIVE</div>
+<div style="background:var(--surface-container-lowest);border:1.5px solid var(--primary);border-radius:var(--radius-md);box-shadow:var(--glow-primary);padding:13px;display:flex;align-items:center;gap:12px">
+<div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--secondary-container);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:21px;color:var(--on-secondary-container)">phone_android</span></div>
+<div style="flex:1"><div style="font-weight:600;font-size:14.5px">This phone</div><div style="font-size:12px;color:var(--on-surface-variant)">zero setup · works offline</div></div>
+<span class="material-symbols-rounded" style="font-size:22px;color:var(--primary);font-variation-settings:'FILL' 1">check_circle</span>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);padding:13px;display:flex;align-items:center;gap:12px">
+<div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--surface-container-high);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:21px;color:var(--on-surface-variant)">add_to_drive</span></div>
+<div style="flex:1"><div style="font-weight:600;font-size:14.5px">Google Drive</div><div style="font-size:12px;color:var(--on-surface-variant)">app folder only — we can't see the rest</div></div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.Button" variant="outlined" size="sm" hint-size="82px,36px">Connect</x-import>
+</div>
+<div style="background:var(--surface-container-lowest);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);border-radius:var(--radius-md);padding:13px;display:flex;align-items:center;gap:12px">
+<div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--surface-container-high);display:grid;place-items:center"><span class="material-symbols-rounded" style="font-size:21px;color:var(--on-surface-variant)">cloud</span></div>
+<div style="flex:1"><div style="font-weight:600;font-size:14.5px">Dropbox</div><div style="font-size:12px;color:var(--on-surface-variant)">app folder only</div></div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.Button" variant="outlined" size="sm" hint-size="82px,36px">Connect</x-import>
+</div>
+<div style="font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant);margin-top:4px">UNITS</div>
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:12.5px;font-weight:600">
+<div style="flex:1;padding:9px 4px;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--surface-container-lowest);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)"><span class="material-symbols-rounded" style="font-size:16px">check</span>Metric</div>
+<div style="flex:1;padding:9px 4px;text-align:center;color:var(--on-surface-variant);font-weight:500">Imperial</div>
+</div>
+<div style="font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant);margin-top:4px">THEME</div>
+<div style="display:flex;background:var(--surface-container-high);border-radius:var(--radius-full);padding:3px;font-size:12.5px;font-weight:600">
+<div style="flex:1;padding:9px 4px;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--surface-container-lowest);color:var(--primary);border-radius:var(--radius-full);box-shadow:var(--elev-1)"><span class="material-symbols-rounded" style="font-size:16px">check</span>System</div>
+<div style="flex:1;padding:9px 4px;text-align:center;color:var(--on-surface-variant);font-weight:500">Light</div>
+<div style="flex:1;padding:9px 4px;text-align:center;color:var(--on-surface-variant);font-weight:500">Dark</div>
+</div>
+<div style="border:1px dashed color-mix(in srgb,var(--outline) 60%,transparent);border-radius:var(--radius-md);padding:11px 13px;font-size:12.5px;line-height:1.5;color:var(--on-surface-variant)">All three live in Settings — nothing here is final.</div>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.Button" full-width="{{ true }}" trailing-icon="arrow_forward" hint-size="100%,48px">Continue</x-import>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Feature slide — two features stacked (screenshots are placeholders)</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" data-screen-label="Feature slide 1 of 2 ({{ th }})" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:8px 20px 20px;display:flex;flex-direction:column;gap:12px;flex:1">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="flex:1;font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant)">WHAT'S NEW IN 1.2</span>
+<span class="material-symbols-rounded" style="font-size:20px;color:var(--on-surface-variant);width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:var(--surface-container-high)">close</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="height:220px;border-radius:var(--radius-md);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);position:relative;background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--secondary-container) 45%,var(--surface)) 0 9px,color-mix(in srgb,var(--secondary-container) 22%,var(--surface)) 9px 18px)">
+<span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:500 10px ui-monospace,Menlo,monospace;color:var(--on-surface-variant);background:color-mix(in srgb,var(--surface) 75%,transparent);border-radius:4px;padding:3px 7px;white-space:nowrap">cropped screenshot · feature A</span>
+</div>
+<div style="font-family:var(--font-display);font-weight:700;font-size:16px">Rescue recipes from screenshots</div>
+<div style="font-size:12.5px;line-height:1.5;color:var(--on-surface-variant)">Share one or many to MyReciBook — it reads them into plain files you own.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+<div style="height:220px;border-radius:var(--radius-md);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);position:relative;background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--secondary-container) 45%,var(--surface)) 0 9px,color-mix(in srgb,var(--secondary-container) 22%,var(--surface)) 9px 18px)">
+<span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:500 10px ui-monospace,Menlo,monospace;color:var(--on-surface-variant);background:color-mix(in srgb,var(--surface) 75%,transparent);border-radius:4px;padding:3px 7px;white-space:nowrap">cropped screenshot · feature B</span>
+</div>
+<div style="font-family:var(--font-display);font-weight:700;font-size:16px">Cook mode</div>
+<div style="font-size:12.5px;line-height:1.5;color:var(--on-surface-variant)">Big steps, screen stays awake — made for messy hands.</div>
+</div>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center">
+<span style="flex:1;font-weight:600;font-size:13px;color:var(--on-surface-variant)">Skip</span>
+<span style="display:flex;gap:6px;align-items:center">
+<span style="width:18px;height:6px;border-radius:3px;background:var(--primary)"></span>
+<span style="width:6px;height:6px;border-radius:50%;background:color-mix(in srgb,var(--outline-variant) 80%,transparent)"></span>
+</span>
+<span style="flex:1"></span>
+</div>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Feature slide — one feature, final · ends the flow</div>
+<div class="dv-card" style="display:flex;gap:24px;padding:24px;background:#e9e9f0;flex-wrap:wrap">
+<sc-for list="{{ themes }}" as="th" hint-placeholder-count="2">
+<div>
+<div data-theme="{{ th }}" data-screen-label="Feature slide 2 of 2 ({{ th }})" style="width:360px;height:800px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--scaffold);color:var(--on-surface);font-family:var(--font-body);font-size:14px;border:1px solid color-mix(in srgb,var(--outline-variant) 60%,transparent);box-shadow:var(--elev-2)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px 6px;font-weight:600;font-size:13px"><span>12:30</span><span style="display:flex;gap:5px;align-items:center"><span class="material-symbols-rounded" style="font-size:15px">signal_cellular_alt</span><span class="material-symbols-rounded" style="font-size:15px">wifi</span><span class="material-symbols-rounded" style="font-size:15px">battery_5_bar</span></span></div>
+<div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;flex:1">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="flex:1;font-weight:600;font-size:11px;letter-spacing:.9px;color:var(--on-surface-variant)">WHAT'S NEW IN 1.2</span>
+<span class="material-symbols-rounded" style="font-size:20px;color:var(--on-surface-variant);width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:var(--surface-container-high)">close</span>
+</div>
+<div style="height:420px;border-radius:var(--radius-md);border:1px solid color-mix(in srgb,var(--outline-variant) 50%,transparent);position:relative;background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--secondary-container) 45%,var(--surface)) 0 9px,color-mix(in srgb,var(--secondary-container) 22%,var(--surface)) 9px 18px)">
+<span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:500 10px ui-monospace,Menlo,monospace;color:var(--on-surface-variant);background:color-mix(in srgb,var(--surface) 75%,transparent);border-radius:4px;padding:3px 7px;white-space:nowrap">cropped screenshot · feature C</span>
+</div>
+<div style="font-family:var(--font-display);font-weight:700;font-size:16px">Grocery list from any recipe</div>
+<div style="font-size:12.5px;line-height:1.5;color:var(--on-surface-variant)">One tap adds the ingredients — quantities merge across recipes.</div>
+<div style="flex:1"></div>
+<div style="display:flex;justify-content:center;gap:6px;align-items:center">
+<span style="width:6px;height:6px;border-radius:50%;background:color-mix(in srgb,var(--outline-variant) 80%,transparent)"></span>
+<span style="width:18px;height:6px;border-radius:3px;background:var(--primary)"></span>
+</div>
+<x-import component-from-global-scope="DittoDattoDesignSystem_1b21a0.Button" full-width="{{ true }}" trailing-icon="arrow_forward" hint-size="100%,48px">Start cooking</x-import>
+</div>
+</div>
+<div style="text-align:center;font:500 11px ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45);margin-top:10px">{{ th }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+</div>
+<p style="margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)">Flow: <a href="#1a">1a</a> → <a href="#1b">1b</a> → <a href="#1c">1c</a> → <a href="#1d">1d</a> · slides replay once per install when a version ships something new · Try next: "drop my real cropped screenshots into 1c/1d" · "copy 1c for the 1.3 slides"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() { return { themes: ['light', 'dark'] }; }
+}
+</script>
+</body>
+</html>
