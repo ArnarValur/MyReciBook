@@ -20,6 +20,7 @@
 
 ## Not open yet
 - **launch** — store listing, ASO, launch content.
+- **ios** — plan PROPOSED 2026-08-27, unratified (cloud-built TestFlight, no Mac). Opens only on Arnar's word. → conductor/tracks/ios/plan.md
 
 ## Done
 - **diary** — graduated 2026-08-30. Pantry categories end to end 2026-08-20. Food surfaces redrawn to the diary/pantry mockups 2026-08-27 at 0.16.0+21: collapsible pantry shelf with search and remembered folds, product overview and edit unified into one autosaving page, add sheet tabbed into Pantry | Recipes browsing by recipe tag, and a new Trends screen (week/month/3M/6M/year, hand-drawn charts, records ledger). Barcode misses now lead into creating the product, and a label can be read off the pack. Rough corners sanded 2026-08-28 at 0.17.5+29: meal sections in the shelf card, Trends drops all-zero micro rows, label micros forced to grams with drop-ceilings. Meal hours + pantry cold start shipped 2026-08-28 at 0.18.2+33: Settings → Meals with per-meal start hours that wrap midnight, one-call batched SAF read + boot warm + spinner/retry, quarter "+" for barcode-less products; day-rollover hour deferred, index cache parked. Last two items closed 2026-08-30 — device verify and the USDA spot-check of the seeded starter packs both confirmed by Arnar. → conductor/tracks/diary/plan.md

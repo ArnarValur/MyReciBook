@@ -5,14 +5,13 @@
 
 ## 📍 Now
 - Phase: first testers + Play review. "The First" 0.20.0+42 on internal —
-  Arnar installed via Play, Höddi has the invite link. Closed "Alpha"
+  2 official testers, Arnar + Höddi both installed via Play. Closed "Alpha"
   (NO+SE) + en-GB listing submitted, in Play review.
 - Internal-track testers do NOT count toward the 12×14d closed gate.
 - Git: tag `the-first-0.20.0+42` = what Play holds; main moves freely, no
   develop branch, hotfix branches from the tag. Old i18n branch deleted.
-- Branch `website-i18n` ready for Arnar's antigravity-cli (Gemini):
-  privacy/terms/contact/404 keyed into en.json (148 messages, verbatim),
-  nb/da/fi/fo skeletons wired + flags (picker still hidden), brief in
+- Website i18n: nb translated (Gemini) + merged to main; da/fi/fo still
+  skeletons awaiting their Gemini pass. Picker still hidden. Brief in
   website/i18n/TRANSLATE.md, parity check scripts/check-locales.mjs.
   en/is/sv human-owned — the agent keeps off them.
 - PROD LIVE: myrecibook.com + www on Cloud Run; prod proxy smoke-tested;

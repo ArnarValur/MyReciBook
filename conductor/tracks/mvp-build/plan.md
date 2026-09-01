@@ -139,7 +139,7 @@
 - item is normalised spelling now (raw "cream of tarter" → item "cream of
   tartar", rule 4); prose sections extract both ways (rule 6) after the phone
   run ate the Filling paragraph as ingredient raws and left 1 step.
-- Evidence, cost numbers and the remaining plan: docs/handoff-extraction-trim.md.
+- Evidence, cost numbers and the remaining plan: docs/archive/handoff-extraction-trim.md.
 
 ## Open
 - [x] First .aab on Play — internal testing release "The First - 0.20.0+42"
