@@ -20,17 +20,19 @@
   --dart-define-from-file=dev.env`. Debug: `adb install -r` + dev.env.
 
 ## 🚀 Active tracks
-- ouroboros — opened 2026-09-01. D1–D3 Arnar's, D4–D7 leanings. PoC slice
-  one in the worktree: 1a prompt + 1b parser committed, unwired; next 1b test → 1c.
-- mvp-build — open: Play review outcome, S21 uninstall-dev → Play install →
-  listing screenshots, App Check SHA, Drive OAuth consent on prod, billing
-  seam, card on import sheet + paywall, welcome screenshots, CLI Play publishing.
+- ouroboros — side experiment in the worktree, NOT on the 1.0 path and never
+  blocks it (Arnar 2026-09-02). Slice one a–f built + tested on branch
+  `ouroboros`; if it proves itself we look at folding it in, not before.
+- mvp-build — THE focus (Arnar 2026-09-02). Play build installed on the
+  handset, dev build gone. Open: Play review outcome, listing screenshots,
+  App Check SHA, billing seam, card on import sheet + paywall, welcome
+  screenshots, CLI Play publishing. Drive OAuth on prod: Arnar started it.
 - market — open: Q2 export recon (Arnar running), Q5 steal list (rides
   ouroboros), Q6 cadence. i18n PAUSED (Decision 2).
 
 ## ⚠️ Blockers
-- Drive OAuth consent screen on prod NOT started — verification takes WEEKS.
-- Listing screenshots need a release install (debug banner on dev build).
+- Drive OAuth consent screen on prod — Arnar started 2026-09-02; verification
+  takes WEEKS, so it stays named until Google answers.
 
 ## 📌 Parked
 - i18n paused · nutrition dormant · 429 means three things, app says one ·
