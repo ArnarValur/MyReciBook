@@ -14,8 +14,8 @@
 - PROD LIVE: myrecibook.com + www on Cloud Run; Firestore eur3; keys in Secret
   Manager; Firebase Production; prod key on prepaid Gemini credits. Contact
   form posts to DEV on purpose. Website picker hidden, non-en pages stickered.
-- Release path ready, NOT for testers: app/prod.env (Drive client still DEV)
-  + app/build-release.sh. Tester builds stay on dev.env + dev Firebase.
+- Release path ready, NOT for testers: app/prod.env (prod Drive client since
+  2026-09-03) + app/build-release.sh. Testers stay on dev.env + dev Firebase.
 - .aab: `cd app && flutter build appbundle --release
   --dart-define-from-file=dev.env`. Debug: `adb install -r` + dev.env.
 
@@ -31,8 +31,10 @@
   ouroboros), Q6 cadence. i18n PAUSED (Decision 2).
 
 ## ⚠️ Blockers
-- Drive OAuth consent screen on prod — Arnar started 2026-09-02; verification
-  takes WEEKS, so it stays named until Google answers.
+- None open. The weeks-long Drive gate dissolved 2026-09-03: the app asks only
+  `drive.file` (non-sensitive, no scope review), prod Android OAuth client is
+  created on Play's app-signing SHA-1, branding verified in minutes, consent
+  screen PUBLISHED to production — Drive is open to any Google account.
 
 ## 📌 Parked
 - i18n paused · nutrition dormant · 429 means three things, app says one ·
