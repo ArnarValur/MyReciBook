@@ -1,40 +1,36 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
 
-> **Updated:** 2026-09-01 (late)
+> **Updated:** 2026-09-03
 
 ## 📍 Now
-- Phase: first testers + Play review. 0.20.0+42 on internal, both testers
-  proved rescue + URL import. Closed "Alpha" (NO+SE) + en-GB listing in review.
-- Git: tag `the-first-0.20.0+42` = what Play holds; main moves freely, hotfix
-  branches from the tag. Worktree ../MyReciBook-ouroboros = branch `ouroboros`
-  (PoC; conductor files edited on main only).
-- Offer = terms: 1,200 grant never refills, top-up 600 for $5 (card + en/nb/
-  da/fi/fo terms). Dev + prod proxies live on the no-refill ledger.
+- Phase: closed test + Play review. 0.20.0+42 is what Play holds (tag
+  `the-first-0.20.0+42`); main moves freely, hotfixes branch from the tag.
+- Closed "Alpha" (NO+SE) live, 1 opted in — internal testers do NOT count; the
+  12×14d clock needs 12 through the closed opt-in link.
+- Drive on prod DONE: Android OAuth client 283856393795-2jpu0hnvnbglr8pihpnrri
+  2vqq932dsd on Play's app-signing SHA-1, consent screen published to
+  production, app/prod.env off the DEV client. `drive.file` needs no review.
+- Offer = terms: 1,200 grant never refills, top-up 600 for $5; both proxies
+  live on the no-refill ledger.
 - PROD LIVE: myrecibook.com + www on Cloud Run; Firestore eur3; keys in Secret
   Manager; Firebase Production; prod key on prepaid Gemini credits. Contact
   form posts to DEV on purpose. Website picker hidden, non-en pages stickered.
-- Release path ready, NOT for testers: app/prod.env (prod Drive client since
-  2026-09-03) + app/build-release.sh. Testers stay on dev.env + dev Firebase.
-- .aab: `cd app && flutter build appbundle --release
-  --dart-define-from-file=dev.env`. Debug: `adb install -r` + dev.env.
+- Release path ready, NOT for testers: app/prod.env + build-release.sh.
+- .aab: `flutter build appbundle --release --dart-define-from-file=dev.env`.
 
 ## 🚀 Active tracks
-- ouroboros — side experiment in the worktree, NOT on the 1.0 path and never
-  blocks it (Arnar 2026-09-02). Slice one a–f built + tested on branch
-  `ouroboros`; if it proves itself we look at folding it in, not before.
-- mvp-build — THE focus (Arnar 2026-09-02). Play build installed on the
-  handset, dev build gone. Open: Play review outcome, listing screenshots,
-  App Check SHA, billing seam, card on import sheet + paywall, welcome
-  screenshots, CLI Play publishing. Drive OAuth on prod: Arnar started it.
+- mvp-build — THE focus (Arnar 2026-09-02). Open: Play review outcome, 10 more
+  closed testers, listing + welcome screenshots, App Check SHA-256, card on
+  import sheet + paywall, billing seam, CLI Play publishing.
+- ouroboros — side experiment in the worktree, never blocks mvp-build (Arnar
+  2026-09-02). Slice one a–f built + tested on branch `ouroboros`; folding it
+  into main is looked at only if the PoC proves itself.
 - market — open: Q2 export recon (Arnar running), Q5 steal list (rides
   ouroboros), Q6 cadence. i18n PAUSED (Decision 2).
 
 ## ⚠️ Blockers
-- None open. The weeks-long Drive gate dissolved 2026-09-03: the app asks only
-  `drive.file` (non-sensitive, no scope review), prod Android OAuth client is
-  created on Play's app-signing SHA-1, branding verified in minutes, consent
-  screen PUBLISHED to production — Drive is open to any Google account.
+- None open.
 
 ## 📌 Parked
 - i18n paused · nutrition dormant · 429 means three things, app says one ·

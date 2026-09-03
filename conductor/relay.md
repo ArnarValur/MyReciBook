@@ -1,6 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-03 — the Drive gate that wasn't: prod OAuth closed in an hour
+
+- Shipped: prod Android OAuth client on package com.merkurialstudio.myrecibook
+  + Play's app-signing SHA-1, branding auto-verified, consent screen published
+  to production; app/prod.env swapped off the DEV client. No version bump.
+- Found: the app requests only `drive.file` — non-sensitive, so the weeks-long
+  verification never applied. Play's signing cert is the fingerprint, not the
+  upload key's. Internal testers do not count toward the closed test's 12.
+- Arnar: mvp-build is the focus; ouroboros experiments in its worktree and
+  never blocks it. Handset already moved off the dev build onto Play.
+- UNFINISHED: quota card on the import sheet + paywall — not started.
+
 ## 2026-09-01 — the snake gets a track: ouroboros opens, a PoC worktree is cut
 
 - Shipped: ouroboros track opened (plan.md D1–D7, tracks + pulse); worktree
