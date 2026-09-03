@@ -1,10 +1,11 @@
 {
-  // Debug configs — S21 shows up as "SM G998B". Key comes from app/dev.env
+  // Debug configs. Debug builds install as com.merkurialstudio.myrecibook.dev,
+  // beside the Play app. Config comes from app/dev.env
   // (gitignored; regenerate with: sed -E 's/^export //' .env > app/dev.env).
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "MyReciBook (S21, dev key)",
+      "name": "MyReciBook (phone, dev backend)",
       "type": "dart",
       "request": "launch",
       "cwd": "app",

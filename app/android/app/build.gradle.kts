@@ -50,6 +50,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["appLabel"] = "MyReciBook"
     }
 
     signingConfigs {
@@ -69,6 +70,19 @@ android {
     }
 
     buildTypes {
+        // Debug and profile builds carry a ".dev" package suffix so the
+        // VS Code debugger installs BESIDE the Play-signed app instead of
+        // being refused for a signature mismatch (Arnar, 2026-09-03). The
+        // Firebase dev project has a second Android app registered for the
+        // suffixed id; google-services.json holds both clients.
+        debug {
+            applicationIdSuffix = ".dev"
+            manifestPlaceholders["appLabel"] = "MyReciBook dev"
+        }
+        getByName("profile") {
+            applicationIdSuffix = ".dev"
+            manifestPlaceholders["appLabel"] = "MyReciBook dev"
+        }
         release {
             signingConfig = if (hasUploadKey) {
                 signingConfigs.getByName("release")

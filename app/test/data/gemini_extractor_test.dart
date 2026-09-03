@@ -108,6 +108,34 @@ void main() {
     });
   }
 
+  // The proxy's `error` word rides the exception so the UI can tell the
+  // three 429s apart; a non-JSON body (Gemini direct, an HTML error page)
+  // carries no reason.
+  for (final (body, status, reason) in [
+    ('{"error":"daily_limit","quota":{"used":50,"cap":1200}}', 429,
+        'daily_limit'),
+    ('{"error":"cap_exceeded","quota":{"used":1200,"cap":1200}}', 429,
+        'cap_exceeded'),
+    ('{"error":"rate_limited","quota":{"used":3,"cap":1200}}', 429,
+        'rate_limited'),
+    ('{"error":"busy","message":"later"}', 503, 'busy'),
+    ('overloaded', 429, null),
+  ]) {
+    test('$status "$body" → reason $reason', () async {
+      final img = await image('a.jpg', [1, 2, 3]);
+      final ex = extractor(MockClient((_) async => http.Response(body, status)));
+      await expectLater(
+        ex.extractContent([img]),
+        throwsA(isA<ExtractionException>()
+            .having((e) => e.reason, 'reason', reason)
+            .having((e) => e.capExhausted, 'capExhausted',
+                reason == 'cap_exceeded')
+            .having((e) => e.dailyLimit, 'dailyLimit',
+                reason == 'daily_limit')),
+      );
+    });
+  }
+
   test('ClientException (transport) → ExtractionException, retryable',
       () async {
     final img = await image('a.jpg', [1, 2, 3]);

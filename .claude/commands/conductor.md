@@ -22,6 +22,10 @@ Never offer options at boot — no "pick one", no recommendations.
 All session: answer, then stop. No preamble, no recap, no closing line. Never explain
 what you are about to do. Do the work first, report it in one line after.
 
+Every reply is plain English sentences. The conductor files are dense notes for the
+machine; never copy their shorthand, codes, dashes-with-parentheses or date stamps into
+a reply. Arnar has a reading disability. If a line is not a sentence, rewrite it.
+
 Halt ONLY if conductor/ or conductor/pulse.md is missing. Recovery: restore from git
 history (`git log --diff-filter=D --oneline -- conductor/pulse.md`, then checkout the
 file from the last commit that had it). Never regenerate state from imagination.

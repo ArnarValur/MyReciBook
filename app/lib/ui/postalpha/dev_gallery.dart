@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../cap_reached_screen.dart';
 import '../theme.dart';
 import '../widgets/skin.dart';
 import 'preview_screens.dart';
@@ -20,7 +21,7 @@ class DevGallery extends StatelessWidget {
       ('3g', 'Paywall', const PaywallPreview()),
       ('3h', 'Storage setup', const StoragePreview()),
       ('4a', 'Grocery list', const GroceryPreview()),
-      ('4d', 'Fair-use cap reached', const CapReachedPreview()),
+      ('4d', 'Fair-use cap reached', const CapReachedScreen(used: 1200, cap: 1200)),
     ];
     return Scaffold(
       appBar: AppBar(title: const Text('Design previews')),

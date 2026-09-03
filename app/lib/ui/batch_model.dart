@@ -257,7 +257,10 @@ class BatchModel extends ChangeNotifier {
   }
 
   static String _failCopy(ExtractionException e) {
+    if (e.capExhausted) return 'included rescues used up · type it in instead';
+    if (e.dailyLimit) return "today's limit · opens again tomorrow";
     if (e.httpStatus == 429) return 'rate-limited · retry in a minute';
+    if (e.httpStatus == 503) return 'server busy · retry in a while';
     if (e.message.startsWith('offline')) return 'offline · retry when connected';
     return 'failed · tap retry';
   }

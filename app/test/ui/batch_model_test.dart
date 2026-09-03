@@ -285,6 +285,27 @@ void main() {
     expect(model.items[1].error, 'failed · tap retry');
   });
 
+  test('the spent grant and the daily ceiling never read as "retry"',
+      () async {
+    final (_, _, save) = recordingSave();
+    final model = BatchModel(
+        extractor: FakeExtractor([
+          ExtractionException('{"error":"cap_exceeded"}',
+              httpStatus: 429, reason: 'cap_exceeded'),
+          ExtractionException('{"error":"daily_limit"}',
+              httpStatus: 429, reason: 'daily_limit'),
+        ]),
+        save: save);
+    model.addAll([
+      [picks[0]],
+      [picks[1]],
+    ]);
+    await model.whenIdle;
+    expect(model.items[0].error,
+        'included rescues used up · type it in instead');
+    expect(model.items[1].error, "today's limit · opens again tomorrow");
+  });
+
   test('failed save keeps the extraction; retry skips the AI call', () async {
     final extractor = FakeExtractor([content(title: 'Soup')]);
     var failSave = true;

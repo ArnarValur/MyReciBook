@@ -73,6 +73,18 @@ class QuotaSnapshot {
 
   bool get inGrace => inGraceAt(DateTime.now());
 
+  /// Never negative: a cap that moved under existing spending reads as
+  /// empty, not as "-5 left".
+  int get left => cap > used ? cap - used : 0;
+
+  /// The included grant is spent. The import sheet's AI doors lead to the
+  /// cap screen instead of the picker, so nobody meets the cap as an error.
+  bool get exhausted => cap > 0 && used >= cap;
+
+  /// The ~80% nudge window (§2): one heads-up, well before empty. Off inside
+  /// the free fortnight — nothing is being spent yet.
+  bool get nearlyUsed => !exhausted && cap > 0 && used * 5 >= cap * 4;
+
   static int _int(Object? v) => v is num ? v.toInt() : 0;
 
   static DateTime? _time(Object? v) =>

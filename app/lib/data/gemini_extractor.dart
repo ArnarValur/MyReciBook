@@ -189,6 +189,19 @@ class GeminiExtractor implements Extractor, LabelReader {
       ..remove('app_hint');
   }
 
+  /// The proxy's `error` word on a refusal body; null for anything that is
+  /// not a JSON object with a string under that key (Gemini direct, HTML
+  /// error pages, an empty body).
+  static String? _refusalReason(List<int> body) {
+    try {
+      final decoded = jsonDecode(utf8.decode(body, allowMalformed: true));
+      final reason = decoded is Map ? decoded['error'] : null;
+      return reason is String ? reason : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Hands [onQuota] the `quota` object the proxy hung on this response.
   /// Swallows everything: a stale counter is a cosmetic loss, and no
   /// extraction may fail over one.
@@ -256,7 +269,8 @@ class GeminiExtractor implements Extractor, LabelReader {
     // refused the call — a user must never meet the cap as a bare error.
     if (viaProxy) _reportQuota(resp.bodyBytes);
     if (resp.statusCode != 200) {
-      throw ExtractionException(resp.body, httpStatus: resp.statusCode);
+      throw ExtractionException(resp.body,
+          httpStatus: resp.statusCode, reason: _refusalReason(resp.bodyBytes));
     }
 
     try {

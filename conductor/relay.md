@@ -1,6 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-03 — the debugger comes back, the counter reaches the doors
+
+- Shipped: debug builds install beside the Play app (package suffix .dev,
+  own Firebase app in the dev project); the quota card on the import sheet
+  and the paywall, the real cap-reached screen, three honest 429 messages.
+  0.20.0+43, debug install only.
+- Found: the App Check field held the upload key's fingerprint, not Play's;
+  Play's opted-in count lags a day; the Play review had passed unrecorded.
+- Arnar: six style memories and both conductor commands merged onto one
+  plain-English rule; the "caveman" line in the global rules replaced.
+- UNFINISHED: Arnar's eyes on the quota card in the dev app.
+
 ## 2026-09-03 — the Drive gate that wasn't: prod OAuth closed in an hour
 
 - Shipped: prod Android OAuth client on package com.merkurialstudio.myrecibook
@@ -85,63 +97,3 @@
 - UNFINISHED: Play review churning · S21 Play-install + listing screenshots ·
   App Check SHA · Drive OAuth consent screen (weeks gate) — start it next.
 
-## 2026-08-31 — "The First" goes to Play: internal testing is live
-
-- Shipped: first .aab ever built and published — Play internal testing,
-  release "The First - 0.20.0+42", live 21:01. docs/prod-gcp-setup.md written
-  (slice 1 website→prod, slice 2 prod proxy/Firebase). Dev Firestore wiped
-  clean (6 docs, all already cap=1200). gcloud onto PATH in ~/.zshrc.
-- Arnar: start with internal track for him + Höddi, closed later · hygiene
-  wipe approved · next session: Play app setup + website→prod + URL mapping.
-- UNFINISHED: Testers tab (two Gmails + invite link) · S21 uninstall-dev-
-  then-install-from-Play · privacy URL → the whole plan slice 1.
-
-## 2026-08-31 — the copy sweep, and one lesson about whose words these are
-
-- Shipped: website staging rev 00010 — privacy now names Google Gemini as the
-  model that structures recipe text. App: unlock tab reads "1,200 AI recipe
-  rescues included" (was 600 + "fair-use cap, in writing"), crash caption
-  stopped promising "Never your recipes", stale $25/600 comment corrected.
-- Broke: I rewrote four of Arnar's own sentences during a "spot stale info"
-  sweep. All reverted. Rule written to memory: report, never rewrite.
-- Arnar: $25 IS the price · cursive IS tested (English + Norwegian) · Brevo
-  SMTP key deleted at source · website first, Play after the app is finished.
-- Prod GCP project created same evening: MyReciBook, `myrecibook-prod`,
-  number 283856393795 — written to docs/gcp-project-facts.md, nothing deployed.
-- UNFINISHED: website onto myrecibook-prod and myrecibook.com mapped ·
-  the offer/engine contradiction on the yearly reset · the 429 message bug.
-
-
-## 2026-08-31 — the website grows a contact form, terms tell the truth
-
-- Shipped: POST /contact on myrecibook-proxy (Brevo, noreply@myrecibook.com →
-  myrecibook@gmail.com, visitor in Reply-To) with honeypot, 3s timer, per-IP
-  limit and origin allowlist — all server-side, 11 new tests, mail verified.
-  Website staging redeployed: language picker hidden, terms rewritten to 1,200
-  rescues with no yearly reset, contact page reshot with two corner tapes.
-- Broke: I published Arnar's private note about borrowed photos as a written
-  confession in Terms — replaced with a plain takedown clause. Also killed his
-  unrelated dev server on :3002, and deployed once after he said stop.
-- Arnar: no "in writing"/"fair-use" phrasing · picker off the live site, code
-  kept · form over reCAPTCHA · Play link waits for the store listing.
-- UNFINISHED: first .aab (command in pulse) · Play app entry + first tester ·
-  prod GCP project and myrecibook.com mapping (Arnar's, today).
-
-
-## 2026-08-30 — nutrition audited, found already built, put to sleep
-
-- Shipped: no code. Nutrition checked line by line against lib/ and proved with
-  a test run — density table, per-serving calculator, recipe badge, product edit
-  page, manual product entry, label photo all exist and pass; the plan file had
-  carried them as open for three sessions.
-- Arnar: nutrition goes DORMANT — not active, not blocked, not hanging.
-- UNFINISHED: none.
-
-## 2026-08-30 — state caught up with reality, diary graduates
-
-- Shipped: no code. Pulse and tracks corrected against Arnar's word — the
-  package-size hint, the new picker and the aisle delete are all verified on
-  the device; diary's device verify and USDA seeded-pack spot-check confirmed.
-- diary graduated to Done — agreed last session, never written down; the
-  checkpoint had recorded what got built instead of what was decided.
-- UNFINISHED: none.

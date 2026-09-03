@@ -1,13 +1,12 @@
-// Post-alpha design previews — faithful builds of hi-fi 3g/3h/4a/4d with
-// the mockups' own demo data. Reachable only through the debug DevGallery.
+// Post-alpha design previews — faithful builds of hi-fi 3g/3h/4a with the
+// mockups' own demo data. Reachable only through the debug DevGallery.
 // Buttons that would need a missing engine explain themselves via SnackBar.
-// (3b batch queue was PROMOTED to lib/ui/batch_queue_screen.dart.)
+// (3b batch queue was PROMOTED to lib/ui/batch_queue_screen.dart; 4d cap
+// reached was PROMOTED to lib/ui/cap_reached_screen.dart 2026-09-03 — the
+// gallery shows the real screen with a full meter.)
 //
 // Product guardrails carried from the handoff spec:
 // - Paywall states the fair-use cap in writing (constraint 2).
-// - Cap screen's top-up REVISED 2026-09-01 (Decision 1, market plan): +600
-//   rescues, $5 flat, never expires; the included grant never refills. Stays
-//   behind [kTopUpEnabled] until the consumable IAP exists.
 // - Grocery merge is suggest-and-confirm, never silent (§6.3).
 
 import 'package:flutter/material.dart';
@@ -16,9 +15,6 @@ import '../theme.dart';
 import '../unlock_tab.dart';
 import '../widgets/glass_nav_bar.dart';
 import '../widgets/skin.dart';
-
-/// Product flag, not a debug flag: the top-up pack needs an explicit yes.
-const bool kTopUpEnabled = false;
 
 void _notWired(BuildContext context, String what) {
   ScaffoldMessenger.of(context).showSnackBar(
@@ -463,103 +459,6 @@ class GroceryPreview extends StatelessWidget {
         active: 1,
         onTab: (_) => _notWired(context, 'The shell nav'),
         onFab: () => _notWired(context, 'The shell nav'),
-      ),
-    );
-  }
-}
-
-// ── 4d · Fair-use cap reached ───────────────────────────────────────────────
-
-class CapReachedPreview extends StatelessWidget {
-  const CapReachedPreview({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = context.scheme;
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(alignment: Alignment.centerRight, child: _CloseCircle()),
-              const SizedBox(height: 8),
-              Center(
-                child: Container(
-                  width: 68,
-                  height: 68,
-                  decoration: BoxDecoration(
-                      color: scheme.secondaryContainer,
-                      borderRadius: BorderRadius.circular(22)),
-                  child: Icon(Icons.hourglass_top_rounded,
-                      size: 32, color: scheme.onSecondaryContainer),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text("You've used your included rescues",
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.headlineMedium
-                      ?.copyWith(fontSize: 26, height: 1.2)),
-              const SizedBox(height: 8),
-              Text(
-                  "That's the 1,200 that came with your purchase. Nothing resets — add more below, or run on your own key.",
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant, height: 1.5)),
-              const SizedBox(height: 16),
-              TokenCard(
-                radius: 16,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('AI rescues',
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontSize: 13)),
-                        Text('1,200 / 1,200',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                                fontSize: 13, fontFamily: 'monospace')),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                          value: 1,
-                          minHeight: 8,
-                          backgroundColor: scheme.surfaceContainerHigh),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                        'Typing or pasting recipes in yourself is always unlimited — the cap only meters the AI.',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                            height: 1.5, color: scheme.onSurfaceVariant)),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              if (kTopUpEnabled) ...[
-                FilledButton(
-                    onPressed: () => _notWired(context, 'The top-up pack'),
-                    child: const Text('Add 600 rescues — \$5')),
-                const SizedBox(height: 8),
-              ],
-              TextButton(
-                  onPressed: () => _notWired(context, 'Manual entry'),
-                  child: const Text('Type it in by hand')),
-              const SizedBox(height: 6),
-              Text('Everything you own keeps working, forever.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: scheme.onSurfaceVariant)),
-            ],
-          ),
-        ),
       ),
     );
   }

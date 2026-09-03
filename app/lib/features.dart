@@ -62,6 +62,11 @@ const bool kDiaryEnabled = true;
 /// plus real handlers in unlock_tab.dart.
 const bool kSpreadWordEnabled = false;
 
+/// The top-up pack (600 rescues for \$5, never expiring). Off until the
+/// consumable product exists in Play billing; the cap screen says so
+/// meanwhile instead of showing a button that no-ops.
+const bool kTopUpEnabled = false;
+
 
 /// Quick add — a diary line that is calories and nothing else, for the meal
 /// out nobody is going to itemise. The engine is real and tested

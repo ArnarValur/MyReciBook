@@ -1,7 +1,7 @@
 // Quota counter — the quiet "what's left" card (docs/ai-cap-mechanics.md §2).
 // Fed by QuotaModel from the quota object the proxy hangs on every answer;
-// Settings mounts it, and the import sheet and paywall get it next. Look
-// borrowed from the 4d cap preview.
+// Settings, the paywall and the cap-reached screen mount it. Look borrowed
+// from the 4d cap preview.
 //
 // Three states besides the plain count, all §2's wording rules: no numbers at
 // all until the proxy has answered once, "nothing counts yet" inside the free
@@ -15,6 +15,17 @@ import 'package:provider/provider.dart';
 import 'skin.dart';
 import '../byok_model.dart';
 import '../theme.dart';
+
+/// 1200 → "1,200": the offer's numbers read as the listing prints them.
+String formatRescues(int n) {
+  final s = n.toString();
+  final b = StringBuffer();
+  for (var i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
+    b.write(s[i]);
+  }
+  return b.toString();
+}
 
 class QuotaCounterCard extends StatelessWidget {
   const QuotaCounterCard({
@@ -35,16 +46,6 @@ class QuotaCounterCard extends StatelessWidget {
 
   /// Free-fortnight window: nothing counts yet (§2 grace wording).
   final bool inGrace;
-
-  static String _fmt(int n) {
-    final s = n.toString();
-    final b = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
-      b.write(s[i]);
-    }
-    return b.toString();
-  }
 
   void _showKeyDialog(BuildContext context, ByokModel? byok) {
     final ctl = TextEditingController();
@@ -154,7 +155,7 @@ class QuotaCounterCard extends StatelessWidget {
                 byokActive
                     ? 'your key'
                     : counted
-                        ? '${_fmt(used)} / ${_fmt(cap)}'
+                        ? '${formatRescues(used)} / ${formatRescues(cap)}'
                         : '—',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontSize: 13,
@@ -191,7 +192,7 @@ class QuotaCounterCard extends StatelessWidget {
                           : !counted
                               ? 'Your allowance shows up here after the first '
                                   'AI import.'
-                              : '${_fmt(left)} of ${_fmt(cap)} '
+                              : '${formatRescues(left)} of ${formatRescues(cap)} '
                                   'requests left.',
                   style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
                 ),

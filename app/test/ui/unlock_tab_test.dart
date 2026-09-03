@@ -5,8 +5,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:myrecibook/domain/quota.dart';
+import 'package:myrecibook/ui/quota_model.dart';
 import 'package:myrecibook/ui/theme.dart';
 import 'package:myrecibook/ui/unlock_tab.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   Future<void> pump(WidgetTester tester, {bool dark = false}) =>
@@ -36,6 +39,25 @@ void main() {
         findsOneWidget,
       );
     }
+  });
+
+  // The counter where the money is (docs/ai-cap-mechanics.md §2): real
+  // numbers under the cap-in-writing line, only once the proxy has answered.
+  testWidgets('counter appears under the pitch once the proxy has answered',
+      (tester) async {
+    await pump(tester);
+    expect(find.text('MyReciBook   AI requests'), findsNothing);
+
+    final quota = QuotaModel();
+    await quota.record(const QuotaSnapshot(used: 487, cap: 1200));
+    await tester.pumpWidget(
+      ChangeNotifierProvider<QuotaModel>.value(
+        value: quota,
+        child: MaterialApp(theme: rbLightTheme(), home: const UnlockTab()),
+      ),
+    );
+    expect(find.text('MyReciBook   AI requests'), findsOneWidget);
+    expect(find.text('713 of 1,200 requests left.'), findsOneWidget);
   });
 
   // Static card since 2026-08-17 (Arnar, on the installed build: no

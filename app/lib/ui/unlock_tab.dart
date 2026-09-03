@@ -13,9 +13,13 @@
 // $25 is the price (Arnar, 2026-08-31). 1,200 rescues come with it.
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../features.dart';
+import 'byok_model.dart';
+import 'quota_model.dart';
 import 'theme.dart';
+import 'widgets/quota_counter_card.dart';
 import 'widgets/skin.dart';
 
 /// One-time price — single source for the card and the CTA label.
@@ -172,6 +176,11 @@ class UnlockTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
+    // The counter where the money is (docs/ai-cap-mechanics.md §2): the
+    // real numbers under the cap-in-writing line, once the proxy has
+    // answered on this install — a fresh install's "—" would only confuse.
+    final quota = context.watch<QuotaModel?>()?.quota;
+    final ownKey = context.watch<ByokModel?>()?.active ?? false;
 
     return Scaffold(
       body: SafeArea(
@@ -180,6 +189,14 @@ class UnlockTab extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(20, 24, 20, navBarClearance(context)),
           children: [
             const PaywallPitch(),
+            if (quota != null || ownKey) ...[
+              const SizedBox(height: 12),
+              QuotaCounterCard(
+                used: quota?.used,
+                cap: quota?.cap,
+                inGrace: quota?.inGrace ?? false,
+              ),
+            ],
             const SizedBox(height: 20),
             // Billing 3g replaces these two with the real purchase flow +
             // restore-purchase line. Until then the button says why it waits.

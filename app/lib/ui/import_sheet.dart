@@ -14,13 +14,26 @@
 // - screenshots-tile caption redrafted ("one recipe or a whole pile — you
 //   decide next"): the old "pick every shot of one recipe" line became untrue
 //   the moment batch landed.
+//
+// The allowance line (docs/ai-cap-mechanics.md §2, 2026-09-03): the counter
+// sits where the decision happens — one quiet line under the AI section
+// saying what is left and that an import uses one. Exactly two nudges: the
+// wording turns into a heads-up at ~80%, and when the grant is spent the AI
+// doors lead to the cap screen instead of the picker, so nobody meets the
+// cap as a failed extraction. Own key: no cap, and the line says so.
 
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;
+import 'package:provider/provider.dart';
 
+import '../domain/quota.dart';
+import 'byok_model.dart';
+import 'cap_reached_screen.dart';
+import 'quota_model.dart';
 import 'theme.dart';
+import 'widgets/quota_counter_card.dart' show formatRescues;
 import 'widgets/skin.dart';
 
 /// What the user chose. [ImportPicked.separate] carries the 3a segmented
@@ -93,6 +106,35 @@ class _ImportSheetState extends State<_ImportSheet> {
     });
   }
 
+  /// The grant is spent: the AI doors open the cap screen, whose free door
+  /// pops this sheet with the manual choice exactly as the typed-in row does.
+  Future<void> _capReached() async {
+    final result = await Navigator.of(context).push<CapReachedResult>(
+      MaterialPageRoute(builder: (_) => const CapReachedScreen()),
+    );
+    if (!mounted || result != CapReachedResult.typeIt) return;
+    Navigator.pop(context, const ImportManual());
+  }
+
+  /// One sentence of truth about the allowance, or nothing at all before the
+  /// proxy has ever answered — no number the app cannot stand behind.
+  static String? allowanceLine(QuotaSnapshot? q, {required bool ownKey}) {
+    if (ownKey) return 'Running on your own Gemini key — no cap.';
+    if (q == null) return null;
+    if (q.inGrace) return "Free for now — your first two weeks don't count.";
+    final cap = formatRescues(q.cap);
+    if (q.exhausted) {
+      return 'Your $cap included rescues are used up — typing it in is '
+          'always free.';
+    }
+    final left = formatRescues(q.left);
+    if (q.nearlyUsed) {
+      return 'Heads-up: ${formatRescues(q.used)} of $cap used — $left left, '
+          'plenty for now.';
+    }
+    return '$left of $cap rescues left — each import uses one.';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -130,13 +172,30 @@ class _ImportSheetState extends State<_ImportSheet> {
 
   // ── Phase 1: pick a source ────────────────────────────────────────────────
 
-  List<Widget> _chooser(ThemeData theme, ColorScheme scheme) => [
+  List<Widget> _chooser(ThemeData theme, ColorScheme scheme) {
+    // Nullable watches: tests and previews without the providers stay in
+    // plain proxy mode with no line, same as the counter card.
+    final quota = context.watch<QuotaModel?>()?.quota;
+    final ownKey = context.watch<ByokModel?>()?.active ?? false;
+    final line = allowanceLine(quota, ownKey: ownKey);
+    final exhausted = !ownKey && (quota?.exhausted ?? false);
+    const spentCaption = 'included rescues used up — see your options';
+    return [
         const SectionLabel('From your screenshots'),
+        if (line != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            line,
+            key: const Key('import-allowance-line'),
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
+          ),
+        ],
         const SizedBox(height: 8),
         InkWell(
           key: const Key('import-screenshots-tile'),
           borderRadius: BorderRadius.circular(12),
-          onTap: () => _pick(widget.picker),
+          onTap: exhausted ? _capReached : () => _pick(widget.picker),
           child: Ink(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -165,7 +224,9 @@ class _ImportSheetState extends State<_ImportSheet> {
                               ?.copyWith(fontSize: 14)),
                       const SizedBox(height: 2),
                       Text(
-                        'one recipe or a whole pile — you decide next',
+                        exhausted
+                            ? spentCaption
+                            : 'one recipe or a whole pile — you decide next',
                         style: theme.textTheme.bodySmall
                             ?.copyWith(color: scheme.onSurfaceVariant),
                       ),
@@ -188,8 +249,10 @@ class _ImportSheetState extends State<_ImportSheet> {
             key: const Key('import-camera-tile'),
             icon: Icons.photo_camera_rounded,
             title: 'Snap a page',
-            caption: "cookbook or grandma's card — handwriting welcome",
-            onTap: () => _pick(widget.camera!),
+            caption: exhausted
+                ? spentCaption
+                : "cookbook or grandma's card — handwriting welcome",
+            onTap: exhausted ? _capReached : () => _pick(widget.camera!),
           ),
         ],
         const SizedBox(height: 12),
@@ -206,6 +269,7 @@ class _ImportSheetState extends State<_ImportSheet> {
           onTap: () => Navigator.pop(context, const ImportManual()),
         ),
       ];
+  }
 
   Widget _doorRow(
     ThemeData theme,

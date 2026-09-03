@@ -146,10 +146,9 @@
       live 2026-08-31 21:01. Internal track needs no forms; the 12×14d clock
       runs only in closed testing. Dev Firestore ledger wiped same evening
       for a clean tester start. Prod plan: docs/prod-gcp-setup.md.
-- [ ] Testers tab: email list with Arnar's + Höddi's Gmails, invite link to
-      Höddi. Arnar owns the clicks.
-- [ ] S21: uninstall the dev build (signature differs), install from the Play
-      invite link — first clean-device run of the Play-signed build.
+- [x] Testers: one tester (Arnar), in through the closed opt-in link. Recruiting
+      more is NOT an mvp-build item (Arnar 2026-09-03).
+- [x] Handset: dev build uninstalled, installed from Play 2026-09-02.
 - [ ] The offer contradicts the engine. Terms (live) say the 1,200 never
       expire and nothing resets; proxy/lib/firestore_ledger.dart:206 does a
       lazy anniversary reset and ships resets_at, which quota_counter_card.dart
@@ -163,8 +162,8 @@
 - [ ] postalpha 4d "Fair-use cap reached" preview is stale: 600/600, "this
       year", "resets 1 January", no BYOK door. Debug-only, but it is the design
       source for the real screen the item above needs.
-- [ ] Re-rescue the Filled Cookies card on +39 — prose rule and split-line
-      grouping unverified by Arnar's eyes; run variance is real.
+- [x] Filled Cookies card re-rescued on the new prompt — works, verified by
+      Arnar's eyes (recorded 2026-09-03; said earlier, never written down).
 - [ ] Handoff remainder: deterministic app-side review flags (digits but no
       qty, " each "/" or " in raw, shared line_id), regression fixtures from
       both runs, prefix-caching check.
@@ -178,17 +177,20 @@
       on the internal track. Until then the server trusts a header the client
       invents. Sideloaded builds cannot attest — Play Integrity only vouches
       for installs that came from Play.
-- [ ] Play's own signing fingerprint into the app-proof registration —
-      UNBLOCKED 2026-08-31: the first upload exists, so Play Console now
-      shows the app-signing SHA-256. Play re-signs, so neither the upload
-      nor the debug fingerprint covers it.
+- [x] Play's own signing fingerprint into the App Check registration — done
+      by Arnar 2026-09-03 with the app-signing certificate from Play Console
+      (the upload key's fingerprint was in the field first; it never matches
+      a Play install). Advanced settings left at defaults on purpose.
+- [x] Debug builds install beside the Play app 2026-09-03: debug + profile
+      carry the package suffix ".dev" and the label "MyReciBook dev". A second
+      Android app for that package is registered in the Firebase dev project
+      and google-services.json holds both clients. Proven: debug APK built and
+      installed next to the Play app on the phone. Drive sign-in in the dev
+      app is untested (its OAuth client is tied to the release package).
 - [ ] Measure real usage. The ledger records it from the first live call;
       nothing meaningful collected yet.
-- [ ] Closed test on Play — Google grants a new personal developer account
-      production access only after 12 people have the app installed from the
-      test track for 14 days straight. Nobody recruited; Arnar owns that.
-      Nothing to do with the 14 free days a buyer gets — same number, unrelated.
-      An installable alpha has to be on the closed track well before launch.
+- [x] Closed test on Play — review PASSED (Arnar 2026-09-03; was said in chat
+      earlier, never written down). Recruiting is not an mvp-build item.
 - [ ] Billing — one-time purchase, hard paywall. Seam exists, nothing built.
 
 ## Arnar's, not tracked here
@@ -219,13 +221,19 @@
   WIRED 2026-08-30, verified on device: quota parsed from every /extract and
   from 429s, cached in device.json, feeding QuotaCounterCard atop Settings.
   Honest "—" before first contact; own-key state says the counter does not
-  apply; grace wording live while grace_until is in the future. Remaining:
-  show the card on the import sheet + paywall, "Uses 1 of your 1,200" line
-  before AI paths, distinct daily-limit message (never confuse the 50/day
-  governor with the cap), two nudges only (~80% and empty; empty leads with
-  "Type it in — always free" before the $5 top-up). Refusal messages the user
-  sees are unchanged so far. Promote the 4d preview screen when this lands.
-  Design source: docs/ai-cap-mechanics.md §2.
+  apply; grace wording live while grace_until is in the future.
+  BUILT 2026-09-03, awaiting Arnar's eyes on the dev app (0.20.0+43): one
+  allowance line on the import sheet under the AI doors ("713 of 1,200
+  rescues left — each import uses one"; heads-up wording from 80%; grace and
+  own-key sentences), the counter card under the paywall pitch once the
+  proxy has answered, the 4d preview promoted to lib/ui/cap_reached_screen
+  .dart (free door first, top-up line waits for billing), the sheet's AI
+  doors open that screen when the grant is spent, and the proxy's refusal
+  word rides ExtractionException so the review screen and the batch queue
+  say "today's limit — opens again tomorrow" / "included rescues used up"
+  / "we're busy" instead of "try again shortly" for all of them. Tests:
+  quota, import sheet, cap screen, review failed state, extractor reasons,
+  batch captions, paywall counter. Design source: docs/ai-cap-mechanics.md §2.
 
 ## 2026-09-01 — Decision 1 executed (grant never refills)
 

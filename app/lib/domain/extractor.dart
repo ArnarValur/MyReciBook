@@ -19,11 +19,24 @@ class ExtractionException implements Exception {
   final String message;
   final int? httpStatus;
 
+  /// The proxy's `error` word on a refusal — 'rate_limited', 'daily_limit',
+  /// 'cap_exceeded', 'busy' — so the UI can say which of the three 429s it
+  /// met instead of "try again shortly" to all of them. Null when the body
+  /// carried none (direct Gemini, transport failure, 5xx).
+  final String? reason;
+
   /// Rate limits and 5xx are worth an automatic retry; 4xx are not.
   bool get retryable =>
       httpStatus == null || httpStatus == 429 || (httpStatus! >= 500);
 
-  ExtractionException(this.message, {this.httpStatus});
+  /// The included grant is spent. Retrying spends nothing and changes
+  /// nothing — the honest next step is typing it in, or a top-up.
+  bool get capExhausted => reason == 'cap_exceeded';
+
+  /// Today's spend-rate ceiling, not the allowance: it opens again tomorrow.
+  bool get dailyLimit => reason == 'daily_limit';
+
+  ExtractionException(this.message, {this.httpStatus, this.reason});
 
   @override
   String toString() => 'ExtractionException($httpStatus): $message';

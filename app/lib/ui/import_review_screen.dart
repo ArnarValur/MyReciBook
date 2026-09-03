@@ -17,6 +17,7 @@ import '../domain/recipe_tag.dart';
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
 import 'library_model.dart';
+import 'manual_entry_screen.dart';
 import 'photo_sources.dart';
 import 'tag_chip.dart';
 import 'tag_picker_sheet.dart';
@@ -72,6 +73,10 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
 
   _Phase _phase = _Phase.extracting;
   String _error = '';
+
+  /// The last failure was the spent grant: retrying spends nothing and
+  /// changes nothing, so the failed screen offers the free door instead.
+  bool _capReached = false;
   Map<String, dynamic> _content = const {};
 
   /// Tags this import arrived with, editable before anything is saved.
@@ -146,10 +151,34 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   }
 
   static ({String title, String body}) _classify(ExtractionException e) {
+    // The proxy's 429 means three different things (rate limit, today's
+    // ceiling, the grant spent) and each gets its own words — a buyer with
+    // 1,100 rescues left must never read "try again" as the cap, and one
+    // with none left must never be told to wait for nothing.
+    if (e.capExhausted) {
+      return (
+        title: "You've used your included rescues",
+        body: 'Nothing resets — type it in instead, always free.',
+      );
+    }
+    if (e.dailyLimit) {
+      return (
+        title: "That's today's limit",
+        body: 'Your allowance is untouched — rescuing opens again tomorrow.',
+      );
+    }
     if (e.httpStatus == 429) {
       return (
         title: 'Give it a minute',
         body: 'Rate-limited — try again shortly.',
+      );
+    }
+    if (e.httpStatus == 503) {
+      // The proxy's own ceiling (or its ledger down) — ours, not theirs.
+      return (
+        title: "We're busy right now",
+        body: 'The rescue server is at its ceiling — try again in a little '
+            'while.',
       );
     }
     if (e.message.startsWith('offline')) {
@@ -267,6 +296,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
       if (!mounted) return;
       setState(() {
         _phase = _Phase.failed;
+        _capReached = e.capExhausted;
         _error = '${_classify(e).title}\n${_classify(e).body}';
       });
     } catch (e) {
@@ -275,6 +305,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
       if (!mounted) return;
       setState(() {
         _phase = _Phase.failed;
+        _capReached = false;
         _error = 'That one kept its secrets\nExtraction failed — try again.';
       });
     }
@@ -546,11 +577,25 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
               ),
             ),
           ),
-          FilledButton.icon(
-            onPressed: _extract,
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Try again'),
-          ),
+          if (_capReached)
+            // The grant is spent: the free path leads (§2), and this screen
+            // hands over to the row editor in its place.
+            FilledButton.icon(
+              key: const Key('review-type-it'),
+              onPressed: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ManualEntryScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.edit_rounded),
+              label: const Text('Type it in — always free'),
+            )
+          else
+            FilledButton.icon(
+              onPressed: _extract,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again'),
+            ),
         ],
       ),
     );

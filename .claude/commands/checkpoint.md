@@ -3,6 +3,8 @@
 
 0. STYLE, all files below: one fact per line, no prose paragraphs, no story, no
    self-criticism, no apology. If a line does not change what gets built next, cut it.
+   That density is for the FILES only. The reply to Arnar is plain English sentences:
+   no codes, no dashes-with-parentheses, no date stamps, no version shorthand.
 
 1. REWRITE conductor/pulse.md — state only, cap 40 lines, exactly these sections:
    📍 Now · 🚀 Active tracks · ⚠️ Blockers · 📌 Parked.
