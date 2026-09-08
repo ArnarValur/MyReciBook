@@ -7,6 +7,18 @@ useSeoMeta({
   title: t('privacy.seo.title'),
   description: t('privacy.seo.description'),
 })
+
+// The visitor can change their mind about being counted right here, on the page
+// that explains what counting means.
+const { enabled: consentEnabled, choice, read, set: setConsent } = useCookieConsent()
+onMounted(read)
+const consentStatus = computed(() =>
+  choice.value === 'granted'
+    ? t('privacy.websiteStatus.granted')
+    : choice.value === 'denied'
+      ? t('privacy.websiteStatus.denied')
+      : t('privacy.websiteStatus.none'),
+)
 </script>
 
 <template>
@@ -36,6 +48,31 @@ useSeoMeta({
         <li>{{ $t('privacy.never.storing') }}</li>
       </ul>
 
+      <h2>{{ $t('privacy.websiteTitle') }}</h2>
+      <p>{{ $t('privacy.websiteBody') }}</p>
+      <ClientOnly>
+        <p v-if="consentEnabled" class="consent-row">
+          <span>{{ consentStatus }}</span>
+          <UButton
+            v-if="choice !== 'granted'"
+            size="xs"
+            variant="soft"
+            @click="setConsent('granted')"
+          >
+            {{ $t('privacy.websiteOptIn') }}
+          </UButton>
+          <UButton
+            v-else
+            size="xs"
+            color="neutral"
+            variant="soft"
+            @click="setConsent('denied')"
+          >
+            {{ $t('privacy.websiteOptOut') }}
+          </UButton>
+        </p>
+      </ClientOnly>
+
       <h2>{{ $t('privacy.payTitle') }}</h2>
       <p>{{ $t('privacy.payBody') }}</p>
 
@@ -50,3 +87,14 @@ useSeoMeta({
     </div>
   </section>
 </template>
+
+<style scoped>
+.consent-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  color: var(--box-ink-faint);
+}
+</style>

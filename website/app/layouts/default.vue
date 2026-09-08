@@ -78,6 +78,10 @@ const localeItems = computed(() =>
 
     <slot />
 
+    <!-- Analytics consent (2026-09-08): Google Analytics loads only after a yes.
+         Hidden entirely when no measurement id is configured. -->
+    <CookieNote />
+
     <!-- ── Footer: bottom of the box ────────────────────────── -->
     <footer class="foot">
       <div class="lid-edge foot-edge" />

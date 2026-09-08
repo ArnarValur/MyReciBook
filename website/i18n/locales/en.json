@@ -13,6 +13,12 @@
     "contact": "Contact",
     "translationNotice": "This page is a translation and may lag behind the English original. If anything differs — especially in Terms or Privacy — the English version governs."
   },
+  "cookies": {
+    "body": "The GDPR consent cookie: Just counting visitors and roughly from where, no other hidden ingredients.",
+    "more": "More in the privacy note.",
+    "accept": "Count my visit",
+    "decline": "No thanks"
+  },
   "index": {
     "seo": {
       "title": "MyReciBook — Rescue the recipes buried in your camera roll",
@@ -158,6 +164,15 @@
       "ads": "No ads, no selling or sharing data with data brokers.",
       "storing": "No storing your recipes on our servers."
     },
+    "websiteTitle": "This website",
+    "websiteBody": "This website is separate from the app. It counts nothing unless you say yes. If you do, Google Analytics sets a cookie and reports which pages you opened, roughly which country you are in, and what device you used. Nothing else. It never sees your name or email, and it never touches your recipes.",
+    "websiteStatus": {
+      "granted": "Right now: your visits are being counted.",
+      "denied": "Right now: your visits are not being counted.",
+      "none": "You have not answered yet, so nothing is being counted."
+    },
+    "websiteOptIn": "Count my visits",
+    "websiteOptOut": "Stop counting me",
     "payTitle": "Payment",
     "payBody": "Purchases run through Google Play. We receive the purchase token to unlock the app and meter the AI cap — Google handles the payment details, we never see them.",
     "questionsTitle": "Questions",

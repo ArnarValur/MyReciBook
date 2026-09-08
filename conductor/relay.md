@@ -1,6 +1,24 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-08 — the website learns to count, after one wrong line of glue
+
+- Shipped: Google Analytics 4 on myrecibook.com behind a consent note that
+  blocks the tag until the visitor accepts (basic consent mode, the choice in
+  localStorage, an opt-out on the privacy page, a new "This website" section).
+  Deployed to prod twice; ids recorded in docs/gcp-project-facts.md.
+- Broke: the gtag shim pushed a plain array instead of the `arguments` object,
+  so the script loaded, nothing errored and no hit was ever sent. Tag Assistant
+  said "deferred hits — no config command" and that was read as harmless.
+- Learned: Google's "Test installation" scan and the "data collection isn't
+  active" warning can never clear on a consent-gated site — the scanner never
+  accepts. Realtime is the only valid check. Vivaldi's tracker blocker is a
+  separate switch from its ad blocker and eats the tag either way.
+- Arnar: banner + Google Analytics over cookieless (he wants one dashboard with
+  the Android app) · wrote the banner copy himself · no version bump, website
+  only, no app build.
+- UNFINISHED: none — analytics verified live in Realtime the same session.
+
 ## 2026-09-03 — the tag system gets a canvas, then a rebuild the same night
 
 - Shipped: Direction A — cookbook is one grid under a tag-tile strip, the tag

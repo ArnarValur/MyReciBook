@@ -55,3 +55,20 @@ registration with the Play App Signing fingerprint. The only thing shared is
 the source. §4 item 9 of `docs/ai-cap-mechanics.md` calls for two
 projects, prod and test, with separate keys and separate caps. NEEDS ARNAR when
 the internal track graduates.
+
+## Google Analytics — website (added 2026-09-08)
+
+| Value | Detail |
+|---|---|
+| Property | `myrecibook-prod` (the same Google Analytics property the Android app reports into) |
+| Web stream | "MyReciBook Website", `https://www.myrecibook.com` |
+| Measurement ID | `G-M301GKVM58` |
+
+The measurement ID is public by design — it ships in the page source of every
+visitor's browser, so it is not a secret and lives in `website/nuxt.config.ts`
+under `runtimeConfig.public.gaMeasurementId`. Set it to an empty string to turn
+analytics and the consent note off completely for a build.
+
+The tag never loads until the visitor accepts the consent note, so Google
+receives nothing from anyone who declines or ignores it. That means the visit
+count reads low, not wrong.

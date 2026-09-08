@@ -3,6 +3,30 @@
 **Goal:** the shippable v1 engine — extract → save → list → open, then sync and paywall.
 
 ## Done
+- [x] Website analytics 2026-09-08. Google Analytics 4 on the prod property
+      (web stream "MyReciBook Website", measurement id G-M301GKVM58 — same
+      property the Android app reports into, so site and app sit in one
+      dashboard). Basic consent mode: the tag is never fetched until the
+      visitor accepts a note at the foot of the page, the answer lives in
+      localStorage, the privacy page gained a "This website" section plus a
+      control to opt in or out at any time, and withdrawing clears the GA
+      cookies and reloads. New files website/app/composables/useCookieConsent.ts,
+      website/app/plugins/analytics.client.ts, website/app/components/CookieNote.vue;
+      id in nuxt.config runtimeConfig.public (empty string switches the whole
+      feature off for a build). Copy is English-only — other locales fall back,
+      and the picker is still hidden. Arnar wrote the banner wording.
+      Bug that cost the session: the gtag shim pushed a plain array instead of
+      the `arguments` object. Google's tag reads that queue expecting arguments
+      objects and silently ignores arrays, so the script loaded with a 200,
+      nothing errored, and no hit was ever sent. Tag Assistant's "deferred hits
+      — no config command" was the real signal.
+      Two dead ends recorded so nobody chases them again: Google's "Test
+      installation" scan and the stream's "data collection isn't active"
+      warning can NEVER clear on a consent-gated site, because the scanner is a
+      robot that never accepts — Realtime is the only valid check; and a
+      tracker blocker in the browser (Vivaldi's is a separate switch from its
+      ad blocker) shows ERR_BLOCKED_BY_CLIENT, which is the visitor's machine,
+      not the site. Expect the visit count to read low, never precise.
 - [x] Prod infra 2026-09-01 (docs/prod-gcp-setup.md slices 1+2, minus App
       Check and Drive OAuth): website live on myrecibook.com + www via
       website/deploy-prod.sh (Cloud Run myrecibook-prod, cert, Namecheap DNS,

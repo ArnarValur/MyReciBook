@@ -62,6 +62,11 @@ export default defineNuxtConfig({
     public: {
       contactEndpoint:
         'https://myrecibook-proxy-dolshlji5a-ew.a.run.app/contact',
+      // Google Analytics 4, web stream "MyReciBook Website" on the myrecibook-prod
+      // property — the same property the Android app reports into. The id is public
+      // by design (it ships in the page source). Set it empty to switch analytics
+      // and the consent note off completely, e.g. for a staging build.
+      gaMeasurementId: 'G-M301GKVM58',
     },
   },
 
