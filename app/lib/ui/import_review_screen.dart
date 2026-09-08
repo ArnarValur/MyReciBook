@@ -79,12 +79,20 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   bool _capReached = false;
   Map<String, dynamic> _content = const {};
 
-  /// Tags this import arrived with, editable before anything is saved.
-  /// Link extraction maps recipeCategory + recipeCuisine + keywords into
-  /// tags, so a rescued recipe can turn up carrying eight of them that the
-  /// user never chose. Seeing them here is the difference between curating a
-  /// cookbook and cleaning up after it (Arnar 2026-08-27).
+  /// Tags on this draft — only what the user put there. What the import
+  /// arrived with (link extraction maps recipeCategory + recipeCuisine +
+  /// keywords into `tags`, up to eight nobody chose) is [_suggested] instead,
+  /// and nothing there lands unless tapped (Direction A, Arnar 2026-09-03:
+  /// auto-attached site categories piled up into a tag list that was the
+  /// site's, not the user's).
   List<String> _tags = const [];
+
+  /// What the import proposed, in the site's order, minus anything kept.
+  List<String> _suggested = const [];
+
+  /// The proposal as it arrived, so a kept tag taken off again goes back to
+  /// being a suggestion — a mis-tap is not a decision.
+  List<String> _incoming = const [];
 
   final TextEditingController _title = TextEditingController();
   List<TextEditingController> _ingredientCtrls = const [];
@@ -231,7 +239,10 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
   /// frame is already live (initState may call it bare).
   void _seed(Map<String, dynamic> content) {
     _content = content;
-    _tags = [for (final t in (content['tags'] as List? ?? const [])) '$t'];
+    _tags = const [];
+    _incoming = _dedupeTags(
+        [for (final t in (content['tags'] as List? ?? const [])) '$t']);
+    _suggested = _incoming;
     _title.text = (content['title'] as String?) ?? '';
     _disposeLineCtrls();
     _confirmed.clear();
@@ -865,46 +876,115 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
     );
   }
 
-  /// The incoming tags, each removable, plus the door that adds more. Nothing
-  /// here is saved until "Save to cookbook" — this is still just a draft.
+  static List<String> _dedupeTags(List<String> raw) {
+    final seen = <String>{};
+    return [
+      for (final t in raw)
+        if (t.trim().isNotEmpty && seen.add(RecipeTag.canonical(t))) t.trim(),
+    ];
+  }
+
+  bool _hasTag(String name) => _tags.any(
+        (t) => RecipeTag.canonical(t) == RecipeTag.canonical(name),
+      );
+
+  /// Keep a tag on the draft. Your own spelling wins over the site's when
+  /// one of your tags matches, so "dessert" from a site lands as your
+  /// "Dessert" and never as a twin.
+  void _keepTag(String name) {
+    final own = context.read<TagsModel>().byName(name)?.name ?? name;
+    setState(() {
+      _suggested = [
+        for (final s in _suggested)
+          if (RecipeTag.canonical(s) != RecipeTag.canonical(name)) s,
+      ];
+      if (!_hasTag(own)) _tags = [..._tags, own];
+    });
+  }
+
+  /// Take a tag off the draft. If the import proposed it, it goes back to
+  /// the suggestions in its original place.
+  void _dropTag(String name) {
+    final key = RecipeTag.canonical(name);
+    setState(() {
+      _tags = [
+        for (final t in _tags)
+          if (RecipeTag.canonical(t) != key) t,
+      ];
+      if (_incoming.any((s) => RecipeTag.canonical(s) == key)) {
+        final keep = {for (final s in _suggested) RecipeTag.canonical(s), key};
+        _suggested = [
+          for (final s in _incoming)
+            if (keep.contains(RecipeTag.canonical(s))) s,
+        ];
+      }
+    });
+  }
+
+  bool get _fromLink =>
+      _images.isEmpty &&
+      _content['source'] is Map &&
+      (_content['source'] as Map)['url'] is String;
+
+  /// The draft's tags, each removable, the door that adds more, and under
+  /// them what the import proposed. Nothing here is saved until "Save to
+  /// cookbook" — and a proposal never is, unless it was tapped.
   Widget _tagRow() {
     final model = context.watch<TagsModel>();
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    final theme = Theme.of(context);
+    final scheme = context.scheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final name in _tags)
-          TagChip(
-            tag: model.chipFor(name),
-            height: 32,
-            onDeleted: () => setState(
-              () => _tags = [
-                for (final t in _tags)
-                  if (RecipeTag.canonical(t) != RecipeTag.canonical(name)) t,
-              ],
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final name in _tags)
+              TagChip(
+                tag: model.chipFor(name),
+                height: 32,
+                onDeleted: () => _dropTag(name),
+              ),
+            AddTagChip(
+              onTap: () => showTagPicker(
+                context,
+                selected: () => _tags,
+                onToggle: (name) async {
+                  if (_hasTag(name)) {
+                    _dropTag(name);
+                  } else {
+                    _keepTag(name);
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        if (_suggested.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            _fromLink
+                ? 'From the site — tap one to keep it'
+                : 'Suggested — tap one to keep it',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
             ),
           ),
-        AddTagChip(
-          onTap: () => showTagPicker(
-            context,
-            selected: () => _tags,
-            onToggle: (name) async {
-              final on = _tags.any(
-                (t) => RecipeTag.canonical(t) == RecipeTag.canonical(name),
-              );
-              setState(
-                () => _tags = on
-                    ? [
-                        for (final t in _tags)
-                          if (RecipeTag.canonical(t) !=
-                              RecipeTag.canonical(name))
-                            t,
-                      ]
-                    : [..._tags, name],
-              );
-            },
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final name in _suggested)
+                SuggestedTagChip(
+                  key: Key('suggested-tag-${RecipeTag.canonical(name)}'),
+                  tag: model.chipFor(name),
+                  onTap: () => _keepTag(name),
+                ),
+            ],
           ),
-        ),
+        ],
       ],
     );
   }

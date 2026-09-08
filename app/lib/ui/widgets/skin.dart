@@ -524,10 +524,18 @@ class OriginalsViewer extends StatelessWidget {
 /// (Arnar 2026-08-10: they came out ugly); the originals stay one tap away
 /// behind the hero's provenance flip.
 class RecipeCover extends StatelessWidget {
-  const RecipeCover({super.key, required this.file, required this.title});
+  const RecipeCover({
+    super.key,
+    required this.file,
+    required this.title,
+    this.cacheWidth,
+  });
 
   final File? file;
   final String title;
+
+  /// Decode width for a small slot (thumbs, tile collages). Null = full size.
+  final int? cacheWidth;
 
   /// Deep enough for a white watermark, all inside the cream/indigo skin's
   /// family with three warm food tones for variety.
@@ -552,7 +560,7 @@ class RecipeCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (file != null) return CoverImage(file);
+    if (file != null) return CoverImage(file, cacheWidth: cacheWidth);
     final pair = _gradients[_slot(title)];
     return LayoutBuilder(
       builder: (context, box) => DecoratedBox(
@@ -579,10 +587,18 @@ class RecipeCover extends StatelessWidget {
 
 /// Renders a stored screenshot; falls back to stripes when missing.
 class CoverImage extends StatelessWidget {
-  const CoverImage(this.file, {super.key, this.fit = BoxFit.cover});
+  const CoverImage(
+    this.file, {
+    super.key,
+    this.fit = BoxFit.cover,
+    this.cacheWidth,
+  });
 
   final File? file;
   final BoxFit fit;
+
+  /// Decode width for a small slot. Null = full size.
+  final int? cacheWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -590,6 +606,7 @@ class CoverImage extends StatelessWidget {
     return Image.file(
       file!,
       fit: fit,
+      cacheWidth: cacheWidth,
       errorBuilder: (context, error, stack) => const StripedPlaceholder(),
     );
   }

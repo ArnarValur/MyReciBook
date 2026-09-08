@@ -1,6 +1,17 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-03 — the tag system gets a canvas, then a rebuild the same night
+
+- Shipped: Direction A — cookbook is one grid under a tag-tile strip, the tag
+  editor is one sheet, import tags arrive as suggestions, Settings → Tags
+  deleted; dark sheets + dialogs lifted a surface tier. 0.21.0+44 after his
+  eyes on the dev app (checkpointed 2026-09-08 after days off).
+- Broke: tile column overflowed by 6dp — the new tile test caught it.
+- Arnar: chose Direction A off the canvas · dark fix scoped to sheets +
+  dialogs, cards stay · next session = app work + tester outreach avenues.
+- UNFINISHED: dark sheets unverified on the phone · tag reorder has no UI.
+
 ## 2026-09-03 — the debugger comes back, the counter reaches the doors
 
 - Shipped: debug builds install beside the Play app (package suffix .dev,

@@ -13,7 +13,6 @@ import 'package:myrecibook/domain/extractor.dart';
 import 'package:myrecibook/domain/recipe.dart';
 import 'package:myrecibook/main.dart';
 import 'package:myrecibook/ui/cookbook_prefs.dart';
-import 'package:myrecibook/ui/widgets/skin.dart';
 
 class FakeExtractor implements Extractor {
   @override
@@ -86,23 +85,26 @@ void main() {
     await tester.pumpWidget(app());
     await settle(tester);
 
-    // Designed 3d default: the cover grid.
-    expect(find.byType(RecipeCover), findsNWidgets(2));
+    // Designed 3d default: the cover grid. The toggle shows where a tap
+    // takes you (files-app convention), so grid mode wears the list glyph.
+    // Counting RecipeCover no longer tells the views apart: coverless rows
+    // draw the mini cover too, and the Favorites tile shows its collage.
+    expect(find.byIcon(Icons.view_list_rounded), findsOneWidget);
     expect(find.text('Pancakes'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('view-toggle')));
     await tester.pump();
 
-    // List form: no cover decodes, titles still there, favorite keeps its
-    // heart (one in the list row — the filter chip's heart is a second).
-    expect(find.byType(RecipeCover), findsNothing);
+    // List form: titles still there, favorite keeps its heart (one in the
+    // list row — the Favorites tile's badge is a second).
+    expect(find.byIcon(Icons.grid_view_rounded), findsOneWidget);
     expect(find.text('Pancakes'), findsOneWidget);
     expect(find.text('Waffles'), findsOneWidget);
     expect(find.byIcon(Icons.favorite_rounded), findsNWidgets(2));
 
     await tester.tap(find.byKey(const Key('view-toggle')));
     await tester.pump();
-    expect(find.byType(RecipeCover), findsNWidgets(2));
+    expect(find.byIcon(Icons.view_list_rounded), findsOneWidget);
   });
 
   testWidgets('choice persists through AppSettings across a restart',
@@ -130,7 +132,7 @@ void main() {
     await tester
         .pumpWidget(app(prefs: CookbookPrefs(settings: reloaded)));
     await settle(tester);
-    expect(find.byType(RecipeCover), findsNothing);
+    expect(find.byIcon(Icons.grid_view_rounded), findsOneWidget);
     expect(find.text('Pancakes'), findsOneWidget);
   });
 

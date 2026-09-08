@@ -2,14 +2,14 @@
 // owns import + share intake; this screen renders the library and hands its
 // two doors back up: the FAB/empty-state import and the 5c drawer.
 //
-// The shape (Arnar 2026-08-27, replacing design 3d's flat dump + tag chips):
-// the chip row keeps only All and Favorites, and the user's tags are folded
-// sections on a collapsible shelf like the pantry's — every tag at a glance,
-// no horizontal scroll-hunt. Untagged recipes flow flat above the shelf; a
-// recipe with several tags sits under each of them. Favorites and a search
-// stay flat results — the shelf is the All view's shape, not a filter's. The
-// fold persists through AppSettings.cookbookOpenSections, defaulting to
-// everything open.
+// The shape (Direction A, Arnar 2026-09-03, replacing the folded tag shelf
+// that stacked untagged recipes above tagged ones and filed a recipe once per
+// tag): ONE grid, always. Above it a strip of tiles — Favorites, then the
+// user's tags — each showing the covers of the recipes inside. Tapping a tile
+// narrows the same grid in place; the header names the selection with its
+// chip, its count and an "Edit tag" door. Nothing is folded, nothing is filed
+// twice. Search narrows within the selection. The selection is session-only:
+// a filter that survived a restart made the cookbook look empty and broken.
 
 import 'dart:io';
 
@@ -17,7 +17,6 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data/app_settings.dart';
 import '../domain/recipe.dart';
 import '../features.dart';
 import 'batch_model.dart';
@@ -26,19 +25,14 @@ import 'library_model.dart';
 import 'postalpha/dev_gallery.dart';
 import 'recipe_detail_screen.dart';
 import 'theme.dart';
-import 'widgets/collapsible_shelf.dart';
 import 'widgets/logo_mark.dart';
 import '../domain/recipe_tag.dart';
 import 'tag_chip.dart';
+import 'tag_editor_screen.dart';
+import 'tag_tiles.dart';
 import 'tags_model.dart';
 import 'widgets/skin.dart';
 
-/// The built-ins — and now the whole row. Sweet was deleted 2026-08-27
-/// (guessed from a word list), Quick the same day (computed, but
-/// administrable nowhere — Arnar: a chip no settings screen explains is a
-/// bug, not a feature), and the user-tag chips left for the shelf sections
-/// the same day too.
-enum _Filter { all, favorites }
 
 class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({super.key, required this.onImport, this.onOpenQueue});
@@ -57,61 +51,41 @@ class RecipeListScreen extends StatefulWidget {
 
 class _RecipeListScreenState extends State<RecipeListScreen> {
   String _query = '';
-  _Filter _filter = _Filter.all;
 
-  /// The shelf sections the user has open. Null = they have never touched a
-  /// header on this install, and every section starts open — a cookbook is
-  /// small enough to show whole, unlike the pantry's 180 starter rows.
-  /// Persisted, so the fold survives a restart. Stale ids from deleted tags
-  /// sit in the stored set harmlessly: no section claims them.
-  Set<String>? _expanded;
-
-  /// Null under a bare pump (nothing provided it) — the shelf still works,
-  /// it just forgets the fold between launches.
-  AppSettings? _settings;
+  /// What the grid is narrowed to: null = every recipe, [kFavoritesTileId] =
+  /// favourites, otherwise a canonical tag name. Session-only on purpose.
+  String? _selected;
 
   @override
   void initState() {
     super.initState();
-    try {
-      _settings = context.read<AppSettings?>();
-    } on ProviderNotFoundException {
-      _settings = null;
-    }
-    _expanded = _settings?.cookbookOpenSections?.toSet();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<LibraryModel>().rescan();
     });
   }
 
-  List<Recipe> _visible(List<Recipe> all) {
+  List<Recipe> _visible(List<Recipe> all, String? selected) {
     final q = _query.trim().toLowerCase();
+    bool inSelection(Recipe r) {
+      if (selected == null) return true;
+      if (selected == kFavoritesTileId) return r.favorite;
+      return r.tags.any((t) => RecipeTag.canonical(t) == selected);
+    }
+
     return [
       for (final r in all)
-        if ((q.isEmpty || r.title.toLowerCase().contains(q)) &&
-            (_filter == _Filter.all || r.favorite))
+        if ((q.isEmpty || r.title.toLowerCase().contains(q)) && inSelection(r))
           r,
     ];
   }
 
-  /// Fold or unfold one tag section. The full open set is written every time,
-  /// so what lands on disk is always the whole answer — no merge on read.
-  Future<void> _toggleSection(String id, Set<String> open) async {
-    final next = {...open};
-    if (!next.remove(id)) next.add(id);
-    setState(() => _expanded = next);
-    try {
-      await _settings?.setCookbookOpenSections(next.toList());
-    } catch (_) {} // persistence best-effort — the shelf is already redrawn
-  }
-
-  /// One shelf section per user tag that is on at least one recipe, ordered
-  /// alphabetically by display name. A recipe with several tags appears under
-  /// each of them; a tag Settings knows but no recipe carries gets no section
-  /// — a section that can only be empty is worse than none. Bodies build only
-  /// while open (the shelf contract), so a folded tag costs no cards.
-  List<ShelfSection> _tagSections(List<Recipe> all, bool grid) {
+  /// The strip: Favorites, then every decorated tag in tags.json order (even
+  /// one nothing carries yet — the user just made it and wants to see it),
+  /// then names the library carries that tags.json says nothing about,
+  /// alphabetical. A recipe with several tags is counted under each; the
+  /// grid itself never files it twice.
+  List<TagTileData> _tiles(List<Recipe> all) {
     final tags = context.watch<TagsModel>();
     final members = <String, List<Recipe>>{};
     final spelling = <String, String>{};
@@ -124,41 +98,61 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
         spelling.putIfAbsent(key, () => t);
       }
     }
-    final sections = <ShelfSection>[];
-    for (final e in members.entries) {
-      final decorated = tags.chipFor(spelling[e.key]!);
-      final carriers = e.value;
-      sections.add(
-        ShelfSection(
-          id: e.key,
-          label: decorated.name,
-          count: carriers.length,
-          leading: TagBadge(tag: decorated, size: 22),
-          builder: (_) => grid
-              // Non-scrolling: the outer CustomScrollView owns the scroll, this
-              // just lays the same cards two across inside the open fold.
-              ? GridView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 4),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    mainAxisExtent: 172,
-                  ),
-                  children: [for (final r in carriers) _RecipeCard(recipe: r)],
-                )
-              : Column(
-                  children: [for (final r in carriers) _RecipeRow(recipe: r)],
-                ),
-        ),
-      );
+    final out = <TagTileData>[
+      TagTileData(
+        id: kFavoritesTileId,
+        label: 'Favorites',
+        recipes: [
+          for (final r in all)
+            if (r.favorite) r,
+        ],
+      ),
+    ];
+    if (!kRecipeTagsEnabled) return out;
+    final done = <String>{};
+    for (final t in tags.tags) {
+      final key = RecipeTag.canonical(t.name);
+      done.add(key);
+      out.add(TagTileData(
+        id: key,
+        label: t.name,
+        tag: t,
+        recipes: members[key] ?? const [],
+      ));
     }
-    sections.sort(
-      (a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()),
+    final rest = [
+      for (final key in members.keys)
+        if (!done.contains(key)) key,
+    ]..sort((a, b) =>
+        spelling[a]!.toLowerCase().compareTo(spelling[b]!.toLowerCase()));
+    for (final key in rest) {
+      final name = spelling[key]!;
+      out.add(TagTileData(
+        id: key,
+        label: name,
+        tag: RecipeTag(name: name),
+        recipes: members[key]!,
+      ));
+    }
+    return out;
+  }
+
+  /// The sheet, for a tile. A decorated tag edits in place; a name only the
+  /// library knows adopts (gains a look, keeps its name). A rename is
+  /// followed; a delete leaves a selection nothing claims, which build reads
+  /// as "everything".
+  Future<void> _editTag(TagTileData tile) async {
+    final tags = context.read<TagsModel>();
+    final decorated = tags.byName(tile.label);
+    final name = await showTagEditor(
+      context,
+      initial: decorated ?? RecipeTag(name: tile.label),
+      adopting: decorated == null,
     );
-    return sections;
+    if (!mounted || name == null) return;
+    if (_selected == tile.id) {
+      setState(() => _selected = RecipeTag.canonical(name));
+    }
   }
 
   @override
@@ -166,22 +160,16 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     final model = context.watch<LibraryModel>();
     final theme = Theme.of(context);
     final scheme = context.scheme;
-    final recipes = _visible(model.recipes);
+    final tiles = _tiles(model.recipes);
+    // A selection nothing claims any more (the tag was deleted, or renamed
+    // away under us) reads as "everything", never as an empty book.
+    final selected =
+        _selected == null || tiles.any((t) => t.id == _selected)
+            ? _selected
+            : null;
+    final recipes = _visible(model.recipes, selected);
     final emptyBook = model.recipes.isEmpty && !model.loading;
     final grid = context.watch<CookbookPrefs>().view == CookbookView.grid;
-
-    // The All view with no search is the shelf shape; Favorites or a query
-    // flattens back to plain results, like the pantry's search does.
-    final shelfShape =
-        kRecipeTagsEnabled && _filter == _Filter.all && _query.trim().isEmpty;
-    final untagged = [
-      for (final r in recipes)
-        if (r.tags.isEmpty) r,
-    ];
-    final sections = shelfShape
-        ? _tagSections(recipes, grid)
-        : const <ShelfSection>[];
-    final open = _expanded ?? {for (final s in sections) s.id};
 
     return Scaffold(
       body: SafeArea(
@@ -215,7 +203,23 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                           child: _searchBar(theme, scheme),
                         ),
                       ),
-                      SliverToBoxAdapter(child: _filterRow(theme)),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 14),
+                          child: TagTileStrip(
+                            tiles: tiles,
+                            selectedId: selected,
+                            onSelect: (id) => setState(() => _selected = id),
+                            onEdit: _editTag,
+                            onNew: () => showTagEditor(context),
+                            showNew: kRecipeTagsEnabled,
+                          ),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: _gridHeader(
+                            theme, tiles, selected, recipes.length),
+                      ),
                       if (recipes.isEmpty)
                         SliverToBoxAdapter(
                           child: Padding(
@@ -230,53 +234,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                             ),
                           ),
                         )
-                      else if (shelfShape) ...[
-                        // Untagged first, flat, no header and no fold — they
-                        // have no section to live in, and an "Untagged"
-                        // heading would nag anyone who never tags.
-                        if (untagged.isNotEmpty)
-                          SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                            sliver: grid
-                                ? SliverGrid(
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 2,
-                                          mainAxisSpacing: 12,
-                                          crossAxisSpacing: 12,
-                                          mainAxisExtent: 172,
-                                        ),
-                                    delegate: SliverChildBuilderDelegate(
-                                      (context, i) =>
-                                          _RecipeCard(recipe: untagged[i]),
-                                      childCount: untagged.length,
-                                    ),
-                                  )
-                                : SliverList(
-                                    delegate: SliverChildBuilderDelegate(
-                                      (context, i) =>
-                                          _RecipeRow(recipe: untagged[i]),
-                                      childCount: untagged.length,
-                                    ),
-                                  ),
-                          ),
-                        // 110 bottom: clears the 64dp bar hint + 16dp inset.
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(
-                              20,
-                              12,
-                              20,
-                              navBarClearance(context),
-                            ),
-                            child: CollapsibleShelf(
-                              sections: sections,
-                              expanded: open,
-                              onToggle: (id) => _toggleSection(id, open),
-                            ),
-                          ),
-                        ),
-                      ] else if (grid)
+                      else if (grid)
                         SliverPadding(
                           // 110 bottom: clears the 64dp bar hint + 16dp inset.
                           padding: EdgeInsets.fromLTRB(
@@ -465,58 +423,46 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     );
   }
 
-  Widget _filterRow(ThemeData theme) {
-    Widget chip(_Filter f, String label, [IconData? icon]) {
-      final selected = _filter == f;
-      final scheme = context.scheme;
-      return Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(999),
-          onTap: () => setState(() => _filter = f),
-          child: Container(
-            height: 36,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: selected
-                  ? scheme.secondaryContainer
-                  : scheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Row(
-              children: [
-                if (icon != null) ...[
-                  // Only the heart carries an icon, and the heart is the
-                  // tertiary moment everywhere — red like the rows', in both
-                  // states, never the old unselected primary blue.
-                  Icon(icon, size: 15, color: scheme.tertiary),
-                  const SizedBox(width: 5),
-                ],
-                Text(
-                  label,
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: selected
-                        ? scheme.onSecondaryContainer
-                        : scheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Two chips, no scroll — the user tags moved onto the shelf below. The
-    // view toggle stays pinned at the far end (Arnar's ask, 2026-08-15:
-    // covers grid ⇄ compact list).
+  /// The row above the grid. Nothing selected: "ALL RECIPES · N". A tile
+  /// selected: its chip with a × to clear, the count, and — for a tag, never
+  /// for Favorites — the door to the tag sheet. The view toggle stays pinned
+  /// at the far end (Arnar's ask, 2026-08-15: covers grid ⇄ compact list).
+  Widget _gridHeader(
+    ThemeData theme,
+    List<TagTileData> tiles,
+    String? selected,
+    int count,
+  ) {
+    final scheme = context.scheme;
+    final tile =
+        selected == null ? null : tiles.firstWhere((t) => t.id == selected);
+    void clear() => setState(() => _selected = null);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
       child: Row(
         children: [
-          chip(_Filter.all, 'All'),
-          chip(_Filter.favorites, 'Favorites', Icons.favorite_rounded),
+          if (tile == null)
+            SectionLabel('All recipes · $count')
+          else ...[
+            if (tile.isFavorites)
+              _FavoritesChip(onClear: clear)
+            else
+              TagChip(tag: tile.tag!, selected: true, onDeleted: clear),
+            const SizedBox(width: 10),
+            Text(
+              '$count recipe${count == 1 ? '' : 's'}',
+              key: const Key('selection-count'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            if (!tile.isFavorites)
+              TextButton(
+                key: const Key('edit-tag-button'),
+                onPressed: () => _editTag(tile),
+                child: const Text('Edit tag'),
+              ),
+          ],
           const Spacer(),
           _viewToggle(),
         ],
@@ -822,6 +768,49 @@ class _RecipeCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The selected-Favorites chip: the old filter chip's skin (secondary
+/// container, heart in tertiary) plus the × that clears the selection.
+class _FavoritesChip extends StatelessWidget {
+  const _FavoritesChip({required this.onClear});
+
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.favorite_rounded, size: 15, color: scheme.tertiary),
+          const SizedBox(width: 5),
+          Text(
+            'Favorites',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSecondaryContainer,
+                ),
+          ),
+          const SizedBox(width: 4),
+          InkWell(
+            key: const Key('clear-selection'),
+            customBorder: const CircleBorder(),
+            onTap: onClear,
+            child: Icon(Icons.close_rounded,
+                size: 14, color: scheme.onSecondaryContainer),
+          ),
+        ],
       ),
     );
   }

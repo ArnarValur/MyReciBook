@@ -1,9 +1,9 @@
-// The tag editor page at the widget level. The blank-editor regression is
-// why this file exists: a Center inside bottomNavigationBar took the whole
-// height the Scaffold offered, the body got none, and a release build
-// shipped an empty New tag screen (Arnar 2026-08-28). A zero-height body
-// builds none of the ListView's children, so the first test fails on any
-// layout that squeezes the form away again.
+// The tag sheet at the widget level. The blank-editor regression is why
+// this file exists: a Center inside a bottom slot once took the whole height
+// the Scaffold offered, the body got none, and a release build shipped an
+// empty New tag screen (Arnar 2026-08-28). The sheet keeps the same shape —
+// a scrolling form between a preview and a footer row — so the first test
+// still fails on any layout that squeezes the form away.
 
 import 'dart:io';
 
@@ -34,7 +34,7 @@ void main() {
 
   testWidgets('the whole form is on screen, not just the save button',
       (tester) async {
-    await tester.pumpWidget(wrap(const TagEditorScreen()));
+    await tester.pumpWidget(wrap(const Scaffold(body: TagEditorSheet())));
 
     expect(find.byKey(const Key('tag-name-field')), findsOneWidget);
     expect(find.byKey(const Key('tag-show-label-switch')), findsOneWidget);
@@ -69,7 +69,7 @@ void main() {
   });
 
   testWidgets('saving without a name refuses instead of writing', (tester) async {
-    await tester.pumpWidget(wrap(const TagEditorScreen()));
+    await tester.pumpWidget(wrap(const Scaffold(body: TagEditorSheet())));
     await tester.tap(find.byKey(const Key('tag-save-button')));
     await tester.pump();
 

@@ -155,6 +155,43 @@ detail sheet. Only English is offered today, so arb_parity_test stays green.
 - A tag the library carries but tags.json does not can be deleted straight
   from Settings. Adopting it only to delete it was the long way round.
 
+## REWORKED 2026-09-03 — Direction A (Arnar: "lets go with direction A")
+Canvas: https://claude.ai/code/artifact/0cdac4b7-4d69-41db-a56a-9c6262ca31db ·
+sources in docs/design/canvas-sources/tags-rethink/. Arnar's complaint: the
+tag system was buried three screens deep, imports auto-attached the site's
+vocabulary, and the cookbook stacked untagged recipes above a folded shelf
+("not pro designed"). What changed in code:
+- Cookbook = ONE grid, always (`ui/recipe_list_screen.dart`). Above it a
+  horizontal strip of tiles (`ui/tag_tiles.dart`): Favorites first, then
+  tags.json order, then names only the library knows, then "New tag". A tile
+  shows up to four covers of the recipes inside (decoded small). Tap narrows
+  the grid in place; the header shows the chip with ×, the count, and "Edit
+  tag" (never for Favorites). Long-press a tile = edit. Selection is
+  session-only. The shelf, the fold setting (`cookbookOpenSections`) and the
+  All/Favorites chip row are gone.
+- The editor is ONE bottom sheet (`showTagEditor` in
+  `ui/tag_editor_screen.dart`, widget `TagEditorSheet`): preview, name,
+  show-the-name, colour, icon/emoji, "Delete tag" (house destructive
+  dialog) + Save. Settings → Tags and `ui/tags_screen.dart` are deleted;
+  adopting an undecorated name and deleting it both happen from the sheet.
+- Import review: incoming tags are SUGGESTIONS (`SuggestedTagChip`, tinted,
+  under the draft's tags with "From the site — tap one to keep it"). Nothing
+  lands unless tapped; a suggestion matching one of your tags lands in your
+  spelling and look. Taking a kept tag off returns it to the suggestions.
+- Tests: tag_tiles_test (one grid, narrow, clear), import_review_suggest_test
+  (offered not attached; own spelling; only kept tags saved),
+  tag_editor_screen_test moved to the sheet, cookbook_view_test repaired off
+  the stale cover-count asserts (toggle glyph instead).
+- Deferred, said out loud: reordering tags (the drag handle went with the
+  Settings list — tiles follow tags.json order, no UI writes it yet); a
+  "See all" for a very long strip; dark-theme eyes on the tiles.
+- Verified by Arnar's eyes on the dev app 2026-09-03 ("looking nice");
+  stamped 0.21.0+44 at the 2026-09-08 checkpoint.
+- Dark mode: sheets + dialogs lifted from surfaceContainerLowest (darker
+  than the dark scaffold — they sank) to surfaceContainer in theme.dart, at
+  Arnar's call scoped to sheets + dialogs only; cards stay on the lowest
+  tier. Unverified on the phone.
+
 ## Graduated 2026-08-30
 - Track closed. Last open item — tag UI strings are English literals — handed
   to the i18n string sweep (tracks/i18n/coverage.md).

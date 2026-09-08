@@ -1,10 +1,12 @@
-// Create or edit one tag, on a full page: name, icon, colour, live preview.
+// Create or edit one tag, in a bottom sheet: name, icon, colour, live preview.
 //
-// A page, not a sheet (Arnar 2026-08-27): the sheet fought the keyboard,
-// carried a search field for a 78-icon catalog, parked "show the name" a
-// scroll away from the name it belonged to, and wore a different blue than
-// the screen that opened it. The search field is gone — and with it the
-// typed-emoji escape hatch; the 117-emoji palette is the emoji offer now.
+// A sheet, one tap from wherever the tag is seen (Direction A, Arnar
+// 2026-09-03): "Edit tag" on the narrowed cookbook header, a long-press on a
+// tile, the New tag tile, and the picker's New tag button. It replaces the
+// Settings list page plus a full editor page — three screens deep for a
+// name, a colour and an icon. The first sheet (2026-08-27) fought the
+// keyboard; this one is isScrollControlled, pads the view insets, and keeps
+// the form in a ListView so the name field can always scroll into view.
 //
 // The preview is the point. Icon-only versus pill is the kind of choice you
 // cannot make from a switch label, so the real chip sits at the top and
@@ -28,23 +30,31 @@ import 'widgets/skin.dart';
 /// would rewrite files the user did not come to rename.
 ///
 /// Returns the saved tag's name, so an opener can put the fresh tag straight
-/// onto whatever it was tagging. Back and delete return null.
+/// onto whatever it was tagging, or follow a rename. Dismiss and delete
+/// return null.
 Future<String?> showTagEditor(
   BuildContext context, {
   RecipeTag? initial,
   bool adopting = false,
 }) {
   final model = context.read<TagsModel>();
-  return Navigator.of(context).push<String>(MaterialPageRoute<String>(
-    builder: (_) => ChangeNotifierProvider<TagsModel>.value(
-      value: model,
-      child: TagEditorScreen(initial: initial, adopting: adopting),
+  return showModalBottomSheet<String>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    showDragHandle: true,
+    builder: (ctx) => Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+      child: ChangeNotifierProvider<TagsModel>.value(
+        value: model,
+        child: TagEditorSheet(initial: initial, adopting: adopting),
+      ),
     ),
-  ));
+  );
 }
 
-class TagEditorScreen extends StatefulWidget {
-  const TagEditorScreen({super.key, this.initial, this.adopting = false});
+class TagEditorSheet extends StatefulWidget {
+  const TagEditorSheet({super.key, this.initial, this.adopting = false});
 
   final RecipeTag? initial;
   final bool adopting;
@@ -52,10 +62,10 @@ class TagEditorScreen extends StatefulWidget {
   bool get isNew => initial == null;
 
   @override
-  State<TagEditorScreen> createState() => _TagEditorScreenState();
+  State<TagEditorSheet> createState() => _TagEditorSheetState();
 }
 
-class _TagEditorScreenState extends State<TagEditorScreen> {
+class _TagEditorSheetState extends State<TagEditorSheet> {
   late final TextEditingController _name =
       TextEditingController(text: widget.initial?.name ?? '');
   late String? _icon = widget.initial?.icon;
@@ -109,29 +119,23 @@ class _TagEditorScreenState extends State<TagEditorScreen> {
     Navigator.of(context).pop(name);
   }
 
+  /// Deleted means gone (Arnar 2026-08-27): off every recipe that carries it
+  /// as well as out of tags.json. The house destructive dialog says what
+  /// survives before what stops.
   Future<void> _confirmDelete() async {
     final model = context.read<TagsModel>();
     final tag = widget.initial!;
     final uses = model.usageOf(tag.name);
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (dctx) => AlertDialog(
-        title: Text('Delete “${tag.name}”?'),
-        content: Text(uses == 0
-            ? 'It is not on any recipe. Nothing else changes.'
-            : 'It comes off $uses recipe${uses == 1 ? '' : 's'} too. The '
-                'recipes themselves are not touched.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(dctx, false),
-              child: const Text('Cancel')),
-          TextButton(
-              onPressed: () => Navigator.pop(dctx, true),
-              child: const Text('Delete')),
-        ],
-      ),
+    final ok = await showDestructiveConfirm(
+      context,
+      title: 'Delete “${tag.name}”?',
+      body: uses == 0
+          ? 'Nothing carries it, so nothing else changes.'
+          : 'Your recipes stay as they are. The tag comes off '
+              '$uses of them.',
+      verb: 'Delete',
     );
-    if (ok != true || !mounted) return;
+    if (!ok || !mounted) return;
     setState(() => _saving = true);
     await model.delete(tag.name);
     if (mounted) Navigator.of(context).pop();
@@ -141,109 +145,126 @@ class _TagEditorScreenState extends State<TagEditorScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isNew || widget.adopting ? 'New tag' : 'Edit tag'),
-        actions: [
-          if (!widget.isNew && !widget.adopting)
-            IconButton(
-              key: const Key('tag-delete-button'),
-              tooltip: 'Delete tag',
-              onPressed: _saving ? null : _confirmDelete,
-              icon: Icon(Icons.delete_outline_rounded, color: scheme.error),
-            ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+    final model = context.watch<TagsModel>();
+    final uses = widget.isNew ? 0 : model.usageOf(widget.initial!.name);
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Live preview — exactly the chip the cookbook will draw.
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [TagChip(tag: _preview, selected: true)],
+              children: [
+                TagChip(tag: _preview, selected: true),
+                const Spacer(),
+                if (!widget.isNew)
+                  Text(
+                    uses == 0
+                        ? 'not on any recipe yet'
+                        : 'on $uses recipe${uses == 1 ? '' : 's'}',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
+              ],
             ),
           ),
-          TextField(
-            key: const Key('tag-name-field'),
-            controller: _name,
-            enabled: !widget.adopting,
-            autofocus: widget.isNew,
-            textCapitalization: TextCapitalization.sentences,
-            onChanged: (_) => setState(() => _nameError = null),
-            decoration: InputDecoration(
-              labelText: 'Name',
-              hintText: 'Weeknight',
-              errorText: _nameError,
-              helperText: widget.adopting
-                  ? 'Already on your recipes — rename it from the list'
-                  : null,
-              border: const OutlineInputBorder(),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              children: [
+                TextField(
+                  key: const Key('tag-name-field'),
+                  controller: _name,
+                  enabled: !widget.adopting,
+                  autofocus: widget.isNew,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (_) => setState(() => _nameError = null),
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                    hintText: 'Weeknight',
+                    errorText: _nameError,
+                    helperText: widget.adopting
+                        ? 'Already on your recipes — the name stays'
+                        : null,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                // Right under the name it governs — "do the words show on
+                // the chip?" belongs beside the words.
+                SwitchListTile.adaptive(
+                  key: const Key('tag-show-label-switch'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _showLabel,
+                  // Forced on when there is no icon: the alternative is a
+                  // chip with nothing in it. RecipeTag enforces it anyway,
+                  // but the switch should not sit there lying.
+                  onChanged: _icon == null
+                      ? null
+                      : (v) => setState(() => _showLabel = v),
+                  title: const Text('Show the name'),
+                  subtitle: Text(
+                    _icon == null
+                        ? 'Pick an icon below to turn this off'
+                        : _showLabel
+                            ? 'A pill with the icon and the name'
+                            : 'Icon only — a small circle, no words',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const SectionLabel('COLOUR'),
+                const SizedBox(height: 10),
+                _ColorRow(
+                    value: _color,
+                    onChanged: (c) => setState(() => _color = c)),
+                const SizedBox(height: 20),
+                const SectionLabel('ICON'),
+                const SizedBox(height: 8),
+                _IconField(
+                  icon: _icon,
+                  color: _color,
+                  onChanged: (v) => setState(() {
+                    _icon = v;
+                    if (v == null) _showLabel = true;
+                  }),
+                ),
+              ],
             ),
           ),
-          // Right under the name it governs — "do the words show on the
-          // chip?" belongs beside the words, not a scroll below them.
-          SwitchListTile.adaptive(
-            key: const Key('tag-show-label-switch'),
-            contentPadding: EdgeInsets.zero,
-            value: _showLabel,
-            // Forced on when there is no icon: the alternative is a chip
-            // with nothing in it. RecipeTag enforces it anyway, but the
-            // switch should not sit there lying.
-            onChanged: _icon == null
-                ? null
-                : (v) => setState(() => _showLabel = v),
-            title: const Text('Show the name'),
-            subtitle: Text(
-              _icon == null
-                  ? 'Pick an icon below to turn this off'
-                  : _showLabel
-                      ? 'A pill with the icon and the name'
-                      : 'Icon only — a small circle, no words',
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+          // Footer: content-sized in a ROW, never a Center — the blank-editor
+          // regression (Arnar 2026-08-28) came from a Center taking every
+          // pixel a bottom slot offered.
+          SafeArea(
+            top: false,
+            minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: Row(
+              children: [
+                if (!widget.isNew)
+                  TextButton(
+                    key: const Key('tag-delete-button'),
+                    onPressed: _saving ? null : _confirmDelete,
+                    style: TextButton.styleFrom(foregroundColor: scheme.error),
+                    child: const Text('Delete tag'),
+                  ),
+                const Spacer(),
+                FilledButton(
+                  key: const Key('tag-save-button'),
+                  onPressed: _saving ? null : _save,
+                  style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 48),
+                      padding: const EdgeInsets.symmetric(horizontal: 32)),
+                  child: Text(
+                      widget.isNew || widget.adopting ? 'Create tag' : 'Save'),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 12),
-          const SectionLabel('COLOUR'),
-          const SizedBox(height: 10),
-          _ColorRow(
-              value: _color, onChanged: (c) => setState(() => _color = c)),
-          const SizedBox(height: 20),
-          const SectionLabel('ICON'),
-          const SizedBox(height: 8),
-          _IconField(
-            icon: _icon,
-            color: _color,
-            onChanged: (v) => setState(() {
-              _icon = v;
-              if (v == null) _showLabel = true;
-            }),
           ),
         ],
-      ),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-        // Content-sized and centred, not stretched — in a ROW, never Center:
-        // bottomNavigationBar hands its child the whole remaining height and
-        // Center takes all of it, which squeezed the body to nothing and
-        // shipped a blank editor (Arnar 2026-08-28). A Row only spreads
-        // sideways; its height stays the button's own.
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FilledButton(
-              key: const Key('tag-save-button'),
-              onPressed: _saving ? null : _save,
-              style: FilledButton.styleFrom(
-                  minimumSize: const Size(0, 48),
-                  padding: const EdgeInsets.symmetric(horizontal: 32)),
-              child: Text(
-                  widget.isNew || widget.adopting ? 'Create tag' : 'Save'),
-            ),
-          ],
-        ),
       ),
     );
   }

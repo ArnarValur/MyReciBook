@@ -280,3 +280,54 @@ class AddTagChip extends StatelessWidget {
     );
   }
 }
+
+/// A tag the import PROPOSES and has not put on anything. Tapping it keeps
+/// it; leaving it alone means it is never saved (Direction A, Arnar
+/// 2026-09-03 — auto-attached site categories piled up as tags nobody
+/// chose). A proposal that matches one of your tags wears that tag's glyph
+/// and colour, so keeping it lands on your tag and never makes a twin.
+/// Tinted, not dashed: the dashed pill is the "+ Tag" door, and two dashed
+/// shapes in one row would read as the same thing.
+class SuggestedTagChip extends StatelessWidget {
+  const SuggestedTagChip({super.key, required this.tag, required this.onTap});
+
+  final RecipeTag tag;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.scheme;
+    final tint = tagColorOf(context, tag.color);
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
+        decoration: BoxDecoration(
+          color: scheme.secondaryContainer.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add_rounded,
+                size: 15, color: scheme.onSecondaryContainer),
+            const SizedBox(width: 4),
+            if (tag.icon != null) ...[
+              TagGlyph(tag: tag, size: 14, color: tint),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              tag.name,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: scheme.onSecondaryContainer,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

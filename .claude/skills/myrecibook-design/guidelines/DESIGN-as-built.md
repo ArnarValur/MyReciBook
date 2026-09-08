@@ -354,8 +354,8 @@ for things entering · `cubic-bezier(0.3, 0, 0.8, 0.15)` for things leaving.
 | Filled button | Stadium, minimum 48×48, `labelLarge` |
 | Outlined button | Stadium, minimum 48×44, 1.5px `secondary` border, `labelLarge` |
 | Text button | `labelLarge` at 13 |
-| Bottom sheet | `surfaceContainerLowest`, 24 top radius, no surface tint |
-| Dialog | `surfaceContainerLowest`, 16 radius, no surface tint |
+| Bottom sheet | `surfaceContainerLowest` light / `surfaceContainer` dark (the lowest tier sank below the dark scaffold — fixed 2026-09-03), 24 top radius, no surface tint |
+| Dialog | `surfaceContainerLowest` light / `surfaceContainer` dark, 16 radius, no surface tint |
 | Snackbar | Floating, 12 radius |
 | Progress indicator | `primary`, 6dp linear track |
 

@@ -1,0 +1,92 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "A · Cookbook",
+      "x": 0,
+      "y": 0,
+      "w": 360,
+      "h": 800
+    },
+    {
+      "file": "Filtered.dc.html",
+      "title": "A · Dessert selected",
+      "x": 440,
+      "y": 0,
+      "w": 360,
+      "h": 800
+    },
+    {
+      "file": "TagSheet.dc.html",
+      "title": "A · Tag sheet",
+      "x": 880,
+      "y": 0,
+      "w": 360,
+      "h": 800
+    },
+    {
+      "file": "Review.dc.html",
+      "title": "A · Rescue review",
+      "x": 1320,
+      "y": 0,
+      "w": 360,
+      "h": 800
+    },
+    {
+      "file": "RailOption.dc.html",
+      "title": "B · Rail (low-fi)",
+      "x": 0,
+      "y": 1080,
+      "w": 360,
+      "h": 800
+    },
+    {
+      "file": "ContentsOption.dc.html",
+      "title": "C · Contents (low-fi)",
+      "x": 440,
+      "y": 1080,
+      "w": 360,
+      "h": 800
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-a",
+      "x": 0,
+      "y": -200,
+      "w": 800,
+      "text": "Direction A — built out.\nOne grid, always. Untagged recipes never sit on top of tagged ones.\nYour tags are tiles above the grid: your icon, your colour, the covers of the recipes inside.\nTap a tile to filter in place. Tap the × to clear.\nManage a tag where you see it: \"Edit tag\" on the filtered header, or the + tile. Settings → Tags goes away."
+    },
+    {
+      "id": "note-sheet",
+      "x": 880,
+      "y": -140,
+      "w": 360,
+      "text": "One sheet replaces the list page and the editor page.\nSame icons, colours and name toggle you liked — one tap closer."
+    },
+    {
+      "id": "note-review",
+      "x": 1320,
+      "y": -170,
+      "w": 360,
+      "text": "Import: nothing lands untapped.\nThe site's categories come in as suggestions under the tags row.\nTap one to keep it. Leave it and it is never saved.\nA suggestion that matches one of your tags wears that tag's colour and icon, so it never becomes a duplicate."
+    },
+    {
+      "id": "note-b",
+      "x": 0,
+      "y": 940,
+      "w": 360,
+      "text": "Direction B — the rail.\nCheapest: today's chips, one grid, filter in place. Manage from the ⋯ at the end of the rail.\nTrade-off: a long rail hides tags off-screen, and tags stay small."
+    },
+    {
+      "id": "note-c",
+      "x": 440,
+      "y": 940,
+      "w": 360,
+      "text": "Direction C — a table of contents.\nThe cookbook opens as a list of your tags with counts. Tap one for its grid.\nMost book-like. Trade-off: one more tap to every recipe."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

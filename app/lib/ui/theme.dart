@@ -220,6 +220,13 @@ TextTheme _textTheme(TextTheme base) {
 ThemeData _theme(ColorScheme scheme, Color scaffold, RbTokens tokens) {
   final base = ThemeData(colorScheme: scheme, useMaterial3: true);
   final text = _textTheme(base.textTheme);
+  // What a sheet or dialog is made of. Light: white on cream. Dark: the
+  // lowest tier is DARKER than the scaffold, so a sheet on it sank into the
+  // page instead of rising off it (Arnar 2026-09-03, dev app) — dark depth
+  // is surface tint, so sheets step UP the ladder to surfaceContainer.
+  final raised = scheme.brightness == Brightness.dark
+      ? scheme.surfaceContainer
+      : scheme.surfaceContainerLowest;
   return base.copyWith(
     scaffoldBackgroundColor: scaffold,
     textTheme: text,
@@ -257,14 +264,14 @@ ThemeData _theme(ColorScheme scheme, Color scaffold, RbTokens tokens) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
     bottomSheetTheme: BottomSheetThemeData(
-      backgroundColor: scheme.surfaceContainerLowest,
+      backgroundColor: raised,
       surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
     ),
     dialogTheme: DialogThemeData(
-      backgroundColor: scheme.surfaceContainerLowest,
+      backgroundColor: raised,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
