@@ -1,6 +1,6 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
-> **Updated:** 2026-09-08
+> **Updated:** 2026-09-09
 
 ## 📍 Now
 - Phase: closed test, Play review PASSED. Play holds 0.20.0+42 (tag
@@ -25,8 +25,6 @@
 - mvp-build — THE focus. Quota card BUILT, still awaiting Arnar's eyes on the
   dev app. Open: billing seam, listing + welcome screenshots, App Check
   enforcement on the server, CLI Play publishing.
-- ouroboros — side experiment in the worktree, never blocks mvp-build. Slice
-  one a–f built + tested on branch `ouroboros`.
 - market — open: Q2 export recon (Arnar running), Q5 steal list, Q6 cadence.
   i18n PAUSED (Decision 2).
 
@@ -34,6 +32,8 @@
 - None open.
 
 ## 📌 Parked
+- ouroboros PARKED 2026-09-09 (Arnar) — branch `ouroboros` + its worktree
+  kept, slice one a–f built + tested, nothing folds to main.
 - consent note is English-only (others fall back, picker hidden) · tag reorder
   has no UI · "see all" for a long tag strip · i18n paused · nutrition dormant
   · borrowed listing photos · is/sv stale money rows · stale test
