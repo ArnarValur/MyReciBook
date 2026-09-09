@@ -20,6 +20,29 @@
   arrive, then reshoot the website's "pocket" section around pantry and barcode.
   Branch `tester-outreach` still unmerged. Four edits uncommitted on main.
 
+## 2026-09-09 — a stocked phone on the laptop, and the bar comes off the page
+
+- Shipped: tools/seed_emulator.py fills the emulator with a believable app —
+  12 recipes, 10 tags, 16 shelved pantry products, 80 diary days, and Arnar's
+  26 photos as covers. The nav pill got a shadow token and lifts off the page.
+  A coverless recipe now wears its first tag's icon instead of the logo.
+- Broke: the pantry rejected all 16 products — `default_serving` is an index
+  into servings, not a label. The app said so plainly and that found it. An
+  earlier diary averaged 900 kcal a day, which made Trends look like a
+  starvation log.
+- Found: the emulator was installed all along, just missing from PATH. A
+  shadow cannot be added inside the pill's ClipRRect — it is clipped away with
+  the child. Website card 05 promises "from 3 planned recipes"; the meal
+  planner is still a placeholder, so the claim outruns the app.
+- Arnar: park ouroboros, keep the branch · strike the tester marketing · tag
+  icons on coverless covers, first tag only, never emoji · commit the seed
+  photography so a rebuilt emulator is one command.
+- UNFINISHED: Play listing screenshots and welcome slide shots — both open on
+  mvp-build for weeks, both now shootable from the emulator. Then the six
+  website card screenshots, the "pocket" section rebuilt around pantry and
+  barcode, and card 05's copy. No version bump: the pill and the tag glyphs
+  have been seen on the emulator only, never on the phone.
+
 ## 2026-09-09 — the test kitchen is struck, and a mailbox that never existed
 
 - Shipped: the twelve-seat closed-test pitch removed from the website — wanted
@@ -102,63 +125,4 @@
 - Found: OffClient does barcode lookup only — receipt→OFF name search is new code.
 - UNFINISHED: PoC slice one continues in the worktree from 1b's test → 1c;
   conductor files are edited on main only.
-
-## 2026-09-01 — the market gets grilled: three decisions in one sitting (Cowork)
-
-- Shipped: market Decisions 1–3 (no refill ever + $5=600 top-up; i18n paused,
-  Nordic unfreeze order; short description gains "Pay once, no subscription");
-  export-recon.md checklist for Arnar's manual recon; ouroboros/vision.md
-  banked — the closed food loop, NOT open, deep-dive session to come.
-- Arnar: no timeline words, build order only · Q6 left open (leaning noted in
-  plan) · Q5 steal order unratified — rides the ouroboros deep-dive.
-
-## 2026-09-01 — the refill dies in code, the site learns English governs
-
-- Shipped: Decision 1 executed — lazy refill deleted from both ledgers,
-  resets_at off the wire and out of the app, unlock + 5 locale terms say
-  600-for-$5, INCLUDED_CAP rename; proxy 23 + app 27 green. Translation
-  sticker on non-en pages + en fallback. Housekeeping commit rode ahead.
-- Arnar: English is the source of truth, sticker says English governs ·
-  i18n PAUSED (Decision 2) · short description gains "Pay once, no
-  subscription" (Decision 3). No version bump — nothing new on the device.
-  Late adds: both proxies redeployed (no-refill live, smoke green) · testers
-  proved rescue + URL on Play · CLI Play publishing agreed for next ship.
-- UNFINISHED: none — dev + prod proxies both redeployed same night, smoke
-  green; testers live on the no-refill ledger, rescue + URL proved on Play.
-
-## 2026-09-01 — the release gets a tag, the website packs for four more countries
-
-- Shipped: branch website-i18n — privacy/terms/contact/404 keyed into en.json
-  (148 messages, wording verbatim), nb/da/fi/fo skeletons wired + flags,
-  Gemini brief website/i18n/TRANSLATE.md + parity check, site builds clean.
-- Git: tag the-first-0.20.0+42 = what Play holds; no develop branch (Arnar);
-  old i18n branch deleted. Learned: internal testers don't count toward 12×14d.
-- Arnar: Nordic set is is·sv·nb·da·fi·fo · he drives antigravity-cli (Gemini)
-  on the branch · en/is/sv stay human-owned. No version bump — branch only.
-- UNFINISHED: point antigravity-cli at website-i18n + website/i18n/TRANSLATE.md.
-
-## 2026-09-01 — the field gets read, and it is not what the badges say
-
-- Shipped: fourteen competitor dossiers (~90k words, two agents per app) in
-  docs/competitor-research/ + _SYNTHESIS.md + recipe-app-recon.html; market
-  track opened for the discussion. No code, no version bump.
-- Found: none of the seven sells one-time and their users ask for it unprompted;
-  displayed stars are silent-tapper averages (Mob shows 4.6, its 404 written
-  reviews average 2.26); nobody pairs a cookbook with a pantry AND a diary.
-- Arnar: track scope = market (research + positioning), launch stays shut.
-- UNFINISHED: Q1 bounded recurring cost is the one that decides the model —
-  ties to the OFFER-CONTRADICTS-ENGINE blocker. Q2–Q6 queued in the plan.
-
-## 2026-09-01 — prod goes live in one night, every Play form falls
-
-- Shipped: myrecibook.com + www live on prod Cloud Run (deploy-prod.sh, DNS,
-  cert); prod proxy + Firestore eur3 + both keys in Secret Manager; prod.env
-  + build-release.sh (google-services swap); listing texts + feature graphic
-  drafted; Marco stamps on privacy/terms live.
-- Broke: deploy ×2 — fresh-project bucket lag, then the compute SA lacked the
-  builder role (new-GCP-project default; Arnar granted it).
-- Arnar: Gemini prepay on tier 3 · target 18+ only · data safety
-  collected-only · submitted closed "Alpha" (NO+SE) + en-GB listing to review.
-- UNFINISHED: Play review churning · S21 Play-install + listing screenshots ·
-  App Check SHA · Drive OAuth consent screen (weeks gate) — start it next.
 
