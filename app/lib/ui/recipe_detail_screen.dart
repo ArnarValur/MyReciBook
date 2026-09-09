@@ -822,7 +822,14 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                           fit: BoxFit.contain,
                         ),
                       )
-                    : RecipeCover(file: _cover, title: _recipe.title),
+                    : RecipeCover(
+                        file: _cover,
+                        title: _recipe.title,
+                        glyph: coverGlyph(
+                          _recipe.tags,
+                          context.watch<TagsModel>().tags,
+                        ),
+                      ),
               ),
               Positioned(
                 bottom: 12,

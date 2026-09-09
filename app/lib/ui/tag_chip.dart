@@ -15,6 +15,28 @@ import '../domain/tag_icons.dart';
 import 'icons/food_icons.dart';
 import 'theme.dart';
 
+/// The glyph a COVERLESS recipe wears on its gradient tile: the icon of the
+/// first tag on the recipe that carries one from the catalog. Null means the
+/// recipe has no such tag and the tile keeps the logo.
+///
+/// Emoji icons are deliberately skipped (Arnar 2026-09-09: "only icons, no
+/// emojis"). The tile watermarks its glyph in white at low opacity; an emoji
+/// is full colour and ignores a tint, so it would sit on top as a sticker
+/// rather than sink into the gradient.
+///
+/// "First" is the recipe file's own tag order, not the catalog's — the order
+/// the user sees on the recipe.
+IconData? coverGlyph(List<String> recipeTags, List<RecipeTag> catalog) {
+  if (recipeTags.isEmpty || catalog.isEmpty) return null;
+  final byName = {for (final t in catalog) RecipeTag.canonical(t.name): t};
+  for (final name in recipeTags) {
+    final tag = byName[RecipeTag.canonical(name)];
+    final icon = tag?.icon;
+    if (icon != null && isTagIconKey(icon)) return foodIcon(icon);
+  }
+  return null;
+}
+
 /// The eight tints, resolved against the live scheme so a tag reads correctly
 /// in both themes. Named colours rather than stored hex for exactly this.
 Color tagColorOf(BuildContext context, TagColor c) {
@@ -87,7 +109,9 @@ class TagChip extends StatelessWidget {
     // surface with the colour on the glyph, so a row of chips reads as one
     // row and the colours stay a scanning aid rather than a fairground.
     final bg = selected
-        ? tint.withValues(alpha: theme.brightness == Brightness.dark ? 0.28 : 0.16)
+        ? tint.withValues(
+            alpha: theme.brightness == Brightness.dark ? 0.28 : 0.16,
+          )
         : scheme.surfaceContainerHigh;
     final fg = selected ? tint : scheme.onSurface;
     final circle = tag.icon != null && !tag.showLabel;
@@ -97,7 +121,9 @@ class TagChip extends StatelessWidget {
         // chip, so it gets the room the label would have taken. Always the
         // tag's tint, like the pill's glyph — otherwise the same tag reads
         // black here and coloured in TagBadge.
-        ? Center(child: TagGlyph(tag: tag, size: height * 0.5, color: tint))
+        ? Center(
+            child: TagGlyph(tag: tag, size: height * 0.5, color: tint),
+          )
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -110,7 +136,9 @@ class TagChip extends StatelessWidget {
                   tag.name,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w600, color: fg),
+                    fontWeight: FontWeight.w600,
+                    color: fg,
+                  ),
                 ),
               ),
               if (onDeleted != null) ...[
@@ -118,8 +146,11 @@ class TagChip extends StatelessWidget {
                 InkWell(
                   customBorder: const CircleBorder(),
                   onTap: onDeleted,
-                  child: Icon(Icons.close_rounded,
-                      size: 14, color: scheme.onSurfaceVariant),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 14,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ],
@@ -147,7 +178,6 @@ class TagChip extends StatelessWidget {
     );
   }
 }
-
 
 /// A tag squeezed down to a badge, for the cookbook's rows and cover cards.
 ///
@@ -231,18 +261,20 @@ class TagBadgeRow extends StatelessWidget {
               color: scheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(999),
             ),
-            child: Text('+$extra',
-                style: TextStyle(
-                    fontSize: size * 0.5,
-                    height: 1,
-                    fontWeight: FontWeight.w700,
-                    color: scheme.onSurfaceVariant)),
+            child: Text(
+              '+$extra',
+              style: TextStyle(
+                fontSize: size * 0.5,
+                height: 1,
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
           ),
       ],
     );
   }
 }
-
 
 /// The one door that adds a tag — a dashed chip so it reads as an action and
 /// not as a tag called "Tag". Shared by the recipe page and the import
@@ -271,9 +303,13 @@ class AddTagChip extends StatelessWidget {
           children: [
             Icon(Icons.add_rounded, size: 15, color: scheme.primary),
             const SizedBox(width: 4),
-            Text('Tag',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600, color: scheme.primary)),
+            Text(
+              'Tag',
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: scheme.primary,
+              ),
+            ),
           ],
         ),
       ),
@@ -311,8 +347,11 @@ class SuggestedTagChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.add_rounded,
-                size: 15, color: scheme.onSecondaryContainer),
+            Icon(
+              Icons.add_rounded,
+              size: 15,
+              color: scheme.onSecondaryContainer,
+            ),
             const SizedBox(width: 4),
             if (tag.icon != null) ...[
               TagGlyph(tag: tag, size: 14, color: tint),
@@ -321,9 +360,9 @@ class SuggestedTagChip extends StatelessWidget {
             Text(
               tag.name,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: scheme.onSecondaryContainer,
-                  ),
+                fontWeight: FontWeight.w500,
+                color: scheme.onSecondaryContainer,
+              ),
             ),
           ],
         ),

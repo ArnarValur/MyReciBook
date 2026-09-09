@@ -33,7 +33,6 @@ import 'tag_tiles.dart';
 import 'tags_model.dart';
 import 'widgets/skin.dart';
 
-
 class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({super.key, required this.onImport, this.onOpenQueue});
 
@@ -113,26 +112,33 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     for (final t in tags.tags) {
       final key = RecipeTag.canonical(t.name);
       done.add(key);
-      out.add(TagTileData(
-        id: key,
-        label: t.name,
-        tag: t,
-        recipes: members[key] ?? const [],
-      ));
+      out.add(
+        TagTileData(
+          id: key,
+          label: t.name,
+          tag: t,
+          recipes: members[key] ?? const [],
+        ),
+      );
     }
-    final rest = [
-      for (final key in members.keys)
-        if (!done.contains(key)) key,
-    ]..sort((a, b) =>
-        spelling[a]!.toLowerCase().compareTo(spelling[b]!.toLowerCase()));
+    final rest =
+        [
+          for (final key in members.keys)
+            if (!done.contains(key)) key,
+        ]..sort(
+          (a, b) =>
+              spelling[a]!.toLowerCase().compareTo(spelling[b]!.toLowerCase()),
+        );
     for (final key in rest) {
       final name = spelling[key]!;
-      out.add(TagTileData(
-        id: key,
-        label: name,
-        tag: RecipeTag(name: name),
-        recipes: members[key]!,
-      ));
+      out.add(
+        TagTileData(
+          id: key,
+          label: name,
+          tag: RecipeTag(name: name),
+          recipes: members[key]!,
+        ),
+      );
     }
     return out;
   }
@@ -163,10 +169,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     final tiles = _tiles(model.recipes);
     // A selection nothing claims any more (the tag was deleted, or renamed
     // away under us) reads as "everything", never as an empty book.
-    final selected =
-        _selected == null || tiles.any((t) => t.id == _selected)
-            ? _selected
-            : null;
+    final selected = _selected == null || tiles.any((t) => t.id == _selected)
+        ? _selected
+        : null;
     final recipes = _visible(model.recipes, selected);
     final emptyBook = model.recipes.isEmpty && !model.loading;
     final grid = context.watch<CookbookPrefs>().view == CookbookView.grid;
@@ -218,7 +223,11 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                       ),
                       SliverToBoxAdapter(
                         child: _gridHeader(
-                            theme, tiles, selected, recipes.length),
+                          theme,
+                          tiles,
+                          selected,
+                          recipes.length,
+                        ),
                       ),
                       if (recipes.isEmpty)
                         SliverToBoxAdapter(
@@ -434,8 +443,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     int count,
   ) {
     final scheme = context.scheme;
-    final tile =
-        selected == null ? null : tiles.firstWhere((t) => t.id == selected);
+    final tile = selected == null
+        ? null
+        : tiles.firstWhere((t) => t.id == selected);
     void clear() => setState(() => _selected = null);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
@@ -580,6 +590,7 @@ class _RecipeRow extends StatelessWidget {
     final scheme = context.scheme;
     final rb = context.rb;
     final model = context.read<LibraryModel>();
+    final glyph = coverGlyph(recipe.tags, context.watch<TagsModel>().tags);
     final meta = _RecipeCard.metaLine(recipe);
     return Padding(
       padding: const EdgeInsets.only(bottom: 11),
@@ -613,7 +624,11 @@ class _RecipeRow extends StatelessWidget {
                     builder: (_, snap) {
                       final file = snap.data;
                       if (file == null) {
-                        return RecipeCover(file: null, title: recipe.title);
+                        return RecipeCover(
+                          file: null,
+                          title: recipe.title,
+                          glyph: glyph,
+                        );
                       }
                       return Image.file(
                         file,
@@ -621,8 +636,11 @@ class _RecipeRow extends StatelessWidget {
                         height: 38,
                         fit: BoxFit.cover,
                         cacheWidth: 114,
-                        errorBuilder: (_, _, _) =>
-                            RecipeCover(file: null, title: recipe.title),
+                        errorBuilder: (_, _, _) => RecipeCover(
+                          file: null,
+                          title: recipe.title,
+                          glyph: glyph,
+                        ),
                       );
                     },
                   ),
@@ -729,8 +747,14 @@ class _RecipeCard extends StatelessWidget {
                 width: double.infinity,
                 child: FutureBuilder<File?>(
                   future: model.coverFor(recipe),
-                  builder: (_, snap) =>
-                      RecipeCover(file: snap.data, title: recipe.title),
+                  builder: (_, snap) => RecipeCover(
+                    file: snap.data,
+                    title: recipe.title,
+                    glyph: coverGlyph(
+                      recipe.tags,
+                      context.watch<TagsModel>().tags,
+                    ),
+                  ),
                 ),
               ),
               Padding(
@@ -798,17 +822,20 @@ class _FavoritesChip extends StatelessWidget {
           Text(
             'Favorites',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSecondaryContainer,
-                ),
+              fontWeight: FontWeight.w600,
+              color: scheme.onSecondaryContainer,
+            ),
           ),
           const SizedBox(width: 4),
           InkWell(
             key: const Key('clear-selection'),
             customBorder: const CircleBorder(),
             onTap: onClear,
-            child: Icon(Icons.close_rounded,
-                size: 14, color: scheme.onSecondaryContainer),
+            child: Icon(
+              Icons.close_rounded,
+              size: 14,
+              color: scheme.onSecondaryContainer,
+            ),
           ),
         ],
       ),

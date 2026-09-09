@@ -608,7 +608,7 @@ CATEGORIES = {
 }
 
 
-def build_products() -> list[dict]:
+def build_products(photos: dict[str, Path]) -> list[dict]:
     now = datetime.now(timezone.utc)
     out = []
     for index, (barcode, name, brand, quantity, source, values, servings,
@@ -630,12 +630,15 @@ def build_products() -> list[dict]:
             "default_serving": next(
                 (i for i, (label, _) in enumerate(servings) if label == default_serving), 0),
         }
+        photo = photos.get(name)
+        if photo is not None:
+            body["image"] = f"images/{stem}{photo.suffix.lower()}"
         category = CATEGORIES.get(name)
         if category:
             body["tags"] = [category]
         if source == "manual":
             body["user_edited"] = True
-        out.append({"stem": stem, "json": body})
+        out.append({"stem": stem, "json": body, "photo": photo})
     return out
 
 
@@ -777,6 +780,29 @@ def diary_entry(rng, ref, name, brand, label, grams, kcal_per_100, day, hour) ->
 # filename says the dish rather than the recipe title — Arnar's own names from
 # docs/MyReciBook Recipes Screenshots/. Add a line here rather than asking
 # anyone to rename a photo.
+# Pantry photos, by filename stem in docs/MyReciBook - Pantry images/ → the
+# product name. Product photos live at pantry/images/<stem>.<ext> and the
+# product file points at them with a relative `image` ref, the recipe-cover
+# convention applied to the pantry.
+PANTRY_PHOTO_NAMES = {
+    "bananas": "Bananas",
+    "blueberries": "Blueberries",
+    "buttet": "Salted Butter",
+    "cherrytomatos": "Cherry Tomatoes",
+    "chicken": "Chicken Breast Fillet",
+    "chocolate": "Dark Chocolate 70%",
+    "coffee": "Coffee, black",
+    "cottagecheese": "Cottage Cheese Natural",
+    "eggs": "Free Range Eggs",
+    "milk": "Semi Skimmed Milk",
+    "oats": "Rolled Oats",
+    "olive-oil": "Extra Virgin Olive Oil",
+    "pecorino": "Pecorino Romano",
+    "sourdoughbread": "Sourdough Loaf",
+    "spaghetti": "Spaghetti No. 5",
+    "yogurt": "Greek Yoghurt Natural",
+}
+
 PHOTO_ALIASES = {
     "bounty-bars": "Homemade Bounty Bars",
     "casio-pepe": "Cacio e Pepe, Properly",
@@ -806,6 +832,24 @@ def collect_photos(folder: Path | None) -> dict[str, Path]:
     return out
 
 
+def collect_pantry_photos(folder: Path | None) -> tuple[dict[str, Path], list[str]]:
+    """Product photos keyed by product NAME, plus the stems that matched none."""
+    if folder is None:
+        return {}, []
+    if not folder.is_dir():
+        sys.exit(f"--pantry-photos: {folder} is not a folder")
+    out, unmatched = {}, []
+    for path in sorted(folder.iterdir()):
+        if path.suffix.lower() not in (".jpg", ".jpeg", ".png", ".webp"):
+            continue
+        name = PANTRY_PHOTO_NAMES.get(slug(path.stem))
+        if name is None:
+            unmatched.append(path.stem)
+            continue
+        out[name] = path
+    return out, unmatched
+
+
 def write_tree(target: Path, recipes, products, diary) -> None:
     (target / "images").mkdir(parents=True, exist_ok=True)
     (target / "pantry").mkdir(parents=True, exist_ok=True)
@@ -825,6 +869,11 @@ def write_tree(target: Path, recipes, products, diary) -> None:
     for product in products:
         (target / "pantry" / f"{product['stem']}.json").write_text(
             json.dumps(product["json"], ensure_ascii=False, indent=2), encoding="utf-8")
+        if product["photo"] is not None:
+            (target / "pantry" / "images").mkdir(parents=True, exist_ok=True)
+            suffix = product["photo"].suffix.lower()
+            shutil.copy(product["photo"],
+                        target / "pantry" / "images" / f"{product['stem']}{suffix}")
 
     for day in diary:
         (target / "diary" / f"{day['date']}.json").write_text(
@@ -842,6 +891,8 @@ def main() -> None:
                         help=f"folder on the device (default {DEFAULT_ROOT})")
     parser.add_argument("--photos", type=Path,
                         help="folder of cover photos, matched to recipes by filename")
+    parser.add_argument("--pantry-photos", type=Path,
+                        help="folder of product photos, matched to pantry items by filename")
     parser.add_argument("--days", type=int, default=90,
                         help="how many days back to log (default 90)")
     parser.add_argument("--clear", action="store_true",
@@ -852,7 +903,8 @@ def main() -> None:
 
     photos = collect_photos(args.photos)
     recipes, uncovered, unused = build_recipes(photos)
-    products = build_products()
+    pantry_photos, pantry_unused = collect_pantry_photos(args.pantry_photos)
+    products = build_products(pantry_photos)
     diary = build_diary(args.days, recipes)
 
     if args.out:
@@ -879,6 +931,12 @@ def main() -> None:
           f"{len(diary)} logged days → {target}")
     if photos:
         print(f"{len(photos) - len(unused)} covers attached")
+    if pantry_photos:
+        print(f"{len(pantry_photos)} product photos attached")
+    if pantry_unused:
+        print("\nProduct photos that matched no pantry item:")
+        for stem in pantry_unused:
+            print(f"  {stem}")
     if uncovered:
         print("\nNo photo, so these fall back to a gradient cover:")
         for title in uncovered:

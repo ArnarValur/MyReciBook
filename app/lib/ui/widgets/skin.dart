@@ -520,7 +520,7 @@ class OriginalsViewer extends StatelessWidget {
 
 /// A recipe's cover: the picked image when there is one, otherwise a drawn
 /// tile — brand gradient, chosen from the title so a recipe keeps its colour
-/// forever, watermarked with the logo. Screenshots are NOT promoted to covers
+/// forever, watermarked with a glyph. Screenshots are NOT promoted to covers
 /// (Arnar 2026-08-10: they came out ugly); the originals stay one tap away
 /// behind the hero's provenance flip.
 class RecipeCover extends StatelessWidget {
@@ -528,11 +528,17 @@ class RecipeCover extends StatelessWidget {
     super.key,
     required this.file,
     required this.title,
+    this.glyph,
     this.cacheWidth,
   });
 
   final File? file;
   final String title;
+
+  /// Watermark for a coverless tile — `coverGlyph()` resolves it from the
+  /// recipe's first icon-bearing tag (Arnar 2026-09-09). Null keeps the logo,
+  /// which is what an untagged recipe gets.
+  final IconData? glyph;
 
   /// Decode width for a small slot (thumbs, tile collages). Null = full size.
   final int? cacheWidth;
@@ -574,10 +580,16 @@ class RecipeCover extends StatelessWidget {
         child: Center(
           child: Opacity(
             opacity: 0.22,
-            child: LogoMark(
-              size: box.biggest.shortestSide * 0.46,
-              color: Colors.white,
-            ),
+            child: glyph == null
+                ? LogoMark(
+                    size: box.biggest.shortestSide * 0.46,
+                    color: Colors.white,
+                  )
+                : Icon(
+                    glyph,
+                    size: box.biggest.shortestSide * 0.52,
+                    color: Colors.white,
+                  ),
           ),
         ),
       ),

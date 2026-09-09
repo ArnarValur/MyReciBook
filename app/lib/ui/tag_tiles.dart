@@ -17,6 +17,7 @@ import 'package:provider/provider.dart';
 import '../domain/recipe.dart';
 import '../domain/recipe_tag.dart';
 import 'library_model.dart';
+import 'tags_model.dart';
 import 'tag_chip.dart';
 import 'theme.dart';
 import 'widgets/skin.dart';
@@ -164,15 +165,15 @@ class TagTile extends StatelessWidget {
                     emptyGlyph: data.isFavorites
                         ? Icon(Icons.favorite_rounded, size: 28, color: tint)
                         : data.tag!.icon != null
-                            ? TagGlyph(tag: data.tag!, size: 28, color: tint)
-                            : Text(
-                                data.label.characters.first.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: tint,
-                                ),
-                              ),
+                        ? TagGlyph(tag: data.tag!, size: 28, color: tint)
+                        : Text(
+                            data.label.characters.first.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: tint,
+                            ),
+                          ),
                   ),
                 ),
                 Padding(
@@ -265,47 +266,64 @@ class _Collage extends StatelessWidget {
       );
     }
     final model = context.read<LibraryModel>();
+    final catalog = context.watch<TagsModel>().tags;
     Widget cell(Recipe r) => FutureBuilder<File?>(
-          future: model.coverFor(r),
-          builder: (_, snap) =>
-              RecipeCover(file: snap.data, title: r.title, cacheWidth: 240),
-        );
+      future: model.coverFor(r),
+      builder: (_, snap) => RecipeCover(
+        file: snap.data,
+        title: r.title,
+        glyph: coverGlyph(r.tags, catalog),
+        cacheWidth: 240,
+      ),
+    );
     const gap = SizedBox(width: 1, height: 1);
     return switch (rs.length) {
       1 => cell(rs[0]),
-      2 => Row(children: [
+      2 => Row(
+        children: [
           Expanded(child: cell(rs[0])),
           gap,
           Expanded(child: cell(rs[1])),
-        ]),
-      3 => Row(children: [
+        ],
+      ),
+      3 => Row(
+        children: [
           Expanded(child: cell(rs[0])),
           gap,
           Expanded(
-            child: Column(children: [
-              Expanded(child: cell(rs[1])),
-              gap,
-              Expanded(child: cell(rs[2])),
-            ]),
+            child: Column(
+              children: [
+                Expanded(child: cell(rs[1])),
+                gap,
+                Expanded(child: cell(rs[2])),
+              ],
+            ),
           ),
-        ]),
-      _ => Column(children: [
+        ],
+      ),
+      _ => Column(
+        children: [
           Expanded(
-            child: Row(children: [
-              Expanded(child: cell(rs[0])),
-              gap,
-              Expanded(child: cell(rs[1])),
-            ]),
+            child: Row(
+              children: [
+                Expanded(child: cell(rs[0])),
+                gap,
+                Expanded(child: cell(rs[1])),
+              ],
+            ),
           ),
           gap,
           Expanded(
-            child: Row(children: [
-              Expanded(child: cell(rs[2])),
-              gap,
-              Expanded(child: cell(rs[3])),
-            ]),
+            child: Row(
+              children: [
+                Expanded(child: cell(rs[2])),
+                gap,
+                Expanded(child: cell(rs[3])),
+              ],
+            ),
           ),
-        ]),
+        ],
+      ),
     };
   }
 }
@@ -339,9 +357,9 @@ class _NewTile extends StatelessWidget {
             Text(
               'New tag',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: scheme.primary,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: scheme.primary,
+              ),
             ),
           ],
         ),
