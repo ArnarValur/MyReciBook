@@ -27,7 +27,7 @@ useSeoMeta({
       <p>
         <i18n-t keypath="terms.takedownBody">
           <template #email>
-            <a href="mailto:support@myrecibook.com">support@myrecibook.com</a>
+            <a href="mailto:myrecibook@gmail.com">myrecibook@gmail.com</a>
           </template>
         </i18n-t>
       </p>

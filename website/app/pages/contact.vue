@@ -108,7 +108,7 @@ async function send() {
       <p v-if="state !== 'sent'" class="doc-meta contact-fallback">
         <i18n-t keypath="contact.fallback">
           <template #email>
-            <a href="mailto:support@myrecibook.com">support@myrecibook.com</a>
+            <a href="mailto:myrecibook@gmail.com">myrecibook@gmail.com</a>
           </template>
         </i18n-t>
       </p>

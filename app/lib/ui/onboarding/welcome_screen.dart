@@ -73,7 +73,7 @@ class WelcomeScreen extends StatelessWidget {
                               'are plain files on this phone — if MyReciBook '
                               'vanished tomorrow, they wouldn’t. Unless '
                               'you dropped your phone into a volcano and did '
-                              'not use your cloud storage, then it’s a '
+                              'not use your cloud storage, then it’s an '
                               'oopsie.',
                               textAlign: TextAlign.center,
                               style: theme.textTheme.bodyLarge?.copyWith(
