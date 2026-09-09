@@ -31,12 +31,28 @@ const featureIcons = {
   barcode: 'i-material-symbols:barcode-scanner-rounded',
   nutrition: 'i-material-symbols:monitoring-rounded',
 }
+// Each card carries a window onto the screen that proves its claim — shot
+// off the stocked emulator (tools/shoot_emulator.sh), light and dark.
+const featureShots: Record<string, string> = {
+  cookMode: 'cookmode',
+  grocery: 'grocery',
+  pantry: 'pantry',
+  diary: 'diary',
+  barcode: 'product', // the scanner's result: a product page Open Food Facts filled in
+  nutrition: 'trends',
+}
+const tapeTilts = ['-2deg', '1.5deg', '-1deg', '2deg', '-1.5deg', '1deg']
 const features = Object.entries(featureIcons).map(([key, icon], i) => ({
   icon,
   tab: t(`index.cards.features.${key}.tab`),
   title: t(`index.cards.features.${key}.title`),
   body: t(`index.cards.features.${key}.body`),
+  caption: t(`index.cards.features.${key}.caption`),
+  alt: t(`index.cards.features.${key}.alt`),
+  shot: `/screenshots/card-${featureShots[key]}.webp`,
+  shotDark: `/screenshots/card-${featureShots[key]}-dark.webp`,
   tilt: `rotate(${tilts[i]})`,
+  tape: `translateX(-50%) rotate(${tapeTilts[i]})`,
 }))
 
 const heroChecks = list('index.hero.checks')
@@ -132,24 +148,34 @@ const methodSteps = list('index.recipe.steps')
               <span class="feature-title">{{ f.title }}</span>
             </div>
             <p class="feature-body">{{ f.body }}</p>
+            <figure class="feature-shot">
+              <CardTape :style="{ left: '50%', top: '-11px', width: '84px', height: '24px', transform: f.tape }" />
+              <img class="light-shot" :src="f.shot" :alt="f.alt" loading="lazy">
+              <img class="dark-shot" :src="f.shotDark" :alt="f.alt" loading="lazy">
+              <figcaption class="marginalia">{{ f.caption }}</figcaption>
+            </figure>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ── Taped-in phone ───────────────────────────────────── -->
+    <!-- ── Taped-in phones: the same cookbook by day and by night ── -->
     <section class="section">
       <div class="pocket-grid">
         <div>
           <h2 class="h2 pocket-title">{{ $t('index.pocket.title') }}</h2>
           <p class="pocket-lede">{{ $t('index.pocket.lede') }}</p>
           <div class="pocket-points">
-            <span><UIcon name="i-material-symbols:barcode-scanner-rounded" class="point-icon" />{{ $t('index.pocket.pointBarcode') }}</span>
-            <span><UIcon name="i-material-symbols:monitoring-rounded" class="point-icon" />{{ $t('index.pocket.pointTrends') }}</span>
+            <span><UIcon name="i-material-symbols:label-rounded" class="point-icon" />{{ $t('index.pocket.pointTiles') }}</span>
+            <span><UIcon name="i-material-symbols:palette-rounded" class="point-icon" />{{ $t('index.pocket.pointCovers') }}</span>
             <span><UIcon name="i-material-symbols:dark-mode-rounded" class="point-icon" />{{ $t('index.pocket.pointTheme') }}</span>
           </div>
         </div>
-        <PhoneMockup src="/screenshots/cookbook.webp" />
+        <div class="pocket-phones">
+          <PhoneMockup class="phone-night" src="/screenshots/phone-cookbook-dark.webp" :alt="$t('index.pocket.nightAlt')" tilt="-3.5deg" :taped="false" />
+          <PhoneMockup class="phone-day" src="/screenshots/phone-cookbook.webp" :alt="$t('index.pocket.dayAlt')" tilt="1.4deg" />
+          <div class="marginalia pocket-note" aria-hidden="true">{{ $t('index.pocket.note') }} →</div>
+        </div>
       </div>
     </section>
 
@@ -473,13 +499,48 @@ const methodSteps = list('index.recipe.steps')
   margin: 0;
   text-wrap: pretty;
 }
+/* A print taped under the words: a window onto the screen, not a whole phone.
+   The cards end up different heights — index cards do. */
+.feature-shot {
+  position: relative;
+  margin: 18px -4px 0;
+  padding: 8px 8px 4px;
+  background: #fff;
+  border: 1px solid var(--box-edge);
+  border-radius: 4px;
+  box-shadow: var(--box-shadow-sm);
+}
+.feature-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+  border: 1px solid rgba(120, 90, 50, 0.12);
+}
+/* Light shot by day, Midnight shot by night — the same swap the rescue strip does */
+.feature-shot img.dark-shot { display: none; }
+.dark .feature-shot img.dark-shot { display: block; }
+.dark .feature-shot img.light-shot { display: none; }
+.feature-shot figcaption { padding: 7px 2px 3px; font-size: 12.5px; }
 
 /* ── Taped-in phone ──────────────────────────────────────── */
 .pocket-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 56px;
+  grid-template-columns: 1fr 540px;
+  gap: 40px;
   align-items: center;
+}
+/* Two phones, one book: Stitch Slate taped in front, Midnight tucked behind it. */
+.pocket-phones { position: relative; width: 540px; height: 700px; justify-self: end; }
+.pocket-phones .phone-day { position: absolute; left: 0; bottom: 0; z-index: 1; }
+.pocket-phones .phone-night { position: absolute; right: 0; top: 0; }
+.pocket-note {
+  position: absolute;
+  left: 40px;
+  bottom: -30px;
+  transform: rotate(-3deg);
+  font-size: 13px;
+  white-space: nowrap;
 }
 .pocket-title { margin: 0 0 18px; max-width: 420px; }
 .pocket-lede {
@@ -665,6 +726,7 @@ const methodSteps = list('index.recipe.steps')
 @media (max-width: 900px) {
   .cards-grid { grid-template-columns: repeat(2, 1fr); }
   .pocket-grid { grid-template-columns: 1fr; gap: 48px; justify-items: center; }
+  .pocket-phones { justify-self: center; }
   .pocket-grid > div:first-child { text-align: center; }
   .pocket-title, .pocket-lede { max-width: 520px; margin-left: auto; margin-right: auto; }
   .pocket-points { align-items: center; }
@@ -713,5 +775,10 @@ const methodSteps = list('index.recipe.steps')
 }
 @media (max-width: 600px) {
   .cards-grid { grid-template-columns: 1fr; }
+  /* The pair shrinks to fit a phone-width page; the frames keep their pixels */
+  .pocket-phones { width: 360px; height: 560px; }
+  .pocket-phones .phone-day { transform: scale(0.72); transform-origin: bottom left; }
+  .pocket-phones .phone-night { transform: scale(0.72); transform-origin: top right; }
+  .pocket-note { display: none; }
 }
 </style>

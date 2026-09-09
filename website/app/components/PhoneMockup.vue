@@ -1,24 +1,24 @@
 <script setup lang="ts">
-// Pass src="/screenshots/….png" to show a real app screenshot
-// instead of the hand-built mock screen.
-defineProps<{ src?: string }>()
+// A phone frame around a real screenshot. Pass `src` for the shot; add
+// `darkSrc` and the frame swaps to it when the site is in dark mode.
+// The screenshot carries the app's own nav pill, so the frame draws none.
+// Without `src` the old hand-built mock screen renders (kept for reference).
+withDefaults(defineProps<{ src?: string; darkSrc?: string; alt?: string; tilt?: string; taped?: boolean }>(), {
+  alt: 'MyReciBook on an Android phone',
+  tilt: '1.4deg',
+  taped: true, // a phone tucked behind another wears no tape
+})
 </script>
 
 <template>
   <div class="phone-wrap">
-    <CardTape style="left: -24px; top: -14px; width: 110px; transform: rotate(-35deg); z-index: 2" />
-    <CardTape style="right: -24px; bottom: -10px; width: 110px; transform: rotate(-35deg); z-index: 2" />
+    <CardTape v-if="taped" style="left: -24px; top: -14px; width: 110px; transform: rotate(-35deg); z-index: 2" />
+    <CardTape v-if="taped" style="right: -24px; bottom: -10px; width: 110px; transform: rotate(-35deg); z-index: 2" />
 
-    <div class="frame">
+    <div class="frame" :style="{ transform: `rotate(${tilt})` }">
       <div v-if="src" class="screen">
-        <img :src="src" alt="MyReciBook on an Android phone" class="shot">
-        <div class="navpill">
-          <UIcon name="i-material-symbols:menu-book-rounded" class="nav-icon nav-active" />
-          <UIcon name="i-material-symbols:checklist-rounded" class="nav-icon" />
-          <span class="fab"><UIcon name="i-material-symbols:add-rounded" /></span>
-          <UIcon name="i-material-symbols:restaurant-rounded" class="nav-icon" />
-          <UIcon name="i-material-symbols:settings-rounded" class="nav-icon" />
-        </div>
+        <img :src="src" :alt="alt" class="shot" :class="{ 'light-shot': darkSrc }" loading="lazy">
+        <img v-if="darkSrc" :src="darkSrc" :alt="alt" class="shot dark-shot" loading="lazy">
       </div>
       <div v-else class="screen">
         <div class="topbar">
@@ -63,8 +63,6 @@ defineProps<{ src?: string }>()
         </div>
       </div>
     </div>
-
-    <!--<div class="marginalia" aria-hidden="true">covers pick their own color →</div>-->
   </div>
 </template>
 
@@ -84,14 +82,14 @@ defineProps<{ src?: string }>()
   position: relative;
   justify-self: center;
 }
+/* 272×604 inside — the Pixel 7's 1080×2400, so a whole screen fits edge to edge. */
 .frame {
   width: 290px;
-  height: 600px;
+  height: 622px;
   border-radius: 36px;
   background: #1a1c1e;
   padding: 9px;
   box-shadow: 0 20px 44px rgba(80, 60, 30, 0.28);
-  transform: rotate(1.4deg);
 }
 .screen {
   width: 100%;
@@ -103,7 +101,11 @@ defineProps<{ src?: string }>()
   display: flex;
   flex-direction: column;
 }
-.shot { width: 100%; height: 100%; object-fit: contain; object-position: top; display: block; }
+.shot { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+/* One screenshot per site theme, when a dark one is supplied */
+.shot.dark-shot { display: none; }
+.dark .shot.dark-shot { display: block; }
+.dark .shot.light-shot { display: none; }
 .topbar {
   display: flex;
   align-items: center;
@@ -177,19 +179,5 @@ defineProps<{ src?: string }>()
   color: #fff;
   font-size: 21px;
   box-shadow: 0 4px 12px rgba(36, 56, 156, 0.35);
-}
-.marginalia {
-  position: absolute;
-  left: -120px;
-  top: 120px;
-  font-style: italic;
-  font-size: 12.5px;
-  color: var(--box-margin-note);
-  max-width: 100px;
-  line-height: 1.45;
-  transform: rotate(-4deg);
-}
-@media (max-width: 1023px) {
-  .marginalia { display: none; }
 }
 </style>

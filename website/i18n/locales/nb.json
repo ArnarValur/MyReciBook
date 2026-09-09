@@ -13,6 +13,12 @@
     "contact": "Kontakt",
     "translationNotice": "This page is a translation and may lag behind the English original. If anything differs — especially in Terms or Privacy — the English version governs."
   },
+  "cookies": {
+    "body": "The GDPR consent cookie: Just counting visitors and roughly from where, no other hidden ingredients.",
+    "more": "More in the privacy note.",
+    "accept": "Count my visit",
+    "decline": "No thanks"
+  },
   "index": {
     "seo": {
       "title": "MyReciBook — Redd oppskriftene som ligger begravd i kamerarullen",
@@ -64,41 +70,56 @@
         "cookMode": {
           "tab": "Kort 04",
           "title": "Kokkemodus",
-          "body": "Ett trinn av gangen med stor, kjøkkensikker skrift. Trykkflater tilpasset melete tomler, innebygde stoppeklokker."
+          "body": "Ett trinn av gangen med stor, kjøkkensikker skrift. Trykkflater tilpasset melete tomler, innebygde stoppeklokker.",
+          "caption": "Step 5 of 5 — the timer offers itself",
+          "alt": "Cook mode: one step in large type, with a 25-minute timer button"
         },
         "grocery": {
           "tab": "Kort 05",
           "title": "Handleliste",
-          "body": "«9 varer · fra 3 planlagte oppskrifter» — slått sammen, ryddet for duplikater, og den spør før den legger 2 sitroner sammen med 4."
+          "body": "«9 varer · fra 3 planlagte oppskrifter» — slått sammen, ryddet for duplikater, og den spør før den legger 2 sitroner sammen med 4.",
+          "caption": "Two recipes, one garlic — it asks first",
+          "alt": "Grocery list of 18 items from 3 recipes, asking whether to merge garlic cloves"
         },
         "pantry": {
           "tab": "Kort 06",
           "title": "Skafferi",
-          "body": "Vit hva som står i hyllen. Kategorier foldes sammen, det nyeste flyter opp, og handlelisten sjekker mot det du har."
+          "body": "Vit hva som står i hyllen. Kategorier foldes sammen, det nyeste flyter opp, og handlelisten sjekker mot det du har.",
+          "caption": "Sixteen products, folded by shelf",
+          "alt": "Pantry with a Scan a product button and the dairy shelf open"
         },
         "diary": {
           "tab": "Kort 07",
           "title": "Matdagbok",
-          "body": "Loggfør måltider rett fra oppskriftene og skafferiet — ingen dobbelttasting. Trendene viser uken din helt uten dårlig samvittighet."
+          "body": "Loggfør måltider rett fra oppskriftene og skafferiet — ingen dobbelttasting. Trendene viser uken din helt uten dårlig samvittighet.",
+          "caption": "A Tuesday, 667 left",
+          "alt": "Food diary for one day: 1533 of 2200 kcal, breakfast logged"
         },
         "barcode": {
           "tab": "Kort 08",
           "title": "Strekkodeskanner",
-          "body": "Rett kameraet mot pakken. Open Food Facts fyller inn varen og næringsinnholdet — de fleste land er dekket."
+          "body": "Rett kameraet mot pakken. Open Food Facts fyller inn varen og næringsinnholdet — de fleste land er dekket.",
+          "caption": "One scan, straight off the label",
+          "alt": "A product page filled from Open Food Facts, nutrition per 100 g"
         },
         "nutrition": {
           "tab": "Kort 09",
           "title": "Næringssporing",
-          "body": "Energi, makroer og mikroer per dag, uke og år — med dekning du faktisk kan se, ikke bare tørre summer."
+          "body": "Energi, makroer og mikroer per dag, uke og år — med dekning du faktisk kan se, ikke bare tørre summer.",
+          "caption": "Three months, 78 of 87 days logged",
+          "alt": "Trends: three months of daily energy bars and a records list"
         }
       }
     },
     "pocket": {
       "title": "Boksen, rett i lomma.",
       "lede": "Oppskrifter uten bilde får et arvet fargekart på omslaget, bestemt av tittelen så det aldri endrer seg. Søk, filtre og hyllene dine — én tommel, én skjerm.",
-      "pointBarcode": "Strekkodeskanner med Open Food Facts i ryggen — de fleste land er dekket",
-      "pointTrends": "Næringstrender for dag, uke og år — helt uten dårlig samvittighet",
-      "pointTheme": "Stitch Slate om dagen, Midnight om natten"
+      "pointTiles": "Tag tiles you name yourself — Favorites first, then your own",
+      "pointCovers": "No photo? The tile wears the tag's icon on a colour picked from the title — it never changes",
+      "pointTheme": "Stitch Slate om dagen, Midnight om natten",
+      "note": "same book, lights off",
+      "dayAlt": "The cookbook in the light theme, Stitch Slate",
+      "nightAlt": "The cookbook in the dark theme, Midnight"
     },
     "rescue": {
       "heading": "Én redningsaksjon, fra start til slutt",
@@ -158,6 +179,15 @@
       "ads": "Ingen annonser, intet salg eller deling av data med datameglere.",
       "storing": "Ingen lagring av oppskriftene dine på våre servere."
     },
+    "websiteTitle": "This website",
+    "websiteBody": "This website is separate from the app. It counts nothing unless you say yes. If you do, Google Analytics sets a cookie and reports which pages you opened, roughly which country you are in, and what device you used. Nothing else. It never sees your name or email, and it never touches your recipes.",
+    "websiteStatus": {
+      "granted": "Right now: your visits are being counted.",
+      "denied": "Right now: your visits are not being counted.",
+      "none": "You have not answered yet, so nothing is being counted."
+    },
+    "websiteOptIn": "Count my visits",
+    "websiteOptOut": "Stop counting me",
     "payTitle": "Betaling",
     "payBody": "Kjøp håndteres gjennom Google Play. Vi mottar kjøpstokenet for å låse opp appen og holde styr på AI-kvoten — Google tar seg av betalingsdetaljene, vi ser dem aldri.",
     "questionsTitle": "Spørsmål",

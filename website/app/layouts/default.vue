@@ -45,6 +45,7 @@ const localeItems = computed(() =>
           <NuxtLink :to="localePath({ path: '/', hash: '#cards' })" class="tab tab-alt" style="transform: translateY(3px)">{{ $t('layout.tabCards') }}</NuxtLink>
           <NuxtLink :to="localePath({ path: '/', hash: '#price' })" class="tab" style="transform: translateY(2px)">{{ $t('layout.tabPrice') }}</NuxtLink>
           <NuxtLink :to="localePath({ path: '/', hash: '#yours' })" class="tab tab-alt" style="transform: translateY(4px)">{{ $t('layout.tabYours') }}</NuxtLink>
+          <NuxtLink :to="localePath('/contact')" class="tab" style="transform: translateY(2px)">{{ $t('layout.contact') }}</NuxtLink>
         </nav>
         <div class="lid-actions">
           <UDropdownMenu v-if="showLanguagePicker" :items="localeItems">
@@ -143,7 +144,7 @@ const localeItems = computed(() =>
 .tabs { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
 .tab {
   display: block;
-  padding: 8px 16px 10px;
+  padding: 8px 13px 10px;
   border-radius: 10px 10px 0 0;
   background: var(--box-tab);
   border: 1px solid var(--box-line);

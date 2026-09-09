@@ -10,7 +10,14 @@
     "footLine": "Prjónað og bakað af",
     "privacy": "Persónuvernd",
     "terms": "Skilmálar",
-    "contact": "Hafa samband"
+    "contact": "Hafa samband",
+    "translationNotice": "This page is a translation and may lag behind the English original. If anything differs — especially in Terms or Privacy — the English version governs."
+  },
+  "cookies": {
+    "body": "The GDPR consent cookie: Just counting visitors and roughly from where, no other hidden ingredients.",
+    "more": "More in the privacy note.",
+    "accept": "Count my visit",
+    "decline": "No thanks"
   },
   "index": {
     "seo": {
@@ -63,41 +70,56 @@
         "cookMode": {
           "tab": "Spjald 04",
           "title": "Eldunarhamur",
-          "body": "Eitt skref í einu með stóru, eldhúsheldu letri. Snertisvæði sniðin fyrir hveitiputta, tímamælar innbyggðir."
+          "body": "Eitt skref í einu með stóru, eldhúsheldu letri. Snertisvæði sniðin fyrir hveitiputta, tímamælar innbyggðir.",
+          "caption": "Step 5 of 5 — the timer offers itself",
+          "alt": "Cook mode: one step in large type, with a 25-minute timer button"
         },
         "grocery": {
           "tab": "Spjald 05",
           "title": "Innkaupalisti",
-          "body": "„9 vörur · úr 3 skipulögðum uppskriftum“ — sameinað, án tvítekninga, og hann spyr áður en 2 sítrónur eru lagðar saman við 4."
+          "body": "„9 vörur · úr 3 skipulögðum uppskriftum“ — sameinað, án tvítekninga, og hann spyr áður en 2 sítrónur eru lagðar saman við 4.",
+          "caption": "Two recipes, one garlic — it asks first",
+          "alt": "Grocery list of 18 items from 3 recipes, asking whether to merge garlic cloves"
         },
         "pantry": {
           "tab": "Spjald 06",
           "title": "Búrið",
-          "body": "Veistu hvað er til í hillunni. Flokkar leggjast saman, það nýlega flýtur upp og innkaupalistinn ber sig saman við búrið."
+          "body": "Veistu hvað er til í hillunni. Flokkar leggjast saman, það nýlega flýtur upp og innkaupalistinn ber sig saman við búrið.",
+          "caption": "Sixteen products, folded by shelf",
+          "alt": "Pantry with a Scan a product button and the dairy shelf open"
         },
         "diary": {
           "tab": "Spjald 07",
           "title": "Matardagbók",
-          "body": "Skráðu máltíðir beint úr uppskriftunum og búrinu — ekkert tvíverk. Þróunin sýnir vikuna þína án samviskubits."
+          "body": "Skráðu máltíðir beint úr uppskriftunum og búrinu — ekkert tvíverk. Þróunin sýnir vikuna þína án samviskubits.",
+          "caption": "A Tuesday, 667 left",
+          "alt": "Food diary for one day: 1533 of 2200 kcal, breakfast logged"
         },
         "barcode": {
           "tab": "Spjald 08",
           "title": "Strikamerkjaskanni",
-          "body": "Beindu honum að umbúðunum. Open Food Facts fyllir inn vöruna og næringargildin — flest lönd studd."
+          "body": "Beindu honum að umbúðunum. Open Food Facts fyllir inn vöruna og næringargildin — flest lönd studd.",
+          "caption": "One scan, straight off the label",
+          "alt": "A product page filled from Open Food Facts, nutrition per 100 g"
         },
         "nutrition": {
           "tab": "Spjald 09",
           "title": "Næringarskráning",
-          "body": "Orka, orkuefni og snefilefni eftir degi, viku og ári — með þekju sem þú sérð í alvöru, ekki bara samtölur."
+          "body": "Orka, orkuefni og snefilefni eftir degi, viku og ári — með þekju sem þú sérð í alvöru, ekki bara samtölur.",
+          "caption": "Three months, 78 of 87 days logged",
+          "alt": "Trends: three months of daily energy bars and a records list"
         }
       }
     },
     "pocket": {
       "title": "Kassinn, í vasanum.",
       "lede": "Uppskriftir án myndar fá kápu í arf — litastigul sem titillinn velur, svo hún breytist aldrei. Leit, síur og hillurnar þínar — einn þumall, einn skjár.",
-      "pointBarcode": "Strikamerkjaskanni með Open Food Facts að baki — flest lönd studd",
-      "pointTrends": "Næringarþróun eftir degi, viku og ári — ekkert samviskubit",
-      "pointTheme": "Stitch Slate á daginn, Midnight á nóttunni"
+      "pointTiles": "Tag tiles you name yourself — Favorites first, then your own",
+      "pointCovers": "No photo? The tile wears the tag's icon on a colour picked from the title — it never changes",
+      "pointTheme": "Stitch Slate á daginn, Midnight á nóttunni",
+      "note": "same book, lights off",
+      "dayAlt": "The cookbook in the light theme, Stitch Slate",
+      "nightAlt": "The cookbook in the dark theme, Midnight"
     },
     "rescue": {
       "heading": "Ein björgun, frá upphafi til enda",
@@ -132,5 +154,90 @@
       "slipSend": "Senda afrit",
       "envelope": "Þín eign · Prentanleg · Færanleg"
     }
+  },
+  "privacy": {
+    "seo": {
+      "title": "Privacy — MyReciBook",
+      "description": "Your recipes live on your phone, not with us. What stays local, what the AI rescue sends and why, and what MyReciBook never does."
+    },
+    "stamp": "And it's as simple as that",
+    "title": "Privacy",
+    "meta": "The short version: your recipes live on your phone, not with us.",
+    "localTitle": "What stays on your phone",
+    "localBody": "Your cookbook — recipes, photos, pantry, food diary, tags — is plain files in a folder <strong>you</strong> choose on your device. We have no server that stores them, no account that holds them. Delete the app and the files are still yours.",
+    "leavesTitle": "What leaves your phone, and why",
+    "leaves": {
+      "rescues": "<strong>AI rescues.</strong> When you import a screenshot, link or photo, its content is sent to our extraction service, which passes it to Google's Gemini model to be structured into a recipe, and hands the result back. It is used to answer that one request. We do not keep it.",
+      "counter": "<strong>The rescue counter.</strong> To count AI rescues against your included 1,200 we key the tally to a one-way hash of your Play purchase token. We cannot read your identity out of it.",
+      "barcodes": "<strong>Barcodes.</strong> Scanning a package queries the Open Food Facts database for that barcode.",
+      "crash": "<strong>Crash reports.</strong> On by default so we can fix what breaks. Before anything is sent we strip out API keys, tokens, file names and folder paths — an error message can still carry a fragment of the text that broke, which is what makes it fixable. You can turn it off in Settings.",
+      "cloud": "<strong>Your own cloud, if you connect it.</strong> Backup and export to Google Drive or Dropbox go to <strong>your</strong> account, under your control. We never see those files."
+    },
+    "neverTitle": "What we never do",
+    "never": {
+      "accounts": "No accounts, no sign-up, no email collection.",
+      "ads": "No ads, no selling or sharing data with data brokers.",
+      "storing": "No storing your recipes on our servers."
+    },
+    "websiteTitle": "This website",
+    "websiteBody": "This website is separate from the app. It counts nothing unless you say yes. If you do, Google Analytics sets a cookie and reports which pages you opened, roughly which country you are in, and what device you used. Nothing else. It never sees your name or email, and it never touches your recipes.",
+    "websiteStatus": {
+      "granted": "Right now: your visits are being counted.",
+      "denied": "Right now: your visits are not being counted.",
+      "none": "You have not answered yet, so nothing is being counted."
+    },
+    "websiteOptIn": "Count my visits",
+    "websiteOptOut": "Stop counting me",
+    "payTitle": "Payment",
+    "payBody": "Purchases run through Google Play. We receive the purchase token to unlock the app and meter the AI cap — Google handles the payment details, we never see them.",
+    "questionsTitle": "Questions",
+    "questionsBody": "Write us — see the {link}.",
+    "questionsLink": "contact card"
+  },
+  "terms": {
+    "seo": {
+      "title": "Terms — MyReciBook",
+      "description": "The deal in plain language: buy MyReciBook once, own it. What the included AI recipe rescues cover."
+    },
+    "stamp": "So there we have it",
+    "title": "Terms",
+    "dealTitle": "The deal",
+    "dealBody": "You buy MyReciBook once on Google Play and it is yours: the cookbook, grocery list, pantry, barcode scanner, nutrition tracker, data export and cloud backup — no subscription and no account and future updates are free.",
+    "rescuesTitle": "AI recipe rescues",
+    "rescuesBody": "An AI recipe rescue turns a screenshot, a link or a photo into a structured recipe. Your purchase includes 1,200 of them. They do not expire and nothing resets — when they run out you can top up another 600 for $5, or plug in your own Google Gemini API key and run the AI directly at your own cost. Typing recipes in yourself is always unlimited and never counted. The count exists so one purchase can pay for its own AI bill; an \"unlimited\" AI is not something anyone can promise honestly, but I will strive to offer the lowest and efficient cost to Users with best results.",
+    "contentTitle": "Your content",
+    "contentBody": "Recipes you import or write are yours to collect, hoard and back up. None of them is gatekept, landlorded or locked behind secret costs or clouds — the data is yours, fully and truly. Respect the rights of recipe authors when you share exports; MyReciBook is a filing box, not a publisher.",
+    "takedownTitle": "Takedown requests",
+    "takedownBody": "If you believe anything published on this site or in our store listing uses material you own or have trademarked, write to {email}. Tell us what it is and where, and we will review it and take it down promptly.",
+    "imperfectTitle": "Nothing is perfect",
+    "imperfectBody": "The AI reads carefully, but not perfectly — you review every rescue before it is saved, and keeping your own collection tidy and backed up is your call. The app is provided as-is, and crash reports are what help us fix what breaks.",
+    "personBody": "There is a real person behind it, though. If something breaks, if you land in an odd corner, or if you want something the app does not do yet — write. Requests, suggestions and special cases are all welcome, and customers get an answer."
+  },
+  "contact": {
+    "seo": {
+      "title": "Contact — MyReciBook",
+      "description": "Found a bug, got a suggestion, or want to tell us what belongs in the box next? Write — a person reads it."
+    },
+    "title": "Contact",
+    "meta": "From the kitchen of · Merkurial-Studio",
+    "lede": "Found a bug, got a suggestion, or want to tell us what belongs in the box next? <br>Write me — Always willing to do better.",
+    "sent": "Sent — thank you. You will hear back from a person, not a robot.",
+    "fieldName": "Name",
+    "fieldEmail": "Email",
+    "fieldMessage": "Message",
+    "invalid": "Fill in your name, a working email and a few words, then send.",
+    "failed": "That did not go through. Try again, or write to the address below.",
+    "send": "Send",
+    "sending": "Sending…",
+    "fallback": "Or write straight to {email}"
+  },
+  "error": {
+    "seo": {
+      "title": "Not in the box — MyReciBook"
+    },
+    "cardNo": "RECIPE Nº {code}",
+    "title": "Not in the box.",
+    "body": "This card must have been lent to a neighbor and never returned. The rest of the box is where you left it.",
+    "cta": "Back to the box"
   }
 }

@@ -1,24 +1,19 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
-## 2026-09-09 — a phone that lives on the laptop
+## 2026-09-09 — the website gets its photographs, and a Contact tab on the lid
 
-- Shipped: the emulator proven end to end — pixel_7_api_35 boots, the app builds,
-  installs and launches on it, and screenshots, video, screen-reading and taps
-  all work. hw.keyboard turned on. A profile APK with dev.env is built, which is
-  the one without the DEBUG ribbon.
-- Found: the emulator was installed all along, just missing from PATH — it sits
-  at ~/Android/Sdk/emulator. A fresh emulator is empty, so seeded content is
-  what stands between here and usable screenshots.
-- Fixed: the welcome screen's "a oopsie" is now "an oopsie". The impossible
-  myrecibook@google.com address fixed on main too, not just the branch.
-- Arnar: strike the tester marketing, he will not hand-edit a seat counter · he
-  is a trained chef who never cooks from recipes, so his own use of the app is
-  the diary and nutrition tracking, built to escape MyFitnessPal's price · he
-  will generate recipe photos rather than shoot them.
-- UNFINISHED: seed the emulator with recipes, pantry and diary once the photos
-  arrive, then reshoot the website's "pocket" section around pantry and barcode.
-  Branch `tester-outreach` still unmerged. Four edits uncommitted on main.
+- Shipped: eighteen emulator shots, light and dark; a print under each of the
+  six feature cards; the pocket section as two phones, day and night; a Contact
+  tab; copy trimmed to what the app does. Release .aab 0.21.0+45 built for the
+  closed track. New tools: shoot_emulator.sh, publish_play.sh, website render.mjs.
+- Broke: the emulator camera is a test pattern, so the barcode card shows the
+  product page a scan fills in. The app searches titles only; copy now says so.
+- Arnar: full creative freedom on the promo · a Contact tab · checkpoint, deploy,
+  prune tester-outreach, push main · tag and ship the app so testers watch the
+  update arrive from Play.
+- UNFINISHED: the Play upload — no service account yet, so the .aab goes up by
+  hand in the Play Console; then watch the Store app for the update.
 
 ## 2026-09-09 — a stocked phone on the laptop, and the bar comes off the page
 
@@ -42,6 +37,25 @@
   website card screenshots, the "pocket" section rebuilt around pantry and
   barcode, and card 05's copy. No version bump: the pill and the tag glyphs
   have been seen on the emulator only, never on the phone.
+
+## 2026-09-09 — a phone that lives on the laptop
+
+- Shipped: the emulator proven end to end — pixel_7_api_35 boots, the app builds,
+  installs and launches on it, and screenshots, video, screen-reading and taps
+  all work. hw.keyboard turned on. A profile APK with dev.env is built, which is
+  the one without the DEBUG ribbon.
+- Found: the emulator was installed all along, just missing from PATH — it sits
+  at ~/Android/Sdk/emulator. A fresh emulator is empty, so seeded content is
+  what stands between here and usable screenshots.
+- Fixed: the welcome screen's "a oopsie" is now "an oopsie". The impossible
+  myrecibook@google.com address fixed on main too, not just the branch.
+- Arnar: strike the tester marketing, he will not hand-edit a seat counter · he
+  is a trained chef who never cooks from recipes, so his own use of the app is
+  the diary and nutrition tracking, built to escape MyFitnessPal's price · he
+  will generate recipe photos rather than shoot them.
+- UNFINISHED: seed the emulator with recipes, pantry and diary once the photos
+  arrive, then reshoot the website's "pocket" section around pantry and barcode.
+  Branch `tester-outreach` still unmerged. Four edits uncommitted on main.
 
 ## 2026-09-09 — the test kitchen is struck, and a mailbox that never existed
 
@@ -125,4 +139,3 @@
 - Found: OffClient does barcode lookup only — receipt→OFF name search is new code.
 - UNFINISHED: PoC slice one continues in the worktree from 1b's test → 1c;
   conductor files are edited on main only.
-

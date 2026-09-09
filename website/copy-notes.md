@@ -13,8 +13,10 @@
 - **$25** — the number only. Pay-once stands (grilled, in code:
   proxy/lib/usage_counter.dart — two weeks free = AI grace window, 1200/year
   = rescue cap, not money). Exact price tag still Arnar's to name.
-- **Grocery list card** ("merged, deduplicated, asks before combining") — in
-  the bet, not shipped as described.
+- ~~Grocery list card~~ — SHIPPED as described and photographed 2026-09-09:
+  the emulator's list reads "18 items · from 3 recipes" and shows the
+  "Same thing?" merge card. Card 05 now quotes the real header; "planned"
+  dropped from the copy because the meal planner is a placeholder (Arnar).
 - **"1,200 AI recipe rescues"** — TRUE (kDefaultYearlyCap). "Top-ups if you
   run out" = billing seam, unstarted — the one soft claim on that card.
 - **"we read cursive"** — handwriting import untested as a claim; charming
@@ -38,6 +40,16 @@
   · 8/9 link rescue w/ photo-cover toggle + auto tags · 10/11 + 12 product pages.
 - Weight note: cookbook.png is 728 KB — squeeze to WebP via @nuxt/image
   before deploy.
+
+## Screenshots — emulator set (docs/MyReciBook-Emulator-Shots/, 2026-09-09)
+- Shot by tools/shoot_emulator.sh off the seeded AVD, light + dark, clean
+  status bar (demo mode). scripts/shots.mjs crops each card's window.
+- Cards 04–09 each show a print of the screen behind the claim; the pocket
+  section is the cookbook twice, Stitch Slate in front, Midnight behind.
+- The barcode card shows the product page a scan fills in, not the scanner:
+  the emulator's camera is a test pattern, and the page is the payoff.
+- The pocket copy no longer claims barcode/trends (their cards do) and says
+  search narrows by title — the app searches titles only.
 
 ## Structure notes
 - Privacy + Terms pages carry a "Draft — not yet in force" stamp until
