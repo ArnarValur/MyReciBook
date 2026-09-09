@@ -773,6 +773,24 @@ def diary_entry(rng, ref, name, brand, label, grams, kcal_per_100, day, hour) ->
     }
 
 
+# Photos are matched to recipes by filename slug. These are the ones whose
+# filename says the dish rather than the recipe title — Arnar's own names from
+# docs/MyReciBook Recipes Screenshots/. Add a line here rather than asking
+# anyone to rename a photo.
+PHOTO_ALIASES = {
+    "bounty-bars": "Homemade Bounty Bars",
+    "casio-pepe": "Cacio e Pepe, Properly",
+    "dads-chilli": "Dad's Chilli, Written Down at Last",
+    "focaccia": "Focaccia With No Kneading At All",
+    "lemon-teramisu": "Lemon-Blueberry Tiramisu",
+    "miso-bread": "Miso Butter Mushrooms on Toast",
+    "roast-chicken": "Roast Chicken and the Stock That Follows It",
+    "tomato-bread": "Tomato and Cottage Cheese Sandwich",
+    "tomato-soup": "Tomato Soup Worth the Tin",
+    "white-muffins": "White Chocolate and Rhubarb Muffins",
+}
+
+
 def collect_photos(folder: Path | None) -> dict[str, Path]:
     if folder is None:
         return {}
@@ -780,8 +798,11 @@ def collect_photos(folder: Path | None) -> dict[str, Path]:
         sys.exit(f"--photos: {folder} is not a folder")
     out = {}
     for path in sorted(folder.iterdir()):
-        if path.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
-            out[slug(path.stem)] = path
+        if path.suffix.lower() not in (".jpg", ".jpeg", ".png", ".webp"):
+            continue
+        stem = slug(path.stem)
+        title = PHOTO_ALIASES.get(stem)
+        out[slug(title) if title else stem] = path
     return out
 
 
