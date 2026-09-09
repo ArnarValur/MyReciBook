@@ -3,10 +3,10 @@
 > **Updated:** 2026-09-09
 
 ## 📍 Now
-- Phase: closed test, Play review PASSED. Play holds 0.20.0+42. main is
-  0.21.0+45: release .aab built + tagged 2026-09-09 for the closed track.
-  Upload is BY HAND until a Play service account exists (Arnar's console);
-  tools/publish_play.sh then does it — setup note in its header.
+- Phase: closed test, Play review PASSED. 0.21.0+45 is on the closed "alpha"
+  track since 2026-09-09, uploaded from the terminal by tools/publish_play.sh
+  (service account play-publisher, key in ~/keystores). Internal still holds
+  42. Arnar's phone is on the Play build; the Store app shows the update.
 - Website carries the emulator promo set: a print under each of the six
   cards, the pocket as two phones (day front, night behind), a Contact tab.
   Copy claims only what the app does (search by title; barcode card = the
@@ -25,7 +25,7 @@
 
 ## 🚀 Active tracks
 - mvp-build — THE focus. Open: Play listing + welcome slide shots (emulator),
-  billing seam, App Check enforcement on the server, Play service account.
+  billing seam, App Check enforcement on the server.
 - market — open: Q2 export recon (Arnar), Q5 steal list, Q6 cadence. MyFitnessPal
   is the diary half's real rival; it is in NO dossier.
 

@@ -13,8 +13,8 @@
       renders any page to PNG with the colour scheme forced. Locales at key
       parity in English. Deployed to prod the same day.
 - [x] Release .aab 0.21.0+45 built 2026-09-09 via app/build-release.sh,
-      tagged `0.21.0+45`, for the closed track. Uploaded by hand in the Play
-      Console (no service account yet).
+      tagged `0.21.0+45`, and put on the closed "alpha" track from the
+      terminal the same day — the first CLI publish.
 - [x] Website analytics 2026-09-08. Google Analytics 4 on the prod property
       (web stream "MyReciBook Website", measurement id G-M301GKVM58 — same
       property the Android app reports into, so site and app sit in one
@@ -228,12 +228,12 @@
 - [x] Closed test on Play — review PASSED (Arnar 2026-09-03; was said in chat
       earlier, never written down). Recruiting is not an mvp-build item.
 - [ ] Billing — one-time purchase, hard paywall. Seam exists, nothing built.
-- [ ] CLI publishing to Play: tools/publish_play.sh written 2026-09-09 (edit →
-      upload bundle → track → commit, over the Play Developer API with a
-      service-account token). Needs, in the Play Console (Arnar's login): a
-      service account play-publisher@myrecibook-prod invited with release
-      rights, and the Android Developer API enabled on myrecibook-prod. Until
-      then every bundle goes up by hand.
+- [x] CLI publishing to Play 2026-09-09: tools/publish_play.sh (edit → upload
+      bundle → track → commit, over the Play Developer API). Service account
+      play-publisher@myrecibook-prod, key in ~/keystores/play-publisher.json,
+      invited by Arnar with "release to testing tracks" + "manage testing
+      tracks"; Android Developer API enabled. Track ids: internal · alpha (the
+      closed test) · beta · production. Usage: tools/publish_play.sh <aab> alpha.
 - [ ] Play listing screenshots + welcome slide shots — now shootable from the
       stocked emulator (tools/shoot_emulator.sh); the website set is the start.
 

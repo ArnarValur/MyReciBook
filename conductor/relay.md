@@ -12,8 +12,8 @@
 - Arnar: full creative freedom on the promo · a Contact tab · checkpoint, deploy,
   prune tester-outreach, push main · tag and ship the app so testers watch the
   update arrive from Play.
-- UNFINISHED: the Play upload — no service account yet, so the .aab goes up by
-  hand in the Play Console; then watch the Store app for the update.
+- UNFINISHED: watch the Store app on the phone show the update to 0.21.0+45 —
+  the first terminal publish landed on the alpha track the same evening.
 
 ## 2026-09-09 — a stocked phone on the laptop, and the bar comes off the page
 
