@@ -97,6 +97,12 @@ class RbTokens extends ThemeExtension<RbTokens> {
   final List<BoxShadow> modalShadow; // elev-2
   final List<BoxShadow> glowPrimary; // focus / selected
   final List<BoxShadow> glowFab;
+
+  /// Under a floating glass surface — the nav pill. Two shadows: a tight one
+  /// for contact, a wide one for float. elev-2 alone reads flat here because
+  /// it is tuned for a modal over a scrim, not a pill on the page colour
+  /// (Arnar 2026-09-09: "it really flats out on the theme").
+  final List<BoxShadow> glassShadow;
   final Color hairline; // outline-variant @ ~50%
   final Color separator; // outline-variant @ ~35%
   final Color glassFill;
@@ -107,6 +113,7 @@ class RbTokens extends ThemeExtension<RbTokens> {
     required this.modalShadow,
     required this.glowPrimary,
     required this.glowFab,
+    required this.glassShadow,
     required this.hairline,
     required this.separator,
     required this.glassFill,
@@ -130,6 +137,10 @@ class RbTokens extends ThemeExtension<RbTokens> {
         spreadRadius: 2,
         offset: Offset(0, 8),
       ),
+    ],
+    glassShadow: [
+      BoxShadow(color: Color(0x1424389C), blurRadius: 6, offset: Offset(0, 2)),
+      BoxShadow(color: Color(0x2E24389C), blurRadius: 24, offset: Offset(0, 10)),
     ],
     hairline: Color(0x80C5C5D4),
     separator: Color(0x59C5C5D4),
@@ -155,10 +166,16 @@ class RbTokens extends ThemeExtension<RbTokens> {
         offset: Offset(0, 8),
       ),
     ],
+    // Dark elevation is surface tint more than shadow, so the pill leans on a
+    // brighter rim than the light theme needs; the shadow only anchors it.
+    glassShadow: [
+      BoxShadow(color: Color(0x59000000), blurRadius: 6, offset: Offset(0, 2)),
+      BoxShadow(color: Color(0x73000000), blurRadius: 24, offset: Offset(0, 10)),
+    ],
     hairline: Color(0x80454652),
     separator: Color(0x59454652),
     glassFill: Color(0x59000000),
-    glassBorder: Color(0x1FFFFFFF),
+    glassBorder: Color(0x33FFFFFF),
   );
 
   @override

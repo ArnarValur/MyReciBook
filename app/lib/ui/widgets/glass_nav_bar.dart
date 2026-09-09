@@ -12,12 +12,13 @@ import 'logo_mark.dart';
 import 'skin.dart';
 
 class GlassNavBar extends StatelessWidget {
-  const GlassNavBar(
-      {super.key,
-      required this.active,
-      this.onTab,
-      this.onFab,
-      this.queueBadge = 0});
+  const GlassNavBar({
+    super.key,
+    required this.active,
+    this.onTab,
+    this.onFab,
+    this.queueBadge = 0,
+  });
 
   final int active;
   final ValueChanged<int>? onTab;
@@ -38,32 +39,45 @@ class GlassNavBar extends StatelessWidget {
 
     // `iconBuilder` lets a slot draw something that is not a Material glyph —
     // Cookbook uses the logo's book so the tab and the app icon are one mark.
-    Widget item(int i, IconData icon, String label,
-        {int badge = 0, Widget Function(Color color)? iconBuilder}) {
+    Widget item(
+      int i,
+      IconData icon,
+      String label, {
+      int badge = 0,
+      Widget Function(Color color)? iconBuilder,
+    }) {
       final selected = i == active;
       final color = selected ? scheme.primary : scheme.onSurfaceVariant;
-      Widget ic = iconBuilder?.call(color) ??
+      Widget ic =
+          iconBuilder?.call(color) ??
           Icon(icon, size: 22, fill: selected ? 1 : 0, color: color);
       if (badge > 0) {
         ic = Badge.count(
-            count: badge,
-            backgroundColor: scheme.primary,
-            textColor: scheme.onPrimary,
-            child: ic);
+          count: badge,
+          backgroundColor: scheme.primary,
+          textColor: scheme.onPrimary,
+          child: ic,
+        );
       }
       return Expanded(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onTab == null ? null : () => onTab!(i),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            ic,
-            const SizedBox(height: 2),
-            Text(label,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall
-                    ?.copyWith(fontSize: 10.5, letterSpacing: 0.2, color: color)),
-          ]),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ic,
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontSize: 10.5,
+                  letterSpacing: 0.2,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -76,50 +90,70 @@ class GlassNavBar extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: rb.glassFill,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: rb.glassBorder),
+              // The lift has to sit OUTSIDE the ClipRRect — a shadow drawn on
+              // the clipped child is clipped away with it, which is why the
+              // pill used to read flat against the page (Arnar 2026-09-09).
+              // rb.glassShadow: a tight contact shadow plus a wide float one.
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: rb.glassShadow,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: rb.glassFill,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: rb.glassBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          item(
+                            0,
+                            Icons.menu_book_rounded,
+                            'Cookbook',
+                            badge: kUnlockTabEnabled ? queueBadge : 0,
+                            iconBuilder: (color) => LogoMark(
+                              size: 22,
+                              color: color,
+                              withSteam: false,
+                            ),
+                          ),
+                          item(1, Icons.checklist_rounded, 'Grocery'),
+                          const SizedBox(width: 60),
+                          // Slot 2 history: Meal plan (engine-less, hidden) →
+                          // Import queue (2026-08-06 hands-on) → Unlock
+                          // (2026-08-15, Arnar: sell the app here; the queue
+                          // lives on as the pushed batch route + Cookbook strip)
+                          // → Pantry POC borrowing the slot on dev builds
+                          // (2026-08-17, kPantryEnabled) → "Food": the diary and
+                          // the pantry behind one segmented control
+                          // (2026-08-19, kDiaryEnabled).
+                          if (kDiaryEnabled)
+                            item(2, Icons.restaurant_rounded, 'Food')
+                          else if (kPantryEnabled)
+                            item(2, Icons.kitchen_rounded, 'Pantry')
+                          else if (kUnlockTabEnabled)
+                            item(2, Icons.lock_open_rounded, 'Unlock')
+                          else
+                            item(
+                              2,
+                              Icons.download_rounded,
+                              'Queue',
+                              badge: queueBadge,
+                            ),
+                          item(3, Icons.settings_rounded, 'Settings'),
+                        ],
+                      ),
                     ),
-                    child: Row(children: [
-                      item(0, Icons.menu_book_rounded, 'Cookbook',
-                          badge: kUnlockTabEnabled ? queueBadge : 0,
-                          iconBuilder: (color) => LogoMark(
-                              size: 22, color: color, withSteam: false)),
-                      item(1, Icons.checklist_rounded, 'Grocery'),
-                      const SizedBox(width: 60),
-                      // Slot 2 history: Meal plan (engine-less, hidden) →
-                      // Import queue (2026-08-06 hands-on) → Unlock
-                      // (2026-08-15, Arnar: sell the app here; the queue
-                      // lives on as the pushed batch route + Cookbook strip)
-                      // → Pantry POC borrowing the slot on dev builds
-                      // (2026-08-17, kPantryEnabled) → "Food": the diary and
-                      // the pantry behind one segmented control
-                      // (2026-08-19, kDiaryEnabled).
-                      if (kDiaryEnabled)
-                        item(2, Icons.restaurant_rounded, 'Food')
-                      else if (kPantryEnabled)
-                        item(2, Icons.kitchen_rounded, 'Pantry')
-                      else if (kUnlockTabEnabled)
-                        item(2, Icons.lock_open_rounded, 'Unlock')
-                      else
-                        item(2, Icons.download_rounded, 'Queue',
-                            badge: queueBadge),
-                      item(3, Icons.settings_rounded, 'Settings'),
-                    ]),
                   ),
                 ),
               ),
-              Positioned(
-                top: 0,
-                child: GradientFab(onPressed: onFab ?? () {}),
-              ),
+              Positioned(top: 0, child: GradientFab(onPressed: onFab ?? () {})),
             ],
           ),
         ),
