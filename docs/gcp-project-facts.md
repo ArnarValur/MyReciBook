@@ -32,6 +32,7 @@ The project number is also the prefix of the Drive OAuth client already in
 | Firebase | linked 2026-08-31, environment type **Production** |
 | Billing | linked 2026-08-31, account `01C8DA-8CC208-A7AA68` |
 | Cloud Run | `myrecibook-website`, europe-west1, live 2026-08-31 |
+| Play publisher | service account `play-publisher@myrecibook-prod.iam.gserviceaccount.com`, made 2026-09-09; key at `~/keystores/play-publisher.json` (never in the repo); Android Developer API enabled. Invited in Play Console: PENDING (Arnar) — then `tools/publish_play.sh` uploads bundles |
 
 Website deployed 2026-08-31 via `website/deploy-prod.sh` —
 https://myrecibook-website-283856393795.europe-west1.run.app. Domain mapping
