@@ -1,6 +1,23 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-09 — the test kitchen is struck, and a mailbox that never existed
+
+- Shipped: the twelve-seat closed-test pitch removed from the website — wanted
+  slip, RECIPE Nº 004 section, footer link, `testers` config, all strings. The
+  `launch.onPlay` switch stays; the price button is a dashed "Not on Play yet"
+  until the listing goes live. Contact form's tester tick untouched.
+- Found: contact + terms printed myrecibook@google.com. Nobody can hold an
+  @google.com address — it is Google's staff domain. Fixed to the gmail one the
+  proxy has always delivered to (CONTACT_TO_EMAIL).
+- Arnar: park ouroboros, keep its branch · strike the tester marketing, he will
+  not hand-edit a seat counter · the "pocket" section's words do not match its
+  screenshot, and pantry + barcode deserve a real showing.
+- UNFINISHED: rebuild the "pocket" section around the pantry and barcode
+  screenshots Arnar is gathering. Branch `tester-outreach` is unmerged — the
+  fold to main is his call. Branch `agents/app-overview-and-features` is empty
+  and still there; the delete was permission-blocked.
+
 ## 2026-09-08 — the website learns to count, after one wrong line of glue
 
 - Shipped: Google Analytics 4 on myrecibook.com behind a consent note that
