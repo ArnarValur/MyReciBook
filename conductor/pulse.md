@@ -14,22 +14,20 @@
 - EMULATOR = SECOND HANDSET (pixel_7_api_35; binary off PATH at
   ~/Android/Sdk/emulator; adb pinned to ANDROID_SERIAL=emulator-5554).
   Stock: tools/seed_emulator.py --clear --photos "docs/MyReciBook Recipes
-  Screenshots" --pantry-photos "docs/MyReciBook - Pantry images". Shoot:
-  tools/shoot_emulator.sh; crop: website/scripts/shots.mjs; render the site
-  to PNG: website/scripts/render.mjs. Profile builds (dev.env) have no ribbon.
-- Branch `tester-outreach` DELETED unmerged 2026-09-09 (Arnar: prune). Tip
-  7a8fa5e (contact-form tester tick, onPlay price switch) recoverable by hash.
+  Screenshots" --pantry-photos "docs/MyReciBook - Pantry images". Shoot: tools/
+  shoot_emulator.sh · crop: website/scripts/shots.mjs · render: website/scripts/
+  render.mjs. Profile builds (dev.env) wear no DEBUG ribbon.
+- Branch `tester-outreach` DELETED unmerged (Arnar: prune); tip 7a8fa5e recoverable.
 - PROD LIVE: myrecibook.com on Cloud Run, Firestore eur3, keys in Secret
   Manager, GA4 behind a consent note, Drive OAuth done. App Check registered,
   server does NOT require it. Contact form posts to DEV on purpose.
   Offer = terms: 1,200 grant never refills, top-up 600 for $5.
 
 ## 🚀 Active tracks
-- mvp-build — THE focus. Open: Play listing + welcome slide shots (shootable
-  from the emulator), billing seam, App Check enforcement on the server, Play
-  service account for CLI publishing.
-- market — open: Q2 export recon (Arnar), Q5 steal list, Q6 cadence.
-  MyFitnessPal is the diary half's real rival; it is in NO dossier.
+- mvp-build — THE focus. Open: Play listing + welcome slide shots (emulator),
+  billing seam, App Check enforcement on the server, Play service account.
+- market — open: Q2 export recon (Arnar), Q5 steal list, Q6 cadence. MyFitnessPal
+  is the diary half's real rival; it is in NO dossier.
 
 ## ⚠️ Blockers
 - None open.
