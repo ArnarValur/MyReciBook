@@ -1,6 +1,25 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-09 — a phone that lives on the laptop
+
+- Shipped: the emulator proven end to end — pixel_7_api_35 boots, the app builds,
+  installs and launches on it, and screenshots, video, screen-reading and taps
+  all work. hw.keyboard turned on. A profile APK with dev.env is built, which is
+  the one without the DEBUG ribbon.
+- Found: the emulator was installed all along, just missing from PATH — it sits
+  at ~/Android/Sdk/emulator. A fresh emulator is empty, so seeded content is
+  what stands between here and usable screenshots.
+- Fixed: the welcome screen's "a oopsie" is now "an oopsie". The impossible
+  myrecibook@google.com address fixed on main too, not just the branch.
+- Arnar: strike the tester marketing, he will not hand-edit a seat counter · he
+  is a trained chef who never cooks from recipes, so his own use of the app is
+  the diary and nutrition tracking, built to escape MyFitnessPal's price · he
+  will generate recipe photos rather than shoot them.
+- UNFINISHED: seed the emulator with recipes, pantry and diary once the photos
+  arrive, then reshoot the website's "pocket" section around pantry and barcode.
+  Branch `tester-outreach` still unmerged. Four edits uncommitted on main.
+
 ## 2026-09-09 — the test kitchen is struck, and a mailbox that never existed
 
 - Shipped: the twelve-seat closed-test pitch removed from the website — wanted
