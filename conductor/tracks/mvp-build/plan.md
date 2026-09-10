@@ -228,17 +228,17 @@
 - [x] Testers: one tester (Arnar), in through the closed opt-in link. Recruiting
       more is NOT an mvp-build item (Arnar 2026-09-03).
 - [x] Handset: dev build uninstalled, installed from Play 2026-09-02.
-- [ ] The offer contradicts the engine. Terms (live) say the 1,200 never
+- [x] CLOSED 2026-09-01 (Decision 1 executed, refill deleted, both proxies redeployed). Was: The offer contradicts the engine. Terms (live) say the 1,200 never
       expire and nothing resets; proxy/lib/firestore_ledger.dart:206 does a
       lazy anniversary reset and ships resets_at, which quota_counter_card.dart
       renders as "resets <date>". docs/ai-cap-mechanics.md still documents
       600/year. Arnar decides which is true, then one of the two changes.
-- [ ] 429 says three different things and the app hears one. The proxy answers
+- [x] CLOSED 2026-09-03 (proxy reason word rides ExtractionException; review + batch name all three; import_review_failed_test). Was: 429 says three different things and the app hears one. The proxy answers
       429 for rate_limited, daily_limit and cap_exceeded and sends a written
       message for each; import_review_screen.dart:148 replies "Rate-limited —
       try again shortly" to all three, so a buyer who has spent all 1,200 is
       told to wait forever. Rides the decision above.
-- [ ] postalpha 4d "Fair-use cap reached" preview is stale: 600/600, "this
+- [x] CLOSED 2026-09-03 (promoted to the real cap-reached screen). Was: postalpha 4d "Fair-use cap reached" preview is stale: 600/600, "this
       year", "resets 1 January", no BYOK door. Debug-only, but it is the design
       source for the real screen the item above needs.
 - [x] Filled Cookies card re-rescued on the new prompt — works, verified by
@@ -246,7 +246,7 @@
 - [ ] Handoff remainder: deterministic app-side review flags (digits but no
       qty, " each "/" or " in raw, shared line_id), regression fixtures from
       both runs, prefix-caching check.
-- [ ] Privacy policy URL + Play data safety form. A privacy page and a terms
+- [x] CLOSED 2026-09-01 (privacy URL live on myrecibook.com, data safety filled, Play review passed 2026-09-03). Was: Privacy policy URL + Play data safety form. A privacy page and a terms
       page are drafted and live on the staging site (website/app/pages/
       privacy.vue and terms.vue). What is still missing: Arnar's approval of
       the wording, a public URL that is not the noindex staging one, and the
@@ -302,7 +302,7 @@
 - Top-up decided 2026-08-30 (Arnar): **+1200 rescues, $5 flat, never expires.**
   One pack, round number, no .99 pricing. Details + guard rail in
   docs/ai-cap-mechanics.md §5; scratchpad has the math.
-- [ ] **Quota counter UI (app side)** — the proxy already returns the full
+- [x] CLOSED 2026-09-03 (counter card, sheet line, cap screen built; 0.20.0+43). Was: **Quota counter UI (app side)** — the proxy already returns the full
   `quota` object ({used, cap, grace_used, topup_balance, resets_at,
   grace_until}) in every /extract response; nothing new server-side.
   WIRED 2026-08-30, verified on device: quota parsed from every /extract and
