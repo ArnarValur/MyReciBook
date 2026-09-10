@@ -2,7 +2,10 @@
 // camera page) pops straight into the one-recipe flow; two or more picks
 // surface the designed segmented choice — "One recipe · N shots" vs
 // "N separate recipes" — with the CTA label mirroring it ("Rescue as one
-// recipe" / "Rescue N recipes"). The link door stays post-alpha (D9).
+// recipe" / "Rescue N recipes"). The link door (2a, "Or fetch from the
+// internet") opened 2026-09-10 at Arnar's ask: the row unfolds into a box,
+// pre-filled from the clipboard when a link is sitting there, and pops with
+// the URL — the shell hands it to the same review the share sheet uses.
 //
 // DEVIATIONS (for Arnar to ratify):
 // - 3a draws no manual-entry door — the promise lives on 4c/4d/5b ("Typing
@@ -25,7 +28,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show PlatformException;
+import 'package:flutter/services.dart'
+    show Clipboard, PlatformException, TextInputAction;
 import 'package:provider/provider.dart';
 
 import '../domain/quota.dart';
@@ -53,6 +57,18 @@ class ImportPicked extends ImportChoice {
 class ImportManual extends ImportChoice {
   const ImportManual();
 }
+
+/// A pasted recipe link — the shell opens the link review with it.
+class ImportLink extends ImportChoice {
+  const ImportLink(this.url);
+
+  final String url;
+}
+
+/// The first http(s) link inside pasted text, or null. Same shape the
+/// Android share bridge uses to pull a URL out of a shared caption.
+String? linkIn(String text) =>
+    RegExp(r'https?://\S+').firstMatch(text)?.group(0);
 
 /// Slides up over a 45% scrim; resolves to the user's choice or null.
 Future<ImportChoice?> showImportSheet(
@@ -82,6 +98,41 @@ class _ImportSheetState extends State<_ImportSheet> {
   List<File> _picked = const [];
   bool _separate = false;
   bool _picking = false;
+  bool _linkOpen = false;
+  String? _linkError;
+  final _linkCtl = TextEditingController();
+
+  @override
+  void dispose() {
+    _linkCtl.dispose();
+    super.dispose();
+  }
+
+  /// The link door: unfold the box. A link already on the clipboard lands in
+  /// it, so the common case is one tap and one more.
+  Future<void> _openLink() async {
+    String? clip;
+    try {
+      clip = (await Clipboard.getData(Clipboard.kTextPlain))?.text;
+    } catch (_) {} // no clipboard (tests, odd OEMs) — the box just stays empty
+    if (!mounted) return;
+    final found = clip == null ? null : linkIn(clip);
+    if (found != null) _linkCtl.text = found;
+    setState(() {
+      _linkOpen = true;
+      _linkError = null;
+    });
+  }
+
+  void _submitLink() {
+    final url = linkIn(_linkCtl.text.trim());
+    if (url == null) {
+      setState(() => _linkError = "That doesn't look like a link — it "
+          'should start with http.');
+      return;
+    }
+    Navigator.pop(context, ImportLink(url));
+  }
 
   Future<void> _pick(Future<List<File>> Function() source) async {
     if (_picking) return;
@@ -139,9 +190,11 @@ class _ImportSheetState extends State<_ImportSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
+    // The keyboard rises under the link box: the sheet lifts with it.
+    final inset = MediaQuery.viewInsetsOf(context).bottom;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 26),
+        padding: EdgeInsets.fromLTRB(20, 10, 20, 26 + inset),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,6 +215,8 @@ class _ImportSheetState extends State<_ImportSheet> {
             const SizedBox(height: 12),
             if (_picked.length >= 2)
               ..._selection(theme, scheme)
+            else if (_linkOpen)
+              ..._linkEntry(theme, scheme)
             else
               ..._chooser(theme, scheme),
           ],
@@ -239,6 +294,24 @@ class _ImportSheetState extends State<_ImportSheet> {
             ),
           ),
         ),
+        const SizedBox(height: 14),
+        const SectionLabel('Or fetch from the internet'),
+        const SizedBox(height: 8),
+        _doorRow(
+          theme,
+          scheme,
+          key: const Key('import-link-tile'),
+          icon: Icons.link_rounded,
+          title: 'Paste a link',
+          caption: exhausted ? spentCaption : 'TikTok, IG, blog…',
+          onTap: exhausted ? _capReached : _openLink,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _linkNote,
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
+        ),
         if (widget.camera != null) ...[
           const SizedBox(height: 12),
           Divider(height: 1, color: context.rb.hairline),
@@ -269,6 +342,75 @@ class _ImportSheetState extends State<_ImportSheet> {
           onTap: () => Navigator.pop(context, const ImportManual()),
         ),
       ];
+  }
+
+  // 2a's footnote under the link door, kept honest: a video with the recipe
+  // only spoken aloud has nothing on the page to read.
+  static const _linkNote = 'Links work when the recipe is written on the '
+      "page or in the caption. Screenshots always work — that's why they "
+      'come first.';
+
+  // ── The link door, unfolded ──────────────────────────────────────────────
+
+  List<Widget> _linkEntry(ThemeData theme, ColorScheme scheme) {
+    return [
+      const SectionLabel('Or fetch from the internet'),
+      const SizedBox(height: 8),
+      TextField(
+        key: const Key('import-link-field'),
+        controller: _linkCtl,
+        autofocus: true,
+        keyboardType: TextInputType.url,
+        textInputAction: TextInputAction.go,
+        autocorrect: false,
+        enableSuggestions: false,
+        onChanged: (_) {
+          if (_linkError != null) setState(() => _linkError = null);
+        },
+        onSubmitted: (_) => _submitLink(),
+        decoration: InputDecoration(
+          hintText: 'https://…',
+          prefixIcon: const Icon(Icons.link_rounded),
+          errorText: _linkError,
+          suffixIcon: IconButton(
+            key: const Key('import-link-paste'),
+            tooltip: 'Paste',
+            icon: const Icon(Icons.content_paste_rounded, size: 20),
+            onPressed: () async {
+              String? clip;
+              try {
+                clip = (await Clipboard.getData(Clipboard.kTextPlain))?.text;
+              } catch (_) {}
+              if (!mounted || clip == null || clip.isEmpty) return;
+              final text = clip.trim();
+              setState(() {
+                _linkCtl.text = text;
+                _linkError = null;
+              });
+            },
+          ),
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        _linkNote,
+        style: theme.textTheme.bodySmall
+            ?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
+      ),
+      const SizedBox(height: 16),
+      FilledButton(
+        key: const Key('import-link-cta'),
+        onPressed: _submitLink,
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Rescue from link'),
+            SizedBox(width: 6),
+            Icon(Icons.arrow_forward_rounded, size: 18),
+          ],
+        ),
+      ),
+    ];
   }
 
   Widget _doorRow(

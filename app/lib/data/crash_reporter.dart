@@ -142,6 +142,13 @@ final _uploadScrubbers = <(RegExp, String Function(Match))>[
   // Secrets, in every shape they reach an error string.
   (RegExp(r'key=[A-Za-z0-9_\-]+'), (_) => 'key=…'),
   (RegExp(r'Bearer\s+[A-Za-z0-9._\-]+'), (_) => 'Bearer …'),
+  // An OAuth redirect URL carries a one-time sign-in code and the flow's
+  // state token as query parameters. Seen in Crashlytics 2026-09-03, when the
+  // Drive redirect reached the Navigator as a route (fixed in the manifest).
+  (
+    RegExp(r'\b(code|state|id_token|access_token|refresh_token)=[^&\s"]+'),
+    (m) => '${m.group(1)}=…',
+  ),
   (
     RegExp(r'"(access_token|refresh_token)"\s*:\s*"[^"]*"'),
     (m) => '"${m.group(1)}":"…"',

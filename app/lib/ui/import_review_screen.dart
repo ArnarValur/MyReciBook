@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../data/link_extractor.dart';
 import '../data/saf_store.dart';
 import '../features.dart';
 import '../domain/extractor.dart';
@@ -16,6 +17,7 @@ import '../domain/grocery.dart' show formatQty;
 import '../domain/recipe_tag.dart';
 import '../domain/recipe.dart';
 import '../domain/validate.dart';
+import 'crash_reporting_model.dart';
 import 'library_model.dart';
 import 'manual_entry_screen.dart';
 import 'photo_sources.dart';
@@ -305,6 +307,7 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
       setState(() => _seed(content));
     } on ExtractionException catch (e) {
       if (!mounted) return;
+      _report(e);
       setState(() {
         _phase = _Phase.failed;
         _capReached = e.capExhausted;
@@ -320,6 +323,17 @@ class _ImportReviewScreenState extends State<ImportReviewScreen> {
         _error = 'That one kept its secrets\nExtraction failed — try again.';
       });
     }
+  }
+
+  /// The failure goes down the crash pipe as a non-fatal, so the dashboard
+  /// learns which sites and which refusals people meet. Host only for a
+  /// link; a screen without the model (tests) reports nothing.
+  void _report(ExtractionException e) {
+    final ex = widget.extractor;
+    final host = ex is LinkExtractor ? Uri.tryParse(ex.url)?.host : null;
+    context
+        .read<CrashReportingModel?>()
+        ?.reportRescueFailure(e, mode: ex.mode, host: host);
   }
 
   Future<void> _addImages() async {

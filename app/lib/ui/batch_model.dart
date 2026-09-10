@@ -79,9 +79,14 @@ class BatchItem {
 }
 
 class BatchModel extends ChangeNotifier {
-  BatchModel({required this.extractor, required this.save});
+  BatchModel({required this.extractor, required this.save, this.onFailed});
 
   final Extractor extractor;
+
+  /// Told about every extraction that failed, after the item is marked. The
+  /// shell wires it to the crash pipe (CrashReportingModel.reportRescueFailure);
+  /// null in tests that do not care.
+  final void Function(ExtractionException e)? onFailed;
 
   /// The LibraryModel.saveImported seam — grocery/storage integration rides
   /// its existing onChanged; the batch never touches those layers directly.
@@ -200,6 +205,7 @@ class BatchModel extends ChangeNotifier {
       } on ExtractionException catch (e) {
         item.state = BatchItemState.failed;
         item.error = _failCopy(e);
+        onFailed?.call(e);
         return;
       } catch (_) {
         item.state = BatchItemState.failed;

@@ -17,3 +17,24 @@ Arnar's notes. Fresh page pulled 2026-09-01 (housekeeping session); old page in 
 ## Pointers (decisions that used to live here)
 - Cap + top-up (1200/yr · +1200 for $5 · rise-never-fall) — docs/ai-cap-mechanics.md, printed in terms.
 - Weekend plan 2026-08-21 (stages 1–4) — all shipped; story in relay/pulse-archive.
+
+## 2026-09-10 — the People Inc. wall, and intel on failed rescues (Arnar: note it)
+- allrecipes.com, simplyrecipes.com, seriouseats.com (all People Inc.) answer
+  HTTP 402 to every fetch that is not a real browser — Chrome user agent and
+  browser headers do not pass, and Gemini's own url_context reader is blocked
+  too (tested). bbcgoodfood.com and delish.com still answer 200. The app shows
+  "The site wouldn't let us in"; the AI fallback never runs.
+- Only workaround found: a hidden browser window in the app. Android's built-in
+  WebView (Chrome engine, no new library) loads the link off screen, and on
+  page-finished one line of script hands the page text to the existing
+  LinkExtractor parser. Runs only after the plain fetch is refused (402/403).
+  ~150 lines in the NetBridge + a small Dart fallback. Slower on those sites
+  (full page with ads), and the wall may still raise a human check we cannot
+  click. Not built; Arnar's call.
+- Intel on failed rescues: Arnar wants to know which links fail and why. Hermes'
+  read: the pipe already exists — CrashReporter → Crashlytics, behind the "Send
+  crash reports" toggle, scrubbed. A failed link rescue as a non-fatal report
+  (mode, HTTP status, site host — not the full URL) shows up grouped and counted
+  in the Console, no new collection, no Firestore SDK in the app, no rules. A
+  new Firestore collection buys the same facts for more moving parts. Dev-only
+  fuller detail is possible behind a build flag. Not built; Arnar decides.

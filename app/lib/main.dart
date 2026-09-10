@@ -411,6 +411,9 @@ Widget buildApp({
         extractor: extractor,
         save: (recipe, images) =>
             ctx.read<LibraryModel>().saveImported(recipe, images),
+        onFailed: (e) => ctx
+            .read<CrashReportingModel>()
+            .reportRescueFailure(e, mode: extractor.mode),
       ),
     ),
   ],

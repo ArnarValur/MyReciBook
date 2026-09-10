@@ -30,6 +30,16 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Off: every VIEW intent here (OAuth redirects, shares) is
+                 routed by MainActivity's bridges. With this on (the Flutter
+                 default) the embedding ALSO pushes the intent's URI into the
+                 Navigator as a route, and "/oauth2redirect?code=…" crashed
+                 as an unknown route (Crashlytics, 2026-09-03), leaking the
+                 sign-in code into the report on the way. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false"
+              />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

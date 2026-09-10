@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/app_settings.dart';
 import '../data/crash_reporter.dart';
+import '../domain/extractor.dart';
 
 class CrashReportingModel extends ChangeNotifier {
   // Private fields behind a named API — see the note in crash_reporter.dart.
@@ -49,6 +50,29 @@ class CrashReportingModel extends ChangeNotifier {
       fatal: false,
     );
     return true;
+  }
+
+  /// A rescue that failed, as a non-fatal report (Arnar, 2026-09-10: "it would
+  /// be so nice to get some info about these failed rescues"). What rides:
+  /// the mode, the HTTP status, the proxy's reason word and, for a link, the
+  /// site's host — never the URL, never page text. The message is cut at its
+  /// first colon because that is where a URL or a page's own words would sit.
+  /// Local log always; upload only with the switch on, like every report.
+  void reportRescueFailure(ExtractionException e,
+      {required String mode, String? host}) {
+    final what = e.message.split(':').first.trim();
+    final where = [
+      mode,
+      if (e.httpStatus != null) '${e.httpStatus}',
+      if (e.reason != null) e.reason!,
+      if (host != null && host.isNotEmpty) host,
+    ].join(' · ');
+    _reporter?.record(
+      'rescue failed ($where): $what',
+      StackTrace.current,
+      context: 'rescue failed',
+      fatal: false,
+    );
   }
 
   Future<void> setEnabled(bool value) async {

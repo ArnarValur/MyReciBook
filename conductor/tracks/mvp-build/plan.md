@@ -3,6 +3,37 @@
 **Goal:** the shippable v1 engine — extract → save → list → open, then sync and paywall.
 
 ## Done
+- [x] Prod extraction unblocked 2026-09-10. The prod Cloud Run service
+      account (283856393795-compute@) had no Firestore role; the ledger
+      reserve threw, the proxy failed closed with 503 quota_unavailable, and
+      prod had never completed a rescue (photo or link) since it went live.
+      Arnar granted roles/datastore.user; a test call returned 200 with
+      quota. Gemini key was never the problem. deploy.sh does not grant the
+      role — it lives in docs/runbook-dev-deploy.md's one-time setup.
+- [x] Paste-a-link door 2026-09-10 (Arnar's ask; 2a mockup: "OR FETCH FROM
+      THE INTERNET · Paste a link — TikTok, IG, blog…"). ImportLink choice,
+      linkIn() pulls the first http(s) link out of pasted text (same shape
+      as ShareBridge), clipboard pre-fill on open, keyboard lifts the sheet,
+      spent grant → cap screen like the other AI doors. app_shell routes it
+      through _pushLinkReview. Tests: import_sheet_test (fake clipboard),
+      shell_test (pasted link → review). Dev app only, NOT stamped.
+- [x] Failed rescues → Crashlytics 2026-09-10. CrashReportingModel.
+      reportRescueFailure(e, mode, host): message cut at its first colon,
+      "rescue failed (link · 402 · www.allrecipes.com): the page answered
+      402", non-fatal, local log always, upload only with the switch on.
+      Review screen reports via context.read<CrashReportingModel?>;
+      BatchModel.onFailed wired in main. First event verified in the console.
+- [x] Drive redirect crash 2026-09-10. Crashlytics issue 1084a1ec (2026-09-03,
+      0.20.0): FlutterActivity forwarded the OAuth VIEW intent's URI to the
+      Navigator as a route. flutter_deeplinking_enabled=false in the manifest
+      (bridges route every intent themselves); scrubber strips
+      code/state/id_token/access_token/refresh_token query values. Unverified
+      on a real Drive sign-in.
+- [x] Crashlytics readable from the terminal 2026-09-10: Firebase CLI 15.30
+      at ~/.hermes/node/bin/firebase, auth via gcloud ADC (stale avj.info
+      login removed), GOOGLE_CLOUD_QUOTA_PROJECT=dev project, Crashlytics API
+      enabled on dev, MCP server `firebase` registered in Claude Code (local
+      scope). Tool parameter is appId. docs/gcp-project-facts.md.
 - [x] Website promo set 2026-09-09. Eighteen emulator shots (light + dark)
       via tools/shoot_emulator.sh → docs/MyReciBook-Emulator-Shots; cropped
       by website/scripts/shots.mjs; a print under each of the six feature
@@ -178,6 +209,18 @@
 - Evidence, cost numbers and the remaining plan: docs/archive/handoff-extraction-trim.md.
 
 ## Open
+- [ ] Link door + crash pipe: Arnar's eyes on the dev app, then stamp
+      (0.22.0 — a capability a user would name) and fold into the next Play
+      build.
+- [ ] People Inc. wall (allrecipes, simplyrecipes, seriouseats → HTTP 402 to
+      any non-browser fetch; Gemini url_context blocked too). Only road found:
+      a hidden WebView in NetBridge that loads the page after a refusal and
+      hands the HTML to LinkExtractor. ~150 lines Kotlin + a Dart fallback;
+      slower, and Cloudflare may still raise a human check. Arnar's call —
+      part of the "integrity of these services / backup API" talk he set for
+      the next session. Meanwhile the failed state already says screenshot.
+- [ ] Drive sign-in on the dev app once, to confirm the redirect no longer
+      crashes and AuthBridge still receives it.
 - [x] First .aab on Play — internal testing release "The First - 0.20.0+42"
       live 2026-08-31 21:01. Internal track needs no forms; the 12×14d clock
       runs only in closed testing. Dev Firestore ledger wiped same evening

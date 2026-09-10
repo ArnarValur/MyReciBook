@@ -1,43 +1,40 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
-> **Updated:** 2026-09-09
+> **Updated:** 2026-09-10
 
 ## 📍 Now
-- Phase: closed test, Play review PASSED. 0.21.0+45 is on the closed "alpha"
-  track since 2026-09-09, uploaded from the terminal by tools/publish_play.sh
-  (service account play-publisher, key in ~/keystores). Internal still holds
-  42. Arnar's phone is on the Play build; the Store app shows the update.
-- Website carries the emulator promo set: a print under each of the six
-  cards, the pocket as two phones (day front, night behind), a Contact tab.
-  Copy claims only what the app does (search by title; barcode card = the
-  product page a scan fills in).
-- EMULATOR = SECOND HANDSET (pixel_7_api_35; binary off PATH at
-  ~/Android/Sdk/emulator; adb pinned to ANDROID_SERIAL=emulator-5554).
-  Stock: tools/seed_emulator.py --clear --photos "docs/MyReciBook Recipes
-  Screenshots" --pantry-photos "docs/MyReciBook - Pantry images". Shoot: tools/
-  shoot_emulator.sh · crop: website/scripts/shots.mjs · render: website/scripts/
-  render.mjs. Profile builds (dev.env) wear no DEBUG ribbon.
-- Branch `tester-outreach` DELETED unmerged (Arnar: prune); tip 7a8fa5e recoverable.
-- PROD LIVE: myrecibook.com on Cloud Run, Firestore eur3, keys in Secret
-  Manager, GA4 behind a consent note, Drive OAuth done. App Check registered,
-  server does NOT require it. Contact form posts to DEV on purpose.
-  Offer = terms: 1,200 grant never refills, top-up 600 for $5.
+- Phase: closed test, Play review PASSED. 0.21.0+45 on the closed "alpha" track.
+  Arnar's phone: Play build + dev build (.dev, profile, dev.env) beside it.
+- PROD extraction fixed 2026-09-10: prod Cloud Run account had no Firestore
+  role → every rescue 503 quota_unavailable; prod had never completed one.
+  roles/datastore.user granted by Arnar; end-to-end 200 verified.
+- Paste-a-link door BUILT on the + sheet ("Or fetch from the internet", clipboard
+  pre-fill, ImportLink → shared-link review, spent grant → cap). Dev app, no stamp.
+- People Inc. wall: allrecipes / simplyrecipes / seriouseats answer 402 to any
+  non-browser fetch, Gemini url_context too. Only road: hidden WebView fetch
+  after a refusal. NOT built. Backup-API talk = next session.
+- Failed rescues reach Crashlytics as non-fatals (mode · status · reason · host,
+  never URL); first event seen from Arnar's phone. Crashlytics readable from the
+  terminal (Firebase MCP `firebase`, docs/gcp-project-facts.md). Drive redirect
+  crash fixed (flutter_deeplinking_enabled=false; scrubber drops code/state/token).
+- EMULATOR = second handset (pixel_7_api_35, ANDROID_SERIAL=emulator-5554;
+  seed_emulator.py · shoot_emulator.sh · shots.mjs · render.mjs).
+- PROD LIVE: myrecibook.com, Firestore eur3, Secret Manager, GA4 behind
+  consent, Drive OAuth done, App Check registered not enforced. Contact form
+  posts to DEV on purpose. Offer: 1,200 grant never refills, 600 for $5.
 
 ## 🚀 Active tracks
-- mvp-build — THE focus. Open: Play listing + welcome slide shots (emulator),
-  billing seam, App Check enforcement on the server.
-- market — open: Q2 export recon (Arnar), Q5 steal list, Q6 cadence. MyFitnessPal
-  is the diary half's real rival; it is in NO dossier.
+- mvp-build — THE focus. Open: listing + welcome slide shots (emulator),
+  billing seam, App Check enforcement, link door + crash pipe verify → stamp,
+  hidden-WebView fetch decision.
+- market — open: Q2 export recon (Arnar), Q5 steal list, Q6 cadence.
 
 ## ⚠️ Blockers
 - None open.
 
 ## 📌 Parked
-- grocery list unpolished (Arnar), not a gate; its header says "planned
-  recipes" · ouroboros PARKED, branch + worktree kept · consent note
-  English-only · tag reorder has no UI · i18n paused (nb card 05 stale;
-  picker hidden) · nutrition dormant · borrowed listing photos · is/sv stale
-  money rows · stale test recipe_diary_chain ×1 · 34 deps outdated · serving
-  labels ignore units · pack math can't reach density · audit H2/M1-M6/L1-L4
-  · Faroese delegate · Drive sign-in untested in dev app · handoff remainder
-  · measure real usage.
+- grocery list unpolished · ouroboros PARKED · consent note English-only · tag
+  reorder no UI · i18n paused · nutrition dormant · borrowed listing photos ·
+  is/sv stale money rows · stale test ×1 · 34 deps outdated · serving labels
+  ignore units · pack math vs density · audit H2/M1-M6/L1-L4 · Faroese delegate
+  · handoff remainder · measure real usage · empty-state "or paste a link" line.

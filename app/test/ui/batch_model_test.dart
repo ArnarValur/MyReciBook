@@ -146,6 +146,26 @@ void main() {
     expect(saved, hasLength(3));
   });
 
+  test('a failed extraction is handed to onFailed after the item is marked',
+      () async {
+    final (_, _, save) = recordingSave();
+    final failures = <ExtractionException>[];
+    final refusal = ExtractionException('the page answered 402',
+        httpStatus: 402);
+    final model = BatchModel(
+      extractor: FakeExtractor([refusal]),
+      save: save,
+      onFailed: failures.add,
+    );
+    model.addAll([
+      [picks[0]]
+    ]);
+    await model.whenIdle;
+
+    expect(model.items.single.state, BatchItemState.failed);
+    expect(failures, [refusal]);
+  });
+
   test('high confidence auto-saves with needs_review flags kept in the file',
       () async {
     final (saved, savedImages, save) = recordingSave();

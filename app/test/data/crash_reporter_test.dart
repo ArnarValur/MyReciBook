@@ -45,6 +45,14 @@ void main() {
     });
 
     // The one that matters most: a recipe file is named after the recipe.
+    test('drops the sign-in code and state out of an OAuth redirect', () {
+      expect(
+          scrubForUpload('route "/oauth2redirect?state=t9y3h0HR&iss=https://'
+              'accounts.google.com&code=4/0ATsMZqCFKq-DE36&scope=drive.file"'),
+          'route "/oauth2redirect?state=…&iss=https://accounts.google.com'
+          '&code=…&scope=drive.file"');
+    });
+
     test('drops the recipe title out of a file path but keeps the shape', () {
       expect(
         scrubForUpload(

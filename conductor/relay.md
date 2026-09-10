@@ -1,6 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-10 — prod could not rescue, a link door on the + sheet, failures reach Crashlytics
+
+- Shipped: prod extraction unblocked (Firestore role on the Cloud Run account);
+  paste-a-link door on the import sheet; failed rescues as Crashlytics
+  non-fatals; Drive redirect crash fixed in the manifest; Firebase MCP wired.
+- Broke: People Inc. sites (Allrecipes and kin) answer 402 to any non-browser
+  fetch — the link door cannot pass; only a hidden WebView could. Not built.
+- Arnar: add the link door · read Crashlytics via the crash toggle, not a new
+  collection · backup-API talk next session. Granted the IAM role himself.
+- UNFINISHED: link door + crash pipe verified on the dev app only, no stamp;
+  Drive sign-in fix unverified; WebView fetch undecided.
+
 ## 2026-09-09 — the website gets its photographs, and a Contact tab on the lid
 
 - Shipped: eighteen emulator shots, light and dark; a print under each of the

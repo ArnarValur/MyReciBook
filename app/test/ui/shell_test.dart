@@ -257,6 +257,37 @@ void main() {
     expect(find.text('Original screenshot'), findsNothing);
   });
 
+  testWidgets('a pasted link takes the shared link\'s road to review', (
+    tester,
+  ) async {
+    const url = 'https://example.com/best-buns';
+    final linkContent = canned(title: 'Best Buns')
+      ..['source'] = {'type': 'link', 'url': url, 'app_hint': 'example.com'};
+    final asked = <String>[];
+    await tester.pumpWidget(
+      app(
+        linkExtractor: (u) {
+          asked.add(u);
+          return FakeExtractor([linkContent]);
+        },
+      ),
+    );
+    await settle(tester);
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await settle(tester, rounds: 4);
+    await tester.tap(find.byKey(const Key('import-link-tile')));
+    await settle(tester, rounds: 4);
+    await tester.enterText(find.byKey(const Key('import-link-field')), url);
+    await tester.tap(find.byKey(const Key('import-link-cta')));
+    await settle(tester);
+
+    expect(asked, [url]);
+    expect(find.text('Recipe rescued'), findsOneWidget);
+    expect(find.text('Best Buns'), findsOneWidget);
+    expect(find.text('From a link'), findsOneWidget);
+  });
+
   testWidgets('Settings storage row shows the real folder and reaches re-pick '
       'through the storage screen', (tester) async {
     final fake = FakeSafChannel()..install();

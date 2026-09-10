@@ -148,6 +148,9 @@ class _AppShellState extends State<AppShell> {
           await Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const ManualEntryScreen()),
           );
+        case ImportLink(:final url):
+          // The pasted link takes the shared link's road exactly.
+          await _pushLinkReview(url);
         case ImportPicked(:final images, :final separate):
           if (images.isEmpty) return;
           if (separate) {

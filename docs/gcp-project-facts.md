@@ -73,3 +73,19 @@ analytics and the consent note off completely for a build.
 The tag never loads until the visitor accepts the consent note, so Google
 receives nothing from anyone who declines or ignores it. That means the visit
 count reads low, not wrong.
+
+## Crashlytics, read from the terminal — set up 2026-09-10
+
+| Field | Value |
+|---|---|
+| Firebase CLI | `~/.hermes/node/bin/firebase` (npm global prefix `~/.hermes/node`), 15.30.0 |
+| Sign-in | none stored; the CLI falls back to gcloud's saved credentials (arnarvalurjonsson@gmail.com) |
+| Quota project | `GOOGLE_CLOUD_QUOTA_PROJECT=gen-lang-client-0166122901` in the environment, or Crashlytics answers 403 |
+| Crashlytics API | `firebasecrashlytics.googleapis.com` enabled on MyReciBook-Dev 2026-09-10 |
+| App id, Play package `com.merkurialstudio.myrecibook` | `1:213431165631:android:faa441c80b5076d0249c0a` |
+| App id, dev package `com.merkurialstudio.myrecibook.dev` | `1:213431165631:android:7affd935ae267d41249c0a` |
+| Claude Code | MCP server `firebase` (`firebase mcp --only core,crashlytics`), registered for this repo on PlutoII |
+
+Both app ids live in `app/android/app/src/main/google-services.json`; the
+table only saves the lookup. The prod Firebase project is not wired into the
+MCP server yet.
