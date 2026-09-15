@@ -97,6 +97,8 @@ flutter:
     - google_fonts/
     - assets/recipe.schema.json
     - assets/extract.schema.json
+    # Welcome-slide tiles, cut from the emulator by tools/play_shots.mjs.
+    - assets/onboarding/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

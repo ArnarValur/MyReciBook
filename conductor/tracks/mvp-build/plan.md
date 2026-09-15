@@ -276,8 +276,16 @@
       invited by Arnar with "release to testing tracks" + "manage testing
       tracks"; Android Developer API enabled. Track ids: internal · alpha (the
       closed test) · beta · production. Usage: tools/publish_play.sh <aab> alpha.
-- [ ] Play listing screenshots + welcome slide shots — now shootable from the
-      stocked emulator (tools/shoot_emulator.sh); the website set is the start.
+- [x] Play listing screenshots + welcome slide shots 2026-09-15. Eighteen
+      fresh emulator shots off 0.22.0 (link door visible on the sheet);
+      tools/play_shots.mjs frames eight of them as 1080×1920 store cards in
+      light and dark (conductor/docs/play-listing/play/) and cuts the three
+      welcome-slide tiles, light + Midnight, into app/assets/onboarding/.
+      Slides wired (imageDark per feature, tiles anchored top so a wide phone
+      trims the bottom); seen on the emulator through a real first run, both
+      themes. Store upload is Arnar's (Play Console → listing); tile crops
+      are his eyes to approve. Found on the way: kAppVersion had shipped in
+      0.22.0+46 still saying 0.21.0 — fixed on main, rides the next build.
 
 ## Arnar's, not tracked here
 - Spend budgets, prepay credits, API key management. He manages these. Steps

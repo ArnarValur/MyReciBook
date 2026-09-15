@@ -10,8 +10,9 @@
 // the release notes everybody actually sees. Skip, the corner X and the final
 // button all exit the same way.
 //
-// SCREENSHOTS PENDING — Arnar is cropping them. Until [SlideFeature.image] is
-// non-null the tile draws the mockup's hatch and says so.
+// The tiles are crops of the stocked emulator, cut to the tile's own ratio
+// by tools/play_shots.mjs so BoxFit.cover has nothing to trim. A feature with
+// no image draws the mockup's hatch and says so.
 
 import 'package:flutter/material.dart';
 
@@ -20,14 +21,22 @@ import '../../version.dart';
 import 'onboarding_scaffold.dart';
 
 class SlideFeature {
-  const SlideFeature({required this.title, required this.body, this.image});
+  const SlideFeature(
+      {required this.title, required this.body, this.image, this.imageDark});
 
   final String title;
   final String body;
 
-  /// Asset path of the cropped screenshot. Null until Arnar supplies it —
-  /// add the file to pubspec assets and name it here, nothing else changes.
+  /// Asset path of the cropped screenshot (assets/onboarding/, listed in
+  /// pubspec). Null draws the placeholder instead.
   final String? image;
+
+  /// The same crop shot in Midnight, shown when the theme is dark so a cream
+  /// tile never glows on a navy page. Falls back to [image].
+  final String? imageDark;
+
+  String? imageFor(Brightness b) =>
+      b == Brightness.dark ? (imageDark ?? image) : image;
 }
 
 class OnboardingSlide {
@@ -44,16 +53,22 @@ const List<OnboardingSlide> kSlides = [
       title: 'Rescue recipes from screenshots',
       body: 'Share one or many to MyReciBook — it reads them into plain '
           'files you own.',
+      image: 'assets/onboarding/rescue.webp',
+      imageDark: 'assets/onboarding/rescue-dark.webp',
     ),
     SlideFeature(
       title: 'Cook mode',
       body: 'Big steps, screen stays awake — made for messy hands.',
+      image: 'assets/onboarding/cookmode.webp',
+      imageDark: 'assets/onboarding/cookmode-dark.webp',
     ),
   ]),
   OnboardingSlide([
     SlideFeature(
       title: 'Grocery list from any recipe',
       body: 'One tap adds the ingredients — quantities merge across recipes.',
+      image: 'assets/onboarding/grocery.webp',
+      imageDark: 'assets/onboarding/grocery-dark.webp',
     ),
   ]),
 ];
@@ -224,7 +239,7 @@ class _Slide extends StatelessWidget {
         children: [
           const SizedBox(height: 12),
           for (final f in slide.features) ...[
-            if (f.image == null)
+            if (f.imageFor(theme.brightness) == null)
               OnboardingSlot(
                   label: 'cropped screenshot',
                   note: f.title.toLowerCase(),
@@ -232,8 +247,12 @@ class _Slide extends StatelessWidget {
             else
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.asset(f.image!,
-                    height: tall ? 420 : 220, fit: BoxFit.cover),
+                // Crops are cut to the tile's ratio at 320dp; a wider phone
+                // trims the bottom, never the screen's title at the top.
+                child: Image.asset(f.imageFor(theme.brightness)!,
+                    height: tall ? 420 : 220,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter),
               ),
             const SizedBox(height: 8),
             Text(f.title,

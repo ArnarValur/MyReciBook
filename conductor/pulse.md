@@ -8,8 +8,7 @@
   Arnar's phone: Play build + dev build (.dev, profile, dev.env) beside it.
 - Testers: Google Group + Play closed-test wiring done by Arnar 2026-09-15.
   Reddit recruiting next (Arnar).
-- Paste-a-link door, Crashlytics non-fatals for failed rescues and the Drive
-  redirect fix all verified by Arnar and shipped in 0.22.0+46.
+- Link door, rescue non-fatals and the Drive redirect fix shipped in 0.22.0+46.
 - People Inc. wall: allrecipes / simplyrecipes / seriouseats answer 402 to any
   non-browser fetch, Gemini url_context too. Only road: hidden WebView fetch
   after a refusal. NOT built, Arnar's call. Backup-API talk = next session.
@@ -25,8 +24,9 @@
   posts to DEV on purpose. Offer: 1,200 grant never refills, 600 for $5.
 
 ## 🚀 Active tracks
-- mvp-build — THE focus. Open: listing + welcome slide shots (emulator),
-  billing seam, App Check enforcement, hidden-WebView fetch decision.
+- mvp-build — THE focus. Open: billing seam, App Check enforcement,
+  hidden-WebView fetch decision. Listing frames + slide tiles built, Arnar's
+  eyes pending; About footer 0.21.0 in +46, fixed for the next build.
 - market — open: Q2 export recon (Arnar), Q5 steal list, Q6 cadence.
 
 ## ⚠️ Blockers
