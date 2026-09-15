@@ -16,7 +16,7 @@
 //   GRACE_DAYS            free window, default 14 (the offer)
 //   GLOBAL_DAILY_LIMIT    circuit breaker across all buckets, default 2000
 //   APP_CHECK_ENFORCE     'true' to require a verified App Check token.
-//                         THE one-line flip — see docs/runbook-dev-deploy.md.
+//                         THE one-line flip — see conductor/docs/runbook-dev-deploy.md.
 //   FIREBASE_PROJECT_NUMBER  numeric project number, required to verify
 //                         App Check tokens (the iss/aud claim carries it)
 //   ALLOWED_MODELS        comma-separated, default gemini-3.5-flash-lite

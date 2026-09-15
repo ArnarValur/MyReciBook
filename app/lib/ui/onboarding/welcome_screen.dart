@@ -1,5 +1,5 @@
 // Screen 1a of the first-run flow — built from the Claude Design onboarding
-// mockup (docs/MyReciBook Flutter welcome-mockups.zip, turn 1, option 1a).
+// mockup (conductor/docs/MyReciBook Flutter welcome-mockups.zip, turn 1, option 1a).
 //
 // The mark, the wordmark, the two-line promise, the paragraph, one full-width
 // button, and the reassurance line under it. Copy is the mockup's verbatim:

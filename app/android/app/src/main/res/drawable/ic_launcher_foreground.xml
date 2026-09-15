@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MyReciBook mark, transcribed from docs/MyReciBook-logo/assets/logo/app-icon.svg
+<!-- MyReciBook mark, transcribed from conductor/docs/MyReciBook-logo/assets/logo/app-icon.svg
      (108-unit design space = the adaptive-icon canvas, so no rescaling).
      The spine is a HOLE (evenOdd second subpath), not a coloured line — that
      keeps this same file usable as the Android 13 monochrome layer, where the

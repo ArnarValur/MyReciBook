@@ -17,7 +17,7 @@ through tracks.md. Nothing in this track builds anything on its own.
 ## The evidence
 
 Fourteen dossiers, two independent agents per app (product/pricing ·
-reviews/unmet needs) → `docs/competitor-research/`. Start at `_SYNTHESIS.md`;
+reviews/unmet needs) → `conductor/docs/competitor-research/`. Start at `_SYNTHESIS.md`;
 `README.md` indexes the rest; `recipe-app-recon.html` is the visual read.
 
 Seven apps: Foodvisor · COOKmate · Tasty · Cookpad · ReciMe · SideChef · Mob.
@@ -82,7 +82,7 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
    *Settled 2026-09-01, Arnar + Cowork, answering Q1.* 1,200 AI rescues come
    with the purchase, once, forever — no anniversary reset. Top-up: **$5 buys
    600 more rescues**. BYOK stays as the power-user exit and the insurance
-   against future model pricing. The arithmetic (docs/ai-cap-mechanics.md,
+   against future model pricing. The arithmetic (conductor/docs/ai-cap-mechanics.md,
    prices verified 2026-08-19): a blended rescue costs ~$0.0032, so the worst
    any buyer can ever cost us is ~$3.84 lifetime against ~$21.24 net from the
    sale — bounded, ~18% in the maxed-out case, far less realistically. A
@@ -122,7 +122,7 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
    once"); a printed number would rot and show the wrong currency — Play
    localises the real price at the button, so no number appears anywhere in
    the listing. Full description untouched: "Pay once. Like a good knife."
-   stays exactly as written. docs/play-store-listing.md updated.
+   stays exactly as written. conductor/docs/play-store-listing.md updated.
 
 ## Open — the discussion queue
 
@@ -143,7 +143,7 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
       talk, only build order.) **In progress:** Arnar is running the manual
       export recon — workflow + checklist in `export-recon.md` beside this
       file, cheapest-first (docs → free installs → purchases last). Prior
-      art: docs/library-import-research.md (Paprika buildable, ReciMe locked).
+      art: conductor/docs/library-import-research.md (Paprika buildable, ReciMe locked).
       Findings become Decision 2.
 - [x] **Q3 — Nordic localisation.** → **Decision 2** (order agreed, i18n
       paused until English copy stabilises). The i18n track already
@@ -154,7 +154,7 @@ Ten in `_SYNTHESIS.md` §7. The four that touch decisions already made:
 - [x] **Q4 — the listing's first line.** → **Decision 3** (price model in the
       short description, in words, never a number). Competitors' own users
       wrote our copy.
-      Current draft texts live in `docs/play-store-listing.md`. Does the price
+      Current draft texts live in `conductor/docs/play-store-listing.md`. Does the price
       go in the first line, and in what words?
 - [ ] **Q5 — what we steal, and in what order.** Synthesis §8 lists eight
       mechanics worth taking (ReciMe's import cascade and inline ingredient

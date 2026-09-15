@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Release .aab build — PROD wiring, one command.
-# docs/prod-gcp-setup.md steps 13+15: swaps google-services-prod.json in so
+# conductor/docs/prod-gcp-setup.md steps 13+15: swaps google-services-prod.json in so
 # Crashlytics reports to myrecibook-prod, builds with prod.env dart-defines,
 # then restores the dev file no matter how the build ends.
 #

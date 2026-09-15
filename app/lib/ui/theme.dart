@@ -1,5 +1,5 @@
 // Skin tokens — DittoDatto design system → Flutter.
-// Source of truth: docs/design/handoff.md + tokens/*.css in the design bundle.
+// Source of truth: conductor/docs/design/handoff.md + tokens/*.css in the design bundle.
 // Two themes ship: light "Stitch Slate" (cream scaffold) and dark "Midnight"
 // (deep navy, never black). Elevation in dark = surface tint, not shadow.
 

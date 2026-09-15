@@ -5,7 +5,7 @@
    Two themes ship: light "Stitch Slate" (default, warm cream
    scaffold) and dark "Midnight" (deep navy — never black).
    Source of truth: app/lib/ui/theme.dart (RbColors) +
-   docs/design/handoff.md in ArnarValur/MyReciBook.
+   conductor/docs/design/handoff.md in ArnarValur/MyReciBook.
    ============================================================ */
 
 :root {

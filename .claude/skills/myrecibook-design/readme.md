@@ -41,8 +41,8 @@ Nothing here was invented; consult these if you have access:
   sheet/review, batch queue, grocery, pantry, diary, plan, unlock, storage,
   settings, manual entry).
 - **GitHub: [ArnarValur/MyReciBook](https://github.com/ArnarValur/MyReciBook)**
-  — `docs/design/handoff.md` (the original hi-fi spec),
-  `docs/design/skin-implementation-map.md`, `CLAUDE.md` (strategy),
+  — `conductor/docs/design/handoff.md` (the original hi-fi spec),
+  `conductor/docs/design/skin-implementation-map.md`, `CLAUDE.md` (strategy),
   `app/google_fonts/` (the bundled TTFs copied into `assets/fonts/`).
   Explore the repo to build better MyReciBook designs.
 - **DittoDatto design system** (sibling project) — the shared house palette.

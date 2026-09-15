@@ -1,4 +1,4 @@
-// Quota counter — the quiet "what's left" card (docs/ai-cap-mechanics.md §2).
+// Quota counter — the quiet "what's left" card (conductor/docs/ai-cap-mechanics.md §2).
 // Fed by QuotaModel from the quota object the proxy hangs on every answer;
 // Settings, the paywall and the cap-reached screen mount it. Look borrowed
 // from the 4d cap preview.

@@ -9,7 +9,7 @@
       prod had never completed a rescue (photo or link) since it went live.
       Arnar granted roles/datastore.user; a test call returned 200 with
       quota. Gemini key was never the problem. deploy.sh does not grant the
-      role — it lives in docs/runbook-dev-deploy.md's one-time setup.
+      role — it lives in conductor/docs/runbook-dev-deploy.md's one-time setup.
 - [x] Paste-a-link door 2026-09-10 (Arnar's ask; 2a mockup: "OR FETCH FROM
       THE INTERNET · Paste a link — TikTok, IG, blog…"). ImportLink choice,
       linkIn() pulls the first http(s) link out of pasted text (same shape
@@ -33,9 +33,9 @@
       at ~/.hermes/node/bin/firebase, auth via gcloud ADC (stale avj.info
       login removed), GOOGLE_CLOUD_QUOTA_PROJECT=dev project, Crashlytics API
       enabled on dev, MCP server `firebase` registered in Claude Code (local
-      scope). Tool parameter is appId. docs/gcp-project-facts.md.
+      scope). Tool parameter is appId. conductor/docs/gcp-project-facts.md.
 - [x] Website promo set 2026-09-09. Eighteen emulator shots (light + dark)
-      via tools/shoot_emulator.sh → docs/MyReciBook-Emulator-Shots; cropped
+      via tools/shoot_emulator.sh → conductor/docs/MyReciBook-Emulator-Shots; cropped
       by website/scripts/shots.mjs; a print under each of the six feature
       cards, the pocket section as two phones (day front, night behind), a
       Contact tab on the lid; copy trimmed to what the app does (search by
@@ -70,7 +70,7 @@
       tracker blocker in the browser (Vivaldi's is a separate switch from its
       ad blocker) shows ERR_BLOCKED_BY_CLIENT, which is the visitor's machine,
       not the site. Expect the visit count to read low, never precise.
-- [x] Prod infra 2026-09-01 (docs/prod-gcp-setup.md slices 1+2, minus App
+- [x] Prod infra 2026-09-01 (conductor/docs/prod-gcp-setup.md slices 1+2, minus App
       Check and Drive OAuth): website live on myrecibook.com + www via
       website/deploy-prod.sh (Cloud Run myrecibook-prod, cert, Namecheap DNS,
       old parking records deleted); prod proxy deployed and smoke-tested
@@ -91,8 +91,8 @@
       tracking. Store settings: Food & Drink, myrecibook@gmail.com,
       www.myrecibook.com.
 - [x] Store listing drafted 2026-09-01 from the live website copy:
-      docs/play-store-listing.md (short 46 chars + full description) and
-      docs/MyReciBook-logo/assets/play/feature-graphic-1024x500.png (drawn
+      conductor/docs/play-store-listing.md (short 46 chars + full description) and
+      conductor/docs/MyReciBook-logo/assets/play/feature-graphic-1024x500.png (drawn
       LogoMark + wordmark on cream). Arnar filled the listing and submitted
       closed testing "Alpha" (Norway + Sweden, email-list testers) + en-GB
       listing for Play review the same night. Screenshots still owed — from
@@ -158,7 +158,7 @@
 ## Onboarding — shipped 2026-08-27 (0.12.0 → 0.14.0)
 - First run: welcome → first-time setup (folder, units, theme, optional
   Drive/Dropbox connect) → feature slides → app. Built from Arnar's Claude
-  Design mockup, docs/MyReciBook Flutter welcome-mockups.zip turn 1.
+  Design mockup, conductor/docs/MyReciBook Flutter welcome-mockups.zip turn 1.
 - Onboarding is VERSIONED, not a bool: kOnboardingVersion vs the marker in
   device.json. Bump it after a release and the slides replay as a what's-new.
 - A lost SAF grant still goes straight to the re-pick gate — that user has an
@@ -206,7 +206,7 @@
 - item is normalised spelling now (raw "cream of tarter" → item "cream of
   tartar", rule 4); prose sections extract both ways (rule 6) after the phone
   run ate the Filling paragraph as ingredient raws and left 1 step.
-- Evidence, cost numbers and the remaining plan: docs/archive/handoff-extraction-trim.md.
+- Evidence, cost numbers and the remaining plan: conductor/docs/archive/handoff-extraction-trim.md.
 
 ## Open
 - [x] Link door + crash pipe: verified by Arnar on the dev app 2026-09-15,
@@ -223,14 +223,14 @@
 - [x] First .aab on Play — internal testing release "The First - 0.20.0+42"
       live 2026-08-31 21:01. Internal track needs no forms; the 12×14d clock
       runs only in closed testing. Dev Firestore ledger wiped same evening
-      for a clean tester start. Prod plan: docs/prod-gcp-setup.md.
+      for a clean tester start. Prod plan: conductor/docs/prod-gcp-setup.md.
 - [x] Testers: one tester (Arnar), in through the closed opt-in link. Recruiting
       more is NOT an mvp-build item (Arnar 2026-09-03).
 - [x] Handset: dev build uninstalled, installed from Play 2026-09-02.
 - [x] CLOSED 2026-09-01 (Decision 1 executed, refill deleted, both proxies redeployed). Was: The offer contradicts the engine. Terms (live) say the 1,200 never
       expire and nothing resets; proxy/lib/firestore_ledger.dart:206 does a
       lazy anniversary reset and ships resets_at, which quota_counter_card.dart
-      renders as "resets <date>". docs/ai-cap-mechanics.md still documents
+      renders as "resets <date>". conductor/docs/ai-cap-mechanics.md still documents
       600/year. Arnar decides which is true, then one of the two changes.
 - [x] CLOSED 2026-09-03 (proxy reason word rides ExtractionException; review + batch name all three; import_review_failed_test). Was: 429 says three different things and the app hears one. The proxy answers
       429 for rate_limited, daily_limit and cap_exceeded and sends a written
@@ -290,7 +290,7 @@
 
 ## Arnar's, not tracked here
 - Spend budgets, prepay credits, API key management. He manages these. Steps
-  are in docs/runbook-dev-deploy.md for reference only — do not raise them,
+  are in conductor/docs/runbook-dev-deploy.md for reference only — do not raise them,
   list them, or treat them as blockers.
 
 ## Fair-use cap
@@ -309,7 +309,7 @@
   reinstall restarts the free fortnight.
 - Top-up decided 2026-08-30 (Arnar): **+1200 rescues, $5 flat, never expires.**
   One pack, round number, no .99 pricing. Details + guard rail in
-  docs/ai-cap-mechanics.md §5; scratchpad has the math.
+  conductor/docs/ai-cap-mechanics.md §5; scratchpad has the math.
 - [x] CLOSED 2026-09-03 (counter card, sheet line, cap screen built; 0.20.0+43). Was: **Quota counter UI (app side)** — the proxy already returns the full
   `quota` object ({used, cap, grace_used, topup_balance, resets_at,
   grace_until}) in every /extract response; nothing new server-side.
@@ -328,7 +328,7 @@
   say "today's limit — opens again tomorrow" / "included rescues used up"
   / "we're busy" instead of "try again shortly" for all of them. Tests:
   quota, import sheet, cap screen, review failed state, extractor reasons,
-  batch captions, paywall counter. Design source: docs/ai-cap-mechanics.md §2.
+  batch captions, paywall counter. Design source: conductor/docs/ai-cap-mechanics.md §2.
 
 ## 2026-09-01 — Decision 1 executed (grant never refills)
 

@@ -15,8 +15,8 @@ code and records the disagreement in [Known gaps](#known-gaps) at the end.
 - `app/lib/ui/widgets/` — nav bar, chips, editor fields, logo, product rows
 
 **Design origin (reference, superseded by the code above):**
-`docs/design/handoff.md`, `docs/design/skin-implementation-map.md`, and the
-token CSS in `docs/MyReciBook Flutter mockups/myrecibook-design-system/tokens/`.
+`conductor/docs/design/handoff.md`, `conductor/docs/design/skin-implementation-map.md`, and the
+token CSS in `conductor/docs/MyReciBook Flutter mockups/myrecibook-design-system/tokens/`.
 
 Two themes ship: light **"Stitch Slate"** and dark **"Midnight"**. Dark mode
 never bottoms out at pure black — the floor is `#0F1117`, a deep navy. The user

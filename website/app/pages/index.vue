@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Card-box landing — ported from the design canvas
-// "MyReciBook Website Card Box" (docs/MyReciBook Flutter website-2-mockups.zip).
+// "MyReciBook Website Card Box" (conductor/docs/MyReciBook Flutter website-2-mockups.zip).
 // Copy audit lives in website/copy-notes.md — canvas claims not yet confirmed
 // against the app are flagged there, not silently rewritten.
 

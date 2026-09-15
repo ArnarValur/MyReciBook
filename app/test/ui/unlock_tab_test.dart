@@ -41,7 +41,7 @@ void main() {
     }
   });
 
-  // The counter where the money is (docs/ai-cap-mechanics.md §2): real
+  // The counter where the money is (conductor/docs/ai-cap-mechanics.md §2): real
   // numbers under the cap-in-writing line, only once the proxy has answered.
   testWidgets('counter appears under the pitch once the proxy has answered',
       (tester) async {

@@ -25,7 +25,7 @@ of inventory that has ever survived contact with real users.
 
 Nobody in the competitor matrix can copy this without rebuilding their
 product: closing the loop requires a cookbook AND a pantry AND a diary, and
-we are the only app that has all three columns (docs/competitor-research/
+we are the only app that has all three columns (conductor/docs/competitor-research/
 _SYNTHESIS.md §3).
 
 **The sentence it earns:** the app where your groceries, your recipes, and

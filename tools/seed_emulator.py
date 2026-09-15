@@ -778,9 +778,9 @@ def diary_entry(rng, ref, name, brand, label, grams, kcal_per_100, day, hour) ->
 
 # Photos are matched to recipes by filename slug. These are the ones whose
 # filename says the dish rather than the recipe title — Arnar's own names from
-# docs/MyReciBook Recipes Screenshots/. Add a line here rather than asking
+# conductor/docs/MyReciBook Recipes Screenshots/. Add a line here rather than asking
 # anyone to rename a photo.
-# Pantry photos, by filename stem in docs/MyReciBook - Pantry images/ → the
+# Pantry photos, by filename stem in conductor/docs/MyReciBook - Pantry images/ → the
 # product name. Product photos live at pantry/images/<stem>.<ext> and the
 # product file points at them with a relative `image` ref, the recipe-cover
 # convention applied to the pantry.

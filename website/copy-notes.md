@@ -33,7 +33,7 @@
 - Gradient covers picked by title. Stitch Slate / Midnight themes.
 - No accounts. Crash reporting on by default, recipe text scrubbed.
 
-## Screenshots (docs/MyReciBook-Screenshots/, 2026-08-29)
+## Screenshots (conductor/docs/MyReciBook-Screenshots/, 2026-08-29)
 - base = cookbook grid → LIVE in the phone frame (public/screenshots/cookbook.png).
 - Copy 1 add-to-meal sheet · 2 pantry shelf · 3 "Rescuing…" · 4 source
   screenshot · 5/6 rescue review (screenshot) · 7 recipe page (unit-converted!)
@@ -41,7 +41,7 @@
 - Weight note: cookbook.png is 728 KB — squeeze to WebP via @nuxt/image
   before deploy.
 
-## Screenshots — emulator set (docs/MyReciBook-Emulator-Shots/, 2026-09-09)
+## Screenshots — emulator set (conductor/docs/MyReciBook-Emulator-Shots/, 2026-09-09)
 - Shot by tools/shoot_emulator.sh off the seeded AVD, light + dark, clean
   status bar (demo mode). scripts/shots.mjs crops each card's window.
 - Cards 04–09 each show a print of the screen behind the claim; the pocket

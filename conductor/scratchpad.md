@@ -4,7 +4,7 @@ Arnar's notes. Fresh page pulled 2026-09-01 (housekeeping session); old page in 
 
 ## Live
 - Grocery list revamp — ask Arnar what he wants changed.
-- Import from other apps — research done: docs/library-import-research.md (market track Q2).
+- Import from other apps — research done: conductor/docs/library-import-research.md (market track Q2).
 - User feedback channel — Crashlytics covers the error half; feedback half still open.
 - Tester recruitment / branching out to networks — parked by Arnar, he has ideas, ask him.
 
@@ -15,7 +15,7 @@ Arnar's notes. Fresh page pulled 2026-09-01 (housekeeping session); old page in 
 - Plan at ~/.claude/plans/question-if-a-link-glowing-unicorn.md. Feasibility only — not approved.
 
 ## Pointers (decisions that used to live here)
-- Cap + top-up (1200/yr · +1200 for $5 · rise-never-fall) — docs/ai-cap-mechanics.md, printed in terms.
+- Cap + top-up (1200/yr · +1200 for $5 · rise-never-fall) — conductor/docs/ai-cap-mechanics.md, printed in terms.
 - Weekend plan 2026-08-21 (stages 1–4) — all shipped; story in relay/pulse-archive.
 
 ## 2026-09-10 — the People Inc. wall, and intel on failed rescues (Arnar: note it)

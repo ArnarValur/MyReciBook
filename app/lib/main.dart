@@ -174,7 +174,7 @@ Future<void> main() async {
   final languageModel = LanguageModel(settings: settings);
   final byokModel = ByokModel(settings: settings);
   // Seeded from device.json, so the counter card has a true number before
-  // this session's first extraction (docs/ai-cap-mechanics.md §2).
+  // this session's first extraction (conductor/docs/ai-cap-mechanics.md §2).
   final quotaModel = QuotaModel(settings: settings);
 
   final picker = ImagePicker();

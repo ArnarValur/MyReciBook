@@ -17,11 +17,14 @@ app/prod.env
 
 # OAuth client downloads (console litter; IDs live in .env)
 client_secret_*.json
-docs/namecheap-order-210380156.pdf
-docs/MyReciBook Flutter mockups/myrecibook-design-system/*
+conductor/docs/namecheap-order-210380156.pdf
+conductor/docs/MyReciBook Flutter mockups/myrecibook-design-system/*
 # python scratch
 __pycache__/
 *.pyc
 
 # Claude auto-memory symlink (machine-local, never commit)
 conductor/memory
+
+# Obsidian workspace state (the conductor is a vault)
+.obsidian/

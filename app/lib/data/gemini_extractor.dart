@@ -53,7 +53,7 @@ class GeminiExtractor implements Extractor, LabelReader {
   /// Where the proxy's `quota` object goes (QuotaModel.record). Every proxy
   /// answer carries the current fair-use numbers — success and 429 denial
   /// alike — so the counter card stays current with zero extra calls
-  /// (docs/ai-cap-mechanics.md §2). Absent in tests; never fires on the
+  /// (conductor/docs/ai-cap-mechanics.md §2). Absent in tests; never fires on the
   /// direct-Gemini transports, which have no counter to report.
   final void Function(QuotaSnapshot)? onQuota;
 
@@ -142,7 +142,7 @@ class GeminiExtractor implements Extractor, LabelReader {
     // extract.schema.json is the model-facing trim of recipe.schema.json:
     // no id/timestamps/model fields (the app fills those and the model was
     // caught inventing them), bucket confidence, line_id, top-level
-    // needs_review. See docs/handoff-extraction-trim.md.
+    // needs_review. See conductor/docs/handoff-extraction-trim.md.
     final base = await rootBundle.loadString('assets/structure_prompt.md');
     final schema = await rootBundle.loadString('assets/extract.schema.json');
     return '$base\n\nTARGET JSON SCHEMA:\n$schema';

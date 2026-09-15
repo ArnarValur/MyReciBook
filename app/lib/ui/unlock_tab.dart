@@ -176,7 +176,7 @@ class UnlockTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = context.scheme;
-    // The counter where the money is (docs/ai-cap-mechanics.md §2): the
+    // The counter where the money is (conductor/docs/ai-cap-mechanics.md §2): the
     // real numbers under the cap-in-writing line, once the proxy has
     // answered on this install — a fresh install's "—" would only confuse.
     final quota = context.watch<QuotaModel?>()?.quota;

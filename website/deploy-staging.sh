@@ -6,7 +6,7 @@
 # Usage: ./deploy-staging.sh
 set -euo pipefail
 
-PROJECT_ID="${PROJECT_ID:-gen-lang-client-0166122901}"   # docs/gcp-project-facts.md
+PROJECT_ID="${PROJECT_ID:-gen-lang-client-0166122901}"   # conductor/docs/gcp-project-facts.md
 REGION="${REGION:-europe-west1}"
 SERVICE="${SERVICE:-myrecibook-website-staging}"
 

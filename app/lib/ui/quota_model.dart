@@ -1,4 +1,4 @@
-// Fair-use counter state (docs/ai-cap-mechanics.md §2): the last `quota`
+// Fair-use counter state (conductor/docs/ai-cap-mechanics.md §2): the last `quota`
 // object the proxy sent, cached so the card has a true number at cold start
 // instead of waiting for this session's first extraction.
 //

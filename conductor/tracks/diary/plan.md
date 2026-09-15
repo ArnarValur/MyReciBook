@@ -140,7 +140,7 @@ is only the correction path. `user_edited` tags are never overwritten.
 - [x] **Phase 4 — starter food packages** (2026-08-20, built; values
       UNVERIFIED). domain/starter_foods.dart: Vegetables 65 · Fruits &
       Berries 49 (doc's duplicate maracuja folded into Passion Fruit) ·
-      Spices & Herbs 35, transcribed from docs/gemini-categories.md with
+      Spices & Herbs 35, transcribed from conductor/docs/gemini-categories.md with
       Norwegian synonyms corrected. USDA carbs stored raw; toProduct
       subtracts fiber → files land EU-convention. Import door on the
       pantry tab → StarterFoodsScreen; existing foods skipped, never
@@ -164,7 +164,7 @@ is only the correction path. `user_edited` tags are never overwritten.
       WHEN Arnar orders a test pass — one hung 9m40 on 2026-08-20.
 
 ## Design pass 2026-08-27 — shipped at 0.16.0+21
-Built by four parallel agents from docs/MyReciBook Flutter diary-pantry-mockups.zip
+Built by four parallel agents from conductor/docs/MyReciBook Flutter diary-pantry-mockups.zip
 (option ids are that file's own), then welded on main.
 - 1a Diary tab and 1d scanner ratified as built — no work.
 - 1b Pantry tab: starter foods is a leaf icon on the title row, chip bar and

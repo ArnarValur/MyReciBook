@@ -1,5 +1,5 @@
 // The durable half of the fair-use ledger (audit B2, design in
-// docs/ai-cap-mechanics.md §1).
+// conductor/docs/ai-cap-mechanics.md §1).
 //
 // Why this file exists: the in-memory ledger is only correct inside one
 // process. Cloud Run scales to zero and scales out, so counts evaporated on

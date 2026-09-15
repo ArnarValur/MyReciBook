@@ -8,7 +8,7 @@ The export half has never been built. Also kills the "who is Jason?" problem —
 users stop needing to know what the file format is called.
 
 **Division:** Arnar owns the page layout — it is a design question, and the
-mockups in docs/ are the authority. Agent owns the plumbing.
+mockups in conductor/docs/ are the authority. Agent owns the plumbing.
 
 **No new backend.** PDF is generated on the phone. Docs uses the Drive OAuth
 that already exists (data/oauth.dart, drive.file scope) — no new scope, no

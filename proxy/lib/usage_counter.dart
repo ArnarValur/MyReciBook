@@ -2,7 +2,7 @@
 /// (context.md constraint 3, amended 2026-08-06: stateless EXCEPT this; the
 /// proxy never stores recipe content, so nothing here may hold request bodies).
 ///
-/// Shape and spending order come from docs/ai-cap-mechanics.md §1, agreed —
+/// Shape and spending order come from conductor/docs/ai-cap-mechanics.md §1, agreed —
 /// this file implements that design, it does not reopen it.
 ///
 /// The slot is RESERVED before Gemini is called and REFUNDED if the call

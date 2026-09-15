@@ -5,9 +5,9 @@ F3). Transparent relay for the one call the app makes; refuses everything else.
 Request bodies are never stored or logged (context.md constraint 3).
 
 Hardened 2026-08-21 against the pre-launch audit — see
-[`docs/pre-launch-audit-2026-08-21.md`](../docs/pre-launch-audit-2026-08-21.md)
+[`conductor/docs/pre-launch-audit-2026-08-21.md`](../conductor/docs/pre-launch-audit-2026-08-21.md)
 findings B1–B3. Cap and control design:
-[`docs/ai-cap-mechanics.md`](../docs/ai-cap-mechanics.md) §1, §3, §4.
+[`conductor/docs/ai-cap-mechanics.md`](../conductor/docs/ai-cap-mechanics.md) §1, §3, §4.
 
 ## What it does, in order
 
@@ -50,7 +50,7 @@ APP_CHECK_ENFORCE=true ./deploy.sh   # the flip, once the app carries tokens
 
 **Never run yet** — gcloud was not installed on PlutoII as of 2026-08-21.
 One-time setup (Firestore rules, Secret Manager, IAM, budgets) is in
-[`docs/runbook-dev-deploy.md`](../docs/runbook-dev-deploy.md).
+[`conductor/docs/runbook-dev-deploy.md`](../conductor/docs/runbook-dev-deploy.md).
 
 ## Wire the app to it
 

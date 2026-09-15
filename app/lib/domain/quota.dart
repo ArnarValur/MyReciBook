@@ -1,4 +1,4 @@
-// The fair-use numbers, as the app sees them (docs/ai-cap-mechanics.md §1–§2).
+// The fair-use numbers, as the app sees them (conductor/docs/ai-cap-mechanics.md §1–§2).
 // The proxy attaches a `quota` object to every answer it owns — the successful
 // extraction and the 429 denial alike — so the counter is current with zero
 // extra network calls. This is the typed read of that object, plus the two

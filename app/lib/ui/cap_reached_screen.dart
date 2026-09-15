@@ -1,5 +1,5 @@
 // The fair-use cap, reached — design 4d promoted from the debug gallery
-// (2026-09-03). docs/ai-cap-mechanics.md §2: a user must never discover the
+// (2026-09-03). conductor/docs/ai-cap-mechanics.md §2: a user must never discover the
 // cap through a failed extraction, so the import sheet sends them here
 // BEFORE any AI door once the included grant is spent; the review screen
 // lands here only as the backstop when a stale cached count let a call

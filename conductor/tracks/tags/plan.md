@@ -157,7 +157,7 @@ detail sheet. Only English is offered today, so arb_parity_test stays green.
 
 ## REWORKED 2026-09-03 — Direction A (Arnar: "lets go with direction A")
 Canvas: https://claude.ai/code/artifact/0cdac4b7-4d69-41db-a56a-9c6262ca31db ·
-sources in docs/design/canvas-sources/tags-rethink/. Arnar's complaint: the
+sources in conductor/docs/design/canvas-sources/tags-rethink/. Arnar's complaint: the
 tag system was buried three screens deep, imports auto-attached the site's
 vocabulary, and the cookbook stacked untagged recipes above a folded shelf
 ("not pro designed"). What changed in code:

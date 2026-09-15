@@ -10,11 +10,11 @@
 # Every tap below is a coordinate on the 1080x2400 Pixel 7 screen, read off
 # `uiautomator dump`. A different AVD moves them; re-read, don't guess.
 #
-# Usage: tools/shoot_emulator.sh [out-dir]   (default docs/MyReciBook-Emulator-Shots)
+# Usage: tools/shoot_emulator.sh [out-dir]   (default conductor/docs/MyReciBook-Emulator-Shots)
 set -euo pipefail
 export ANDROID_SERIAL=emulator-5554
 A="${ADB:-$HOME/Android/Sdk/platform-tools/adb}"
-OUT="${1:-docs/MyReciBook-Emulator-Shots}"
+OUT="${1:-conductor/docs/MyReciBook-Emulator-Shots}"
 mkdir -p "$OUT"
 
 T() { "$A" shell input tap "$1" "$2"; sleep "${3:-1.5}"; }

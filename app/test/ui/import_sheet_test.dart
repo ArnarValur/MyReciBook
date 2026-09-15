@@ -1,4 +1,4 @@
-// Import sheet allowance line (docs/ai-cap-mechanics.md §2): one quiet
+// Import sheet allowance line (conductor/docs/ai-cap-mechanics.md §2): one quiet
 // sentence of truth under the AI doors, the ~80% heads-up, and the spent
 // grant turning the doors into the cap screen — whose free door pops the
 // sheet with the manual choice, never a failed extraction.

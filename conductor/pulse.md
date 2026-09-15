@@ -13,9 +13,9 @@
   non-browser fetch, Gemini url_context too. Only road: hidden WebView fetch
   after a refusal. NOT built, Arnar's call. Backup-API talk = next session.
 - PROD extraction verified end to end 2026-09-10 (roles/datastore.user granted).
-- WORKING TREE: docs/ moved into conductor/docs/ 2026-09-15 by an unknown hand,
-  uncommitted, unconfirmed. index / workflow / pulse still point at docs/.
-  Arnar decides: keep (fix pointers) or `git checkout -- docs/`.
+- WORKING TREE: conductor/docs/ moved into conductor/docs/ 2026-09-15 by an unknown hand,
+  uncommitted, unconfirmed. index / workflow / pulse still point at conductor/docs/.
+  Arnar decides: keep (fix pointers) or `git checkout -- conductor/docs/`.
 - Obsidian vault = conductor/ (~/Documents/Project-Vaults/MyReciBook); memory inside.
 - EMULATOR = second handset (pixel_7_api_35, ANDROID_SERIAL=emulator-5554;
   seed_emulator.py · shoot_emulator.sh · shots.mjs · render.mjs).

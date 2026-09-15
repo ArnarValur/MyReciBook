@@ -1,15 +1,15 @@
 // og.png: rsvg-convert -w 1200 -h 630 scripts/og.svg -o public/og.png
 // One-shot screenshot prep: crop, resize, convert to WebP.
-// Sources of truth stay in docs/ — this emits the web copies.
-//   docs/MyReciBook-Screenshots/          Arnar's phone, 2026-08-29 (the rescue strip)
-//   docs/MyReciBook-Emulator-Shots/       tools/shoot_emulator.sh, 2026-09-09 (cards + pocket)
+// Sources of truth stay in conductor/docs/ — this emits the web copies.
+//   conductor/docs/MyReciBook-Screenshots/          Arnar's phone, 2026-08-29 (the rescue strip)
+//   conductor/docs/MyReciBook-Emulator-Shots/       tools/shoot_emulator.sh, 2026-09-09 (cards + pocket)
 // Run from website/: node scripts/shots.mjs
 import sharp from 'sharp'
 import { existsSync } from 'node:fs'
 
-const SRC = '../docs/MyReciBook-Screenshots'
-const SRC_LIGHT = '../docs/MyReciBook Recipes Screenshots'
-const EMU = '../docs/MyReciBook-Emulator-Shots'
+const SRC = '../conductor/docs/MyReciBook-Screenshots'
+const SRC_LIGHT = '../conductor/docs/MyReciBook Recipes Screenshots'
+const EMU = '../conductor/docs/MyReciBook-Emulator-Shots'
 const OUT = 'public/screenshots'
 
 // [source, out, cropTopPx, maxWidth, cropHeightPx?]

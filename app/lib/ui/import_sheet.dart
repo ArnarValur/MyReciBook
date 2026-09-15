@@ -18,7 +18,7 @@
 //   decide next"): the old "pick every shot of one recipe" line became untrue
 //   the moment batch landed.
 //
-// The allowance line (docs/ai-cap-mechanics.md §2, 2026-09-03): the counter
+// The allowance line (conductor/docs/ai-cap-mechanics.md §2, 2026-09-03): the counter
 // sits where the decision happens — one quiet line under the AI section
 // saying what is left and that an import uses one. Exactly two nudges: the
 // wording turns into a heads-up at ~80%, and when the grant is spent the AI

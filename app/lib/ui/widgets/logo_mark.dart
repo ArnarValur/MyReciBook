@@ -1,6 +1,6 @@
 // The MyReciBook logo mark, drawn (not imported) so it tints with the scheme
 // and stays crisp at any size. Geometry is a 1:1 transcription of
-// docs/MyReciBook-logo/assets/logo/logo-mark.svg (108x108 viewBox) — that file
+// conductor/docs/MyReciBook-logo/assets/logo/logo-mark.svg (108x108 viewBox) — that file
 // is the authority; change it there first, then mirror the paths here.
 //
 // Two forms:

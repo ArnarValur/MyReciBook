@@ -2,7 +2,7 @@
 
 *Opened 2026-09-01. Arnar's manual investigation, feeding Q2 (migration in) and
 Decision 2. Sources of prior knowledge: the fourteen dossiers in
-docs/competitor-research/ and docs/library-import-research.md.*
+conductor/docs/competitor-research/ and conductor/docs/library-import-research.md.*
 
 **The question, per app:** can a user get their recipes OUT, in what format,
 and does it cost money to find out? We investigate cheapest-first: reading docs
@@ -63,7 +63,7 @@ Bulk (whole library) or per-recipe only?
 Behind a paywall? Which tier?
 Contents: photos? tags? times? servings? notes? nutrition?
 Where the file lands (Downloads / share sheet / email):
-Sample saved to: docs/competitor-research/export-samples/<app>/
+Sample saved to: conductor/docs/competitor-research/export-samples/<app>/
 Verdict: DOOR OPEN / DOOR LOCKED / NOTHING TO EXPORT
 The sentence it earns us:
 ```
@@ -110,7 +110,7 @@ nothing to export. Confirm via docs so the verdict is evidence, not assumption.
 ### Tier 2 · Paid, only if justified
 
 - [ ] **Paprika** — format already reverse-engineered (zip of gzipped JSON,
-      docs/library-import-research.md §2). The ONLY reason to spend money is
+      conductor/docs/library-import-research.md §2). The ONLY reason to spend money is
       generating a real export file to settle the categories-names-vs-uids
       question. Before buying:
       - [ ] Pass 1: hunt GitHub exporter tools for a committed sample
@@ -150,7 +150,7 @@ screenshots remain the whole social answer.
 
 ## Where results land
 
-Sample files → `docs/competitor-research/export-samples/<app>/`.
+Sample files → `conductor/docs/competitor-research/export-samples/<app>/`.
 Evidence cards → appended to this file, one section per app, dated.
 When the checklist is done, the findings + the library-import research become
 **Decision 2** in plan.md: which importers we build, in what order, and the

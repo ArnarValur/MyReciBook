@@ -1,5 +1,5 @@
 // QuotaSnapshot derivations the import sheet and the cap screen lean on
-// (docs/ai-cap-mechanics.md §2): "left" never negative, "exhausted" only
+// (conductor/docs/ai-cap-mechanics.md §2): "left" never negative, "exhausted" only
 // when the grant is really spent, the ~80% heads-up exactly once.
 
 import 'package:flutter_test/flutter_test.dart';

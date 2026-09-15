@@ -3,7 +3,7 @@
 #
 # NOT run yet — gcloud was not installed on PlutoII when this was written
 # (2026-08-21), so nothing here has been executed against a live project.
-# docs/runbook-dev-deploy.md carries the console click-paths and the one-time
+# conductor/docs/runbook-dev-deploy.md carries the console click-paths and the one-time
 # setup this script assumes is already done.
 #
 # Usage:
@@ -25,7 +25,7 @@ CONTACT_TO_EMAIL="${CONTACT_TO_EMAIL:-myrecibook@gmail.com}"
 # local dev server so the form can be exercised before a website deploy.
 CONTACT_ALLOWED_ORIGINS="${CONTACT_ALLOWED_ORIGINS:-https://myrecibook.com,https://www.myrecibook.com,https://myrecibook-website-staging-213431165631.europe-west1.run.app,https://myrecibook-website-staging-dolshlji5a-ew.a.run.app,http://localhost:3000,http://localhost:3001}"
 
-# Fair-use and abuse settings — the numbers from docs/ai-cap-mechanics.md §3.
+# Fair-use and abuse settings — the numbers from conductor/docs/ai-cap-mechanics.md §3.
 INCLUDED_CAP="${INCLUDED_CAP:-1200}"
 PER_MINUTE_LIMIT="${PER_MINUTE_LIMIT:-10}"
 PER_DAY_LIMIT="${PER_DAY_LIMIT:-50}"
@@ -33,11 +33,11 @@ GRACE_DAYS="${GRACE_DAYS:-14}"
 GLOBAL_DAILY_LIMIT="${GLOBAL_DAILY_LIMIT:-2000}"
 APP_CHECK_ENFORCE="${APP_CHECK_ENFORCE:-false}"
 
-# Verifies App Check token iss/aud. See docs/gcp-project-facts.md.
+# Verifies App Check token iss/aud. See conductor/docs/gcp-project-facts.md.
 FIREBASE_PROJECT_NUMBER="${FIREBASE_PROJECT_NUMBER:-213431165631}"
 
 command -v gcloud >/dev/null || {
-  echo "gcloud not installed. See docs/runbook-dev-deploy.md step 0." >&2
+  echo "gcloud not installed. See conductor/docs/runbook-dev-deploy.md step 0." >&2
   exit 1
 }
 
