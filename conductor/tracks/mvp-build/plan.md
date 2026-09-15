@@ -283,8 +283,9 @@
       welcome-slide tiles, light + Midnight, into app/assets/onboarding/.
       Slides wired (imageDark per feature, tiles anchored top so a wide phone
       trims the bottom); seen on the emulator through a real first run, both
-      themes. Store upload is Arnar's (Play Console → listing); tile crops
-      are his eyes to approve. Found on the way: kAppVersion had shipped in
+      themes. Arnar uploaded the light set + a full-description change to
+      the en-GB listing the same evening; in Play review. Tile crops are
+      his eyes to approve. Found on the way: kAppVersion had shipped in
       0.22.0+46 still saying 0.21.0 — fixed on main, rides the next build.
 
 ## Arnar's, not tracked here

@@ -25,8 +25,8 @@
 
 ## 🚀 Active tracks
 - mvp-build — THE focus. Open: billing seam, App Check enforcement,
-  hidden-WebView fetch decision. Listing frames + slide tiles built, Arnar's
-  eyes pending; About footer 0.21.0 in +46, fixed for the next build.
+  hidden-WebView fetch decision. Listing shots + description in Play review
+  (Arnar, 2026-09-15); slide tiles his eyes pending; About footer 0.21.0 in +46, fixed for the next build.
 - market — open: Q2 export recon (Arnar), Q5 steal list, Q6 cadence.
 
 ## ⚠️ Blockers
