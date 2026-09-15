@@ -3,12 +3,13 @@
 > **Updated:** 2026-09-15
 
 ## 📍 Now
-- Phase: closed test, Play review PASSED. 0.21.0+45 on the closed "alpha" track.
+- Phase: closed test, Play review PASSED. 0.22.0+46 on the closed "alpha" track
+  (published 2026-09-15; Store-app rollout to the phone unwatched).
   Arnar's phone: Play build + dev build (.dev, profile, dev.env) beside it.
 - Testers: Google Group + Play closed-test wiring done by Arnar 2026-09-15.
-  Reddit recruiting next (Arnar). Store-app update to +45 on the phone unverified.
-- Paste-a-link door BUILT on the + sheet; failed rescues reach Crashlytics as
-  non-fatals; Drive redirect crash fixed. All three on the dev app only, no stamp.
+  Reddit recruiting next (Arnar).
+- Paste-a-link door, Crashlytics non-fatals for failed rescues and the Drive
+  redirect fix all verified by Arnar and shipped in 0.22.0+46.
 - People Inc. wall: allrecipes / simplyrecipes / seriouseats answer 402 to any
   non-browser fetch, Gemini url_context too. Only road: hidden WebView fetch
   after a refusal. NOT built, Arnar's call. Backup-API talk = next session.
@@ -25,8 +26,7 @@
 
 ## 🚀 Active tracks
 - mvp-build — THE focus. Open: listing + welcome slide shots (emulator),
-  billing seam, App Check enforcement, link door + crash pipe + Drive fix
-  verify → stamp, hidden-WebView fetch decision.
+  billing seam, App Check enforcement, hidden-WebView fetch decision.
 - market — open: Q2 export recon (Arnar), Q5 steal list, Q6 cadence.
 
 ## ⚠️ Blockers

@@ -209,9 +209,9 @@
 - Evidence, cost numbers and the remaining plan: docs/archive/handoff-extraction-trim.md.
 
 ## Open
-- [ ] Link door + crash pipe: Arnar's eyes on the dev app, then stamp
-      (0.22.0 — a capability a user would name) and fold into the next Play
-      build.
+- [x] Link door + crash pipe: verified by Arnar on the dev app 2026-09-15,
+      stamped 0.22.0+46, published to the closed alpha track the same day
+      (publish_play.sh, edit 07513371671116569561).
 - [ ] People Inc. wall (allrecipes, simplyrecipes, seriouseats → HTTP 402 to
       any non-browser fetch; Gemini url_context blocked too). Only road found:
       a hidden WebView in NetBridge that loads the page after a refusal and
@@ -219,8 +219,7 @@
       slower, and Cloudflare may still raise a human check. Arnar's call —
       part of the "integrity of these services / backup API" talk he set for
       the next session. Meanwhile the failed state already says screenshot.
-- [ ] Drive sign-in on the dev app once, to confirm the redirect no longer
-      crashes and AuthBridge still receives it.
+- [x] Drive sign-in verified by Arnar on the dev app 2026-09-15; rides 0.22.0+46.
 - [x] First .aab on Play — internal testing release "The First - 0.20.0+42"
       live 2026-08-31 21:01. Internal track needs no forms; the 12×14d clock
       runs only in closed testing. Dev Firestore ledger wiped same evening
