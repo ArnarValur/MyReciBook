@@ -1,15 +1,18 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
-## 2026-09-15 — the conductor becomes a vault, and docs/ walked off on its own
+## 2026-09-15 — the link door ships, the store gets its pictures, the conductor becomes a vault
 
-- Shipped: conductor-init upgrade check (shape already current, commands kept);
-  Obsidian vault link + memory symlink; agent-rules/ and adr/ keep files.
-- Broke: docs/ was moved wholesale into conductor/docs/ eight seconds before
-  the vault command ran — not by the agent, no hook. Left uncommitted.
-- Arnar: Google Group + Play tester wiring done; Reddit for testers next.
-- UNFINISHED: docs/ move keep-or-revert; link door + crash pipe + Drive fix
-  still unverified on the Play build.
+- Shipped: 0.22.0+46 on the closed alpha track (link door, rescue non-fatals,
+  Drive redirect fix, all verified by Arnar first); eight Play store frames
+  light + dark and the welcome-slide tiles from fresh emulator shots
+  (tools/play_shots.mjs); Obsidian vault link + memory symlink.
+- Broke: kAppVersion shipped in +46 still saying 0.21.0, fixed for the next
+  build; docs/ moved into conductor/docs/ by an unknown hand, uncommitted.
+- Arnar: Google Group + Play tester wiring done, Reddit next; uploaded the
+  screenshots + description to Play, in review; "push and deploy".
+- UNFINISHED: docs/ move keep-or-revert; nothing to deploy (website and
+  proxy untouched since the ninth).
 
 ## 2026-09-10 — prod could not rescue, a link door on the + sheet, failures reach Crashlytics
 
