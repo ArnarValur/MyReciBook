@@ -1,6 +1,16 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-15 — the conductor becomes a vault, and docs/ walked off on its own
+
+- Shipped: conductor-init upgrade check (shape already current, commands kept);
+  Obsidian vault link + memory symlink; agent-rules/ and adr/ keep files.
+- Broke: docs/ was moved wholesale into conductor/docs/ eight seconds before
+  the vault command ran — not by the agent, no hook. Left uncommitted.
+- Arnar: Google Group + Play tester wiring done; Reddit for testers next.
+- UNFINISHED: docs/ move keep-or-revert; link door + crash pipe + Drive fix
+  still unverified on the Play build.
+
 ## 2026-09-10 — prod could not rescue, a link door on the + sheet, failures reach Crashlytics
 
 - Shipped: prod extraction unblocked (Firestore role on the Cloud Run account);
