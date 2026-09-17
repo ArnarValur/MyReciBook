@@ -1,6 +1,6 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
-> **Updated:** 2026-09-15 evening
+> **Updated:** 2026-09-17 night
 
 ## 📍 Now
 - Phase: closed test, Play review PASSED. 0.22.0+46 on the closed "alpha" track
@@ -13,15 +13,17 @@
   non-browser fetch, Gemini url_context too. Only road: hidden WebView fetch
   after a refusal. NOT built, Arnar's call. Backup-API talk = next session.
 - PROD extraction verified end to end 2026-09-10 (roles/datastore.user granted).
-- WORKING TREE: conductor/docs/ moved into conductor/docs/ 2026-09-15 by an unknown hand,
-  uncommitted, unconfirmed. index / workflow / pulse still point at conductor/docs/.
-  Arnar decides: keep (fix pointers) or `git checkout -- conductor/docs/`.
 - Obsidian vault = conductor/ (~/Documents/Project-Vaults/MyReciBook); memory inside.
 - EMULATOR = second handset (pixel_7_api_35, ANDROID_SERIAL=emulator-5554;
   seed_emulator.py · shoot_emulator.sh · shots.mjs · render.mjs).
 - PROD LIVE: myrecibook.com, Firestore eur3, Secret Manager, GA4 behind
   consent, Drive OAuth done, App Check registered not enforced. Contact form
   posts to DEV on purpose. Offer: 1,200 grant never refills, 600 for $5.
+- WEBSITE URLs (2026-09-17): one address per page, https://myrecibook.com/path.
+  www, /path/, /index.html and the six locale prefixes 301 in one hop (nginx.conf);
+  only English is built (nuxt.config.ts liveLocales); flat /sitemap.xml.
+  Deployed staging + prod. Search Console "Validate fix" + request indexing = Arnar.
+  Report: REPORT-canonical.md on branch fix/canonical-urls.
 
 ## 🚀 Active tracks
 - mvp-build — THE focus. Open: billing seam, App Check enforcement,
