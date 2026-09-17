@@ -17,6 +17,13 @@ website pages carry the "English governs" sticker meanwhile. Unfreeze order
 lives in conductor/tracks/market/plan.md Decisions §2: app string sweep →
 nb + sv + translated Play listing → da + fi → fo as the PR wedge.
 
+**Website unpublished the unfinished copies 2026-09-17.** Search Console filed
+/da/privacy and kin as duplicates of the English page. Only English is built
+(`website/nuxt.config.ts` `liveLocales`); `website/nginx.conf` 301s the six
+prefixes to the English page. Locale files and layout wiring untouched. To
+publish a language: add its code to `liveLocales`, drop it from the nginx
+locale redirect, call `useLocaleHead` in the layout so hreflang lands in HTML.
+
 ## Languages — Arnar's list, 2026-08-22
 English (source) · Íslenska · Norsk bokmål · Svenska · Suomi · Dansk ·
 Deutsch · Français · Español · Italiano · Polski.

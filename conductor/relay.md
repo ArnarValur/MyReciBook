@@ -1,6 +1,17 @@
 # Relay — MyReciBook
 *One entry per session, 6 lines max, newest first.*
 
+## 2026-09-17 — every page gets one address
+
+- Shipped: the Search Console duplicate fix — www, trailing slash, index.html
+  and the six half-translated locale copies all 301 in one hop to
+  https://myrecibook.com/path; only English is built; flat /sitemap.xml.
+  Proven in the real nginx container, on staging, then deployed to prod.
+- Broke: nothing. Found: /da/privacy was the English page under its own
+  canonical, which is exactly what Google refused.
+- Arnar: fix it alone, ask nothing, deploy and checkpoint. Branch not pushed.
+- UNFINISHED: Arnar clicks "Validate fix" + requests indexing (REPORT-canonical.md).
+
 ## 2026-09-15 — the link door ships, the store gets its pictures, the conductor becomes a vault
 
 - Shipped: 0.22.0+46 on the closed alpha track (link door, rescue non-fatals,

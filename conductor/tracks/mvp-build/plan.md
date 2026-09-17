@@ -242,6 +242,12 @@
       source for the real screen the item above needs.
 - [x] Filled Cookies card re-rescued on the new prompt — works, verified by
       Arnar's eyes (recorded 2026-09-03; said earlier, never written down).
+- [x] Website canonical URLs 2026-09-17: Search Console "Duplicate, Google
+      chose different canonical than user" — cause was the six unfinished
+      locale copies plus www / trailing slash / index.html all answering 200.
+      One address per page now (https://myrecibook.com/path), every other
+      spelling a single 301, flat /sitemap.xml. Proof + hand steps in
+      REPORT-canonical.md. Arnar: Validate fix + request indexing.
 - [ ] Handoff remainder: deterministic app-side review flags (digits but no
       qty, " each "/" or " in raw, shared line_id), regression fixtures from
       both runs, prefix-caching check.
