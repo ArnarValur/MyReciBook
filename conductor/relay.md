@@ -9,7 +9,7 @@
   Proven in the real nginx container, on staging, then deployed to prod.
 - Broke: nothing. Found: /da/privacy was the English page under its own
   canonical, which is exactly what Google refused.
-- Arnar: fix it alone, ask nothing, deploy and checkpoint. Branch not pushed.
+- Arnar: fix it alone, ask nothing, deploy, checkpoint, push main. Pushed 2026-09-18.
 - UNFINISHED: Arnar clicks "Validate fix" + requests indexing (REPORT-canonical.md).
 
 ## 2026-09-15 — the link door ships, the store gets its pictures, the conductor becomes a vault

@@ -1,6 +1,6 @@
 # Pulse — MyReciBook
 *State only. Rewritten at every checkpoint, never appended. Cap 40 lines.*
-> **Updated:** 2026-09-17 night
+> **Updated:** 2026-09-18 morning
 
 ## 📍 Now
 - Phase: closed test, Play review PASSED. 0.22.0+46 on the closed "alpha" track
@@ -23,7 +23,7 @@
   www, /path/, /index.html and the six locale prefixes 301 in one hop (nginx.conf);
   only English is built (nuxt.config.ts liveLocales); flat /sitemap.xml.
   Deployed staging + prod. Search Console "Validate fix" + request indexing = Arnar.
-  Report: REPORT-canonical.md on branch fix/canonical-urls.
+  Report: REPORT-canonical.md on main (pushed 2026-09-18).
 
 ## 🚀 Active tracks
 - mvp-build — THE focus. Open: billing seam, App Check enforcement,
